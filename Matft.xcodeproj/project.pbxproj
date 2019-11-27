@@ -1,0 +1,743 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		D6803FF9238E38CB00F5A6BF /* MatftFatBinary */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = D6803FFA238E38CB00F5A6BF /* Build configuration list for PBXAggregateTarget "MatftFatBinary" */;
+			buildPhases = (
+				D6803FFD238E38D300F5A6BF /* ShellScript */,
+				D6803FFE238E395200F5A6BF /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = MatftFatBinary;
+			productName = MatftFatBinary;
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+		D6803FAA238E387200F5A6BF /* Matft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6803FA0238E387200F5A6BF /* Matft.framework */; };
+		D6803FAF238E387200F5A6BF /* MatftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FAE238E387200F5A6BF /* MatftTests.swift */; };
+		D6803FB1238E387200F5A6BF /* Matft.h in Headers */ = {isa = PBXBuildFile; fileRef = D6803FA3238E387200F5A6BF /* Matft.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D6803FDF238E38A300F5A6BF /* Matft.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FBA238E38A300F5A6BF /* Matft.swift */; };
+		D6803FE0238E38A300F5A6BF /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FBC238E38A300F5A6BF /* Common.swift */; };
+		D6803FE1238E38A300F5A6BF /* Print.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FBE238E38A300F5A6BF /* Print.swift */; };
+		D6803FE2238E38A300F5A6BF /* vDSP.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FBF238E38A300F5A6BF /* vDSP.swift */; };
+		D6803FE3238E38A300F5A6BF /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FC0238E38A300F5A6BF /* Utils.swift */; };
+		D6803FE4238E38A300F5A6BF /* MfType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FC2238E38A300F5A6BF /* MfType.swift */; };
+		D6803FE5238E38A300F5A6BF /* MfOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FC3238E38A300F5A6BF /* MfOperation.swift */; };
+		D6803FE6238E38A300F5A6BF /* MfNumeric.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FC4238E38A300F5A6BF /* MfNumeric.swift */; };
+		D6803FE7238E38A300F5A6BF /* MfError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FC6238E38A300F5A6BF /* MfError.swift */; };
+		D6803FE8238E38A300F5A6BF /* Conversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FC9238E38A300F5A6BF /* Conversion.swift */; };
+		D6803FE9238E38A300F5A6BF /* Calculation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FCA238E38A300F5A6BF /* Calculation.swift */; };
+		D6803FEA238E38A300F5A6BF /* LinAlg.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FCB238E38A300F5A6BF /* LinAlg.swift */; };
+		D6803FEB238E38A300F5A6BF /* Creation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FCC238E38A300F5A6BF /* Creation.swift */; };
+		D6803FEC238E38A300F5A6BF /* MfArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FCF238E38A300F5A6BF /* MfArray.swift */; };
+		D6803FED238E38A300F5A6BF /* Subscript.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FD0238E38A300F5A6BF /* Subscript.swift */; };
+		D6803FEE238E38A300F5A6BF /* Iteration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FD1238E38A300F5A6BF /* Iteration.swift */; };
+		D6803FEF238E38A300F5A6BF /* InfoConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FD3238E38A300F5A6BF /* InfoConversion.swift */; };
+		D6803FF0238E38A300F5A6BF /* Flags.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FD4238E38A300F5A6BF /* Flags.swift */; };
+		D6803FF1238E38A300F5A6BF /* InfoAstype.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FD5238E38A300F5A6BF /* InfoAstype.swift */; };
+		D6803FF2238E38A300F5A6BF /* InfoCreation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FD6238E38A300F5A6BF /* InfoCreation.swift */; };
+		D6803FF3238E38A300F5A6BF /* MfArrayInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FD7238E38A300F5A6BF /* MfArrayInfo.swift */; };
+		D6803FF4238E38A300F5A6BF /* CreationMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FD9238E38A300F5A6BF /* CreationMethod.swift */; };
+		D6803FF5238E38A300F5A6BF /* ConversionMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FDA238E38A300F5A6BF /* ConversionMethod.swift */; };
+		D6803FF6238E38A300F5A6BF /* Postfix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FDC238E38A300F5A6BF /* Postfix.swift */; };
+		D6803FF7238E38A300F5A6BF /* Infix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FDD238E38A300F5A6BF /* Infix.swift */; };
+		D6803FF8238E38A300F5A6BF /* Prefix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803FDE238E38A300F5A6BF /* Prefix.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D6803FAB238E387200F5A6BF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D6803F97238E387200F5A6BF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D6803F9F238E387200F5A6BF;
+			remoteInfo = Matft;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		D6803FA0238E387200F5A6BF /* Matft.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Matft.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6803FA3238E387200F5A6BF /* Matft.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Matft.h; sourceTree = "<group>"; };
+		D6803FA4238E387200F5A6BF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D6803FA9238E387200F5A6BF /* MatftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MatftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6803FAE238E387200F5A6BF /* MatftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatftTests.swift; sourceTree = "<group>"; };
+		D6803FB0238E387200F5A6BF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D6803FBA238E38A300F5A6BF /* Matft.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Matft.swift; sourceTree = "<group>"; };
+		D6803FBC238E38A300F5A6BF /* Common.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Common.swift; sourceTree = "<group>"; };
+		D6803FBE238E38A300F5A6BF /* Print.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Print.swift; sourceTree = "<group>"; };
+		D6803FBF238E38A300F5A6BF /* vDSP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = vDSP.swift; sourceTree = "<group>"; };
+		D6803FC0238E38A300F5A6BF /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		D6803FC2238E38A300F5A6BF /* MfType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfType.swift; sourceTree = "<group>"; };
+		D6803FC3238E38A300F5A6BF /* MfOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfOperation.swift; sourceTree = "<group>"; };
+		D6803FC4238E38A300F5A6BF /* MfNumeric.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfNumeric.swift; sourceTree = "<group>"; };
+		D6803FC6238E38A300F5A6BF /* MfError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfError.swift; sourceTree = "<group>"; };
+		D6803FC9238E38A300F5A6BF /* Conversion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Conversion.swift; sourceTree = "<group>"; };
+		D6803FCA238E38A300F5A6BF /* Calculation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Calculation.swift; sourceTree = "<group>"; };
+		D6803FCB238E38A300F5A6BF /* LinAlg.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LinAlg.swift; sourceTree = "<group>"; };
+		D6803FCC238E38A300F5A6BF /* Creation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Creation.swift; sourceTree = "<group>"; };
+		D6803FCF238E38A300F5A6BF /* MfArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfArray.swift; sourceTree = "<group>"; };
+		D6803FD0238E38A300F5A6BF /* Subscript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Subscript.swift; sourceTree = "<group>"; };
+		D6803FD1238E38A300F5A6BF /* Iteration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Iteration.swift; sourceTree = "<group>"; };
+		D6803FD3238E38A300F5A6BF /* InfoConversion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoConversion.swift; sourceTree = "<group>"; };
+		D6803FD4238E38A300F5A6BF /* Flags.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Flags.swift; sourceTree = "<group>"; };
+		D6803FD5238E38A300F5A6BF /* InfoAstype.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoAstype.swift; sourceTree = "<group>"; };
+		D6803FD6238E38A300F5A6BF /* InfoCreation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoCreation.swift; sourceTree = "<group>"; };
+		D6803FD7238E38A300F5A6BF /* MfArrayInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfArrayInfo.swift; sourceTree = "<group>"; };
+		D6803FD9238E38A300F5A6BF /* CreationMethod.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreationMethod.swift; sourceTree = "<group>"; };
+		D6803FDA238E38A300F5A6BF /* ConversionMethod.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConversionMethod.swift; sourceTree = "<group>"; };
+		D6803FDC238E38A300F5A6BF /* Postfix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Postfix.swift; sourceTree = "<group>"; };
+		D6803FDD238E38A300F5A6BF /* Infix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Infix.swift; sourceTree = "<group>"; };
+		D6803FDE238E38A300F5A6BF /* Prefix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Prefix.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D6803F9D238E387200F5A6BF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D6803FA6238E387200F5A6BF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D6803FAA238E387200F5A6BF /* Matft.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D6803F96238E387200F5A6BF = {
+			isa = PBXGroup;
+			children = (
+				D6803FA2238E387200F5A6BF /* Matft */,
+				D6803FAD238E387200F5A6BF /* MatftTests */,
+				D6803FA1238E387200F5A6BF /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D6803FA1238E387200F5A6BF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D6803FA0238E387200F5A6BF /* Matft.framework */,
+				D6803FA9238E387200F5A6BF /* MatftTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D6803FA2238E387200F5A6BF /* Matft */ = {
+			isa = PBXGroup;
+			children = (
+				D6803FA3238E387200F5A6BF /* Matft.h */,
+				D6803FA4238E387200F5A6BF /* Info.plist */,
+				D6803FBA238E38A300F5A6BF /* Matft.swift */,
+				D6803FBB238E38A300F5A6BF /* Common */,
+				D6803FC7238E38A300F5A6BF /* mfarray */,
+			);
+			path = Matft;
+			sourceTree = "<group>";
+		};
+		D6803FAD238E387200F5A6BF /* MatftTests */ = {
+			isa = PBXGroup;
+			children = (
+				D6803FAE238E387200F5A6BF /* MatftTests.swift */,
+				D6803FB0238E387200F5A6BF /* Info.plist */,
+			);
+			path = MatftTests;
+			sourceTree = "<group>";
+		};
+		D6803FBB238E38A300F5A6BF /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				D6803FBC238E38A300F5A6BF /* Common.swift */,
+				D6803FBD238E38A300F5A6BF /* Utils */,
+				D6803FC1238E38A300F5A6BF /* Protocol */,
+				D6803FC5238E38A300F5A6BF /* Error */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		D6803FBD238E38A300F5A6BF /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				D6803FBE238E38A300F5A6BF /* Print.swift */,
+				D6803FBF238E38A300F5A6BF /* vDSP.swift */,
+				D6803FC0238E38A300F5A6BF /* Utils.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		D6803FC1238E38A300F5A6BF /* Protocol */ = {
+			isa = PBXGroup;
+			children = (
+				D6803FC2238E38A300F5A6BF /* MfType.swift */,
+				D6803FC3238E38A300F5A6BF /* MfOperation.swift */,
+				D6803FC4238E38A300F5A6BF /* MfNumeric.swift */,
+			);
+			path = Protocol;
+			sourceTree = "<group>";
+		};
+		D6803FC5238E38A300F5A6BF /* Error */ = {
+			isa = PBXGroup;
+			children = (
+				D6803FC6238E38A300F5A6BF /* MfError.swift */,
+			);
+			path = Error;
+			sourceTree = "<group>";
+		};
+		D6803FC7238E38A300F5A6BF /* mfarray */ = {
+			isa = PBXGroup;
+			children = (
+				D6803FC8238E38A300F5A6BF /* Function */,
+				D6803FCD238E38A300F5A6BF /* MfArray */,
+				D6803FDB238E38A300F5A6BF /* Operator */,
+			);
+			path = mfarray;
+			sourceTree = "<group>";
+		};
+		D6803FC8238E38A300F5A6BF /* Function */ = {
+			isa = PBXGroup;
+			children = (
+				D6803FC9238E38A300F5A6BF /* Conversion.swift */,
+				D6803FCA238E38A300F5A6BF /* Calculation.swift */,
+				D6803FCB238E38A300F5A6BF /* LinAlg.swift */,
+				D6803FCC238E38A300F5A6BF /* Creation.swift */,
+			);
+			path = Function;
+			sourceTree = "<group>";
+		};
+		D6803FCD238E38A300F5A6BF /* MfArray */ = {
+			isa = PBXGroup;
+			children = (
+				D6803FCE238E38A300F5A6BF /* Core */,
+				D6803FD2238E38A300F5A6BF /* MfArrayInfo */,
+				D6803FD8238E38A300F5A6BF /* Method */,
+			);
+			path = MfArray;
+			sourceTree = "<group>";
+		};
+		D6803FCE238E38A300F5A6BF /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				D6803FCF238E38A300F5A6BF /* MfArray.swift */,
+				D6803FD0238E38A300F5A6BF /* Subscript.swift */,
+				D6803FD1238E38A300F5A6BF /* Iteration.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		D6803FD2238E38A300F5A6BF /* MfArrayInfo */ = {
+			isa = PBXGroup;
+			children = (
+				D6803FD3238E38A300F5A6BF /* InfoConversion.swift */,
+				D6803FD4238E38A300F5A6BF /* Flags.swift */,
+				D6803FD5238E38A300F5A6BF /* InfoAstype.swift */,
+				D6803FD6238E38A300F5A6BF /* InfoCreation.swift */,
+				D6803FD7238E38A300F5A6BF /* MfArrayInfo.swift */,
+			);
+			path = MfArrayInfo;
+			sourceTree = "<group>";
+		};
+		D6803FD8238E38A300F5A6BF /* Method */ = {
+			isa = PBXGroup;
+			children = (
+				D6803FD9238E38A300F5A6BF /* CreationMethod.swift */,
+				D6803FDA238E38A300F5A6BF /* ConversionMethod.swift */,
+			);
+			path = Method;
+			sourceTree = "<group>";
+		};
+		D6803FDB238E38A300F5A6BF /* Operator */ = {
+			isa = PBXGroup;
+			children = (
+				D6803FDC238E38A300F5A6BF /* Postfix.swift */,
+				D6803FDD238E38A300F5A6BF /* Infix.swift */,
+				D6803FDE238E38A300F5A6BF /* Prefix.swift */,
+			);
+			path = Operator;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D6803F9B238E387200F5A6BF /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D6803FB1238E387200F5A6BF /* Matft.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D6803F9F238E387200F5A6BF /* Matft */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D6803FB4238E387200F5A6BF /* Build configuration list for PBXNativeTarget "Matft" */;
+			buildPhases = (
+				D6803F9B238E387200F5A6BF /* Headers */,
+				D6803F9C238E387200F5A6BF /* Sources */,
+				D6803F9D238E387200F5A6BF /* Frameworks */,
+				D6803F9E238E387200F5A6BF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Matft;
+			productName = Matft;
+			productReference = D6803FA0238E387200F5A6BF /* Matft.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		D6803FA8238E387200F5A6BF /* MatftTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D6803FB7238E387200F5A6BF /* Build configuration list for PBXNativeTarget "MatftTests" */;
+			buildPhases = (
+				D6803FA5238E387200F5A6BF /* Sources */,
+				D6803FA6238E387200F5A6BF /* Frameworks */,
+				D6803FA7238E387200F5A6BF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D6803FAC238E387200F5A6BF /* PBXTargetDependency */,
+			);
+			name = MatftTests;
+			productName = MatftTests;
+			productReference = D6803FA9238E387200F5A6BF /* MatftTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D6803F97238E387200F5A6BF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1030;
+				LastUpgradeCheck = 1030;
+				ORGANIZATIONNAME = jkado;
+				TargetAttributes = {
+					D6803F9F238E387200F5A6BF = {
+						CreatedOnToolsVersion = 10.3;
+						LastSwiftMigration = 1030;
+					};
+					D6803FA8238E387200F5A6BF = {
+						CreatedOnToolsVersion = 10.3;
+					};
+					D6803FF9238E38CB00F5A6BF = {
+						CreatedOnToolsVersion = 10.3;
+					};
+				};
+			};
+			buildConfigurationList = D6803F9A238E387200F5A6BF /* Build configuration list for PBXProject "Matft" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = D6803F96238E387200F5A6BF;
+			productRefGroup = D6803FA1238E387200F5A6BF /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D6803F9F238E387200F5A6BF /* Matft */,
+				D6803FA8238E387200F5A6BF /* MatftTests */,
+				D6803FF9238E38CB00F5A6BF /* MatftFatBinary */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D6803F9E238E387200F5A6BF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D6803FA7238E387200F5A6BF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		D6803FFD238E38D300F5A6BF /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/sh\n\nUNIVERSAL_OUTPUTFOLDER=${BUILD_DIR}/${CONFIGURATION}-universal\n\n# make sure the output directory exists\nmkdir -p \"${UNIVERSAL_OUTPUTFOLDER}\"\n\n# Step 1. Build Device and Simulator versions\nxcodebuild -target \"${PROJECT_NAME}\" ONLY_ACTIVE_ARCH=NO -configuration ${CONFIGURATION} -sdk iphoneos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"${PROJECT_NAME}\" -configuration ${CONFIGURATION} -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\n\n# Step 2. Copy the framework structure (from iphoneos build) to the universal folder\ncp -R \"${BUILD_DIR}/${CONFIGURATION}-iphoneos/${PROJECT_NAME}.framework\" \"${UNIVERSAL_OUTPUTFOLDER}/\"\n\n# Step 3. Copy Swift modules from iphonesimulator build (if it exists) to the copied framework directory\nSIMULATOR_SWIFT_MODULES_DIR=\"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/${PROJECT_NAME}.framework/Modules/${PROJECT_NAME}.swiftmodule/.\"\nif [ -d \"${SIMULATOR_SWIFT_MODULES_DIR}\" ]; then\ncp -R \"${SIMULATOR_SWIFT_MODULES_DIR}\" \"${UNIVERSAL_OUTPUTFOLDER}/${PROJECT_NAME}.framework/Modules/${PROJECT_NAME}.swiftmodule\"\nfi\n\n# Step 4. Create universal binary file using lipo and place the combined executable in the copied framework directory\nlipo -create -output \"${UNIVERSAL_OUTPUTFOLDER}/${PROJECT_NAME}.framework/${PROJECT_NAME}\" \"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/${PROJECT_NAME}.framework/${PROJECT_NAME}\" \"${BUILD_DIR}/${CONFIGURATION}-iphoneos/${PROJECT_NAME}.framework/${PROJECT_NAME}\"\n\n# Step 5. Convenience step to copy the framework to the project's directory\ncp -R \"${UNIVERSAL_OUTPUTFOLDER}/${PROJECT_NAME}.framework\" \"${PROJECT_DIR}\"\n\n# Step 6. Convenience step to open the project's directory in Finder\nopen \"${PROJECT_DIR}\"\n";
+		};
+		D6803FFE238E395200F5A6BF /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/sh\nlipo -info \"${PROJECT_DIR}/${PROJECT_NAME}.framework/${PROJECT_NAME}\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D6803F9C238E387200F5A6BF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D6803FE6238E38A300F5A6BF /* MfNumeric.swift in Sources */,
+				D6803FE8238E38A300F5A6BF /* Conversion.swift in Sources */,
+				D6803FEC238E38A300F5A6BF /* MfArray.swift in Sources */,
+				D6803FF3238E38A300F5A6BF /* MfArrayInfo.swift in Sources */,
+				D6803FE9238E38A300F5A6BF /* Calculation.swift in Sources */,
+				D6803FF4238E38A300F5A6BF /* CreationMethod.swift in Sources */,
+				D6803FEF238E38A300F5A6BF /* InfoConversion.swift in Sources */,
+				D6803FE4238E38A300F5A6BF /* MfType.swift in Sources */,
+				D6803FF7238E38A300F5A6BF /* Infix.swift in Sources */,
+				D6803FF2238E38A300F5A6BF /* InfoCreation.swift in Sources */,
+				D6803FEB238E38A300F5A6BF /* Creation.swift in Sources */,
+				D6803FE7238E38A300F5A6BF /* MfError.swift in Sources */,
+				D6803FF1238E38A300F5A6BF /* InfoAstype.swift in Sources */,
+				D6803FF8238E38A300F5A6BF /* Prefix.swift in Sources */,
+				D6803FE3238E38A300F5A6BF /* Utils.swift in Sources */,
+				D6803FF6238E38A300F5A6BF /* Postfix.swift in Sources */,
+				D6803FED238E38A300F5A6BF /* Subscript.swift in Sources */,
+				D6803FEE238E38A300F5A6BF /* Iteration.swift in Sources */,
+				D6803FF5238E38A300F5A6BF /* ConversionMethod.swift in Sources */,
+				D6803FEA238E38A300F5A6BF /* LinAlg.swift in Sources */,
+				D6803FE0238E38A300F5A6BF /* Common.swift in Sources */,
+				D6803FE5238E38A300F5A6BF /* MfOperation.swift in Sources */,
+				D6803FE1238E38A300F5A6BF /* Print.swift in Sources */,
+				D6803FF0238E38A300F5A6BF /* Flags.swift in Sources */,
+				D6803FE2238E38A300F5A6BF /* vDSP.swift in Sources */,
+				D6803FDF238E38A300F5A6BF /* Matft.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D6803FA5238E387200F5A6BF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D6803FAF238E387200F5A6BF /* MatftTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D6803FAC238E387200F5A6BF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D6803F9F238E387200F5A6BF /* Matft */;
+			targetProxy = D6803FAB238E387200F5A6BF /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		D6803FB2238E387200F5A6BF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		D6803FB3238E387200F5A6BF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		D6803FB5238E387200F5A6BF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = WL6N7MD8S7;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Matft/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jkado.Matft;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64 arm64e armv7 armv7s 386 x86_64";
+			};
+			name = Debug;
+		};
+		D6803FB6238E387200F5A6BF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = WL6N7MD8S7;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Matft/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jkado.Matft;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64 arm64e armv7 armv7s 386 x86_64";
+			};
+			name = Release;
+		};
+		D6803FB8238E387200F5A6BF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = WL6N7MD8S7;
+				INFOPLIST_FILE = MatftTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jkado.MatftTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D6803FB9238E387200F5A6BF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = WL6N7MD8S7;
+				INFOPLIST_FILE = MatftTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jkado.MatftTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D6803FFB238E38CB00F5A6BF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = WL6N7MD8S7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		D6803FFC238E38CB00F5A6BF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = WL6N7MD8S7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D6803F9A238E387200F5A6BF /* Build configuration list for PBXProject "Matft" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D6803FB2238E387200F5A6BF /* Debug */,
+				D6803FB3238E387200F5A6BF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D6803FB4238E387200F5A6BF /* Build configuration list for PBXNativeTarget "Matft" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D6803FB5238E387200F5A6BF /* Debug */,
+				D6803FB6238E387200F5A6BF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D6803FB7238E387200F5A6BF /* Build configuration list for PBXNativeTarget "MatftTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D6803FB8238E387200F5A6BF /* Debug */,
+				D6803FB9238E387200F5A6BF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D6803FFA238E38CB00F5A6BF /* Build configuration list for PBXAggregateTarget "MatftFatBinary" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D6803FFB238E38CB00F5A6BF /* Debug */,
+				D6803FFC238E38CB00F5A6BF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D6803F97238E387200F5A6BF /* Project object */;
+}

@@ -1,0 +1,13 @@
+{
+  'version': 0,
+  'case-sensitive': 'false',
+  'roots': [{
+    'type': 'directory',
+    'name': "/Users/am19a0/Library/Developer/Xcode/DerivedData/test-edieaffvoihaqogihrccqobealbc/Build/Products/Debug-iphonesimulator/Matft.framework/Modules"
+    'contents': [{
+      'type': 'file',
+      'name': "module.modulemap",
+      'external-contents': "/Users/am19a0/Desktop/program/Matft/Matft/build/Matft.build/Debug-iphonesimulator/Matft.build/unextended-module.modulemap",
+    }]
+  }]
+}

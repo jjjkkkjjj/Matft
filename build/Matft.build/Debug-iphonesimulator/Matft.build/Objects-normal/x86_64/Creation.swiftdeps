@@ -1,0 +1,180 @@
+### Swift dependencies file v0 ###
+provides-top-level:
+provides-nominal:
+provides-member:
+- ["5MatftAAC7mfarrayC", ""]
+- ["5MatftAAC7mfarrayC", "nums"]
+- ["5MatftAAC7mfarrayC", "eye"]
+- ["5MatftAAC7mfarrayC", "deepcopy"]
+- ["5MatftAAC7mfarrayC", "broadcast_to"]
+provides-dynamic-lookup:
+depends-top-level:
+- !private "*"
+- !private "+"
+- !private "..<"
+- "AssignmentPrecedence"
+- "Double"
+- "Int"
+- "Matft"
+- "MfArray"
+- "MfNumeric"
+- "String"
+- "StringLiteralType"
+- "UnicodeScalarType"
+- !private "UnsafeMutableBufferPointer"
+- !private "_shape2size"
+depends-member:
+- !private ["s18AdditiveArithmeticP", "pointee"]
+- !private ["SK", "allocate"]
+- !private ["SK", "baseAddress"]
+- !private ["SK", "initialize"]
+- !private ["Sz", "pointee"]
+- !private ["s7CVarArgP", "pointee"]
+- !private ["Sl", "allocate"]
+- !private ["Sl", "baseAddress"]
+- !private ["Sl", "initialize"]
+- !private ["SL", "pointee"]
+- !private ["10Foundation15ContiguousBytesP", "allocate"]
+- !private ["10Foundation15ContiguousBytesP", "baseAddress"]
+- !private ["10Foundation15ContiguousBytesP", "initialize"]
+- !private ["s28CustomDebugStringConvertibleP", "allocate"]
+- !private ["s28CustomDebugStringConvertibleP", "baseAddress"]
+- !private ["s28CustomDebugStringConvertibleP", "initialize"]
+- !private ["s28CustomDebugStringConvertibleP", "pointee"]
+- !private ["s17CustomReflectableP", "pointee"]
+- !private ["s23CustomStringConvertibleP", "info"]
+- !private ["s23CustomStringConvertibleP", "init"]
+- !private ["s23CustomStringConvertibleP", "pointee"]
+- !private ["Se", "pointee"]
+- !private ["SE", "pointee"]
+- !private ["SQ", "pointee"]
+- !private ["s27ExpressibleByIntegerLiteralP", "pointee"]
+- !private ["s17FixedWidthIntegerP", "pointee"]
+- !private ["SH", "pointee"]
+- !private ["Si", "deinit"]
+- !private ["Si", "pointee"]
+- !private ["s25LosslessStringConvertibleP", "pointee"]
+- ["5MatftAAC", "mfarray"]
+- !private ["5Matft7MfArrayC", "info"]
+- !private ["5Matft7MfArrayC", "init"]
+- !private ["5Matft7MfArrayC", "pointee"]
+- !private ["5Matft11MfArrayInfoC", "deepcopy"]
+- !private ["5Matft5MfIntP", "pointee"]
+- !private ["5Matft9MfNumericP", "pointee"]
+- !private ["5Matft6MfTypeP", "info"]
+- !private ["5Matft6MfTypeP", "init"]
+- !private ["5Matft6MfTypeP", "pointee"]
+- !private ["s10MirrorPathP", "pointee"]
+- !private ["SM", "allocate"]
+- !private ["SM", "baseAddress"]
+- !private ["SM", "initialize"]
+- !private ["Sj", "pointee"]
+- !private ["Sk", "allocate"]
+- !private ["Sk", "baseAddress"]
+- !private ["Sk", "initialize"]
+- !private ["s10SIMDScalarP", "pointee"]
+- !private ["ST", "allocate"]
+- !private ["ST", "baseAddress"]
+- !private ["ST", "initialize"]
+- !private ["SZ", "pointee"]
+- !private ["s13SignedNumericP", "pointee"]
+- !private ["Sx", "pointee"]
+- !private ["Sr", "allocate"]
+- !private ["Sr", "baseAddress"]
+- !private ["Sr", "initialize"]
+- !private ["Sp", "pointee"]
+- !private ["s30_CustomPlaygroundQuickLookableP", "pointee"]
+- !private ["s35_ExpressibleByBuiltinIntegerLiteralP", "pointee"]
+- !private ["s19_HasContiguousBytesP", "allocate"]
+- !private ["s19_HasContiguousBytesP", "baseAddress"]
+- !private ["s19_HasContiguousBytesP", "initialize"]
+- !private ["s35_HasCustomAnyHashableRepresentationP", "pointee"]
+- !private ["s21_ObjectiveCBridgeableP", "pointee"]
+- !private ["s8_PointerP", "pointee"]
+- ["5MatftAAC7mfarrayC", "Double"]
+- ["5MatftAAC7mfarrayC", "Int"]
+- ["5MatftAAC7mfarrayC", "MfArray"]
+- ["5MatftAAC7mfarrayC", "MfNumeric"]
+- ["5MatftAAC7mfarrayC", "String"]
+- !private ["5MatftAAC7mfarrayC", "UnsafeMutableBufferPointer"]
+- !private ["5MatftAAC7mfarrayC", "_shape2size"]
+- ["5MatftAAC7mfarrayC", "broadcast_to"]
+- ["5MatftAAC7mfarrayC", "deepcopy"]
+- ["5MatftAAC7mfarrayC", "eye"]
+- ["5MatftAAC7mfarrayC", "nums"]
+depends-nominal:
+- !private "s18AdditiveArithmeticP"
+- !private "SK"
+- !private "Sz"
+- !private "s7CVarArgP"
+- !private "Sl"
+- !private "SL"
+- !private "10Foundation15ContiguousBytesP"
+- !private "s28CustomDebugStringConvertibleP"
+- !private "s17CustomReflectableP"
+- !private "s23CustomStringConvertibleP"
+- !private "Se"
+- !private "SE"
+- !private "SQ"
+- !private "s27ExpressibleByIntegerLiteralP"
+- !private "s17FixedWidthIntegerP"
+- !private "SH"
+- !private "Si"
+- !private "s25LosslessStringConvertibleP"
+- "5MatftAAC"
+- !private "5Matft7MfArrayC"
+- !private "5Matft11MfArrayInfoC"
+- !private "5Matft5MfIntP"
+- !private "5Matft9MfNumericP"
+- !private "5Matft6MfTypeP"
+- !private "s10MirrorPathP"
+- !private "SM"
+- !private "Sj"
+- !private "Sk"
+- !private "s10SIMDScalarP"
+- !private "ST"
+- !private "SZ"
+- !private "s13SignedNumericP"
+- !private "Sx"
+- !private "Sr"
+- !private "Sp"
+- !private "s30_CustomPlaygroundQuickLookableP"
+- !private "s35_ExpressibleByBuiltinIntegerLiteralP"
+- !private "s19_HasContiguousBytesP"
+- !private "s35_HasCustomAnyHashableRepresentationP"
+- !private "s21_ObjectiveCBridgeableP"
+- !private "s8_PointerP"
+- "5MatftAAC7mfarrayC"
+depends-dynamic-lookup:
+depends-external:
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/ObjectiveC.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/CoreImage.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/QuartzCore.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/Accelerate.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/Dispatch.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/Metal.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/Darwin.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/Foundation.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/CoreFoundation.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/CoreGraphics.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/os.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/Swift.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/UIKit.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/SwiftOnoneSupport.swiftmodule"
+- "/Users/am19a0/Desktop/program/Matft/Matft/Matft/Matft.h"
+- "/Users/am19a0/Desktop/program/Matft/Matft/build/Matft.build/Debug-iphonesimulator/Matft.build/unextended-module.modulemap"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/usr/include/objc/ObjectiveC.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/OpenGLES.framework/Headers/OpenGLES.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/CoreImage.framework/Headers/CoreImage.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/QuartzCore.framework/Headers/QuartzCore.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/Accelerate.framework/Headers/Accelerate.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/Dispatch.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/Metal.framework/Headers/Metal.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/usr/include/Darwin.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/Foundation.framework/Headers/Foundation.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/CoreGraphics.framework/Headers/CoreGraphics.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/os.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIKit.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/CoreText.framework/Headers/CoreText.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/Security.framework/Headers/Security.apinotes"
+interface-hash: "f543f3e22a767da82009eb38e7d0bed0"

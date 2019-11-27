@@ -1,0 +1,10 @@
+framework module Matft {
+  umbrella header "Matft.h"
+
+  export *
+  module * { export * }
+}
+
+module Matft.__Swift {
+    exclude header "Matft-Swift.h"
+}

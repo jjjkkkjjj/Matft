@@ -1,0 +1,137 @@
+### Swift dependencies file v0 ###
+provides-top-level:
+- "MfArrayType"
+provides-nominal:
+- "5Matft11MfArrayTypeV"
+- "5Matft11MfArrayTypeV0bD0O"
+- "5Matft11MfArrayTypeV0B5OrderO"
+provides-member:
+- ["5Matft11MfArrayTypeV", ""]
+- ["5Matft11MfArrayTypeV0bD0O", ""]
+- ["5Matft11MfArrayTypeV0B5OrderO", ""]
+provides-dynamic-lookup:
+depends-top-level:
+- "=="
+- "AssignmentPrecedence"
+- "BooleanLiteralType"
+- "Int"
+- "MfArrayType"
+- "String"
+- !private "_check_contiguous"
+- !private "_findStringSwitchCase"
+- !private "~="
+depends-member:
+- !private ["s23CustomStringConvertibleP", "C_CONTIGUOUS"]
+- !private ["s23CustomStringConvertibleP", "F_CONTIGUOUS"]
+- !private ["s23CustomStringConvertibleP", "_check_contiguous"]
+- !private ["s23CustomStringConvertibleP", "_findStringSwitchCase"]
+- !private ["s23CustomStringConvertibleP", "order"]
+- !private ["s23CustomStringConvertibleP", "type"]
+- !private ["s23CustomStringConvertibleP", "updateContiguous"]
+- ["SQ", "=="]
+- ["SQ", "RawValue"]
+- ["SQ", ""]
+- ["SQ", "_Default_RawValue"]
+- !private ["SQ", "_findStringSwitchCase"]
+- ["SQ", "_rawHashValue"]
+- ["SQ", "hash"]
+- ["SQ", "hashValue"]
+- ["SQ", "init"]
+- ["SQ", "rawValue"]
+- ["SH", "=="]
+- ["SH", "RawValue"]
+- ["SH", ""]
+- ["SH", "_Default_RawValue"]
+- !private ["SH", "_findStringSwitchCase"]
+- ["SH", "_rawHashValue"]
+- ["SH", "hash"]
+- ["SH", "hashValue"]
+- ["SH", "init"]
+- ["SH", "rawValue"]
+- ["5Matft11MfArrayTypeV", "C_CONTIGUOUS"]
+- ["5Matft11MfArrayTypeV", "F_CONTIGUOUS"]
+- ["5Matft11MfArrayTypeV", "Int"]
+- ["5Matft11MfArrayTypeV", "MfOrder"]
+- ["5Matft11MfArrayTypeV", "MfType"]
+- ["5Matft11MfArrayTypeV", "String"]
+- !private ["5Matft11MfArrayTypeV", "_check_contiguous"]
+- !private ["5Matft11MfArrayTypeV", "_findStringSwitchCase"]
+- ["5Matft11MfArrayTypeV", "init"]
+- ["5Matft11MfArrayTypeV", "order"]
+- ["5Matft11MfArrayTypeV", "type"]
+- ["5Matft11MfArrayTypeV", "updateContiguous"]
+- ["5Matft11MfArrayTypeV0B5OrderO", "=="]
+- ["5Matft11MfArrayTypeV0B5OrderO", "C"]
+- ["5Matft11MfArrayTypeV0B5OrderO", "F"]
+- ["5Matft11MfArrayTypeV0B5OrderO", "RawValue"]
+- ["5Matft11MfArrayTypeV0B5OrderO", "_Default_RawValue"]
+- !private ["5Matft11MfArrayTypeV0B5OrderO", "_findStringSwitchCase"]
+- ["5Matft11MfArrayTypeV0B5OrderO", "_rawHashValue"]
+- ["5Matft11MfArrayTypeV0B5OrderO", "deinit"]
+- ["5Matft11MfArrayTypeV0B5OrderO", "hash"]
+- ["5Matft11MfArrayTypeV0B5OrderO", "hashValue"]
+- ["5Matft11MfArrayTypeV0B5OrderO", "init"]
+- ["5Matft11MfArrayTypeV0B5OrderO", "rawValue"]
+- ["5Matft11MfArrayTypeV0bD0O", "=="]
+- ["5Matft11MfArrayTypeV0bD0O", "RawValue"]
+- ["5Matft11MfArrayTypeV0bD0O", "_Default_RawValue"]
+- !private ["5Matft11MfArrayTypeV0bD0O", "_findStringSwitchCase"]
+- ["5Matft11MfArrayTypeV0bD0O", "_rawHashValue"]
+- ["5Matft11MfArrayTypeV0bD0O", "copy"]
+- ["5Matft11MfArrayTypeV0bD0O", "deinit"]
+- ["5Matft11MfArrayTypeV0bD0O", "hash"]
+- ["5Matft11MfArrayTypeV0bD0O", "hashValue"]
+- ["5Matft11MfArrayTypeV0bD0O", "init"]
+- ["5Matft11MfArrayTypeV0bD0O", "rawValue"]
+- ["5Matft11MfArrayTypeV0bD0O", "view"]
+- ["SY", "=="]
+- ["SY", "RawValue"]
+- ["SY", ""]
+- ["SY", "_Default_RawValue"]
+- !private ["SY", "_findStringSwitchCase"]
+- ["SY", "_rawHashValue"]
+- ["SY", "hash"]
+- ["SY", "hashValue"]
+- ["SY", "init"]
+- ["SY", "rawValue"]
+depends-nominal:
+- !private "s23CustomStringConvertibleP"
+- "SQ"
+- "SH"
+- "5Matft11MfArrayTypeV"
+- "5Matft11MfArrayTypeV0B5OrderO"
+- "5Matft11MfArrayTypeV0bD0O"
+- "SY"
+depends-dynamic-lookup:
+depends-external:
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/ObjectiveC.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/CoreImage.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/QuartzCore.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/Accelerate.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/Dispatch.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/Metal.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/Darwin.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/Foundation.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/CoreFoundation.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/CoreGraphics.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/os.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/Swift.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/UIKit.swiftmodule"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/SwiftOnoneSupport.swiftmodule"
+- "/Users/am19a0/Desktop/program/Matft/Matft/Matft/Matft.h"
+- "/Users/am19a0/Desktop/program/Matft/Matft/build/Matft.build/Debug-iphonesimulator/Matft.build/unextended-module.modulemap"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/usr/include/objc/ObjectiveC.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/OpenGLES.framework/Headers/OpenGLES.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/CoreImage.framework/Headers/CoreImage.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/QuartzCore.framework/Headers/QuartzCore.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/Accelerate.framework/Headers/Accelerate.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/Dispatch.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/Metal.framework/Headers/Metal.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/usr/include/Darwin.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/Foundation.framework/Headers/Foundation.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/CoreGraphics.framework/Headers/CoreGraphics.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator/x86_64/os.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIKit.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/CoreText.framework/Headers/CoreText.apinotes"
+- "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator12.4.sdk/System/Library/Frameworks/Security.framework/Headers/Security.apinotes"
+interface-hash: "0ec2becbeb1c9c77af1f946d22699214"
