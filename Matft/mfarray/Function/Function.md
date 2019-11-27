@@ -46,6 +46,8 @@ Then,
 
 (shape=[2,2,4], strides=[0,0,1])
 
+	[0,  1,  2,  3]
+
 | offsetA | strideA | offsetB | strideB |
 |:-------:|:-------:|:-------:|:-------:|
 |    0    |    8    |    0    |    0    |
