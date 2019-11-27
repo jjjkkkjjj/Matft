@@ -7,133 +7,287 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
-		D664259B2366DFBA0025F276 /* MatftBinary */ = {
+		D6803F91238E37C400F5A6BF /* MatftFatBinary */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = D664259C2366DFBA0025F276 /* Build configuration list for PBXAggregateTarget "MatftBinary" */;
+			buildConfigurationList = D6803F92238E37C400F5A6BF /* Build configuration list for PBXAggregateTarget "MatftFatBinary" */;
 			buildPhases = (
-				D664259F2366DFD00025F276 /* ShellScript */,
-				D66425A02366DFFA0025F276 /* ShellScript */,
+				D6803F95238E37D100F5A6BF /* ShellScript */,
 			);
 			dependencies = (
 			);
-			name = MatftBinary;
-			productName = MatftBinary;
+			name = MatftFatBinary;
+			productName = MatftFatBinary;
 		};
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		D664258E2366DF370025F276 /* MatftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D664258D2366DF370025F276 /* MatftTests.swift */; };
-		D66425902366DF370025F276 /* Matft.h in Headers */ = {isa = PBXBuildFile; fileRef = D66425822366DF370025F276 /* Matft.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D6B4667A2368131300B79573 /* Matft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D664257F2366DF370025F276 /* Matft.framework */; };
-		D6B4667B2368131800B79573 /* Matft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D664257F2366DF370025F276 /* Matft.framework */; };
-		D6D3F527238E23B5006BD990 /* Matft.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6D3F524238E23B4006BD990 /* Matft.swift */; };
-		D6D3F528238E23B5006BD990 /* Common in Resources */ = {isa = PBXBuildFile; fileRef = D6D3F525238E23B4006BD990 /* Common */; };
-		D6D3F529238E23B5006BD990 /* mfarray in Resources */ = {isa = PBXBuildFile; fileRef = D6D3F526238E23B5006BD990 /* mfarray */; };
+		D6803F42238E374400F5A6BF /* Matft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6803F38238E374400F5A6BF /* Matft.framework */; };
+		D6803F47238E374400F5A6BF /* MatftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F46238E374400F5A6BF /* MatftTests.swift */; };
+		D6803F49238E374400F5A6BF /* Matft.h in Headers */ = {isa = PBXBuildFile; fileRef = D6803F3B238E374400F5A6BF /* Matft.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D6803F77238E378300F5A6BF /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F53238E378300F5A6BF /* Common.swift */; };
+		D6803F78238E378300F5A6BF /* Print.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F55238E378300F5A6BF /* Print.swift */; };
+		D6803F79238E378300F5A6BF /* vDSP.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F56238E378300F5A6BF /* vDSP.swift */; };
+		D6803F7A238E378300F5A6BF /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F57238E378300F5A6BF /* Utils.swift */; };
+		D6803F7B238E378300F5A6BF /* MfType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F59238E378300F5A6BF /* MfType.swift */; };
+		D6803F7C238E378300F5A6BF /* MfOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F5A238E378300F5A6BF /* MfOperation.swift */; };
+		D6803F7D238E378300F5A6BF /* MfNumeric.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F5B238E378300F5A6BF /* MfNumeric.swift */; };
+		D6803F7E238E378300F5A6BF /* MfError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F5D238E378300F5A6BF /* MfError.swift */; };
+		D6803F7F238E378300F5A6BF /* Conversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F60238E378300F5A6BF /* Conversion.swift */; };
+		D6803F80238E378300F5A6BF /* Calculation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F61238E378300F5A6BF /* Calculation.swift */; };
+		D6803F81238E378300F5A6BF /* LinAlg.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F62238E378300F5A6BF /* LinAlg.swift */; };
+		D6803F82238E378300F5A6BF /* Creation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F63238E378300F5A6BF /* Creation.swift */; };
+		D6803F83238E378300F5A6BF /* MfArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F66238E378300F5A6BF /* MfArray.swift */; };
+		D6803F84238E378300F5A6BF /* Subscript.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F67238E378300F5A6BF /* Subscript.swift */; };
+		D6803F85238E378300F5A6BF /* Iteration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F68238E378300F5A6BF /* Iteration.swift */; };
+		D6803F86238E378300F5A6BF /* InfoConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F6A238E378300F5A6BF /* InfoConversion.swift */; };
+		D6803F87238E378300F5A6BF /* Flags.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F6B238E378300F5A6BF /* Flags.swift */; };
+		D6803F88238E378300F5A6BF /* InfoAstype.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F6C238E378300F5A6BF /* InfoAstype.swift */; };
+		D6803F89238E378300F5A6BF /* InfoCreation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F6D238E378300F5A6BF /* InfoCreation.swift */; };
+		D6803F8A238E378300F5A6BF /* MfArrayInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F6E238E378300F5A6BF /* MfArrayInfo.swift */; };
+		D6803F8B238E378300F5A6BF /* CreationMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F70238E378300F5A6BF /* CreationMethod.swift */; };
+		D6803F8C238E378300F5A6BF /* ConversionMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F71238E378300F5A6BF /* ConversionMethod.swift */; };
+		D6803F8D238E378300F5A6BF /* Postfix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F73238E378300F5A6BF /* Postfix.swift */; };
+		D6803F8E238E378300F5A6BF /* Infix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F74238E378300F5A6BF /* Infix.swift */; };
+		D6803F8F238E378300F5A6BF /* Prefix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F75238E378300F5A6BF /* Prefix.swift */; };
+		D6803F90238E378300F5A6BF /* Matft.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6803F76238E378300F5A6BF /* Matft.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		D664258A2366DF370025F276 /* PBXContainerItemProxy */ = {
+		D6803F43238E374400F5A6BF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = D66425762366DF370025F276 /* Project object */;
+			containerPortal = D6803F2F238E374400F5A6BF /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = D664257E2366DF370025F276;
+			remoteGlobalIDString = D6803F37238E374400F5A6BF;
 			remoteInfo = Matft;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		D664257F2366DF370025F276 /* Matft.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Matft.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D66425822366DF370025F276 /* Matft.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Matft.h; sourceTree = "<group>"; };
-		D66425832366DF370025F276 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D66425882366DF370025F276 /* MatftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MatftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		D664258D2366DF370025F276 /* MatftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatftTests.swift; sourceTree = "<group>"; };
-		D664258F2366DF370025F276 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		D6D3F524238E23B4006BD990 /* Matft.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Matft.swift; sourceTree = "<group>"; };
-		D6D3F525238E23B4006BD990 /* Common */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Common; sourceTree = "<group>"; };
-		D6D3F526238E23B5006BD990 /* mfarray */ = {isa = PBXFileReference; lastKnownFileType = folder; path = mfarray; sourceTree = "<group>"; };
+		D6803F38238E374400F5A6BF /* Matft.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Matft.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6803F3B238E374400F5A6BF /* Matft.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Matft.h; sourceTree = "<group>"; };
+		D6803F3C238E374400F5A6BF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D6803F41238E374400F5A6BF /* MatftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MatftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6803F46238E374400F5A6BF /* MatftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatftTests.swift; sourceTree = "<group>"; };
+		D6803F48238E374400F5A6BF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D6803F53238E378300F5A6BF /* Common.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Common.swift; sourceTree = "<group>"; };
+		D6803F55238E378300F5A6BF /* Print.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Print.swift; sourceTree = "<group>"; };
+		D6803F56238E378300F5A6BF /* vDSP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = vDSP.swift; sourceTree = "<group>"; };
+		D6803F57238E378300F5A6BF /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		D6803F59238E378300F5A6BF /* MfType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfType.swift; sourceTree = "<group>"; };
+		D6803F5A238E378300F5A6BF /* MfOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfOperation.swift; sourceTree = "<group>"; };
+		D6803F5B238E378300F5A6BF /* MfNumeric.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfNumeric.swift; sourceTree = "<group>"; };
+		D6803F5D238E378300F5A6BF /* MfError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfError.swift; sourceTree = "<group>"; };
+		D6803F60238E378300F5A6BF /* Conversion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Conversion.swift; sourceTree = "<group>"; };
+		D6803F61238E378300F5A6BF /* Calculation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Calculation.swift; sourceTree = "<group>"; };
+		D6803F62238E378300F5A6BF /* LinAlg.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LinAlg.swift; sourceTree = "<group>"; };
+		D6803F63238E378300F5A6BF /* Creation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Creation.swift; sourceTree = "<group>"; };
+		D6803F66238E378300F5A6BF /* MfArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfArray.swift; sourceTree = "<group>"; };
+		D6803F67238E378300F5A6BF /* Subscript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Subscript.swift; sourceTree = "<group>"; };
+		D6803F68238E378300F5A6BF /* Iteration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Iteration.swift; sourceTree = "<group>"; };
+		D6803F6A238E378300F5A6BF /* InfoConversion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoConversion.swift; sourceTree = "<group>"; };
+		D6803F6B238E378300F5A6BF /* Flags.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Flags.swift; sourceTree = "<group>"; };
+		D6803F6C238E378300F5A6BF /* InfoAstype.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoAstype.swift; sourceTree = "<group>"; };
+		D6803F6D238E378300F5A6BF /* InfoCreation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoCreation.swift; sourceTree = "<group>"; };
+		D6803F6E238E378300F5A6BF /* MfArrayInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfArrayInfo.swift; sourceTree = "<group>"; };
+		D6803F70238E378300F5A6BF /* CreationMethod.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreationMethod.swift; sourceTree = "<group>"; };
+		D6803F71238E378300F5A6BF /* ConversionMethod.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConversionMethod.swift; sourceTree = "<group>"; };
+		D6803F73238E378300F5A6BF /* Postfix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Postfix.swift; sourceTree = "<group>"; };
+		D6803F74238E378300F5A6BF /* Infix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Infix.swift; sourceTree = "<group>"; };
+		D6803F75238E378300F5A6BF /* Prefix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Prefix.swift; sourceTree = "<group>"; };
+		D6803F76238E378300F5A6BF /* Matft.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Matft.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		D664257C2366DF370025F276 /* Frameworks */ = {
+		D6803F35238E374400F5A6BF /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D6B4667B2368131800B79573 /* Matft.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D66425852366DF370025F276 /* Frameworks */ = {
+		D6803F3E238E374400F5A6BF /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D6B4667A2368131300B79573 /* Matft.framework in Frameworks */,
+				D6803F42238E374400F5A6BF /* Matft.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		D66425752366DF370025F276 = {
+		D6803F2E238E374400F5A6BF = {
 			isa = PBXGroup;
 			children = (
-				D66425812366DF370025F276 /* Matft */,
-				D664258C2366DF370025F276 /* MatftTests */,
-				D66425802366DF370025F276 /* Products */,
+				D6803F3A238E374400F5A6BF /* Matft */,
+				D6803F45238E374400F5A6BF /* MatftTests */,
+				D6803F39238E374400F5A6BF /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		D66425802366DF370025F276 /* Products */ = {
+		D6803F39238E374400F5A6BF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D664257F2366DF370025F276 /* Matft.framework */,
-				D66425882366DF370025F276 /* MatftTests.xctest */,
+				D6803F38238E374400F5A6BF /* Matft.framework */,
+				D6803F41238E374400F5A6BF /* MatftTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		D66425812366DF370025F276 /* Matft */ = {
+		D6803F3A238E374400F5A6BF /* Matft */ = {
 			isa = PBXGroup;
 			children = (
-				D66425822366DF370025F276 /* Matft.h */,
-				D66425832366DF370025F276 /* Info.plist */,
-				D6D3F524238E23B4006BD990 /* Matft.swift */,
-				D6D3F526238E23B5006BD990 /* mfarray */,
-				D6D3F525238E23B4006BD990 /* Common */,
+				D6803F3B238E374400F5A6BF /* Matft.h */,
+				D6803F3C238E374400F5A6BF /* Info.plist */,
+				D6803F76238E378300F5A6BF /* Matft.swift */,
+				D6803F52238E378300F5A6BF /* Common */,
+				D6803F5E238E378300F5A6BF /* mfarray */,
 			);
 			path = Matft;
 			sourceTree = "<group>";
 		};
-		D664258C2366DF370025F276 /* MatftTests */ = {
+		D6803F45238E374400F5A6BF /* MatftTests */ = {
 			isa = PBXGroup;
 			children = (
-				D664258D2366DF370025F276 /* MatftTests.swift */,
-				D664258F2366DF370025F276 /* Info.plist */,
+				D6803F46238E374400F5A6BF /* MatftTests.swift */,
+				D6803F48238E374400F5A6BF /* Info.plist */,
 			);
 			path = MatftTests;
+			sourceTree = "<group>";
+		};
+		D6803F52238E378300F5A6BF /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				D6803F53238E378300F5A6BF /* Common.swift */,
+				D6803F54238E378300F5A6BF /* Utils */,
+				D6803F58238E378300F5A6BF /* Protocol */,
+				D6803F5C238E378300F5A6BF /* Error */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		D6803F54238E378300F5A6BF /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				D6803F55238E378300F5A6BF /* Print.swift */,
+				D6803F56238E378300F5A6BF /* vDSP.swift */,
+				D6803F57238E378300F5A6BF /* Utils.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		D6803F58238E378300F5A6BF /* Protocol */ = {
+			isa = PBXGroup;
+			children = (
+				D6803F59238E378300F5A6BF /* MfType.swift */,
+				D6803F5A238E378300F5A6BF /* MfOperation.swift */,
+				D6803F5B238E378300F5A6BF /* MfNumeric.swift */,
+			);
+			path = Protocol;
+			sourceTree = "<group>";
+		};
+		D6803F5C238E378300F5A6BF /* Error */ = {
+			isa = PBXGroup;
+			children = (
+				D6803F5D238E378300F5A6BF /* MfError.swift */,
+			);
+			path = Error;
+			sourceTree = "<group>";
+		};
+		D6803F5E238E378300F5A6BF /* mfarray */ = {
+			isa = PBXGroup;
+			children = (
+				D6803F5F238E378300F5A6BF /* Function */,
+				D6803F64238E378300F5A6BF /* MfArray */,
+				D6803F72238E378300F5A6BF /* Operator */,
+			);
+			path = mfarray;
+			sourceTree = "<group>";
+		};
+		D6803F5F238E378300F5A6BF /* Function */ = {
+			isa = PBXGroup;
+			children = (
+				D6803F60238E378300F5A6BF /* Conversion.swift */,
+				D6803F61238E378300F5A6BF /* Calculation.swift */,
+				D6803F62238E378300F5A6BF /* LinAlg.swift */,
+				D6803F63238E378300F5A6BF /* Creation.swift */,
+			);
+			path = Function;
+			sourceTree = "<group>";
+		};
+		D6803F64238E378300F5A6BF /* MfArray */ = {
+			isa = PBXGroup;
+			children = (
+				D6803F65238E378300F5A6BF /* Core */,
+				D6803F69238E378300F5A6BF /* MfArrayInfo */,
+				D6803F6F238E378300F5A6BF /* Method */,
+			);
+			path = MfArray;
+			sourceTree = "<group>";
+		};
+		D6803F65238E378300F5A6BF /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				D6803F66238E378300F5A6BF /* MfArray.swift */,
+				D6803F67238E378300F5A6BF /* Subscript.swift */,
+				D6803F68238E378300F5A6BF /* Iteration.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		D6803F69238E378300F5A6BF /* MfArrayInfo */ = {
+			isa = PBXGroup;
+			children = (
+				D6803F6A238E378300F5A6BF /* InfoConversion.swift */,
+				D6803F6B238E378300F5A6BF /* Flags.swift */,
+				D6803F6C238E378300F5A6BF /* InfoAstype.swift */,
+				D6803F6D238E378300F5A6BF /* InfoCreation.swift */,
+				D6803F6E238E378300F5A6BF /* MfArrayInfo.swift */,
+			);
+			path = MfArrayInfo;
+			sourceTree = "<group>";
+		};
+		D6803F6F238E378300F5A6BF /* Method */ = {
+			isa = PBXGroup;
+			children = (
+				D6803F70238E378300F5A6BF /* CreationMethod.swift */,
+				D6803F71238E378300F5A6BF /* ConversionMethod.swift */,
+			);
+			path = Method;
+			sourceTree = "<group>";
+		};
+		D6803F72238E378300F5A6BF /* Operator */ = {
+			isa = PBXGroup;
+			children = (
+				D6803F73238E378300F5A6BF /* Postfix.swift */,
+				D6803F74238E378300F5A6BF /* Infix.swift */,
+				D6803F75238E378300F5A6BF /* Prefix.swift */,
+			);
+			path = Operator;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		D664257A2366DF370025F276 /* Headers */ = {
+		D6803F33238E374400F5A6BF /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D66425902366DF370025F276 /* Matft.h in Headers */,
+				D6803F49238E374400F5A6BF /* Matft.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		D664257E2366DF370025F276 /* Matft */ = {
+		D6803F37238E374400F5A6BF /* Matft */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D66425932366DF370025F276 /* Build configuration list for PBXNativeTarget "Matft" */;
+			buildConfigurationList = D6803F4C238E374400F5A6BF /* Build configuration list for PBXNativeTarget "Matft" */;
 			buildPhases = (
-				D664257A2366DF370025F276 /* Headers */,
-				D664257B2366DF370025F276 /* Sources */,
-				D664257C2366DF370025F276 /* Frameworks */,
-				D664257D2366DF370025F276 /* Resources */,
+				D6803F33238E374400F5A6BF /* Headers */,
+				D6803F34238E374400F5A6BF /* Sources */,
+				D6803F35238E374400F5A6BF /* Frameworks */,
+				D6803F36238E374400F5A6BF /* Resources */,
 			);
 			buildRules = (
 			);
@@ -141,79 +295,77 @@
 			);
 			name = Matft;
 			productName = Matft;
-			productReference = D664257F2366DF370025F276 /* Matft.framework */;
+			productReference = D6803F38238E374400F5A6BF /* Matft.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		D66425872366DF370025F276 /* MatftTests */ = {
+		D6803F40238E374400F5A6BF /* MatftTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D66425962366DF370025F276 /* Build configuration list for PBXNativeTarget "MatftTests" */;
+			buildConfigurationList = D6803F4F238E374400F5A6BF /* Build configuration list for PBXNativeTarget "MatftTests" */;
 			buildPhases = (
-				D66425842366DF370025F276 /* Sources */,
-				D66425852366DF370025F276 /* Frameworks */,
-				D66425862366DF370025F276 /* Resources */,
+				D6803F3D238E374400F5A6BF /* Sources */,
+				D6803F3E238E374400F5A6BF /* Frameworks */,
+				D6803F3F238E374400F5A6BF /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				D664258B2366DF370025F276 /* PBXTargetDependency */,
+				D6803F44238E374400F5A6BF /* PBXTargetDependency */,
 			);
 			name = MatftTests;
 			productName = MatftTests;
-			productReference = D66425882366DF370025F276 /* MatftTests.xctest */;
+			productReference = D6803F41238E374400F5A6BF /* MatftTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		D66425762366DF370025F276 /* Project object */ = {
+		D6803F2F238E374400F5A6BF /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1030;
 				LastUpgradeCheck = 1030;
 				ORGANIZATIONNAME = jkado;
 				TargetAttributes = {
-					D664257E2366DF370025F276 = {
+					D6803F37238E374400F5A6BF = {
 						CreatedOnToolsVersion = 10.3;
 						LastSwiftMigration = 1030;
 					};
-					D66425872366DF370025F276 = {
+					D6803F40238E374400F5A6BF = {
 						CreatedOnToolsVersion = 10.3;
 					};
-					D664259B2366DFBA0025F276 = {
+					D6803F91238E37C400F5A6BF = {
 						CreatedOnToolsVersion = 10.3;
 					};
 				};
 			};
-			buildConfigurationList = D66425792366DF370025F276 /* Build configuration list for PBXProject "Matft" */;
+			buildConfigurationList = D6803F32238E374400F5A6BF /* Build configuration list for PBXProject "Matft" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 			);
-			mainGroup = D66425752366DF370025F276;
-			productRefGroup = D66425802366DF370025F276 /* Products */;
+			mainGroup = D6803F2E238E374400F5A6BF;
+			productRefGroup = D6803F39238E374400F5A6BF /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D664257E2366DF370025F276 /* Matft */,
-				D66425872366DF370025F276 /* MatftTests */,
-				D664259B2366DFBA0025F276 /* MatftBinary */,
+				D6803F37238E374400F5A6BF /* Matft */,
+				D6803F40238E374400F5A6BF /* MatftTests */,
+				D6803F91238E37C400F5A6BF /* MatftFatBinary */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		D664257D2366DF370025F276 /* Resources */ = {
+		D6803F36238E374400F5A6BF /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D6D3F528238E23B5006BD990 /* Common in Resources */,
-				D6D3F529238E23B5006BD990 /* mfarray in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D66425862366DF370025F276 /* Resources */ = {
+		D6803F3F238E374400F5A6BF /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -223,7 +375,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		D664259F2366DFD00025F276 /* ShellScript */ = {
+		D6803F95238E37D100F5A6BF /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -240,57 +392,64 @@
 			shellPath = /bin/sh;
 			shellScript = "#!/bin/sh\n\nUNIVERSAL_OUTPUTFOLDER=${BUILD_DIR}/${CONFIGURATION}-universal\n\n# make sure the output directory exists\nmkdir -p \"${UNIVERSAL_OUTPUTFOLDER}\"\n\n# Step 1. Build Device and Simulator versions\nxcodebuild -target \"${PROJECT_NAME}\" ONLY_ACTIVE_ARCH=NO -configuration ${CONFIGURATION} -sdk iphoneos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"${PROJECT_NAME}\" -configuration ${CONFIGURATION} -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\n\n# Step 2. Copy the framework structure (from iphoneos build) to the universal folder\ncp -R \"${BUILD_DIR}/${CONFIGURATION}-iphoneos/${PROJECT_NAME}.framework\" \"${UNIVERSAL_OUTPUTFOLDER}/\"\n\n# Step 3. Copy Swift modules from iphonesimulator build (if it exists) to the copied framework directory\nSIMULATOR_SWIFT_MODULES_DIR=\"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/${PROJECT_NAME}.framework/Modules/${PROJECT_NAME}.swiftmodule/.\"\nif [ -d \"${SIMULATOR_SWIFT_MODULES_DIR}\" ]; then\ncp -R \"${SIMULATOR_SWIFT_MODULES_DIR}\" \"${UNIVERSAL_OUTPUTFOLDER}/${PROJECT_NAME}.framework/Modules/${PROJECT_NAME}.swiftmodule\"\nfi\n\n# Step 4. Create universal binary file using lipo and place the combined executable in the copied framework directory\nlipo -create -output \"${UNIVERSAL_OUTPUTFOLDER}/${PROJECT_NAME}.framework/${PROJECT_NAME}\" \"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/${PROJECT_NAME}.framework/${PROJECT_NAME}\" \"${BUILD_DIR}/${CONFIGURATION}-iphoneos/${PROJECT_NAME}.framework/${PROJECT_NAME}\"\n\n# Step 5. Convenience step to copy the framework to the project's directory\ncp -R \"${UNIVERSAL_OUTPUTFOLDER}/${PROJECT_NAME}.framework\" \"${PROJECT_DIR}\"\n\n# Step 6. Convenience step to open the project's directory in Finder\nopen \"${PROJECT_DIR}\"\n";
 		};
-		D66425A02366DFFA0025F276 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "#!/bin/sh\nlipo -info \"${PROJECT_DIR}/${PROJECT_NAME}.framework/${PROJECT_NAME}\"\n";
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		D664257B2366DF370025F276 /* Sources */ = {
+		D6803F34238E374400F5A6BF /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D6D3F527238E23B5006BD990 /* Matft.swift in Sources */,
+				D6803F87238E378300F5A6BF /* Flags.swift in Sources */,
+				D6803F7C238E378300F5A6BF /* MfOperation.swift in Sources */,
+				D6803F90238E378300F5A6BF /* Matft.swift in Sources */,
+				D6803F8A238E378300F5A6BF /* MfArrayInfo.swift in Sources */,
+				D6803F86238E378300F5A6BF /* InfoConversion.swift in Sources */,
+				D6803F8D238E378300F5A6BF /* Postfix.swift in Sources */,
+				D6803F77238E378300F5A6BF /* Common.swift in Sources */,
+				D6803F7D238E378300F5A6BF /* MfNumeric.swift in Sources */,
+				D6803F81238E378300F5A6BF /* LinAlg.swift in Sources */,
+				D6803F7F238E378300F5A6BF /* Conversion.swift in Sources */,
+				D6803F8F238E378300F5A6BF /* Prefix.swift in Sources */,
+				D6803F78238E378300F5A6BF /* Print.swift in Sources */,
+				D6803F85238E378300F5A6BF /* Iteration.swift in Sources */,
+				D6803F8C238E378300F5A6BF /* ConversionMethod.swift in Sources */,
+				D6803F82238E378300F5A6BF /* Creation.swift in Sources */,
+				D6803F7B238E378300F5A6BF /* MfType.swift in Sources */,
+				D6803F8B238E378300F5A6BF /* CreationMethod.swift in Sources */,
+				D6803F7E238E378300F5A6BF /* MfError.swift in Sources */,
+				D6803F79238E378300F5A6BF /* vDSP.swift in Sources */,
+				D6803F89238E378300F5A6BF /* InfoCreation.swift in Sources */,
+				D6803F83238E378300F5A6BF /* MfArray.swift in Sources */,
+				D6803F7A238E378300F5A6BF /* Utils.swift in Sources */,
+				D6803F8E238E378300F5A6BF /* Infix.swift in Sources */,
+				D6803F88238E378300F5A6BF /* InfoAstype.swift in Sources */,
+				D6803F80238E378300F5A6BF /* Calculation.swift in Sources */,
+				D6803F84238E378300F5A6BF /* Subscript.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		D66425842366DF370025F276 /* Sources */ = {
+		D6803F3D238E374400F5A6BF /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D664258E2366DF370025F276 /* MatftTests.swift in Sources */,
+				D6803F47238E374400F5A6BF /* MatftTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		D664258B2366DF370025F276 /* PBXTargetDependency */ = {
+		D6803F44238E374400F5A6BF /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = D664257E2366DF370025F276 /* Matft */;
-			targetProxy = D664258A2366DF370025F276 /* PBXContainerItemProxy */;
+			target = D6803F37238E374400F5A6BF /* Matft */;
+			targetProxy = D6803F43238E374400F5A6BF /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		D66425912366DF370025F276 /* Debug */ = {
+		D6803F4A238E374400F5A6BF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -343,20 +502,18 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				VALID_ARCHS = "arm64 arm64e armv7 armv7s arm64 i386 x86_64";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
 			name = Debug;
 		};
-		D66425922366DF370025F276 /* Release */ = {
+		D6803F4B238E374400F5A6BF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -403,18 +560,16 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALIDATE_PRODUCT = YES;
-				VALID_ARCHS = "arm64 arm64e armv7 armv7s arm64 i386 x86_64";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
 			name = Release;
 		};
-		D66425942366DF370025F276 /* Debug */ = {
+		D6803F4D238E374400F5A6BF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
@@ -432,7 +587,6 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jkado.Matft;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -443,7 +597,7 @@
 			};
 			name = Debug;
 		};
-		D66425952366DF370025F276 /* Release */ = {
+		D6803F4E238E374400F5A6BF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
@@ -461,7 +615,6 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jkado.Matft;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -471,7 +624,7 @@
 			};
 			name = Release;
 		};
-		D66425972366DF370025F276 /* Debug */ = {
+		D6803F50238E374400F5A6BF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
@@ -490,7 +643,7 @@
 			};
 			name = Debug;
 		};
-		D66425982366DF370025F276 /* Release */ = {
+		D6803F51238E374400F5A6BF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
@@ -509,7 +662,7 @@
 			};
 			name = Release;
 		};
-		D664259D2366DFBA0025F276 /* Debug */ = {
+		D6803F93238E37C400F5A6BF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -518,7 +671,7 @@
 			};
 			name = Debug;
 		};
-		D664259E2366DFBA0025F276 /* Release */ = {
+		D6803F94238E37C400F5A6BF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -530,43 +683,43 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D66425792366DF370025F276 /* Build configuration list for PBXProject "Matft" */ = {
+		D6803F32238E374400F5A6BF /* Build configuration list for PBXProject "Matft" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D66425912366DF370025F276 /* Debug */,
-				D66425922366DF370025F276 /* Release */,
+				D6803F4A238E374400F5A6BF /* Debug */,
+				D6803F4B238E374400F5A6BF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D66425932366DF370025F276 /* Build configuration list for PBXNativeTarget "Matft" */ = {
+		D6803F4C238E374400F5A6BF /* Build configuration list for PBXNativeTarget "Matft" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D66425942366DF370025F276 /* Debug */,
-				D66425952366DF370025F276 /* Release */,
+				D6803F4D238E374400F5A6BF /* Debug */,
+				D6803F4E238E374400F5A6BF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D66425962366DF370025F276 /* Build configuration list for PBXNativeTarget "MatftTests" */ = {
+		D6803F4F238E374400F5A6BF /* Build configuration list for PBXNativeTarget "MatftTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D66425972366DF370025F276 /* Debug */,
-				D66425982366DF370025F276 /* Release */,
+				D6803F50238E374400F5A6BF /* Debug */,
+				D6803F51238E374400F5A6BF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D664259C2366DFBA0025F276 /* Build configuration list for PBXAggregateTarget "MatftBinary" */ = {
+		D6803F92238E37C400F5A6BF /* Build configuration list for PBXAggregateTarget "MatftFatBinary" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D664259D2366DFBA0025F276 /* Debug */,
-				D664259E2366DFBA0025F276 /* Release */,
+				D6803F93238E37C400F5A6BF /* Debug */,
+				D6803F94238E37C400F5A6BF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = D66425762366DF370025F276 /* Project object */;
+	rootObject = D6803F2F238E374400F5A6BF /* Project object */;
 }
