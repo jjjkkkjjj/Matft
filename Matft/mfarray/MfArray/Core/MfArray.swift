@@ -43,7 +43,11 @@ public class MfArray<T: MfNumeric>{
     }
     
     //initialization
+<<<<<<< HEAD
     public init(mfarray: [Any], type: T.Type, order: String = "C") {
+=======
+    init(mfarray: [Any], type: T.Type, order: String = "C") {
+>>>>>>> origin/master
         switch order {
         case "C":
             self.info = anyArray2data_C(array: mfarray, type: type)
@@ -54,7 +58,11 @@ public class MfArray<T: MfNumeric>{
             fatalError("Undefined order name (\(order)) was found.")
         }
     }
+<<<<<<< HEAD
     public init(data: UnsafeMutableBufferPointer<Double>, type: T.Type, shape: [Int], order: String = "C") {
+=======
+    init(data: UnsafeMutableBufferPointer<Double>, type: T.Type, shape: [Int], order: String = "C") {
+>>>>>>> origin/master
         switch order {
         case "C":
             self.info = MfArrayInfo(dataPointer: data, type: type, shape: shape, order: MfArrayType.MfOrder.C)
@@ -65,7 +73,11 @@ public class MfArray<T: MfNumeric>{
             fatalError("Undefined order name (\(order)) was found.")
         }
     }
+<<<<<<< HEAD
     public init(info: MfArrayInfo<T>) {
+=======
+    init(info: MfArrayInfo<T>) {
+>>>>>>> origin/master
         self.info = info
     }
     
