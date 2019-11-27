@@ -16,11 +16,9 @@ extension MfArray{
      subscript(index: Int) -> T{
      
      }*/
-<<<<<<< HEAD
+
     public subscript(indices: Int...) -> T{
-=======
-    subscript(indices: Int...) -> T{
->>>>>>> origin/master
+
         get {
             return self[indices]
         }
@@ -28,11 +26,9 @@ extension MfArray{
             self[indices] = newValue
         }
     }
-<<<<<<< HEAD
+
     public subscript(indices: [Int]) -> T{
-=======
-    subscript(indices: [Int]) -> T{
->>>>>>> origin/master
+
         get{
             precondition(indices.count == self.ndim, "cannot return value because given indices were invalid")
             var flattenIndex = 0

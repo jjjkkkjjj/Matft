@@ -16,9 +16,3 @@ public class Matft{
     }
 }
 
-<<<<<<< HEAD
-=======
-public class temp{
-    
-}
->>>>>>> origin/master
