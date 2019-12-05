@@ -2,9 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:MatftSample/MatftSample.xcodeproj">
+      location = "group:Matft/Matft.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:Matft.xcodeproj">
+      location = "group:MatftSample/MatftSample.xcodeproj">
    </FileRef>
 </Workspace>

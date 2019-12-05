@@ -1,0 +1,751 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		D67216BC23935B1300040BD0 /* MatftFatBinary */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = D67216BD23935B1300040BD0 /* Build configuration list for PBXAggregateTarget "MatftFatBinary" */;
+			buildPhases = (
+				D67216C023935B2000040BD0 /* ShellScript */,
+				D67216C123935B7900040BD0 /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = MatftFatBinary;
+			productName = MatftFatBinary;
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+		D672166B23935A7B00040BD0 /* Matft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D672166123935A7B00040BD0 /* Matft.framework */; };
+		D672167023935A7B00040BD0 /* MatftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672166F23935A7B00040BD0 /* MatftTests.swift */; };
+		D672167223935A7B00040BD0 /* Matft.h in Headers */ = {isa = PBXBuildFile; fileRef = D672166423935A7B00040BD0 /* Matft.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D67216A123935AC900040BD0 /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672167C23935AC800040BD0 /* Common.swift */; };
+		D67216A223935AC900040BD0 /* Print.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672167E23935AC800040BD0 /* Print.swift */; };
+		D67216A323935AC900040BD0 /* vDSP.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672167F23935AC800040BD0 /* vDSP.swift */; };
+		D67216A423935AC900040BD0 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672168023935AC800040BD0 /* Utils.swift */; };
+		D67216A523935AC900040BD0 /* MfType.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672168223935AC800040BD0 /* MfType.swift */; };
+		D67216A623935AC900040BD0 /* MfOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672168323935AC800040BD0 /* MfOperation.swift */; };
+		D67216A723935AC900040BD0 /* MfNumeric.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672168423935AC800040BD0 /* MfNumeric.swift */; };
+		D67216A823935AC900040BD0 /* MfError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672168623935AC800040BD0 /* MfError.swift */; };
+		D67216A923935AC900040BD0 /* Matft.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672168723935AC900040BD0 /* Matft.swift */; };
+		D67216AA23935AC900040BD0 /* Conversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672168A23935AC900040BD0 /* Conversion.swift */; };
+		D67216AB23935AC900040BD0 /* Function.md in Resources */ = {isa = PBXBuildFile; fileRef = D672168B23935AC900040BD0 /* Function.md */; };
+		D67216AC23935AC900040BD0 /* Calculation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672168C23935AC900040BD0 /* Calculation.swift */; };
+		D67216AD23935AC900040BD0 /* LinAlg.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672168D23935AC900040BD0 /* LinAlg.swift */; };
+		D67216AE23935AC900040BD0 /* Creation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672168E23935AC900040BD0 /* Creation.swift */; };
+		D67216AF23935AC900040BD0 /* MfArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672169123935AC900040BD0 /* MfArray.swift */; };
+		D67216B023935AC900040BD0 /* Subscript.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672169223935AC900040BD0 /* Subscript.swift */; };
+		D67216B123935AC900040BD0 /* Iteration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672169323935AC900040BD0 /* Iteration.swift */; };
+		D67216B223935AC900040BD0 /* InfoConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672169523935AC900040BD0 /* InfoConversion.swift */; };
+		D67216B323935AC900040BD0 /* Flags.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672169623935AC900040BD0 /* Flags.swift */; };
+		D67216B423935AC900040BD0 /* InfoAstype.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672169723935AC900040BD0 /* InfoAstype.swift */; };
+		D67216B523935AC900040BD0 /* InfoCreation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672169823935AC900040BD0 /* InfoCreation.swift */; };
+		D67216B623935AC900040BD0 /* MfArrayInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672169923935AC900040BD0 /* MfArrayInfo.swift */; };
+		D67216B723935AC900040BD0 /* CreationMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672169B23935AC900040BD0 /* CreationMethod.swift */; };
+		D67216B823935AC900040BD0 /* ConversionMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672169C23935AC900040BD0 /* ConversionMethod.swift */; };
+		D67216B923935AC900040BD0 /* Postfix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672169E23935AC900040BD0 /* Postfix.swift */; };
+		D67216BA23935AC900040BD0 /* Infix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672169F23935AC900040BD0 /* Infix.swift */; };
+		D67216BB23935AC900040BD0 /* Prefix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D67216A023935AC900040BD0 /* Prefix.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D672166C23935A7B00040BD0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D672165823935A7B00040BD0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D672166023935A7B00040BD0;
+			remoteInfo = Matft;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		D672166123935A7B00040BD0 /* Matft.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Matft.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D672166423935A7B00040BD0 /* Matft.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Matft.h; sourceTree = "<group>"; };
+		D672166523935A7B00040BD0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D672166A23935A7B00040BD0 /* MatftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MatftTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D672166F23935A7B00040BD0 /* MatftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatftTests.swift; sourceTree = "<group>"; };
+		D672167123935A7B00040BD0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D672167C23935AC800040BD0 /* Common.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Common.swift; sourceTree = "<group>"; };
+		D672167E23935AC800040BD0 /* Print.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Print.swift; sourceTree = "<group>"; };
+		D672167F23935AC800040BD0 /* vDSP.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = vDSP.swift; sourceTree = "<group>"; };
+		D672168023935AC800040BD0 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		D672168223935AC800040BD0 /* MfType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfType.swift; sourceTree = "<group>"; };
+		D672168323935AC800040BD0 /* MfOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfOperation.swift; sourceTree = "<group>"; };
+		D672168423935AC800040BD0 /* MfNumeric.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfNumeric.swift; sourceTree = "<group>"; };
+		D672168623935AC800040BD0 /* MfError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfError.swift; sourceTree = "<group>"; };
+		D672168723935AC900040BD0 /* Matft.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Matft.swift; sourceTree = "<group>"; };
+		D672168A23935AC900040BD0 /* Conversion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Conversion.swift; sourceTree = "<group>"; };
+		D672168B23935AC900040BD0 /* Function.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = Function.md; sourceTree = "<group>"; };
+		D672168C23935AC900040BD0 /* Calculation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Calculation.swift; sourceTree = "<group>"; };
+		D672168D23935AC900040BD0 /* LinAlg.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LinAlg.swift; sourceTree = "<group>"; };
+		D672168E23935AC900040BD0 /* Creation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Creation.swift; sourceTree = "<group>"; };
+		D672169123935AC900040BD0 /* MfArray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfArray.swift; sourceTree = "<group>"; };
+		D672169223935AC900040BD0 /* Subscript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Subscript.swift; sourceTree = "<group>"; };
+		D672169323935AC900040BD0 /* Iteration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Iteration.swift; sourceTree = "<group>"; };
+		D672169523935AC900040BD0 /* InfoConversion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoConversion.swift; sourceTree = "<group>"; };
+		D672169623935AC900040BD0 /* Flags.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Flags.swift; sourceTree = "<group>"; };
+		D672169723935AC900040BD0 /* InfoAstype.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoAstype.swift; sourceTree = "<group>"; };
+		D672169823935AC900040BD0 /* InfoCreation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoCreation.swift; sourceTree = "<group>"; };
+		D672169923935AC900040BD0 /* MfArrayInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MfArrayInfo.swift; sourceTree = "<group>"; };
+		D672169B23935AC900040BD0 /* CreationMethod.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreationMethod.swift; sourceTree = "<group>"; };
+		D672169C23935AC900040BD0 /* ConversionMethod.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConversionMethod.swift; sourceTree = "<group>"; };
+		D672169E23935AC900040BD0 /* Postfix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Postfix.swift; sourceTree = "<group>"; };
+		D672169F23935AC900040BD0 /* Infix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Infix.swift; sourceTree = "<group>"; };
+		D67216A023935AC900040BD0 /* Prefix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Prefix.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D672165E23935A7B00040BD0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D672166723935A7B00040BD0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D672166B23935A7B00040BD0 /* Matft.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D672165723935A7B00040BD0 = {
+			isa = PBXGroup;
+			children = (
+				D672166323935A7B00040BD0 /* Matft */,
+				D672166E23935A7B00040BD0 /* MatftTests */,
+				D672166223935A7B00040BD0 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		D672166223935A7B00040BD0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D672166123935A7B00040BD0 /* Matft.framework */,
+				D672166A23935A7B00040BD0 /* MatftTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D672166323935A7B00040BD0 /* Matft */ = {
+			isa = PBXGroup;
+			children = (
+				D672166423935A7B00040BD0 /* Matft.h */,
+				D672167B23935AC800040BD0 /* Common */,
+				D672168823935AC900040BD0 /* mfarray */,
+				D672168723935AC900040BD0 /* Matft.swift */,
+				D672166523935A7B00040BD0 /* Info.plist */,
+			);
+			path = Matft;
+			sourceTree = "<group>";
+		};
+		D672166E23935A7B00040BD0 /* MatftTests */ = {
+			isa = PBXGroup;
+			children = (
+				D672166F23935A7B00040BD0 /* MatftTests.swift */,
+				D672167123935A7B00040BD0 /* Info.plist */,
+			);
+			path = MatftTests;
+			sourceTree = "<group>";
+		};
+		D672167B23935AC800040BD0 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				D672167C23935AC800040BD0 /* Common.swift */,
+				D672167D23935AC800040BD0 /* Utils */,
+				D672168123935AC800040BD0 /* Protocol */,
+				D672168523935AC800040BD0 /* Error */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		D672167D23935AC800040BD0 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				D672167E23935AC800040BD0 /* Print.swift */,
+				D672167F23935AC800040BD0 /* vDSP.swift */,
+				D672168023935AC800040BD0 /* Utils.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		D672168123935AC800040BD0 /* Protocol */ = {
+			isa = PBXGroup;
+			children = (
+				D672168223935AC800040BD0 /* MfType.swift */,
+				D672168323935AC800040BD0 /* MfOperation.swift */,
+				D672168423935AC800040BD0 /* MfNumeric.swift */,
+			);
+			path = Protocol;
+			sourceTree = "<group>";
+		};
+		D672168523935AC800040BD0 /* Error */ = {
+			isa = PBXGroup;
+			children = (
+				D672168623935AC800040BD0 /* MfError.swift */,
+			);
+			path = Error;
+			sourceTree = "<group>";
+		};
+		D672168823935AC900040BD0 /* mfarray */ = {
+			isa = PBXGroup;
+			children = (
+				D672168923935AC900040BD0 /* Function */,
+				D672168F23935AC900040BD0 /* MfArray */,
+				D672169D23935AC900040BD0 /* Operator */,
+			);
+			path = mfarray;
+			sourceTree = "<group>";
+		};
+		D672168923935AC900040BD0 /* Function */ = {
+			isa = PBXGroup;
+			children = (
+				D672168A23935AC900040BD0 /* Conversion.swift */,
+				D672168B23935AC900040BD0 /* Function.md */,
+				D672168C23935AC900040BD0 /* Calculation.swift */,
+				D672168D23935AC900040BD0 /* LinAlg.swift */,
+				D672168E23935AC900040BD0 /* Creation.swift */,
+			);
+			path = Function;
+			sourceTree = "<group>";
+		};
+		D672168F23935AC900040BD0 /* MfArray */ = {
+			isa = PBXGroup;
+			children = (
+				D672169023935AC900040BD0 /* Core */,
+				D672169423935AC900040BD0 /* MfArrayInfo */,
+				D672169A23935AC900040BD0 /* Method */,
+			);
+			path = MfArray;
+			sourceTree = "<group>";
+		};
+		D672169023935AC900040BD0 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				D672169123935AC900040BD0 /* MfArray.swift */,
+				D672169223935AC900040BD0 /* Subscript.swift */,
+				D672169323935AC900040BD0 /* Iteration.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		D672169423935AC900040BD0 /* MfArrayInfo */ = {
+			isa = PBXGroup;
+			children = (
+				D672169523935AC900040BD0 /* InfoConversion.swift */,
+				D672169623935AC900040BD0 /* Flags.swift */,
+				D672169723935AC900040BD0 /* InfoAstype.swift */,
+				D672169823935AC900040BD0 /* InfoCreation.swift */,
+				D672169923935AC900040BD0 /* MfArrayInfo.swift */,
+			);
+			path = MfArrayInfo;
+			sourceTree = "<group>";
+		};
+		D672169A23935AC900040BD0 /* Method */ = {
+			isa = PBXGroup;
+			children = (
+				D672169B23935AC900040BD0 /* CreationMethod.swift */,
+				D672169C23935AC900040BD0 /* ConversionMethod.swift */,
+			);
+			path = Method;
+			sourceTree = "<group>";
+		};
+		D672169D23935AC900040BD0 /* Operator */ = {
+			isa = PBXGroup;
+			children = (
+				D672169E23935AC900040BD0 /* Postfix.swift */,
+				D672169F23935AC900040BD0 /* Infix.swift */,
+				D67216A023935AC900040BD0 /* Prefix.swift */,
+			);
+			path = Operator;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D672165C23935A7B00040BD0 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D672167223935A7B00040BD0 /* Matft.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D672166023935A7B00040BD0 /* Matft */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D672167523935A7B00040BD0 /* Build configuration list for PBXNativeTarget "Matft" */;
+			buildPhases = (
+				D672165C23935A7B00040BD0 /* Headers */,
+				D672165D23935A7B00040BD0 /* Sources */,
+				D672165E23935A7B00040BD0 /* Frameworks */,
+				D672165F23935A7B00040BD0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Matft;
+			productName = Matft;
+			productReference = D672166123935A7B00040BD0 /* Matft.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		D672166923935A7B00040BD0 /* MatftTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D672167823935A7B00040BD0 /* Build configuration list for PBXNativeTarget "MatftTests" */;
+			buildPhases = (
+				D672166623935A7B00040BD0 /* Sources */,
+				D672166723935A7B00040BD0 /* Frameworks */,
+				D672166823935A7B00040BD0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D672166D23935A7B00040BD0 /* PBXTargetDependency */,
+			);
+			name = MatftTests;
+			productName = MatftTests;
+			productReference = D672166A23935A7B00040BD0 /* MatftTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D672165823935A7B00040BD0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1030;
+				LastUpgradeCheck = 1030;
+				ORGANIZATIONNAME = jkado;
+				TargetAttributes = {
+					D672166023935A7B00040BD0 = {
+						CreatedOnToolsVersion = 10.3;
+						LastSwiftMigration = 1030;
+					};
+					D672166923935A7B00040BD0 = {
+						CreatedOnToolsVersion = 10.3;
+					};
+					D67216BC23935B1300040BD0 = {
+						CreatedOnToolsVersion = 10.3;
+					};
+				};
+			};
+			buildConfigurationList = D672165B23935A7B00040BD0 /* Build configuration list for PBXProject "Matft" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = D672165723935A7B00040BD0;
+			productRefGroup = D672166223935A7B00040BD0 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D672166023935A7B00040BD0 /* Matft */,
+				D672166923935A7B00040BD0 /* MatftTests */,
+				D67216BC23935B1300040BD0 /* MatftFatBinary */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D672165F23935A7B00040BD0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D67216AB23935AC900040BD0 /* Function.md in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D672166823935A7B00040BD0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		D67216C023935B2000040BD0 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\n#!/bin/sh\n\nUNIVERSAL_OUTPUTFOLDER=${BUILD_DIR}/${CONFIGURATION}-universal\n\n# make sure the output directory exists\nmkdir -p \"${UNIVERSAL_OUTPUTFOLDER}\"\n\n# Step 1. Build Device and Simulator versions\nxcodebuild -target \"${PROJECT_NAME}\" ONLY_ACTIVE_ARCH=NO -configuration ${CONFIGURATION} -sdk iphoneos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"${PROJECT_NAME}\" -configuration ${CONFIGURATION} -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\n\n# Step 2. Copy the framework structure (from iphoneos build) to the universal folder\ncp -R \"${BUILD_DIR}/${CONFIGURATION}-iphoneos/${PROJECT_NAME}.framework\" \"${UNIVERSAL_OUTPUTFOLDER}/\"\n\n# Step 3. Copy Swift modules from iphonesimulator build (if it exists) to the copied framework directory\nSIMULATOR_SWIFT_MODULES_DIR=\"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/${PROJECT_NAME}.framework/Modules/${PROJECT_NAME}.swiftmodule/.\"\nif [ -d \"${SIMULATOR_SWIFT_MODULES_DIR}\" ]; then\ncp -R \"${SIMULATOR_SWIFT_MODULES_DIR}\" \"${UNIVERSAL_OUTPUTFOLDER}/${PROJECT_NAME}.framework/Modules/${PROJECT_NAME}.swiftmodule\"\nfi\n\n# Step 4. Create universal binary file using lipo and place the combined executable in the copied framework directory\nlipo -create -output \"${UNIVERSAL_OUTPUTFOLDER}/${PROJECT_NAME}.framework/${PROJECT_NAME}\" \"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/${PROJECT_NAME}.framework/${PROJECT_NAME}\" \"${BUILD_DIR}/${CONFIGURATION}-iphoneos/${PROJECT_NAME}.framework/${PROJECT_NAME}\"\n\n# Step 5. Convenience step to copy the framework to the project's directory\ncp -R \"${UNIVERSAL_OUTPUTFOLDER}/${PROJECT_NAME}.framework\" \"${PROJECT_DIR}\"\n\n# Step 6. Convenience step to open the project's directory in Finder\nopen \"${PROJECT_DIR}\"\n";
+		};
+		D67216C123935B7900040BD0 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\n#!/bin/sh\n\nUNIVERSAL_OUTPUTFOLDER=${BUILD_DIR}/${CONFIGURATION}-universal\n\n# make sure the output directory exists\nmkdir -p \"${UNIVERSAL_OUTPUTFOLDER}\"\n\n# Step 1. Build Device and Simulator versions\nxcodebuild -target \"${PROJECT_NAME}\" ONLY_ACTIVE_ARCH=NO -configuration ${CONFIGURATION} -sdk iphoneos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"${PROJECT_NAME}\" -configuration ${CONFIGURATION} -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\n\n# Step 2. Copy the framework structure (from iphoneos build) to the universal folder\ncp -R \"${BUILD_DIR}/${CONFIGURATION}-iphoneos/${PROJECT_NAME}.framework\" \"${UNIVERSAL_OUTPUTFOLDER}/\"\n\n# Step 3. Copy Swift modules from iphonesimulator build (if it exists) to the copied framework directory\nSIMULATOR_SWIFT_MODULES_DIR=\"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/${PROJECT_NAME}.framework/Modules/${PROJECT_NAME}.swiftmodule/.\"\nif [ -d \"${SIMULATOR_SWIFT_MODULES_DIR}\" ]; then\ncp -R \"${SIMULATOR_SWIFT_MODULES_DIR}\" \"${UNIVERSAL_OUTPUTFOLDER}/${PROJECT_NAME}.framework/Modules/${PROJECT_NAME}.swiftmodule\"\nfi\n\n# Step 4. Create universal binary file using lipo and place the combined executable in the copied framework directory\nlipo -create -output \"${UNIVERSAL_OUTPUTFOLDER}/${PROJECT_NAME}.framework/${PROJECT_NAME}\" \"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/${PROJECT_NAME}.framework/${PROJECT_NAME}\" \"${BUILD_DIR}/${CONFIGURATION}-iphoneos/${PROJECT_NAME}.framework/${PROJECT_NAME}\"\n\n# Step 5. Convenience step to copy the framework to the project's directory\ncp -R \"${UNIVERSAL_OUTPUTFOLDER}/${PROJECT_NAME}.framework\" \"${PROJECT_DIR}\"\n\n# Step 6. Convenience step to open the project's directory in Finder\nopen \"${PROJECT_DIR}\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D672165D23935A7B00040BD0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D67216A623935AC900040BD0 /* MfOperation.swift in Sources */,
+				D67216AA23935AC900040BD0 /* Conversion.swift in Sources */,
+				D67216AF23935AC900040BD0 /* MfArray.swift in Sources */,
+				D67216B623935AC900040BD0 /* MfArrayInfo.swift in Sources */,
+				D67216AC23935AC900040BD0 /* Calculation.swift in Sources */,
+				D67216B723935AC900040BD0 /* CreationMethod.swift in Sources */,
+				D67216B223935AC900040BD0 /* InfoConversion.swift in Sources */,
+				D67216A123935AC900040BD0 /* Common.swift in Sources */,
+				D67216BA23935AC900040BD0 /* Infix.swift in Sources */,
+				D67216B523935AC900040BD0 /* InfoCreation.swift in Sources */,
+				D67216AE23935AC900040BD0 /* Creation.swift in Sources */,
+				D67216A923935AC900040BD0 /* Matft.swift in Sources */,
+				D67216B423935AC900040BD0 /* InfoAstype.swift in Sources */,
+				D67216BB23935AC900040BD0 /* Prefix.swift in Sources */,
+				D67216A723935AC900040BD0 /* MfNumeric.swift in Sources */,
+				D67216B923935AC900040BD0 /* Postfix.swift in Sources */,
+				D67216B023935AC900040BD0 /* Subscript.swift in Sources */,
+				D67216B123935AC900040BD0 /* Iteration.swift in Sources */,
+				D67216B823935AC900040BD0 /* ConversionMethod.swift in Sources */,
+				D67216AD23935AC900040BD0 /* LinAlg.swift in Sources */,
+				D67216A223935AC900040BD0 /* Print.swift in Sources */,
+				D67216A523935AC900040BD0 /* MfType.swift in Sources */,
+				D67216A823935AC900040BD0 /* MfError.swift in Sources */,
+				D67216B323935AC900040BD0 /* Flags.swift in Sources */,
+				D67216A323935AC900040BD0 /* vDSP.swift in Sources */,
+				D67216A423935AC900040BD0 /* Utils.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D672166623935A7B00040BD0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D672167023935A7B00040BD0 /* MatftTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D672166D23935A7B00040BD0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D672166023935A7B00040BD0 /* Matft */;
+			targetProxy = D672166C23935A7B00040BD0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		D672167323935A7B00040BD0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		D672167423935A7B00040BD0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		D672167623935A7B00040BD0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = WL6N7MD8S7;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Matft/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jkado.Matft;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64 arm64e armv7 armv7s i386 x86_64";
+			};
+			name = Debug;
+		};
+		D672167723935A7B00040BD0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = WL6N7MD8S7;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Matft/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jkado.Matft;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64 arm64e armv7 armv7s i386 x86_64";
+			};
+			name = Release;
+		};
+		D672167923935A7B00040BD0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = WL6N7MD8S7;
+				INFOPLIST_FILE = MatftTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jkado.MatftTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D672167A23935A7B00040BD0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = WL6N7MD8S7;
+				INFOPLIST_FILE = MatftTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.jkado.MatftTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D67216BE23935B1300040BD0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = WL6N7MD8S7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		D67216BF23935B1300040BD0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = WL6N7MD8S7;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D672165B23935A7B00040BD0 /* Build configuration list for PBXProject "Matft" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D672167323935A7B00040BD0 /* Debug */,
+				D672167423935A7B00040BD0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D672167523935A7B00040BD0 /* Build configuration list for PBXNativeTarget "Matft" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D672167623935A7B00040BD0 /* Debug */,
+				D672167723935A7B00040BD0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D672167823935A7B00040BD0 /* Build configuration list for PBXNativeTarget "MatftTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D672167923935A7B00040BD0 /* Debug */,
+				D672167A23935A7B00040BD0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D67216BD23935B1300040BD0 /* Build configuration list for PBXAggregateTarget "MatftFatBinary" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D67216BE23935B1300040BD0 /* Debug */,
+				D67216BF23935B1300040BD0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D672165823935A7B00040BD0 /* Project object */;
+}

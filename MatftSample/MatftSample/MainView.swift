@@ -33,6 +33,7 @@ class MainView: UIView {
         let y = MfArray(mfarray: [[2,1,3]], type: Int.self).astype(Double.self)
 
         do{
+
             let inv = try Matft.mfarray.linalg.inverse(coefficients)
             let abc = Matft.mfarray.dot(left: inv, right: y.T)
             print(abc)
