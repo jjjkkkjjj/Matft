@@ -231,3 +231,37 @@ internal func _get_storedSize<T>(mfarray: MfArray<T>) -> Int{
     }
     return _storedSize
 }
+
+internal func _get_indices(_ shape: [Int]) -> [[Int]]{
+    var ret: [[Int]] = []
+    
+    let size = _shape2size(shape)
+    
+    for i in 0..<size{
+        var res = shape
+        
+        let ndim = shape.count
+        
+        var tmp = i
+        for axis in stride(from: ndim - 1, through: 0, by: -1){
+            res[axis] = tmp % shape[axis]
+            tmp = Int(tmp / shape[axis])
+        }
+        
+        ret.append(res)
+    }
+    
+    //print(ret)
+    
+    return ret
+}
+
+internal func _inner_product<T: MfNumeric>(_ left: [T], _ right: [T]) -> T{
+    precondition(left.count == right.count, "cannot calculate inner product due to unsame dim")
+    var ret = T.zero
+    
+    for (l, r) in zip(left, right){
+        ret += l * r
+    }
+    return ret
+}

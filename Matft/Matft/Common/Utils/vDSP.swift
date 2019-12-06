@@ -56,8 +56,13 @@ internal func vDSP_infix<T: MfNumeric>(_ left: MfArray<T>, _ right: MfArray<T>, 
         new = Matft.mfarray.nums(num: 0, type: T.self, shape: bigger_mfarray.shape)
     }
     
+    let vdsp_args = vDSP_Args(b_mfarray: bigger_mfarray, b_storedSize: bigger_storedSize, s_mfarray: smaller_mfarray, s_storedSize: smaller_storedSize, n_mfarray: new)
     
-    
+    for args in vdsp_args{
+        vDSP_func(bigger_mfarray.data + args.b_offset, vDSP_Stride(args.b_stride),
+                  smaller_mfarray.data + args.s_offset, vDSP_Stride(args.s_stride),
+                  new.data + args.n_offset, vDSP_Stride(args.n_stride), vDSP_Length(args.blocksize))
+    }
     
     return new
     
@@ -92,6 +97,7 @@ internal func vDSP_prefix(vDSP_function: vDSP_op.prefix, _ data: UnsafePointer<D
 
 
 */
+/*
 fileprivate func _get_offset<T>(bigger_mfarray: MfArray<T>, bigger_storedsize: Int, smaller_mfarray: MfArray<T>, smaller_storedsize: Int) -> (b_offsets: [Int], b_stride: Int, s_offsets: [Int], s_stride: Int, blocksize: Int){
     
     var blocksizes: [Int] = []
@@ -126,8 +132,8 @@ fileprivate func _get_offset<T>(bigger_mfarray: MfArray<T>, bigger_storedsize: I
     
     return (bigger_offsets, bigger_mfarray.strides[minIndex], smaller_offsets, smaller_mfarray.strides[minIndex], blocksize)
 }
-
-fileprivate struct vdsp_args<T: MfNumeric>: IteratorProtocol{
+*/
+fileprivate struct vDSP_Args<T: MfNumeric>: Sequence, IteratorProtocol{
     typealias Element = (b_offset: Int, b_stride: Int, s_offset: Int, s_stride: Int, n_offset: Int, n_stride: Int, blocksize: Int)
     
     public var blocksize: Int
@@ -141,6 +147,8 @@ fileprivate struct vdsp_args<T: MfNumeric>: IteratorProtocol{
     private var _b_strides: [Int]
     private var _s_strides: [Int]
     private var _n_strides: [Int]
+    // indices for offset
+    private var _indices: [[Int]]
     
     private var _n_stridedsize: Int{ // step size every iteration
         return self.blocksize / self.n_stride
@@ -151,9 +159,9 @@ fileprivate struct vdsp_args<T: MfNumeric>: IteratorProtocol{
         
         var blocksize_candidates: [Int] = [] // select maximum one
         for i in 0..<ndim{
-            let blocks = [b_storedSize / b_mfarray.strides[i],
-                          s_storedSize / s_mfarray.strides[i],
-                          n_mfarray.size / n_mfarray.strides[i]] //bigger, smaller, new
+            let blocks = [b_mfarray.strides[i] != 0 ? b_storedSize / b_mfarray.strides[i] : b_storedSize,
+                          s_mfarray.strides[i] != 0 ? s_storedSize / s_mfarray.strides[i] : s_storedSize,
+                           n_mfarray.size / n_mfarray.strides[i]] //bigger, smaller, new
             blocksize_candidates.append(blocks.min()!)
         }
         
@@ -175,29 +183,31 @@ fileprivate struct vdsp_args<T: MfNumeric>: IteratorProtocol{
         self._s_strides.remove(at: selectedIndex)
         self._n_strides.remove(at: selectedIndex)
         
+        var _shape = n_mfarray.shape
+        _shape.remove(at: selectedIndex)
+        self._indices = _get_indices(_shape)
+        
         self.calculatedSize = 0
     }
     
     mutating func next() -> (b_offset: Int, b_stride: Int, s_offset: Int, s_stride: Int, n_offset: Int, n_stride: Int, blocksize: Int)? {
-        if self.calculatedSize == 0{
-            self.calculatedSize += self.blocksize
-            return (0, self.b_stride, 0, self.s_stride, 0, self.n_stride, self.blocksize)
-        }
-        
         if self.calculatedSize < self.size{
-            for i in stride(from: self._n_strides.count - 1, through: 0, by: -1){ //search n_strides corresponds to (blocksize / n_stride )
-                if self._n_stridedsize == self.calculatedSize{
-                    
-                }
-            }
             
-            //if above
+            let offsets = self._get_offset()
             
             self.calculatedSize += self.blocksize
-            
+            return (offsets.b_offset, self.b_stride, offsets.s_offset, self.s_stride, offsets.n_offset, self.n_stride, self.blocksize)
         }
         else{ //finished
             return nil
         }
+    }
+    
+    private func _get_offset() -> (b_offset: Int, s_offset: Int, n_offset: Int){
+        let i = self.calculatedSize / self.blocksize
+        let indices = self._indices[i]
+        
+        return (_inner_product(self._b_strides, indices), _inner_product(self._s_strides, indices), _inner_product(self._n_strides, indices))
+        
     }
 }

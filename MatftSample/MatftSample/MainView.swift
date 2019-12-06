@@ -31,7 +31,8 @@ class MainView: UIView {
         let aaa = [[1,1,-1], [-2,0,1], [0,2,1]]
         let coefficients = MfArray(mfarray: aaa, type: Int.self).astype(Double.self)
         let y = MfArray(mfarray: [[2,1,3]], type: Int.self).astype(Double.self)
-
+        print(y + MfArray(mfarray: [1.0], type: Double.self))これ
+            
         do{
 
             let inv = try Matft.mfarray.linalg.inverse(coefficients)
