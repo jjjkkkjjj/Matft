@@ -71,12 +71,9 @@ extension Matft.mfarray{
             (left_, right_) = _check_broadcastable_and_get_broadcastedMfArray(left, right)
             //fatalError("mfarray cannot support broadcast operation, i will implement this function in the future")
         }
-        
-        let new = Matft.mfarray.nums(num: 0, type: T.self, shape: left.shape)
 
         switch operator_ {
         case MfOperation.add:
-            //vDSP_vaddD(left.data, vDSP_Stride(1), right.data, vDSP_Stride(1), new.data, vDSP_Stride(1), vDSP_Length(left.size))
             return vDSP_infix(left_, right_, vDSP_vaddD)
             
             /*
@@ -122,19 +119,14 @@ extension Matft.mfarray{
              //->0.42232394218444824
              */
         case MfOperation.sub:
-            vDSP_vsubD(left.data, vDSP_Stride(1), right.data, vDSP_Stride(1), new.data, vDSP_Stride(1), vDSP_Length(left.size))
-            //return vDSP_infix(left_, right_, vDSP_vsubD)
+            return vDSP_infix(left_, right_, vDSP_vsubD)
         case MfOperation.mul:
-            vDSP_vmulD(left.data, vDSP_Stride(1), right.data, vDSP_Stride(1), new.data, vDSP_Stride(1), vDSP_Length(left.size))
-            //return vDSP_infix(left_, right_, vDSP_vmulD)
+            return vDSP_infix(left_, right_, vDSP_vmulD)
         case MfOperation.div:
-            vDSP_vdivD(left.data, vDSP_Stride(1), right.data, vDSP_Stride(1), new.data, vDSP_Stride(1), vDSP_Length(left.size))
-            //return vDSP_infix(left_, right_, vDSP_vdivD)
+            return vDSP_infix(left_, right_, vDSP_vdivD)
         default:
             precondition(false, "argument \'operator_\' was invalid")
         }
-        
-        return new
     }
 
     
