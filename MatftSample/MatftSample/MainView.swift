@@ -28,22 +28,22 @@ class MainView: UIView {
      }*/
     
     func check_MfArray(){
+        /*
         let aaa = [[1,1,-1], [-2,0,1], [0,2,1]]
         let coefficients = MfArray(mfarray: aaa, type: Int.self).astype(Double.self)
         let y = MfArray(mfarray: [[2,1,3]], type: Int.self).astype(Double.self)
-        print(coefficients + coefficients.T)
-        /*
+        print(coefficients)
+        
         do{
-
             let inv = try Matft.mfarray.linalg.inverse(coefficients)
             let abc = Matft.mfarray.dot(left: inv, right: y.T)
             print(abc)
         }
         catch{
             print("no inverse matrix")
-        }*/
+        }
+        */
         
-        /*
         let arr = MfArray(mfarray: [[0,1],[2,3]], type: Int.self)
         let arr2 = MfArray(mfarray: [[[ 0,  1,  2,  3],
                                       [ 4,  5,  6,  7]],
@@ -61,7 +61,9 @@ class MainView: UIView {
                                       
                                       [[ 3, 11],
                                        [ 7, 15]]], type: Int.self)
-        print(arr.T.broadcast_to(shape: [4,2,2]).strides)
+        print(arr)
+        print(arr2)
+        print(arr22)
         //print(arr + arr2)*/
     }
     /*
