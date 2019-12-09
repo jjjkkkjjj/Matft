@@ -31,19 +31,15 @@ extension MfArray{
 
         get{
             precondition(indices.count == self.ndim, "cannot return value because given indices were invalid")
-            var flattenIndex = 0
-            for index in 0..<indices.count{
-                flattenIndex += indices[index] * self.strides[index]
-            }
+            let flattenIndex = _inner_product(indices, self.strides)
+
             precondition(flattenIndex < self.size, "indices \(indices) is out of bounds")
             return T.num((self.data + flattenIndex).pointee)
         }
         set(newValue){
             precondition(indices.count == self.ndim, "cannot return value because given indices were invalid")
-            var flattenIndex = 0
-            for index in 0..<indices.count{
-                flattenIndex += indices[index] * self.strides[index]
-            }
+            let flattenIndex = _inner_product(indices, self.strides)
+            
             precondition(flattenIndex < self.size, "indices \(indices) is out of bounds")
             
             (self.data + flattenIndex).pointee = T.num(newValue)
