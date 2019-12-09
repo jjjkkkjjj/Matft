@@ -45,6 +45,7 @@ internal func vDSP_infix<T: MfNumeric>(_ left: MfArray<T>, _ right: MfArray<T>, 
         vDSP_func(bigger_mfarray.data + args.b_offset, vDSP_Stride(args.b_stride),
                   smaller_mfarray.data + args.s_offset, vDSP_Stride(args.s_stride),
                   new.data + args.n_offset, vDSP_Stride(args.n_stride), vDSP_Length(args.blocksize))
+        //print(args)
     }
     
     return new
@@ -76,8 +77,8 @@ fileprivate struct vDSP_Args<T: MfNumeric>: Sequence, IteratorProtocol{
 
         var blocksize_candidates: [Int] = [] // select maximum one
         for i in 0..<ndim{
-            let blocks = [b_mfarray.strides[i] != 0 ? b_storedSize / b_mfarray.strides[i] : n_mfarray.size, //b_storedSize,
-                          s_mfarray.strides[i] != 0 ? s_storedSize / s_mfarray.strides[i] : n_mfarray.size, //s_storedSize,
+            let blocks = [b_mfarray.strides[i] != 0 ? b_storedSize / b_mfarray.strides[i] : b_storedSize,//n_mfarray.size, //
+                          s_mfarray.strides[i] != 0 ? s_storedSize / s_mfarray.strides[i] : s_storedSize,//n_mfarray.size, //
                           n_mfarray.strides[i] != 0 ? n_mfarray.size / n_mfarray.strides[i] : n_mfarray.size] //bigger, smaller, new
             blocksize_candidates.append(blocks.min()!)
         }

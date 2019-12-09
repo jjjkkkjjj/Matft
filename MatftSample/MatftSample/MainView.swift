@@ -43,7 +43,9 @@ class MainView: UIView {
             print("no inverse matrix")
         }
         */
-        
+        let a = Matft.mfarray.nums(num: 3, type: Int.self, shape: [10, 5, 2, 100])
+        print(a)
+        /*
         let arr = MfArray(mfarray: [[0,1],[2,3]], type: Int.self)
         let arr2 = MfArray(mfarray: [[[ 0,  1,  2,  3],
                                       [ 4,  5,  6,  7]],
@@ -63,8 +65,10 @@ class MainView: UIView {
                                        [ 7, 15]]], type: Int.self)
         print(arr)
         print(arr2)
-        print(arr22)
-        //print(arr + arr2)*/
+        var start = Date()
+        print(arr + arr2)
+        var elapsed = Date().timeIntervalSince(start)
+        print(elapsed)*/
     }
     /*
      func check_Vector(){

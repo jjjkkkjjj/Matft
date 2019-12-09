@@ -10,63 +10,84 @@ import Foundation
 
 extension MfArray: MfType{
     //for print function
-    //if size > 1000, leave out
     public var description: String{
-        var string = "mfarray = \n"
-        string.append(String(repeating: "[", count: self.shape.count))
+        var desc = "mfarray = \n"
+        desc += String(repeating: "[", count: self.shape.count)
         
-        let indices_ = _get_indices(self.shape)
-
-        for indices in indices_{
-            string.append("\t\(self[indices]),\t")
+        if self.size > 1000{//if size > 1000, some elements left out will be viewed
+            var indices_ = _get_leaveout_indices(self.shape)
             
-            if indices.last! == self.shape.last! - 1{
-                var clousureNum = 1
-                for axis in (0..<indices.count - 1).reversed(){
-                    if indices[axis] == self.shape[axis] - 1{
-                        clousureNum += 1
-                    }
-                    else{
-                        break
-                    }
-                }
-                string = String(string.dropLast(2))
-                string.append(String(repeating: "]", count: clousureNum) + "," + String(repeating: "\n", count: clousureNum) + String(repeating: "[", count: clousureNum))
-            }
-        }
-        
-        string = String(string.dropLast((self.ndim - 1)*2 + 2))
-        string.append(String(" type=\(String(describing: T.self)), shape=\(self.shape)"))
-        
-        /*
-        var indices = Array<Int>(repeating: 0, count: self.shape.count)
-        
-        while indices[0] !=  self.shape[0]{
-            string.append("\t\(self[indices]),\t")
-            
-            indices[indices.count - 1] += 1
-            
-            var repeatNumber = -1//store the number [ and \n
-            for i in 0..<indices.count - 1{
-                let index = indices.count - 1 - i//descent order for
-                if indices[index] == self.shape[index]{
-                    indices[index] = 0
-                    indices[index - 1] += 1
+            for (i, indices) in indices_.enumerated(){
+                
+                if var indices = indices{
+                    desc += "\t\(self[indices]),\t"
                     
-                    repeatNumber = i + 1
+                    if indices.last! == self.shape.last! - 1{
+                        let clousureNum = self.clousure_number(indices: &indices)
+                        //remove "\t" and ","
+                        desc = String(desc.dropLast(2))
+                        //append "]", "," "\n" and "["
+                        desc += String(repeating: "]", count: clousureNum) + "," + String(repeating: "\n", count: clousureNum) + String(repeating: "[", count: clousureNum)
+                    }
+                }
+                else{ //skip
+                    if indices_[i - 1]?.last! == self.shape.last! - 1{// \t and \n
+                        
+                        let clousureNum = self.clousure_number(indices: &indices_[i - 1]!)
+
+                        //remove \n and [
+                        desc = String(desc.dropLast(2 * clousureNum))
+                        // first half \n
+                        desc += String(repeating: "\n", count: clousureNum)
+                        // append skip center of \n
+                        desc += "...,\t"
+                        // second half \n
+                        desc += String(repeating: "\n", count: clousureNum)
+                        // recreate [
+                        desc += String(repeating: "[", count: clousureNum)
+                    }
+                    else{ // \t only
+                        desc += "\t...,\t"
+                    }
                 }
             }
+        }
+        else{ // all elements will be viewed
+            let indices_ = _get_indices(self.shape)
             
-            if repeatNumber != -1{
-                string = String(string.dropLast(2))
-                string.append(String(repeating: "]", count: repeatNumber) + "," + String(repeating: "\n", count: repeatNumber) + String(repeating: "[", count: repeatNumber))
+            for indices in indices_{
+                desc += "\t\(self[indices]),\t"
+                
+                if indices.last! == self.shape.last! - 1{
+                    var indices = indices
+                    let clousureNum = self.clousure_number(indices: &indices)
+                    //remove "\t" and ","
+                    desc = String(desc.dropLast(2))
+                    //append "]", "," "\n" and "["
+                    desc += String(repeating: "]", count: clousureNum) + "," + String(repeating: "\n", count: clousureNum) + String(repeating: "[", count: clousureNum)
+                }
             }
         }
+        //remove redundunt "[", "\n" and "\n"
+        desc = String(desc.dropLast((self.ndim - 1)*2 + 2))
+        //append mfarray  info
+        desc += " type=\(String(describing: T.self)), shape=\(self.shape)"
         
-        string = String(string.dropLast((self.ndim - 1)*2 + 1))
-        string.append("], type=\(String(describing: T.self)), shape=\(self.shape)")
-        */
-        return string
+        return desc
+    }
+    
+    //count clousure "[" number
+    private func clousure_number(indices: inout [Int]) -> Int{
+        var clousureNum = 1
+        for axis in (0..<indices.count - 1).reversed(){
+            if indices[axis] == self.shape[axis] - 1{
+                clousureNum += 1
+            }
+            else{
+                break
+            }
+        }
+        return clousureNum
     }
 }
 
