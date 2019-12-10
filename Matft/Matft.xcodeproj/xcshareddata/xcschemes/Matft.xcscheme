@@ -7,20 +7,6 @@
       buildImplicitDependencies = "YES">
       <BuildActionEntries>
          <BuildActionEntry
-            buildForTesting = "NO"
-            buildForRunning = "NO"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D67216BC23935B1300040BD0"
-               BuildableName = "MatftFatBinary"
-               BlueprintName = "MatftFatBinary"
-               ReferencedContainer = "container:../Matft/Matft.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
             buildForTesting = "YES"
             buildForRunning = "YES"
             buildForProfiling = "YES"
@@ -28,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D6804041238E3CAB00F5A6BF"
-               BuildableName = "MatftSample.app"
-               BlueprintName = "MatftSample"
-               ReferencedContainer = "container:MatftSample.xcodeproj">
+               BlueprintIdentifier = "D672166023935A7B00040BD0"
+               BuildableName = "Matft.framework"
+               BlueprintName = "Matft"
+               ReferencedContainer = "container:Matft.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,30 +32,20 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D6804055238E3CAC00F5A6BF"
-               BuildableName = "MatftSampleTests.xctest"
-               BlueprintName = "MatftSampleTests"
-               ReferencedContainer = "container:MatftSample.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D6804060238E3CAC00F5A6BF"
-               BuildableName = "MatftSampleUITests.xctest"
-               BlueprintName = "MatftSampleUITests"
-               ReferencedContainer = "container:MatftSample.xcodeproj">
+               BlueprintIdentifier = "D672166923935A7B00040BD0"
+               BuildableName = "MatftTests.xctest"
+               BlueprintName = "MatftTests"
+               ReferencedContainer = "container:Matft.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D6804041238E3CAB00F5A6BF"
-            BuildableName = "MatftSample.app"
-            BlueprintName = "MatftSample"
-            ReferencedContainer = "container:MatftSample.xcodeproj">
+            BlueprintIdentifier = "D672166023935A7B00040BD0"
+            BuildableName = "Matft.framework"
+            BlueprintName = "Matft"
+            ReferencedContainer = "container:Matft.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -85,16 +61,15 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D6804041238E3CAB00F5A6BF"
-            BuildableName = "MatftSample.app"
-            BlueprintName = "MatftSample"
-            ReferencedContainer = "container:MatftSample.xcodeproj">
+            BlueprintIdentifier = "D672166023935A7B00040BD0"
+            BuildableName = "Matft.framework"
+            BlueprintName = "Matft"
+            ReferencedContainer = "container:Matft.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -104,16 +79,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D6804041238E3CAB00F5A6BF"
-            BuildableName = "MatftSample.app"
-            BlueprintName = "MatftSample"
-            ReferencedContainer = "container:MatftSample.xcodeproj">
+            BlueprintIdentifier = "D672166023935A7B00040BD0"
+            BuildableName = "Matft.framework"
+            BlueprintName = "Matft"
+            ReferencedContainer = "container:Matft.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
