@@ -40,16 +40,34 @@ internal func vDSP_infix<T: MfNumeric>(_ left: MfArray<T>, _ right: MfArray<T>, 
     }
     
     let vdsp_args = vDSP_Args(b_mfarray: bigger_mfarray, b_storedSize: bigger_storedSize, s_mfarray: smaller_mfarray, s_storedSize: smaller_storedSize, n_mfarray: new)
+    var start = Date()
+    /*
+    bigger_mfarray.data.withMemoryRebound(to: Double.self, capacity: bigger_storedSize, { bptr in
+        smaller_mfarray.data.withMemoryRebound(to: Double.self, capacity: smaller_storedSize, { sptr in
+            new.data.withMemoryRebound(to: Double.self, capacity: new.size, { nptr in
+                for args in vdsp_args{
+                    //print((new.data + args.n_offset + args.n_stride * (args.blocksize - 1)).pointee)
+     
+                    //print(args)
+                    vDSP_func(bptr + args.b_offset, vDSP_Stride(args.b_stride),
+                              sptr + args.s_offset, vDSP_Stride(args.s_stride),
+                              nptr + args.n_offset, vDSP_Stride(args.n_stride), vDSP_Length(args.blocksize))
+                }
+            })
+        })
+    })
+    */
     
     for args in vdsp_args{
         //print((new.data + args.n_offset + args.n_stride * (args.blocksize - 1)).pointee)
         
-        print(args)
+        //print(args)
         vDSP_func(bigger_mfarray.data + args.b_offset, vDSP_Stride(args.b_stride),
                   smaller_mfarray.data + args.s_offset, vDSP_Stride(args.s_stride),
                   new.data + args.n_offset, vDSP_Stride(args.n_stride), vDSP_Length(args.blocksize))
     }
-    
+    var elapsed = Date().timeIntervalSince(start)
+    print(elapsed)
     return new
 }
 
@@ -77,14 +95,14 @@ fileprivate struct vDSP_Args<T: MfNumeric>: Sequence, IteratorProtocol{
     
     init(b_mfarray: MfArray<T>, b_storedSize: Int, s_mfarray: MfArray<T>, s_storedSize: Int, n_mfarray: MfArray<T>) {
         let ndim = n_mfarray.ndim
-        
+        /*
         var blocksize_candidates: [Int] = [] // select maximum one
         for i in 0..<ndim{
             let blocks = [b_mfarray.strides[i] != 0 ? b_storedSize / b_mfarray.strides[i] : n_mfarray.size / b_storedSize,//n_mfarray.size, //b_storedSize,
                 s_mfarray.strides[i] != 0 ? s_storedSize / s_mfarray.strides[i] : n_mfarray.size / s_storedSize,//n_mfarray.size, //s_storedSize,
                 n_mfarray.strides[i] != 0 ? n_mfarray.size / n_mfarray.strides[i] : 1] //bigger, smaller, new
             blocksize_candidates.append(blocks.min()!)
-        }
+        }*/
         
         self.size = n_mfarray.size
         
@@ -93,7 +111,7 @@ fileprivate struct vDSP_Args<T: MfNumeric>: Sequence, IteratorProtocol{
         var sh = n_mfarray.shape
         let a = _get_blocksize(b_strides: &bst, b_stroredSize: b_storedSize, s_strides: &sst, s_storedSize: s_storedSize, shape: &sh)
         //print(bst, sst)
-        print(a)
+        //print(a)
         //self.blocksize = blocksize_candidates.max()!
         //let selectedIndex = blocksize_candidates.firstIndex(of: self.blocksize)!
         self.blocksize = a.blocksize
@@ -140,7 +158,7 @@ fileprivate struct vDSP_Args<T: MfNumeric>: Sequence, IteratorProtocol{
         let i = self.calculatedSize / self.blocksize //% self._indices.count
         let indices = self._indices[i]
         //let indices = self._indices[self.iterNum]
-        
+        //this line causes slow calculation time....
         return (_inner_product(self._b_strides, indices), _inner_product(self._s_strides, indices), _inner_product(self._n_strides, indices))
         
     }

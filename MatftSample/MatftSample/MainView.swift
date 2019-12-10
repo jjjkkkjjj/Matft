@@ -64,12 +64,12 @@ class MainView: UIView {
                                       [[ 3, 11],
                                        [ 7, 15]]], type: Int.self)
 
-        let a = Matft.mfarray.nums(num: 2, type: Int.self, shape: [10, 10, 10, 10, 10])
+        let a = Matft.mfarray.nums(num: 2, type: Int.self, shape: [10, 10, 10, 10, 10, 10])
         var start = Date()
         let c = a + a.T
         var elapsed = Date().timeIntervalSince(start)
         print(elapsed)
-        print(c)
+        //print(c)
     }
     /*
      func check_Vector(){
