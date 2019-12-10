@@ -35,7 +35,7 @@ extension Matft.mfarray{
             }
             for i in 0..<dim{
                 let axis = axes[i]
-                precondition(axis >= dim, "invalid axes")
+                precondition(axis < dim, "invalid axes")
                 precondition(reverse_permutation[axis] == -1, "repeated axis in transpose")
                 reverse_permutation[axis] = i
                 permutation.append(axis)
