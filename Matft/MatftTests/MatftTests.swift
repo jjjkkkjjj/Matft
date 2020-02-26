@@ -22,6 +22,19 @@ class MatftTests: XCTestCase {
     func testExample() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
+        
+        let arr22 = try! MfArray([[[ 0,  8],
+                                   [ 4, 12]],
+            
+                                  [[ 1,  9],
+                                   [ 5, 13]],
+            
+                                  [[ 2, 10],
+                                   [ 6, 14]],
+          
+                                  [[ 3, 11],
+                                   [ 7, 15]]])
+        print(arr22.data)
     }
 
     func testPerformanceExample() {

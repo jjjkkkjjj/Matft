@@ -9,7 +9,7 @@
 import Foundation
 
 extension Matft.mfarray{
-    public static func transpose<T>(mfarray: MfArray<T>, axes: [Int]! = nil) -> MfArray<T>{
+    public statfic func transpose<T>(mfarray: MfArray<T>, axes: [Int]! = nil) -> MfArray<T>{
         /*
         let newMfArrayInfo = _transpose(mfarray: mfarray, axes: axes)
         newMfArrayInfo.newDataPointer()

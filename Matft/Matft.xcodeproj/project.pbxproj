@@ -32,6 +32,9 @@
 		010841792406745E00BBFEB8 /* ptr2array.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0108416F2406745E00BBFEB8 /* ptr2array.swift */; };
 		0108417A2406745E00BBFEB8 /* exception.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010841702406745E00BBFEB8 /* exception.swift */; };
 		0108417B2406745E00BBFEB8 /* creation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010841712406745E00BBFEB8 /* creation.swift */; };
+		0108417D24068FE900BBFEB8 /* Matft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0108417C24068FE900BBFEB8 /* Matft.framework */; };
+		01084180240690EA00BBFEB8 /* conversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0108417F240690EA00BBFEB8 /* conversion.swift */; };
+		01084183240693D900BBFEB8 /* conversion_mfarray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01084182240693D900BBFEB8 /* conversion_mfarray.swift */; };
 		D672166B23935A7B00040BD0 /* Matft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D672166123935A7B00040BD0 /* Matft.framework */; };
 		D672167023935A7B00040BD0 /* MatftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672166F23935A7B00040BD0 /* MatftTests.swift */; };
 		D672167223935A7B00040BD0 /* Matft.h in Headers */ = {isa = PBXBuildFile; fileRef = D672166423935A7B00040BD0 /* Matft.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -58,6 +61,9 @@
 		0108416F2406745E00BBFEB8 /* ptr2array.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ptr2array.swift; sourceTree = "<group>"; };
 		010841702406745E00BBFEB8 /* exception.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = exception.swift; sourceTree = "<group>"; };
 		010841712406745E00BBFEB8 /* creation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = creation.swift; sourceTree = "<group>"; };
+		0108417C24068FE900BBFEB8 /* Matft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Matft.framework; sourceTree = SOURCE_ROOT; };
+		0108417F240690EA00BBFEB8 /* conversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = conversion.swift; sourceTree = "<group>"; };
+		01084182240693D900BBFEB8 /* conversion_mfarray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = conversion_mfarray.swift; sourceTree = "<group>"; };
 		D672166123935A7B00040BD0 /* Matft.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Matft.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D672166423935A7B00040BD0 /* Matft.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Matft.h; sourceTree = "<group>"; };
 		D672166523935A7B00040BD0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -79,6 +85,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D672166B23935A7B00040BD0 /* Matft.framework in Frameworks */,
+				0108417D24068FE900BBFEB8 /* Matft.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,6 +95,8 @@
 		010841652406745E00BBFEB8 /* core */ = {
 			isa = PBXGroup;
 			children = (
+				01084181240693BF00BBFEB8 /* method */,
+				0108417E240690B500BBFEB8 /* function */,
 				010841662406745E00BBFEB8 /* object */,
 			);
 			path = core;
@@ -124,6 +133,22 @@
 			path = convertor;
 			sourceTree = "<group>";
 		};
+		0108417E240690B500BBFEB8 /* function */ = {
+			isa = PBXGroup;
+			children = (
+				0108417F240690EA00BBFEB8 /* conversion.swift */,
+			);
+			path = function;
+			sourceTree = "<group>";
+		};
+		01084181240693BF00BBFEB8 /* method */ = {
+			isa = PBXGroup;
+			children = (
+				01084182240693D900BBFEB8 /* conversion_mfarray.swift */,
+			);
+			path = method;
+			sourceTree = "<group>";
+		};
 		D672165723935A7B00040BD0 = {
 			isa = PBXGroup;
 			children = (
@@ -158,6 +183,7 @@
 			isa = PBXGroup;
 			children = (
 				D672166F23935A7B00040BD0 /* MatftTests.swift */,
+				0108417C24068FE900BBFEB8 /* Matft.framework */,
 				D672167123935A7B00040BD0 /* Info.plist */,
 			);
 			path = MatftTests;
@@ -315,11 +341,13 @@
 			files = (
 				0108417B2406745E00BBFEB8 /* creation.swift in Sources */,
 				010841782406745E00BBFEB8 /* array2ptr.swift in Sources */,
+				01084183240693D900BBFEB8 /* conversion_mfarray.swift in Sources */,
 				010841792406745E00BBFEB8 /* ptr2array.swift in Sources */,
 				010841752406745E00BBFEB8 /* mfdata.swift in Sources */,
 				010841762406745E00BBFEB8 /* mfdataUtils.swift in Sources */,
 				0108417A2406745E00BBFEB8 /* exception.swift in Sources */,
 				010841742406745E00BBFEB8 /* mfarray.swift in Sources */,
+				01084180240690EA00BBFEB8 /* conversion.swift in Sources */,
 				010841732406745E00BBFEB8 /* mftype.swift in Sources */,
 				010841772406745E00BBFEB8 /* ptr2ptr.swift in Sources */,
 				010841722406745E00BBFEB8 /* Matft.swift in Sources */,
@@ -532,6 +560,10 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = WL6N7MD8S7;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = MatftTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -551,6 +583,10 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = WL6N7MD8S7;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = MatftTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

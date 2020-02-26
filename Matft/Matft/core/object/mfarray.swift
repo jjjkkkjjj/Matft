@@ -9,13 +9,16 @@
 import Foundation
 
 public class MfArray{
-    private var mfdata: MfData
+    public internal(set) var mfdata: MfData
     
     public var shape: [Int]{
         return Array(self.mfdata._shape)
     }
     public var strides: [Int]{
         return Array(self.mfdata._strides)
+    }
+    public var ndim: Int{
+        return self.mfdata._shape.count
     }
     public var size: Int{
         return self.mfdata._size
@@ -51,12 +54,6 @@ public class MfArray{
                 let shapeptr = array2UnsafeMBPtrT(&shape)
                 self.mfdata = MfData(dataptr: ptr, shapeptr: shapeptr, mftype: _mftype)
         }
-        
-        print(self.data)
-        print(self.shape)
-        print(self.strides)
-        print(self.mftype)
-        
     }
     
     deinit {
