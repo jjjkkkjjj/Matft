@@ -51,4 +51,42 @@ extension Matft.mfarray{
         
         return newarray
     }
+    
+    public static func broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
+        var shape = shape
+        let out_ndim = shape2ndim(&shape)
+        var out_strides = Array<Int>(repeating: 0, count: out_ndim)
+        
+        let idim_start = out_ndim - mfarray.ndim
+        
+        
+        if idim_start < 0{
+            fatalError("can't broadcast to fewer dimensions")
+        }
+        
+        for idim in (idim_start..<out_ndim).reversed(){
+            let strides_shape_value = mfarray.shape[idim - idim_start]
+            /* If it doesn't have dimension one, it must match */
+            if strides_shape_value == 1{
+                out_strides[idim] = 0
+            }
+            else if strides_shape_value != shape[idim]{
+                fatalError("could not broadcast from shape \(mfarray.shapeptr.count), \(mfarray.shape) into shape \(out_ndim), \(shape)")
+            }
+            else{
+                out_strides[idim] = mfarray.strides[idim - idim_start]
+            }
+        }
+        
+        /* New dimensions get a zero stride */
+        for idim in 0..<idim_start{
+            out_strides[idim] = 0
+        }
+        
+        let newarray = Matft.mfarray.create_view(mfarray)
+        newarray.mfdata._shape = array2UnsafeMBPtrT(&shape)
+        newarray.mfdata._strides = array2UnsafeMBPtrT(&out_strides)
+        
+        return newarray
+    }
 }

@@ -28,6 +28,7 @@ class MainView: UIView {
                                      
                                  [[ 8,  9, 10, 11],
                                   [12, 13, 14, 15]]])*/
+        let arr = try! MfArray([[0,1],[2,3]])
         let arr22 = try! MfArray([[[ 0,  -8],
                                    [ 4, 12]],
                                       
@@ -39,10 +40,10 @@ class MainView: UIView {
                                     
                                   [[ 3, 11],
                                    [ 7, 15]]])
-        print(arr22.T)
+        print(arr.broadcast_to(shape: [4, 2, 2]))
         let f = arr22.astype(.UInt16)
-        print(arr22.data)
-        print(f.data)
+        print(arr22)
+        print(f)
         
         /*
         let a = Matft.mfarray.nums(num: 2, type: Int.self, shape: [10, 10, 10, 10, 10, 10])

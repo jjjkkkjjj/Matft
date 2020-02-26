@@ -32,10 +32,10 @@ extension MfArray{
 
             precondition(flattenIndex < self.size, "indices \(indices) is out of bounds")
             if self.mftype == .Double{
-                return self.dataptr.bindMemory(to: Double.self)[flattenIndex]
+                return self.data[flattenIndex]
             }
             else{
-                return self.dataptr.bindMemory(to: Float.self)[flattenIndex]
+                return self.data[flattenIndex]
             }
         }
         set(newValue){

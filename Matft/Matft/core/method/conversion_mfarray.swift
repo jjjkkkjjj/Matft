@@ -19,4 +19,8 @@ extension MfArray{
     public var T: MfArray{
         return Matft.mfarray.transpose(self)
     }
+    
+    public func broadcast_to(shape: [Int]) -> MfArray{
+        return Matft.mfarray.broadcast_to(self, shape: shape)
+    }
 }
