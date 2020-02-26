@@ -40,7 +40,6 @@ internal func vDSP_infix<T: MfNumeric>(_ left: MfArray<T>, _ right: MfArray<T>, 
     }
     
     let vdsp_args = vDSP_Args(b_mfarray: bigger_mfarray, b_storedSize: bigger_storedSize, s_mfarray: smaller_mfarray, s_storedSize: smaller_storedSize, n_mfarray: new)
-    var start = Date()
     /*
     bigger_mfarray.data.withMemoryRebound(to: Double.self, capacity: bigger_storedSize, { bptr in
         smaller_mfarray.data.withMemoryRebound(to: Double.self, capacity: smaller_storedSize, { sptr in
@@ -66,8 +65,6 @@ internal func vDSP_infix<T: MfNumeric>(_ left: MfArray<T>, _ right: MfArray<T>, 
                   smaller_mfarray.data + args.s_offset, vDSP_Stride(args.s_stride),
                   new.data + args.n_offset, vDSP_Stride(args.n_stride), vDSP_Length(args.blocksize))
     }
-    var elapsed = Date().timeIntervalSince(start)
-    print(elapsed)
     return new
 }
 
