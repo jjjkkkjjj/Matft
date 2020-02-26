@@ -1,5 +1,5 @@
 //
-//  Matft.swift
+//  exception.swift
 //  SuperMatft
 //
 //  Created by Junnosuke Kado on 2020/02/24.
@@ -8,9 +8,6 @@
 
 import Foundation
 
-public class Matft{
-
-    public class mfarray{
-        public class linalg{}
-    }
+public enum MfError: Error{
+    case creationError(_ message: String)
 }
