@@ -9,6 +9,9 @@
 import Foundation
 
 extension Matft.mfarray{
+    static public func create_view(_ mfarray: MfArray) -> MfArray{
+        return MfArray(base: mfarray)
+    }
     static public func deepcopy(_ mfarray: MfArray) -> MfArray{
         let newdata = Matft.mfarray.mfdata.deepcopy(mfarray.mfdata)
         let newarray = MfArray(newdata)

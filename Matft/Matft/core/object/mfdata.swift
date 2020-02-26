@@ -28,6 +28,13 @@ public struct MfData{
         }
         self._mftype = mftype
     }
+    public init(mfdata: MfData){
+        self._data = mfdata._data
+        self._shape = mfdata._shape
+        self._size = mfdata._size
+        self._strides = mfdata._strides
+        self._mftype = mfdata._mftype
+    }
     
     internal func free() {
         self._data.deallocate()

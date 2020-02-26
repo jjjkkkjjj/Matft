@@ -31,6 +31,8 @@ public class MfArray{
         return unsafeMRBPtr2array_viaForD(self.mfdata._data, mftype: self.mftype, size: self.size)
     }
     
+    public var base: MfArray?
+    
     public init (_ array: [Any], mftype: MfType? = nil) throws {
         
         var _mftype: MfType = .None
@@ -39,7 +41,7 @@ public class MfArray{
         }
     
         if _mftype == .Object{
-            print(flatten)
+            //print(flatten)
             throw MfError.creationError("Matft does not support Object. Shape was \(shape)")
         }
         
@@ -58,9 +60,14 @@ public class MfArray{
     public init (_ mfdata: MfData){
         self.mfdata = mfdata
     }
-    
+    public init (base: MfArray){
+        self.base = base
+        self.mfdata = MfData(mfdata: base.mfdata)
+    }
     deinit {
-        self.mfdata.free()
+        if self.base == nil{
+            self.mfdata.free()
+        }
     }
 }
 

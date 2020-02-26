@@ -10,7 +10,7 @@ import Foundation
 
 extension Matft.mfarray{
     public static func astype(_ mfarray: MfArray, mftype: MfType) -> MfArray{
-        let newarray = mfarray.deepcopy()
+        let newarray = Matft.mfarray.create_view(mfarray)
         newarray.mfdata._mftype = mftype
         return newarray
     }
@@ -45,7 +45,7 @@ extension Matft.mfarray{
             newStrides.append(mfarray.strides[permutation[i]])
         }
         
-        let newarray = mfarray.deepcopy()
+        let newarray = Matft.mfarray.create_view(mfarray)
         newarray.mfdata._shape = array2UnsafeMBPtrT(&newShape)
         newarray.mfdata._strides = array2UnsafeMBPtrT(&newStrides)
         

@@ -12,5 +12,8 @@ extension MfArray{
     public func deepcopy() -> MfArray{
         return Matft.mfarray.deepcopy(self)
     }
+    public func create_view() -> MfArray{
+        return Matft.mfarray.create_view(self)
+    }
 }
  
