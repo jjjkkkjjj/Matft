@@ -39,7 +39,7 @@ class MainView: UIView {
                                     
                                   [[ 3, 11],
                                    [ 7, 15]]])
-        print(arr22.T.data)
+        print(arr22.T)
         let f = arr22.astype(.UInt16)
         print(arr22.data)
         print(f.data)

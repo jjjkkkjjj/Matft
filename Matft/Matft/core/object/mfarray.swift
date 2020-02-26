@@ -14,8 +14,14 @@ public class MfArray{
     public var shape: [Int]{
         return Array(self.mfdata._shape)
     }
+    internal var shapeptr: UnsafeMutableBufferPointer<Int>{
+        return self.mfdata._shape
+    }
     public var strides: [Int]{
         return Array(self.mfdata._strides)
+    }
+    internal var stridesptr: UnsafeMutableBufferPointer<Int>{
+        return self.mfdata._strides
     }
     public var ndim: Int{
         return self.mfdata._shape.count
@@ -29,6 +35,9 @@ public class MfArray{
     // return flatten array
     public var data: [Any]{
         return unsafeMRBPtr2array_viaForD(self.mfdata._data, mftype: self.mftype, size: self.size)
+    }
+    internal var dataptr: UnsafeMutableRawBufferPointer{
+        return self.mfdata._data
     }
     
     public var base: MfArray?
