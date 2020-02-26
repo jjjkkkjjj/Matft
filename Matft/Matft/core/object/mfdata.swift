@@ -15,12 +15,17 @@ public struct MfData{
     internal var _mftype: MfType
     internal var _size: Int
     
-    public init(dataptr: UnsafeMutableRawBufferPointer, shapeptr: UnsafeMutableBufferPointer<Int>, mftype: MfType){
+    public init(dataptr: UnsafeMutableRawBufferPointer, shapeptr: UnsafeMutableBufferPointer<Int>, mftype: MfType, stridesptr: UnsafeMutableBufferPointer<Int>? = nil){
         
         self._data = dataptr
         self._shape = shapeptr
         self._size = shape2size(shapeptr)
-        self._strides = shape2strides(self._shape)
+        if let stridesptr = stridesptr{
+            self._strides = stridesptr
+        }
+        else{
+            self._strides = shape2strides(self._shape)
+        }
         self._mftype = mftype
     }
     

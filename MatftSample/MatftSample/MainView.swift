@@ -40,7 +40,8 @@ class MainView: UIView {
                                   [[ 3, 11],
                                    [ 7, 15]]])
         print(arr22.data)
-        let f = Matft.mfarray.astype(arr22, mftype: .UInt)
+        let f = arr22.astype(.UInt16)
+        print(arr22.data)
         print(f.data)
         
         /*

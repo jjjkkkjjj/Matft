@@ -9,8 +9,7 @@
 import Foundation
 
 internal func unsafeMBPtrT2UnsafeMRBPtr<T>(_ ptrT: UnsafeMutableBufferPointer<T>) -> UnsafeMutableRawBufferPointer{
-    typealias retptr = UnsafeMutableRawBufferPointer
-    let ret = retptr.allocate(byteCount: MemoryLayout<T>.size * ptrT.count, alignment: MemoryLayout<T>.alignment)
+    let ret = create_unsafeMRBPtr(type: T.self, count: ptrT.count)
     
     memcpy(ret.baseAddress!, ptrT.baseAddress!, MemoryLayout<T>.size * ptrT.count)
     

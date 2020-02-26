@@ -12,5 +12,7 @@ public class Matft{
 
     public class mfarray{
         public class linalg{}
+        
+        internal class mfdata{}
     }
 }

@@ -55,6 +55,9 @@ public class MfArray{
                 self.mfdata = MfData(dataptr: ptr, shapeptr: shapeptr, mftype: _mftype)
         }
     }
+    public init (_ mfdata: MfData){
+        self.mfdata = mfdata
+    }
     
     deinit {
         self.mfdata.free()
