@@ -20,7 +20,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
             ptrui8.withUnsafeMutableBufferPointer{
                 retptr in
                 ptrF.withUnsafeBufferPointer{
-                    unsafePtrT2UnsafeBPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixru8, size)
+                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixru8, size)
                 }
             }
             let ret = Array(ptrui8) as [Any]
@@ -34,7 +34,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
             ptrui16.withUnsafeMutableBufferPointer{
                 retptr in
                 ptrF.withUnsafeBufferPointer{
-                    unsafePtrT2UnsafeBPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixru16, size)
+                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixru16, size)
                 }
             }
             let ret = Array(ptrui16) as [Any]
@@ -48,7 +48,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
             ptrui32.withUnsafeMutableBufferPointer{
                 retptr in
                 ptrF.withUnsafeBufferPointer{
-                    unsafePtrT2UnsafeBPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixru32, size)
+                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixru32, size)
                 }
             }
             let ret = Array(ptrui32) as [Any]
@@ -62,7 +62,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
             ptri8.withUnsafeMutableBufferPointer{
                 retptr in
                 ptrF.withUnsafeBufferPointer{
-                    unsafePtrT2UnsafeBPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixr8, size)
+                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixr8, size)
                 }
             }
             let ret = Array(ptri8) as [Any]
@@ -76,7 +76,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
             ptri16.withUnsafeMutableBufferPointer{
                 retptr in
                 ptrF.withUnsafeBufferPointer{
-                    unsafePtrT2UnsafeBPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixr16, size)
+                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixr16, size)
                 }
             }
             let ret = Array(ptri16) as [Any]
@@ -90,7 +90,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
             ptri32.withUnsafeMutableBufferPointer{
                 retptr in
                 ptrF.withUnsafeBufferPointer{
-                    unsafePtrT2UnsafeBPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixr32, size)
+                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixr32, size)
                 }
             }
             let ret = Array(ptri32) as [Any]

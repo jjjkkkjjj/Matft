@@ -36,6 +36,8 @@
 		01084180240690EA00BBFEB8 /* conversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0108417F240690EA00BBFEB8 /* conversion.swift */; };
 		01084183240693D900BBFEB8 /* conversion_mfarray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01084182240693D900BBFEB8 /* conversion_mfarray.swift */; };
 		010841852406960600BBFEB8 /* creation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010841842406960600BBFEB8 /* creation.swift */; };
+		018C3559240795D00098A5A2 /* vDSP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 018C3558240795D00098A5A2 /* vDSP.swift */; };
+		018C355B240798930098A5A2 /* bioperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 018C355A240798930098A5A2 /* bioperator.swift */; };
 		01B37B7F24069E6B004AF2EF /* creation_mfarray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B37B7E24069E6B004AF2EF /* creation_mfarray.swift */; };
 		01B37B812406A53F004AF2EF /* print.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B37B802406A53F004AF2EF /* print.swift */; };
 		01B37B842406A62E004AF2EF /* index.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B37B832406A62E004AF2EF /* index.swift */; };
@@ -70,6 +72,8 @@
 		0108417F240690EA00BBFEB8 /* conversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = conversion.swift; sourceTree = "<group>"; };
 		01084182240693D900BBFEB8 /* conversion_mfarray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = conversion_mfarray.swift; sourceTree = "<group>"; };
 		010841842406960600BBFEB8 /* creation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = creation.swift; sourceTree = "<group>"; };
+		018C3558240795D00098A5A2 /* vDSP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vDSP.swift; sourceTree = "<group>"; };
+		018C355A240798930098A5A2 /* bioperator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bioperator.swift; sourceTree = "<group>"; };
 		01B37B7E24069E6B004AF2EF /* creation_mfarray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = creation_mfarray.swift; sourceTree = "<group>"; };
 		01B37B802406A53F004AF2EF /* print.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = print.swift; sourceTree = "<group>"; };
 		01B37B832406A62E004AF2EF /* index.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = index.swift; sourceTree = "<group>"; };
@@ -105,6 +109,7 @@
 		010841652406745E00BBFEB8 /* core */ = {
 			isa = PBXGroup;
 			children = (
+				018C3557240795350098A5A2 /* operator */,
 				01084181240693BF00BBFEB8 /* method */,
 				0108417E240690B500BBFEB8 /* function */,
 				010841662406745E00BBFEB8 /* object */,
@@ -129,6 +134,7 @@
 				0108416B2406745E00BBFEB8 /* mfdataUtils.swift */,
 				01B37B802406A53F004AF2EF /* print.swift */,
 				01B37B832406A62E004AF2EF /* index.swift */,
+				018C3558240795D00098A5A2 /* vDSP.swift */,
 				010841702406745E00BBFEB8 /* exception.swift */,
 			);
 			path = util;
@@ -150,6 +156,7 @@
 			children = (
 				0108417F240690EA00BBFEB8 /* conversion.swift */,
 				010841842406960600BBFEB8 /* creation.swift */,
+				018C355A240798930098A5A2 /* bioperator.swift */,
 			);
 			path = function;
 			sourceTree = "<group>";
@@ -162,6 +169,13 @@
 				01B37B7E24069E6B004AF2EF /* creation_mfarray.swift */,
 			);
 			path = method;
+			sourceTree = "<group>";
+		};
+		018C3557240795350098A5A2 /* operator */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = operator;
 			sourceTree = "<group>";
 		};
 		D672165723935A7B00040BD0 = {
@@ -362,9 +376,11 @@
 				010841752406745E00BBFEB8 /* mfdata.swift in Sources */,
 				010841852406960600BBFEB8 /* creation.swift in Sources */,
 				010841762406745E00BBFEB8 /* mfdataUtils.swift in Sources */,
+				018C3559240795D00098A5A2 /* vDSP.swift in Sources */,
 				01B37B812406A53F004AF2EF /* print.swift in Sources */,
 				0108417A2406745E00BBFEB8 /* exception.swift in Sources */,
 				010841742406745E00BBFEB8 /* mfarray.swift in Sources */,
+				018C355B240798930098A5A2 /* bioperator.swift in Sources */,
 				01084180240690EA00BBFEB8 /* conversion.swift in Sources */,
 				010841732406745E00BBFEB8 /* mftype.swift in Sources */,
 				01B37B7F24069E6B004AF2EF /* creation_mfarray.swift in Sources */,

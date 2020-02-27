@@ -80,17 +80,17 @@ internal func flattenarray2UnsafeMRBPtr_viaForD(_ flattenarray: inout [Any]) -> 
     //UInt
     if let flattenarray = flattenarray as? [UInt8]{
         flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeBPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu8, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu8, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [UInt16]{
         flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeBPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu16, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu16, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [UInt32]{
         flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeBPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu32, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu32, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [UInt64]{
@@ -98,7 +98,7 @@ internal func flattenarray2UnsafeMRBPtr_viaForD(_ flattenarray: inout [Any]) -> 
         let flatten32array = flattenarray.map{ UInt32($0) }
         
         flatten32array.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeBPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu32, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu32, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [UInt]{
@@ -108,23 +108,23 @@ internal func flattenarray2UnsafeMRBPtr_viaForD(_ flattenarray: inout [Any]) -> 
         let flatten32array = flattenarray.map{ UInt32($0) }
         
         flatten32array.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeBPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu32, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu32, flattenarray.count)
         }
     }
     //Int
     else if let flattenarray = flattenarray as? [Int8]{
         flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeBPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt8, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt8, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [Int16]{
         flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeBPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt16, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt16, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [Int32]{
         flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeBPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt32, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt32, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [Int64]{
@@ -132,7 +132,7 @@ internal func flattenarray2UnsafeMRBPtr_viaForD(_ flattenarray: inout [Any]) -> 
         let flatten32array = flattenarray.map{ Int32($0) }
         
         flatten32array.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeBPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt32, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt32, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [Int]{
@@ -140,7 +140,7 @@ internal func flattenarray2UnsafeMRBPtr_viaForD(_ flattenarray: inout [Any]) -> 
         let flatten32array = flattenarray.map{ Int32($0) }
         
         flatten32array.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeBPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt32, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt32, flattenarray.count)
         }
     }
     else if var flattenarray = flattenarray as? [Float]{
@@ -166,12 +166,5 @@ internal func flattenarray2UnsafeMRBPtr_viaForD(_ flattenarray: inout [Any]) -> 
     ptrF.deallocate()
     
     return ret
-}
-
-
-internal typealias vDSP_convert_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<U>, vDSP_Stride, vDSP_Length) -> Void
-
-internal func unsafePtrT2UnsafeBPtrU<T, U>(_ srcptr: UnsafePointer<T>,  _ dstptr: UnsafeMutablePointer<U>, _ vDSP_func: vDSP_convert_func<T, U>, _ count: Int){
-    vDSP_func(srcptr, vDSP_Stride(1), dstptr, vDSP_Stride(1), vDSP_Length(count))
 }
 

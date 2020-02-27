@@ -40,10 +40,9 @@ class MainView: UIView {
                                     
                                   [[ 3, 11],
                                    [ 7, 15]]])
-        print(arr.broadcast_to(shape: [4, 2, 2]))
-        let f = arr22.astype(.UInt16)
-        print(arr22)
-        print(f)
+        //print(arr.broadcast_to(shape: [4, 2, 2]))
+        print(Matft.mfarray.add(arr.broadcast_to(shape: [4, 2, 2]), arr22))
+        //print(arr22)
         
         /*
         let a = Matft.mfarray.nums(num: 2, type: Int.self, shape: [10, 10, 10, 10, 10, 10])

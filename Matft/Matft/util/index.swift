@@ -162,3 +162,58 @@ internal struct FlattenSequenceIndexIterator: IteratorProtocol{
         return flattenIndex % self.storedSize
     }
 }
+
+
+internal struct Combination: Sequence{
+    var a: [Any]
+    public init (_ a: inout [Any]){
+        self.a = a
+    }
+    
+    func makeIterator() -> CombinationIterator {
+        return CombinationIterator(self.a)
+    }
+}
+
+internal struct CombinationIterator: IteratorProtocol{
+    var a: [Any]
+    var indices: [Int]
+    var iternum = 0
+    
+    public init(_ a: [Any]){
+        self.a = a
+        self.indices = Array(repeating: 0, count: a.count)
+    }
+    
+    mutating func next() -> [Int]? {
+        if self.iternum == 0{
+            self.iternum += 1
+            
+            return self.indices
+        }
+        else{
+            self.iternum += 1
+            
+            var next = self.a.count - 1
+            
+            guard let a = self.a[next] as? [Int] else {
+                return nil
+            }
+            
+            while (next >= 0 && self.indices[next] + 1 >= a.count){
+                next -= 1
+            }
+            
+            if (next < 0){
+                return nil
+            }
+            
+            self.indices[next] += 1
+            for i in next + 1..<self.a.count{
+                self.indices[i] = 0
+            }
+            
+            return self.indices
+        }
+    }
+}
