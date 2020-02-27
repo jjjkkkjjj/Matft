@@ -39,6 +39,9 @@ public class MfArray{
     internal var dataptr: UnsafeMutableRawBufferPointer{
         return self.mfdata._data
     }
+    internal var storedSize: Int{
+        return self.mfdata._storedSize
+    }
     
     public var base: MfArray?
     
@@ -63,7 +66,7 @@ public class MfArray{
             default:
                 let ptr = flattenarray2UnsafeMRBPtr_viaForD(&flatten)
                 let shapeptr = array2UnsafeMBPtrT(&shape)
-                self.mfdata = MfData(dataptr: ptr, shapeptr: shapeptr, mftype: _mftype)
+                self.mfdata = MfData(dataptr: ptr, storedSize: flatten.count, shapeptr: shapeptr, mftype: _mftype)
         }
     }
     public init (_ mfdata: MfData){

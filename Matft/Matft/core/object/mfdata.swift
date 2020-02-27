@@ -9,15 +9,17 @@
 import Foundation
 
 public struct MfData{
-    internal var _data: UnsafeMutableRawBufferPointer
-    internal var _shape: UnsafeMutableBufferPointer<Int>
-    internal var _strides: UnsafeMutableBufferPointer<Int>
-    internal var _mftype: MfType
-    internal var _size: Int
+    public var _data: UnsafeMutableRawBufferPointer
+    public var _shape: UnsafeMutableBufferPointer<Int>
+    public var _strides: UnsafeMutableBufferPointer<Int>
+    public var _mftype: MfType
+    public var _size: Int
+    public var _storedSize: Int
     
-    public init(dataptr: UnsafeMutableRawBufferPointer, shapeptr: UnsafeMutableBufferPointer<Int>, mftype: MfType, stridesptr: UnsafeMutableBufferPointer<Int>? = nil){
+    public init(dataptr: UnsafeMutableRawBufferPointer, storedSize: Int, shapeptr: UnsafeMutableBufferPointer<Int>, mftype: MfType, stridesptr: UnsafeMutableBufferPointer<Int>? = nil){
         
         self._data = dataptr
+        self._storedSize = storedSize
         self._shape = shapeptr
         self._size = shape2size(shapeptr)
         if let stridesptr = stridesptr{
@@ -30,6 +32,7 @@ public struct MfData{
     }
     public init(mfdata: MfData){
         self._data = mfdata._data
+        self._storedSize = mfdata._storedSize
         self._shape = mfdata._shape
         self._size = mfdata._size
         self._strides = mfdata._strides

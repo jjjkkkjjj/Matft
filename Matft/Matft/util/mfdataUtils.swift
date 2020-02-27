@@ -108,7 +108,7 @@ fileprivate func _recurrsion_flatten(elements: Any, mftype : inout MfType, shape
 internal func shape2ndim(_ shape: inout [Int]) -> Int{
     return shape.count
 }
-internal func shape2ndim(_ shapeptr: inout UnsafeMutableBufferPointer<Int>) -> Int{
+internal func shape2ndim(_ shapeptr: UnsafeMutableBufferPointer<Int>) -> Int{
     return shapeptr.count
 }
 

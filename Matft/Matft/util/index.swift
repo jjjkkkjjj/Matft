@@ -102,3 +102,63 @@ internal func get_leaveout_indices(_ shapeptr: inout UnsafeMutableBufferPointer<
     return ret
 }
 
+internal struct FlattenSequenceIndices: Sequence{
+    let shapeptr: UnsafeMutableBufferPointer<Int>
+    let stridesptr: UnsafeMutableBufferPointer<Int>
+    let storedSize: Int
+    
+    public init(storedSize: Int, shapeptr: UnsafeMutableBufferPointer<Int>, stridesptr: UnsafeMutableBufferPointer<Int>){
+        self.shapeptr = shapeptr
+        self.stridesptr = stridesptr
+        self.storedSize = storedSize
+    }
+    
+    func makeIterator() -> FlattenSequenceIndexIterator {
+        return FlattenSequenceIndexIterator(storedSize: self.storedSize, shapeptr: self.shapeptr, stridesptr: self.stridesptr)
+    }
+}
+
+// return index for flatten array from shape and strides
+internal struct FlattenSequenceIndexIterator: IteratorProtocol{
+    let size: Int
+    let storedSize: Int
+    //let shape: [Int]
+    var counts: [Int]
+    let strides: [Int]
+
+    var axis: Int
+    var iternum = 0
+    
+    public init(storedSize: Int, shapeptr: UnsafeMutableBufferPointer<Int>, stridesptr: UnsafeMutableBufferPointer<Int>){
+        self.size = shape2size(shapeptr)
+        self.storedSize = storedSize
+        self.axis = shape2ndim(shapeptr) - 1
+        
+        //self.shape = Array(shapeptr)
+        
+        self.counts = Array(shapeptr)
+        self.counts[self.axis] = 1
+        for axis in stride(from: self.axis - 1, through: 0, by: -1){
+            self.counts[axis] = self.counts[axis + 1] * shapeptr[axis + 1]
+        }
+        
+        self.strides = Array(stridesptr)
+    }
+    
+    mutating func next() -> Int? {
+        if self.iternum == self.size{
+            return nil
+        }
+        
+        var flattenIndex = 0
+        var quotient = self.iternum
+        for (count, st) in zip(self.counts, self.strides){
+            flattenIndex += (quotient / count) * st
+            quotient = quotient % count
+        }
+        
+        self.iternum += 1
+        
+        return flattenIndex % self.storedSize
+    }
+}

@@ -52,6 +52,20 @@ extension MfArray: CustomStringConvertible{
             }
         }
         else{ // all elements will be viewed
+            let flattenSequenceIndices = FlattenSequenceIndices(storedSize: self.storedSize, shapeptr: self.shapeptr, stridesptr: self.stridesptr)
+            let flattenData = self.data
+            for (ind, flattenIndex) in flattenSequenceIndices.enumerated(){
+                desc += "\t\(flattenData[flattenIndex]),\t"
+
+                if ind % self.shapeptr.last! == self.shapeptr.last! - 1{
+                    let clousureNum = _clousure_number(mfarray: self, ind: ind)
+                    //remove "\t" and ","
+                    desc = String(desc.dropLast(2))
+                    //append "]", "," "\n" and "["
+                    desc += String(repeating: "]", count: clousureNum) + "," + String(repeating: "\n", count: clousureNum) + String(repeating: "[", count: clousureNum)
+                }
+            }
+            /*
             let indices_ = get_indices(&shapeptr)
 
             for indices in indices_{
@@ -65,7 +79,7 @@ extension MfArray: CustomStringConvertible{
                     //append "]", "," "\n" and "["
                     desc += String(repeating: "]", count: clousureNum) + "," + String(repeating: "\n", count: clousureNum) + String(repeating: "[", count: clousureNum)
                 }
-            }
+            }*/
         }
         //remove redundunt "[", "\n" and "\n"
         desc = String(desc.dropLast((self.ndim - 1)*2 + 2))
@@ -74,6 +88,28 @@ extension MfArray: CustomStringConvertible{
         
         return desc
     }
+}
+
+//count clousure "[" number
+fileprivate func _clousure_number(mfarray: MfArray, ind: Int) -> Int{
+    var clousureNum = 1
+    
+    var counts = Array(mfarray.shapeptr)
+    counts[counts.count - 1] = 1
+    for axis in stride(from: counts.count - 2, through: 0, by: -1){
+        counts[axis] = counts[axis + 1] * mfarray.shapeptr[axis + 1]
+    }
+    
+    var quotient = ind
+
+    for axis in 0..<counts.count{
+        let count = counts[axis]
+        let dim = mfarray.shapeptr[axis]
+        clousureNum = (quotient / count == count - 1) && (quotient % count == dim - 1) ? clousureNum + 1 : clousureNum
+        quotient = quotient % count
+    }
+
+    return clousureNum
 }
 
 //count clousure "[" number

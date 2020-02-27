@@ -34,7 +34,7 @@ extension Matft.mfarray.mfdata{
         let stridesptr = create_unsafeMBPtrT(type: Int.self, count: mfdata._shape.count)
         memcpy(stridesptr.baseAddress!, mfdata._strides.baseAddress!, MemoryLayout<Int>.size * mfdata._strides.count)
         
-        let newmfdata = MfData(dataptr: dataptr, shapeptr: shapeptr, mftype: mfdata._mftype, stridesptr: stridesptr)
+        let newmfdata = MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mfdata._mftype, stridesptr: stridesptr)
         
         return newmfdata
         
