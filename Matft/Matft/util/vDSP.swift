@@ -23,7 +23,7 @@ internal func biop_unsafePtrT<T>(_ lptr: UnsafePointer<T>, _ lstride: Int, _ rpt
 
 internal func biop_by_vDSP<T>(_ bigger_mfarray: MfArray, _ smaller_mfarray: MfArray, vDSP_func: vDSP_biop_func<T>) -> MfArray{
     let dstptr = create_unsafeMRBPtr(type: T.self, count: bigger_mfarray.size)
-    
+
     for vDSPPrams in vDSPOptParams(bigger_mfarray: bigger_mfarray, smaller_mfarray: smaller_mfarray){
         bigger_mfarray.dataptr.bindMemory(to: T.self).withUnsafeBufferPointer{
             lptr in
@@ -88,6 +88,7 @@ internal struct vDSPOptParamIterator: IteratorProtocol{
         var shapecombo = itershapes.flatMap{
             [Array(0..<$0)]
         } as [Any]
+        ここ　iterAxesがない（一発でいける場合）
         self.shapeIter = Combination(&shapecombo).makeIterator()
     }
     

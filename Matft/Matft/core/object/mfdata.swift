@@ -15,6 +15,11 @@ public struct MfData{
     public var _mftype: MfType
     public var _size: Int
     public var _storedSize: Int
+    public var _isView: Bool{
+        return self.__isView
+    }
+    private var __isView: Bool = false //cannot access from outside for safety
+    
     internal var _storedType: StoredType{
         return MfType.storedType(self._mftype)
     }
@@ -41,9 +46,27 @@ public struct MfData{
         self._strides = mfdata._strides
         self._mftype = mfdata._mftype
     }
+    // create view
+    public init(refdata: MfData, shapeptr: UnsafeMutableBufferPointer<Int>, stridesptr: UnsafeMutableBufferPointer<Int>? = nil){
+        self._data = refdata._data
+        self._storedSize = refdata._storedSize
+        self._shape = shapeptr
+        self._size = shape2size(shapeptr)
+        if let stridesptr = stridesptr{
+            self._strides = stridesptr
+        }
+        else{
+            self._strides = shape2strides(self._shape)
+        }
+        self._mftype = refdata._mftype
+        
+        self.__isView = true
+    }
     
     internal func free() {
-        self._data.deallocate()
+        if !self._isView{
+            self._data.deallocate()
+        }
         self._shape.deallocate()
         self._strides.deallocate()
     }

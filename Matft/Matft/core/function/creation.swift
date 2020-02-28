@@ -21,7 +21,7 @@ extension Matft.mfarray{
 
 extension Matft.mfarray.mfdata{
     static public func deepcopy(_ mfdata: MfData) -> MfData{
-        
+
         //copy data
         let dataptr = mfdata._mftype == .Double ? create_unsafeMRBPtr(type: Double.self, count: mfdata._size) : create_unsafeMRBPtr(type: Float.self, count: mfdata._size)
         memcpy(dataptr.baseAddress!, mfdata._data.baseAddress!, mfdata._data.count)
@@ -38,5 +38,18 @@ extension Matft.mfarray.mfdata{
         
         return newmfdata
         
+    }
+    static public func shallowcopy(_ mfdata: MfData) -> MfData{
+        //copy shape
+        let shapeptr = create_unsafeMBPtrT(type: Int.self, count: mfdata._shape.count)
+        memcpy(shapeptr.baseAddress!, mfdata._shape.baseAddress!, MemoryLayout<Int>.size * mfdata._shape.count)
+        
+        //copy strides
+        let stridesptr = create_unsafeMBPtrT(type: Int.self, count: mfdata._shape.count)
+        memcpy(stridesptr.baseAddress!, mfdata._strides.baseAddress!, MemoryLayout<Int>.size * mfdata._strides.count)
+        
+        let newmfdata = MfData(refdata: mfdata, shapeptr: shapeptr, stridesptr: stridesptr)
+        
+        return newmfdata
     }
 }

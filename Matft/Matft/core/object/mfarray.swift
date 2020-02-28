@@ -34,10 +34,15 @@ public class MfArray{
     }
     // return flatten array
     public var data: [Any]{
-        return unsafeMRBPtr2array_viaForD(self.mfdata._data, mftype: self.mftype, size: self.size)
+        return unsafeMRBPtr2array_viaForD(self.dataptr, mftype: self.mftype, size: self.size)
     }
     internal var dataptr: UnsafeMutableRawBufferPointer{
-        return self.mfdata._data
+        if let base = self.base{
+            return base.dataptr
+        }
+        else{
+            return self.mfdata._data
+        }
     }
     internal var storedSize: Int{
         return self.mfdata._storedSize
@@ -77,12 +82,10 @@ public class MfArray{
     }
     public init (base: MfArray){
         self.base = base
-        self.mfdata = base.mfdata.deepcopy()
+        self.mfdata = base.mfdata.shallowcopy()
     }
     deinit {
-        if self.base == nil{
-            self.mfdata.free()
-        }
+        self.mfdata.free()
     }
 }
 
