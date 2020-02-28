@@ -15,6 +15,9 @@ public struct MfData{
     public var _mftype: MfType
     public var _size: Int
     public var _storedSize: Int
+    internal var _storedType: StoredType{
+        return MfType.storedType(self._mftype)
+    }
     
     public init(dataptr: UnsafeMutableRawBufferPointer, storedSize: Int, shapeptr: UnsafeMutableBufferPointer<Int>, mftype: MfType, stridesptr: UnsafeMutableBufferPointer<Int>? = nil){
         

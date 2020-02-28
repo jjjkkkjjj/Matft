@@ -10,4 +10,6 @@ import Foundation
 
 public enum MfError: Error{
     case creationError(_ message: String)
+    case conversionError(_ message: String)
+    case calculationError(_ message: String)
 }

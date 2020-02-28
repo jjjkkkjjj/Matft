@@ -32,7 +32,6 @@ fileprivate func _get_flatten_byBFS(queue: inout [Any], shape: inout [Int], mfty
             
             if cnt == 0{ //append next dim
                 shape.append(elements.count)
-                size *= elements.count
                 axis += 1
             }
             else{// check if same dim is or not
@@ -41,15 +40,20 @@ fileprivate func _get_flatten_byBFS(queue: inout [Any], shape: inout [Int], mfty
                     mftype = .Object
                 }
             }
-            cnt = cnt + 1 < size ? cnt + 1 : 0
+            cnt += 1
         }
-        else{ // value was detented. this means queue in this case becomes flatten array
+        else{ // value was detected. this means queue in this case becomes flatten array
             let _mftype = MfType.mftype(value: elements)
             mftype = MfType.priority(mftype, _mftype)
             break
         }
         //remove first element from array
         let _ = queue.removeFirst()
+        
+        if cnt == size{//reset count and forward next axis
+            cnt = 0
+            size *= shape[axis]
+        }
     }
     
     return queue

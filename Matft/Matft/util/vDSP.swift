@@ -21,13 +21,13 @@ internal func biop_unsafePtrT<T>(_ lptr: UnsafePointer<T>, _ lstride: Int, _ rpt
     vDSP_func(lptr, vDSP_Stride(lstride), rptr, vDSP_Stride(rstride), dstptr, vDSP_Stride(dststride), vDSP_Length(blockSize))
 }
 
-internal func biop_by_vDSP<T>(l_mfarray: MfArray, r_mfarray: MfArray, vDSP_func: vDSP_biop_func<T>) -> MfArray{
-    let dstptr = create_unsafeMRBPtr(type: T.self, count: l_mfarray.size)
+internal func biop_by_vDSP<T>(_ bigger_mfarray: MfArray, _ smaller_mfarray: MfArray, vDSP_func: vDSP_biop_func<T>) -> MfArray{
+    let dstptr = create_unsafeMRBPtr(type: T.self, count: bigger_mfarray.size)
     
-    for vDSPPrams in vDSPOptParams(l_mfarray: l_mfarray, r_mfarray: r_mfarray){
-        l_mfarray.dataptr.bindMemory(to: T.self).withUnsafeBufferPointer{
+    for vDSPPrams in vDSPOptParams(bigger_mfarray: bigger_mfarray, smaller_mfarray: smaller_mfarray){
+        bigger_mfarray.dataptr.bindMemory(to: T.self).withUnsafeBufferPointer{
             lptr in
-            r_mfarray.dataptr.bindMemory(to: T.self).withUnsafeBufferPointer{
+            smaller_mfarray.dataptr.bindMemory(to: T.self).withUnsafeBufferPointer{
                 rptr in
                 var p = dstptr.bindMemory(to: T.self)
                     p.withUnsafeMutableBufferPointer{
@@ -37,27 +37,28 @@ internal func biop_by_vDSP<T>(l_mfarray: MfArray, r_mfarray: MfArray, vDSP_func:
                 
             }
         }
+        print(vDSPPrams.l_stride, vDSPPrams.l_offset, vDSPPrams.r_stride, vDSPPrams.r_offset, vDSPPrams.blocksize)
     }
     
-    let shapeptr = create_unsafeMBPtrT(type: Int.self, count: l_mfarray.ndim)
+    let shapeptr = create_unsafeMBPtrT(type: Int.self, count: bigger_mfarray.ndim)
     
-    let stridesptr = create_unsafeMBPtrT(type: Int.self, count: l_mfarray.ndim)
-    for axis in 0..<l_mfarray.ndim{
-        shapeptr[axis] = l_mfarray.shapeptr[axis]
-        stridesptr[axis] = l_mfarray.stridesptr[axis]
+    let stridesptr = create_unsafeMBPtrT(type: Int.self, count: bigger_mfarray.ndim)
+    for axis in 0..<bigger_mfarray.ndim{
+        shapeptr[axis] = bigger_mfarray.shapeptr[axis]
+        stridesptr[axis] = bigger_mfarray.stridesptr[axis]
     }
     
-    let newdata = MfData(dataptr: dstptr, storedSize: l_mfarray.storedSize, shapeptr: l_mfarray.shapeptr, mftype: l_mfarray.mftype, stridesptr: l_mfarray.stridesptr)
+    let newdata = MfData(dataptr: dstptr, storedSize: bigger_mfarray.storedSize, shapeptr: shapeptr, mftype: bigger_mfarray.mftype, stridesptr: stridesptr)
     return MfArray(newdata)
 }
 
 internal struct vDSPOptParams: Sequence{
-    let l_mfarray: MfArray
-    let r_mfarray: MfArray
+    let bigger_mfarray: MfArray
+    let smaller_mfarray: MfArray
     
-    public init(l_mfarray: MfArray, r_mfarray: MfArray){
-        self.l_mfarray = l_mfarray
-        self.r_mfarray = r_mfarray
+    public init(bigger_mfarray: MfArray, smaller_mfarray: MfArray){
+        self.bigger_mfarray = bigger_mfarray
+        self.smaller_mfarray = smaller_mfarray
     }
     
     func makeIterator() -> vDSPOptParamIterator {
@@ -75,14 +76,14 @@ internal struct vDSPOptParamIterator: IteratorProtocol{
     var shapeIter: CombinationIterator
     
     public init(optParams: vDSPOptParams){
-        let (axis, blocksize, iterAxes) = _optStrides(shapeptr: optParams.l_mfarray.shapeptr, l_strideptr: optParams.l_mfarray.stridesptr, r_strideptr: optParams.r_mfarray.stridesptr)
+        let (axis, blocksize, iterAxes) = _optStrides(shapeptr: optParams.bigger_mfarray.shapeptr, l_strideptr: optParams.bigger_mfarray.stridesptr, r_strideptr: optParams.smaller_mfarray.stridesptr)
         self.axis = axis
         self.blocksize = blocksize
         self.optParams = optParams
         
-        self.itershapes = iterAxes.map{ optParams.l_mfarray.shapeptr[$0] }
-        self.iterL_strides = iterAxes.map{ optParams.l_mfarray.stridesptr[$0] }
-        self.iterR_strides = iterAxes.map{ optParams.l_mfarray.stridesptr[$0] }
+        self.itershapes = iterAxes.map{ optParams.bigger_mfarray.shapeptr[$0] }
+        self.iterL_strides = iterAxes.map{ optParams.bigger_mfarray.stridesptr[$0] }
+        self.iterR_strides = iterAxes.map{ optParams.smaller_mfarray.stridesptr[$0] }
         
         var shapecombo = itershapes.flatMap{
             [Array(0..<$0)]
@@ -102,7 +103,7 @@ internal struct vDSPOptParamIterator: IteratorProtocol{
             r_offset += self.iterR_strides[axis] * index
         }
         
-        return (l_offset, self.optParams.l_mfarray.stridesptr[self.axis], r_offset, self.optParams.r_mfarray.stridesptr[self.axis], self.blocksize)
+        return (l_offset, self.optParams.bigger_mfarray.stridesptr[self.axis], r_offset, self.optParams.smaller_mfarray.stridesptr[self.axis], self.blocksize)
     }
 }
 
@@ -128,8 +129,7 @@ fileprivate func _optStrides(shapeptr: UnsafeMutableBufferPointer<Int>, l_stride
         
         var n = 0
         var blockSize = shapeptr[axis]
-        var iterAxes: [Int] = Array(0..<ndim)
-        iterAxes.removeFirst(axis)
+        var iterAxes: [Int] = []
         while n < ndim{
             guard let lst = l_strides[n], let rst = r_strides[n] else {//skip
                 n += 1
@@ -143,12 +143,14 @@ fileprivate func _optStrides(shapeptr: UnsafeMutableBufferPointer<Int>, l_stride
                 //update blocksize
                 blockSize *= shapeptr[n]
                 
-                //set axes to search
-                iterAxes.removeFirst(n)
-                
                 //re-search
                 n = 0
+                continue
             }
+            
+            //set axes to search
+            iterAxes.append(n)
+            n += 1
         }
         
         //check if it is maximum blocksize or not

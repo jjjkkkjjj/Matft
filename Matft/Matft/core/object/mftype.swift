@@ -64,6 +64,14 @@ public enum MfType: Int{
         }
     }
     
+    static internal func storedType(_ mftype: MfType) -> StoredType{
+        switch mftype {
+        case .Double:
+            return .Double
+        default: // all mftypes are stored as float except for double
+            return .Float
+        }
+    }
     
     static public func is32bit() -> Bool{
         return MemoryLayout<Int>.size == MemoryLayout<Int32>.size
@@ -78,6 +86,7 @@ public enum MfType: Int{
     //}
 }
 
-//fileprivate func int() -> Int{
-    
-//}
+internal enum StoredType: Int{
+    case Float
+    case Double
+}

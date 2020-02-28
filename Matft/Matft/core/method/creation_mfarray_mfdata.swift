@@ -17,3 +17,8 @@ extension MfArray{
     }
 }
  
+extension MfData{
+    public func deepcopy() -> MfData{
+        return Matft.mfarray.mfdata.deepcopy(self)
+    }
+}

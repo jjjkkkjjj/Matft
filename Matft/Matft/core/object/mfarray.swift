@@ -42,6 +42,9 @@ public class MfArray{
     internal var storedSize: Int{
         return self.mfdata._storedSize
     }
+    internal var storedType: StoredType{
+        return self.mfdata._storedType
+    }
     
     public var base: MfArray?
     
@@ -74,7 +77,7 @@ public class MfArray{
     }
     public init (base: MfArray){
         self.base = base
-        self.mfdata = MfData(mfdata: base.mfdata)
+        self.mfdata = base.mfdata.deepcopy()
     }
     deinit {
         if self.base == nil{

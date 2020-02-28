@@ -14,7 +14,9 @@ import Accelerate
 internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, mftype: MfType, size: Int) -> [Any]{
     let ptrF = ptr.bindMemory(to: Float.self)
     
-    switch mftype {
+    switch MfType.storedType(mftype) {
+    case .Float://in case that storedtype is Float
+        switch mftype {
         case .UInt8:
             var ptrui8 = create_unsafeMBPtrT(type: UInt8.self, count: size)
             ptrui8.withUnsafeMutableBufferPointer{
@@ -103,13 +105,20 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
             let ret = Array(ptrF) as [Any]
             
             return ret
-        case .Double:
-            let ptrD = ptr.bindMemory(to: Double.self)
-            let ret = Array(ptrD) as [Any]
-
-            return ret
         default:
             fatalError("Unsupported type \(mftype).")
+        }
+        
+    case .Double://in case that storedtype is Double
+        switch mftype {
+            case .Double:
+                let ptrD = ptr.bindMemory(to: Double.self)
+                let ret = Array(ptrD) as [Any]
+
+                return ret
+            default:
+                fatalError("Unsupported type \(mftype).")
+        }
     }
     
 }

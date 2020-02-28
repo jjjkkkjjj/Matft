@@ -52,7 +52,7 @@ extension Matft.mfarray{
         return newarray
     }
     
-    public static func broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
+    public static func broadcast_to(_ mfarray: MfArray, shape: [Int]) throws -> MfArray{
         var shape = shape
         let out_ndim = shape2ndim(&shape)
         var out_strides = Array<Int>(repeating: 0, count: out_ndim)
@@ -61,7 +61,7 @@ extension Matft.mfarray{
         
         
         if idim_start < 0{
-            fatalError("can't broadcast to fewer dimensions")
+            throw MfError.conversionError("can't broadcast to fewer dimensions")
         }
         
         for idim in (idim_start..<out_ndim).reversed(){
@@ -71,7 +71,7 @@ extension Matft.mfarray{
                 out_strides[idim] = 0
             }
             else if strides_shape_value != shape[idim]{
-                fatalError("could not broadcast from shape \(mfarray.shapeptr.count), \(mfarray.shape) into shape \(out_ndim), \(shape)")
+                throw MfError.conversionError("could not broadcast from shape \(mfarray.shapeptr.count), \(mfarray.shape) into shape \(out_ndim), \(shape)")
             }
             else{
                 out_strides[idim] = mfarray.strides[idim - idim_start]

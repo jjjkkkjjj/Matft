@@ -18,17 +18,20 @@ class MainView: UIView {
     }
     
     func check_MfArray(){
-        /*
+        
         let arr = try! MfArray([[0,1],[2,3]])
+        print(arr)
         //print(arr + arr.T)
+        /*
         let arrr = try! MfArray([0,1])
-        let arrrr = try! MfArray([[0]])
+        let arrrr = try! MfArray([[0]])*/
         let arr2 = try! MfArray([[[ 0,  1,  2,  3],
                                   [ 4,  5,  6,  7]],
                                      
                                  [[ 8,  9, 10, 11],
-                                  [12, 13, 14, 15]]])*/
-        let arr = try! MfArray([[0,1],[2,3]])
+                                  [12, 13, 14, 15]]])
+        print(arr2)
+        
         let arr22 = try! MfArray([[[ 0,  -8],
                                    [ 4, 12]],
                                       
@@ -40,8 +43,9 @@ class MainView: UIView {
                                     
                                   [[ 3, 11],
                                    [ 7, 15]]])
+        print(arr2.T + arr22)
         //print(arr.broadcast_to(shape: [4, 2, 2]))
-        print(Matft.mfarray.add(arr.broadcast_to(shape: [4, 2, 2]), arr22))
+        //print(arr + arr22)
         //print(arr22)
         
         /*
