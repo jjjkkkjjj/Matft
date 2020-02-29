@@ -50,10 +50,11 @@ class MainView: UIView {
         */
         
         let a = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10, 10, 10, 10, 10, 10], mftype: .Float)
+        //let a = Matft.mfarray.arange(start: 0, stop: 3*3*3*3, step: 1, shape: [3, 3, 3, 3], mftype: .Float)
         let b = a.transpose()
-        //let c = a.transpose(axes: [1,2,3,4,5,0])
+        let c = a.transpose(axes: [1,2,3,4,5,0])
         var start = Date()
-        let d = a + a.T
+        let d = b + c
         var elapsed = Date().timeIntervalSince(start)
         print(elapsed)
     }

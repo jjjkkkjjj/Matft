@@ -58,7 +58,7 @@ internal func biop_by_vDSP<T>(_ bigger_mfarray: MfArray, _ smaller_mfarray: MfAr
             var p = dstptr.bindMemory(to: T.self)
                     p.withUnsafeMutableBufferPointer{
                 for vDSPPrams in vDSPOptParams(bigger_mfarray: bigger_mfarray, smaller_mfarray: smaller_mfarray){
-                    biop_unsafePtrT(lptr.baseAddress! + vDSPPrams.l_offset, vDSPPrams.l_stride, rptr.baseAddress! + vDSPPrams.r_offset, vDSPPrams.r_stride, $0.baseAddress! + vDSPPrams.l_offset, vDSPPrams.l_stride, vDSPPrams.blocksize, vDSP_func)
+                    biop_unsafePtrT(lptr.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, rptr.baseAddress! + vDSPPrams.s_offset, vDSPPrams.s_stride, $0.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSPPrams.blocksize, vDSP_func)
                 }
             }
         }
@@ -90,44 +90,74 @@ internal struct vDSPOptParams: Sequence{
 }
 
 internal struct vDSPOptParamIterator: IteratorProtocol{
-    let optParams: vDSPOptParams
-    let axis: Int
+    let stride: (b: Int, s: Int)
     let blocksize: Int
     let itershapes: [Int]
-    let iterL_strides: [Int]
-    let iterR_strides: [Int]
-    var shapeIter: CombinationIterator
+    let iter_strides: (b: [Int], s: [Int])
+    
+    var upaxis: Int //indicates which axis will be counted up
+    var indicesOfAxes: [Int]
+    var offset: (b: Int, s: Int)?
     
     public init(optParams: vDSPOptParams){
         let (axis, blocksize, iterAxes) = _optStrides(shapeptr: optParams.bigger_mfarray.shapeptr, l_strideptr: optParams.bigger_mfarray.stridesptr, r_strideptr: optParams.smaller_mfarray.stridesptr)
-        self.axis = axis
+        
+        self.stride.b = optParams.bigger_mfarray.stridesptr[axis]
+        self.stride.s = optParams.smaller_mfarray.stridesptr[axis]
         self.blocksize = blocksize
-        self.optParams = optParams
         
         self.itershapes = iterAxes.map{ optParams.bigger_mfarray.shapeptr[$0] }
-        self.iterL_strides = iterAxes.map{ optParams.bigger_mfarray.stridesptr[$0] }
-        self.iterR_strides = iterAxes.map{ optParams.smaller_mfarray.stridesptr[$0] }
+        self.iter_strides.b = iterAxes.map{ optParams.bigger_mfarray.stridesptr[$0] }
+        self.iter_strides.s = iterAxes.map{ optParams.smaller_mfarray.stridesptr[$0] }
         
-        var shapecombo = self.itershapes.flatMap{
-            [Array(0..<$0)]
-        } as [Any]
         
-        self.shapeIter = Combination(&shapecombo).makeIterator()
+        if self.itershapes.isEmpty{
+            self.upaxis = -1
+            self.indicesOfAxes = []
+        }
+        else{
+            self.upaxis = 0
+            self.indicesOfAxes = Array(repeating: 0, count: self.itershapes.count)
+        }
+        self.offset = (0, 0)
     }
     
-    mutating func next() -> (l_offset: Int, l_stride: Int, r_offset: Int, r_stride: Int, blocksize: Int)? {
-        guard let indices = self.shapeIter.next() else{
+    mutating func next() -> (b_offset: Int, b_stride: Int, s_offset: Int, s_stride: Int, blocksize: Int)? {
+        if self.indicesOfAxes.isEmpty{//offset (0, 0) must be returned even if itershapes doesn't exist
+            
+            self.indicesOfAxes = [-1] //dummy
+            return (self.offset!.b, self.stride.b, self.offset!.s, self.stride.s, self.blocksize)
+        }
+        
+        if self.upaxis < 0{
             return nil
         }
-        
-        var l_offset = 0, r_offset = 0
-        for axis in 0..<indices.count{
-            let index = indices[axis]
-            l_offset += self.iterL_strides[axis] * index
-            r_offset += self.iterR_strides[axis] * index
+
+        for axis in 0..<self.indicesOfAxes.count{
+            if self.indicesOfAxes[axis] < self.itershapes[axis] - 1{
+                self.indicesOfAxes[axis] += 1
+                self.upaxis = axis
+                
+                self.offset!.b += self.iter_strides.b[axis]
+                self.offset!.s += self.iter_strides.s[axis]
+                
+                return (self.offset!.b, self.stride.b, self.offset!.s, self.stride.s, self.blocksize)
+            }
+            else if self.upaxis < self.itershapes.count{// next axis
+                self.indicesOfAxes[axis] = 0
+
+                // reset offset
+                self.offset!.b -= self.iter_strides.b[axis]*(self.itershapes[axis] - 1)
+                self.offset!.s -= self.iter_strides.s[axis]*(self.itershapes[axis] - 1)
+            }
+            else{
+                return nil
+            }
         }
         
-        return (l_offset, self.optParams.bigger_mfarray.stridesptr[self.axis], r_offset, self.optParams.smaller_mfarray.stridesptr[self.axis], self.blocksize)
+        //last all indices are 0
+        self.upaxis = -1
+        return (self.offset!.b, self.stride.b, self.offset!.s, self.stride.s, self.blocksize)
     }
 }
 
