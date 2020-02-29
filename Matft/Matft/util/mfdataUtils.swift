@@ -119,6 +119,11 @@ internal func shape2ndim(_ shapeptr: UnsafeMutableBufferPointer<Int>) -> Int{
 internal func shape2size(_ shapeptr: UnsafeMutableBufferPointer<Int>) -> Int{
     return shapeptr.reduce(1, *)
 }
+internal func shape2size(_ shape: inout [Int]) -> Int{
+    return shape.withUnsafeMutableBufferPointer{
+        shape2size($0)
+    }
+}
 
 internal func shape2strides(_ shapeptr: UnsafeMutableBufferPointer<Int>) -> UnsafeMutableBufferPointer<Int>{
     let stridesptr = create_unsafeMBPtrT(type: Int.self, count: shapeptr.count)

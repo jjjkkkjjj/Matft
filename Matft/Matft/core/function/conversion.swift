@@ -14,7 +14,7 @@ extension Matft.mfarray{
         //let newarray = Matft.mfarray.create_view(mfarray)
         //newarray.mfdata._mftype = mftype
         let newdata = mfarray.mfdata.astype(mftype)
-        return MfArray(newdata)
+        return MfArray(mfdata: newdata)
     }
     
     public static func transpose(_ mfarray: MfArray, axes: [Int]? = nil) -> MfArray{

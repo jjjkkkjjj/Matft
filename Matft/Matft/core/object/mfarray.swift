@@ -53,31 +53,38 @@ public class MfArray{
     
     public var base: MfArray?
     
-    public init (_ array: [Any], mftype: MfType? = nil) throws {
+    public init (_ array: [Any], mftype: MfType? = nil, shape: [Int]? = nil) {
         
         var _mftype: MfType = .None
-        var (flatten, shape) = array.withUnsafeBufferPointer{
+        var (flatten, _shape) = array.withUnsafeBufferPointer{
             flatten_array(ptr: $0, mftype: &_mftype)
         }
     
         if _mftype == .Object{
             //print(flatten)
-            throw MfError.creationError("Matft does not support Object. Shape was \(shape)")
+            fatalError("Matft does not support Object. Shape was \(_shape)")
         }
         
         //flatten array to pointer
         switch _mftype {
             case .Object:
-                throw MfError.creationError("Matft does not support Object. Shape was \(shape)")
+                fatalError("Matft does not support Object. Shape was \(_shape)")
             case .None:
-                throw MfError.creationError("Matft does not support empty object.")
+                fatalError("Matft does not support empty object.")
             default:
                 let ptr = flattenarray2UnsafeMRBPtr_viaForD(&flatten)
-                let shapeptr = array2UnsafeMBPtrT(&shape)
-                self.mfdata = MfData(dataptr: ptr, storedSize: flatten.count, shapeptr: shapeptr, mftype: _mftype)
+                if var shape = shape{
+                    precondition(shape2size(&shape) == flatten.count, "Invalid shape, size must be \(flatten.count), but got \(shape2size(&shape))")
+                    let shapeptr = array2UnsafeMBPtrT(&shape)
+                    self.mfdata = MfData(dataptr: ptr, storedSize: flatten.count, shapeptr: shapeptr, mftype: _mftype)
+                }
+                else{
+                    let shapeptr = array2UnsafeMBPtrT(&_shape)
+                    self.mfdata = MfData(dataptr: ptr, storedSize: flatten.count, shapeptr: shapeptr, mftype: _mftype)
+                }
         }
     }
-    public init (_ mfdata: MfData){
+    public init (mfdata: MfData){
         self.mfdata = mfdata
     }
     public init (base: MfArray){

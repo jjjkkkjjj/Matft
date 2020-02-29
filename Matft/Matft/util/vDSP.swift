@@ -37,7 +37,7 @@ internal func preop_by_vDSP<T>(_ mfarray: MfArray, _ vDSP_func: vDSP_convert_fun
     memcpy(stridesptr.baseAddress!, mfarray.stridesptr.baseAddress!, MemoryLayout<Int>.size * mfarray.ndim)
     
     let newdata = MfData(dataptr: dstptr, storedSize: mfarray.storedSize, shapeptr: shapeptr, mftype: mfarray.mftype, stridesptr: stridesptr)
-    return MfArray(newdata)
+    return MfArray(mfdata: newdata)
 }
 
 
@@ -50,18 +50,16 @@ internal func biop_unsafePtrT<T>(_ lptr: UnsafePointer<T>, _ lstride: Int, _ rpt
 
 internal func biop_by_vDSP<T>(_ bigger_mfarray: MfArray, _ smaller_mfarray: MfArray, vDSP_func: vDSP_biop_func<T>) -> MfArray{
     let dstptr = create_unsafeMRBPtr(type: T.self, count: bigger_mfarray.size)
-
-    for vDSPPrams in vDSPOptParams(bigger_mfarray: bigger_mfarray, smaller_mfarray: smaller_mfarray){
-        bigger_mfarray.dataptr.bindMemory(to: T.self).withUnsafeBufferPointer{
-            lptr in
-            smaller_mfarray.dataptr.bindMemory(to: T.self).withUnsafeBufferPointer{
-                rptr in
-                var p = dstptr.bindMemory(to: T.self)
+    
+    bigger_mfarray.dataptr.bindMemory(to: T.self).withUnsafeBufferPointer{
+               lptr in
+        smaller_mfarray.dataptr.bindMemory(to: T.self).withUnsafeBufferPointer{
+                   rptr in
+            var p = dstptr.bindMemory(to: T.self)
                     p.withUnsafeMutableBufferPointer{
-                    
+                for vDSPPrams in vDSPOptParams(bigger_mfarray: bigger_mfarray, smaller_mfarray: smaller_mfarray){
                     biop_unsafePtrT(lptr.baseAddress! + vDSPPrams.l_offset, vDSPPrams.l_stride, rptr.baseAddress! + vDSPPrams.r_offset, vDSPPrams.r_stride, $0.baseAddress! + vDSPPrams.l_offset, vDSPPrams.l_stride, vDSPPrams.blocksize, vDSP_func)
                 }
-                
             }
         }
         //print(vDSPPrams.l_stride, vDSPPrams.l_offset, vDSPPrams.r_stride, vDSPPrams.r_offset, vDSPPrams.blocksize)
@@ -74,7 +72,7 @@ internal func biop_by_vDSP<T>(_ bigger_mfarray: MfArray, _ smaller_mfarray: MfAr
     memcpy(stridesptr.baseAddress!, bigger_mfarray.stridesptr.baseAddress!, MemoryLayout<Int>.size * bigger_mfarray.ndim)
     
     let newdata = MfData(dataptr: dstptr, storedSize: bigger_mfarray.storedSize, shapeptr: shapeptr, mftype: bigger_mfarray.mftype, stridesptr: stridesptr)
-    return MfArray(newdata)
+    return MfArray(mfdata: newdata)
 }
 
 internal struct vDSPOptParams: Sequence{

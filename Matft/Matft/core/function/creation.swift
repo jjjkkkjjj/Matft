@@ -14,8 +14,19 @@ extension Matft.mfarray{
     }
     static public func deepcopy(_ mfarray: MfArray) -> MfArray{
         let newdata = Matft.mfarray.mfdata.deepcopy(mfarray.mfdata)
-        let newarray = MfArray(newdata)
+        let newarray = MfArray(mfdata: newdata)
         return newarray
+    }
+    
+    static public func nums<T: Numeric>(_ value: T, shape: [Int], mftype: MfType? = nil) -> MfArray{
+        var shape = shape
+        let size = shape.withUnsafeMutableBufferPointer{
+            shape2size($0)
+        }
+        return MfArray(Array(repeating: value, count: size), mftype: mftype, shape: shape)
+    }
+    static public func arange<T: Strideable>(start: T, stop: T, step: T.Stride, shape: [Int]? = nil, mftype: MfType? = nil) -> MfArray{
+        return MfArray(Array(stride(from: start, to: stop, by: step)), mftype: mftype, shape: shape)
     }
 }
 
