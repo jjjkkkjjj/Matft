@@ -9,7 +9,7 @@
 import Foundation
 
 //Note that returned value (UnsafeMutableBufferPointer<T>) will not be freed and was not initialized
-internal func create_unsafeMBPtrT<T: Numeric>(type: T.Type, count: Int) -> UnsafeMutableBufferPointer<T>{
+internal func create_unsafeMBPtrT<T>(type: T.Type, count: Int) -> UnsafeMutableBufferPointer<T>{
     typealias pointer = UnsafeMutableBufferPointer<T>
     return pointer.allocate(capacity: count)
 }

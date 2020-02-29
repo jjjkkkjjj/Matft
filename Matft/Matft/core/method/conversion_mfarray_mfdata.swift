@@ -24,3 +24,9 @@ extension MfArray{
         return try Matft.mfarray.broadcast_to(self, shape: shape)
     }
 }
+
+extension MfData{
+    public func astype(_ mftype: MfType) -> MfData{
+        return Matft.mfarray.mfdata.astype(self, mftype: mftype)
+    }
+}
