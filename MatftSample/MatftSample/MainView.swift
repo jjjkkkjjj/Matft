@@ -20,9 +20,8 @@ class MainView: UIView {
     func check_MfArray(){
         
         let arr = try! MfArray([[0,1],[2,3]])
-        print(arr.astype(.Float))
-        print(arr.astype(.Float) + arr)
-        //print(arr + arr.T)
+        print(arr + arr.T)
+        print(arr.astype(.UInt8) + arr)
         /*
         let arrr = try! MfArray([0,1])
         let arrrr = try! MfArray([[0]])*/
@@ -33,7 +32,7 @@ class MainView: UIView {
                                   [12, 13, 14, 15]]])
         print(arr2)
         
-        let arr22 = try! MfArray([[[ 0,  -8],
+        let arr22 = try! MfArray([[[ 0,  8],
                                    [ 4, 12]],
                                       
                                   [[ 1,  9],

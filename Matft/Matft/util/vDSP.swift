@@ -37,7 +37,7 @@ internal func biop_by_vDSP<T>(_ bigger_mfarray: MfArray, _ smaller_mfarray: MfAr
                 
             }
         }
-        print(vDSPPrams.l_stride, vDSPPrams.l_offset, vDSPPrams.r_stride, vDSPPrams.r_offset, vDSPPrams.blocksize)
+        //print(vDSPPrams.l_stride, vDSPPrams.l_offset, vDSPPrams.r_stride, vDSPPrams.r_offset, vDSPPrams.blocksize)
     }
     
     let shapeptr = create_unsafeMBPtrT(type: Int.self, count: bigger_mfarray.ndim)
@@ -85,10 +85,10 @@ internal struct vDSPOptParamIterator: IteratorProtocol{
         self.iterL_strides = iterAxes.map{ optParams.bigger_mfarray.stridesptr[$0] }
         self.iterR_strides = iterAxes.map{ optParams.smaller_mfarray.stridesptr[$0] }
         
-        var shapecombo = itershapes.flatMap{
+        var shapecombo = self.itershapes.flatMap{
             [Array(0..<$0)]
         } as [Any]
-        ここ　iterAxesがない（一発でいける場合）
+        
         self.shapeIter = Combination(&shapecombo).makeIterator()
     }
     

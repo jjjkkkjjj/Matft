@@ -196,6 +196,10 @@ internal struct CombinationIterator: IteratorProtocol{
             
             var next = self.a.count - 1
             
+            if (next < 0){
+                return nil
+            }
+            
             guard let a = self.a[next] as? [Int] else {
                 return nil
             }
