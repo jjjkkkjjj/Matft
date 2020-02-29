@@ -13,6 +13,15 @@ extension Matft.mfarray{
     public static func add(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _binary_operation(l_mfarray, r_mfarray, .add)
     }
+    public static func sub(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+        return _binary_operation(l_mfarray, r_mfarray, .sub)
+    }
+    public static func mul(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+        return _binary_operation(l_mfarray, r_mfarray, .mul)
+    }
+    public static func div(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+        return _binary_operation(l_mfarray, r_mfarray, .div)
+    }
 }
 
 fileprivate enum BiOp{
@@ -55,6 +64,27 @@ fileprivate func _binary_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _
             return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vadd)
         case .Double:
             return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vaddD)
+        }
+    case .sub:
+        switch MfType.storedType(calctype){
+        case .Float:
+            return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vsub)
+        case .Double:
+            return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vsubD)
+        }
+    case .mul:
+        switch MfType.storedType(calctype){
+        case .Float:
+            return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vmul)
+        case .Double:
+            return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vmulD)
+        }
+    case .div:
+        switch MfType.storedType(calctype){
+        case .Float:
+            return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vdiv)
+        case .Double:
+            return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vdivD)
         }
     default:
         fatalError()

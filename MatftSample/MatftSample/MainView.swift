@@ -20,7 +20,7 @@ class MainView: UIView {
     func check_MfArray(){
         
         let arr = try! MfArray([[0,1],[2,3]])
-        print(arr.astype(.Double) + arr.T)
+        print(arr.astype(.Double) * arr.T)
         /*
         let arrr = try! MfArray([0,1])
         let arrrr = try! MfArray([[0]])*/
