@@ -10,6 +10,7 @@ import Foundation
 import Accelerate
 
 extension Matft.mfarray{
+    //infix
     public static func add(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _binary_operation(l_mfarray, r_mfarray, .add)
     }
@@ -21,6 +22,11 @@ extension Matft.mfarray{
     }
     public static func div(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _binary_operation(l_mfarray, r_mfarray, .div)
+    }
+    
+    //prefix
+    public static func neg(_ mfarray: MfArray) -> MfArray{
+        return _prefix_operation(mfarray, .neg)
     }
 }
 
@@ -98,5 +104,21 @@ fileprivate func _binary_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _
     case .indot:
         
     case .outdot:*/
+    }
+}
+
+fileprivate enum PreOp{
+    case neg
+}
+
+fileprivate func _prefix_operation(_ mfarray: MfArray, _ preop: PreOp) -> MfArray{
+    switch preop {
+    case .neg:
+        switch mfarray.storedType{
+        case .Float:
+            return preop_by_vDSP(mfarray, vDSP_vneg)
+        case .Double:
+            return preop_by_vDSP(mfarray, vDSP_vnegD)
+        }
     }
 }
