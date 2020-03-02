@@ -12,8 +12,9 @@ extension MfArray: CustomStringConvertible{
     public var description: String{
         var desc = "mfarray = \n"
         desc += String(repeating: "[", count: self.shapeptr.count)
-        var shapeptr = self.shapeptr
+        
         let flattenData = self.data
+        let offset = self.offsetFlattenIndex
         
         if self.size > 1000{//if size > 1000, some elements left out will be viewed
             let flattenLOIndSeq = FlattenLOIndSequence(storedSize: self.storedSize, shapeptr: self.shapeptr, stridesptr: self.stridesptr)
@@ -22,7 +23,7 @@ extension MfArray: CustomStringConvertible{
             for (flattenIndex, indices) in flattenLOIndSeq{
                 
                 if var indices = indices, let flattenIndex = flattenIndex{
-                    desc += "\t\(flattenData[flattenIndex]),\t"
+                    desc += "\t\(flattenData[flattenIndex + offset]),\t"
                     
                     if indices.last! == self.shapeptr.last! - 1{
                         let clousureNum = _clousure_number(mfarray: self, indices: &indices)
@@ -56,10 +57,9 @@ extension MfArray: CustomStringConvertible{
             }
         }
         else{ // all elements will be viewed
-            let flattenIndSeq = FlattenIndSequence(storedSize: self.storedSize, shapeptr: self.shapeptr, stridesptr: self.stridesptr)
-            
+            let flattenIndSeq = FlattenIndSequence(shapeptr: self.shapeptr, stridesptr: self.stridesptr)
             for var ret in flattenIndSeq{
-                desc += "\t\(flattenData[ret.flattenIndex]),\t"
+                desc += "\t\(flattenData[ret.flattenIndex + offset]),\t"
 
                 if ret.indices.last! == self.shapeptr.last! - 1{
                     let clousureNum = _clousure_number(mfarray: self, indices: &ret.indices)

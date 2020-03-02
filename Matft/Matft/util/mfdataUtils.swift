@@ -117,7 +117,7 @@ internal func shape2ndim(_ shapeptr: UnsafeMutableBufferPointer<Int>) -> Int{
 }
 
 internal func shape2size(_ shapeptr: UnsafeMutableBufferPointer<Int>) -> Int{
-    return shapeptr.reduce(1, *)
+    return shapeptr.filter{ $0 != 0 }.reduce(1, *)
 }
 internal func shape2size(_ shape: inout [Int]) -> Int{
     return shape.withUnsafeMutableBufferPointer{
@@ -136,3 +136,12 @@ internal func shape2strides(_ shapeptr: UnsafeMutableBufferPointer<Int>) -> Unsa
     return stridesptr
 }
 
+internal func get_storedSize(_ shapeptr: UnsafeMutableBufferPointer<Int>, _ stridesptr: UnsafeMutableBufferPointer<Int>) -> Int{
+    
+    var ret = 1
+    let _ = zip(shapeptr, stridesptr).map{
+        (dim, st) in
+        ret *= st != 0 && dim != 0 ? dim : 1
+    }
+    return ret
+}

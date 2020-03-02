@@ -105,12 +105,10 @@ internal func get_leaveout_indices(_ shapeptr: inout UnsafeMutableBufferPointer<
 internal struct FlattenIndSequence: Sequence{
     let shapeptr: UnsafeMutableBufferPointer<Int>
     let stridesptr: UnsafeMutableBufferPointer<Int>
-    let storedSize: Int
     
-    public init(storedSize: Int, shapeptr: UnsafeMutableBufferPointer<Int>, stridesptr: UnsafeMutableBufferPointer<Int>){
+    public init(shapeptr: UnsafeMutableBufferPointer<Int>, stridesptr: UnsafeMutableBufferPointer<Int>){
         self.shapeptr = shapeptr
         self.stridesptr = stridesptr
-        self.storedSize = storedSize
     }
     
     func makeIterator() -> FlattenIndSequenceIterator {
@@ -126,9 +124,6 @@ internal struct FlattenIndSequenceIterator: IteratorProtocol{
     }
     public var shapeptr: UnsafeMutableBufferPointer<Int>{
         return self.flattenIndSeq.shapeptr
-    }
-    public var storedSize: Int{
-        return self.flattenIndSeq.storedSize
     }
     
     public var indicesOfAxes: [Int]

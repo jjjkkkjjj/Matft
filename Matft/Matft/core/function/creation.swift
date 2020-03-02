@@ -9,7 +9,7 @@
 import Foundation
 
 extension Matft.mfarray{
-    static public func create_view(_ mfarray: MfArray) -> MfArray{
+    static public func shallowcopy(_ mfarray: MfArray) -> MfArray{
         return MfArray(base: mfarray)
     }
     static public func deepcopy(_ mfarray: MfArray) -> MfArray{

@@ -10,13 +10,31 @@ import Foundation
 import Accelerate
 
 extension MfArray{
-    public subscript(indices: Int...) -> Any{
-
+    public subscript(indices: Int...) -> MfArray{
         get {
-            return self[indices]
+            var mfslices = indices.map{ MfSlice(to: $0 + 1) }
+            
+            return self.get_mfarray(mfslices: &mfslices)
         }
-        set(newValue){
-            self[indices] = newValue
+        //set(newValue){
+        //    self[indices] = newValue
+        //}
+    }
+    public subscript(indices: Any...) -> MfArray{
+        get{
+            var mfslices = indices.map{
+                (index) -> MfSlice in
+                if let index = index as? Int{
+                    return MfSlice(to: index + 1)
+                }
+                else if let index = index as? MfSlice{
+                    return index
+                }
+                else{
+                    fatalError("\(index) is not subscriptable value")
+                }
+            }
+            return self.get_mfarray(mfslices: &mfslices)
         }
     }
 
@@ -88,15 +106,42 @@ extension MfArray{
         }
         
     }
+    
+    private func get_mfarray(mfslices: inout [MfSlice]) -> MfArray{
+        precondition(mfslices.count <= self.ndim, "cannot return value because given indices were too many")
+        
+        if mfslices.count < self.ndim{
+            for _ in 0..<self.ndim - mfslices.count{
+                mfslices.append(MfSlice())
+            }
+        }
+        
+        let newarray = self.shallowcopy()
+        var offset = 0
+        for (axis, mfslice) in mfslices.enumerated(){
+            offset += mfslice.start * self.stridesptr[axis]
+            
+            if let to = mfslice.to{//0<=to-1-start<dim
+                newarray.shapeptr[axis] = max(min(self.shapeptr[axis], to - 1 - mfslice.start), 0)
+            }//note that nil indicates all elements
+            else{
+                let tmpdim = ceil(Float(self.shapeptr[axis] - mfslice.start)/Float(mfslice.by))
+                newarray.shapeptr[axis] = max(min(self.shapeptr[axis], Int(tmpdim)), 0)
+            }
+            newarray.stridesptr[axis] *= mfslice.by
+        }
+        newarray.mfdata._offsetFlattenIndex = offset
+        newarray.mfdata._size = shape2size(newarray.shapeptr)
+        //newarray.mfdata._storedSize = get_storedSize(newarray.shapeptr, newarray.stridesptr)
+        //print(newarray.shape, newarray.mfdata._size, newarray.mfdata._storedSize)
+        return newarray
+    }
+    
 }
 
 fileprivate func _inner_product(_ left: UnsafeMutableBufferPointer<Int>, _ right: UnsafeMutableBufferPointer<Int>) -> Int{
     
-    precondition(left.count == right.count, "cannot calculate inner product due to unsame dim")
-    var ret = 0
-    for (l, r) in zip(left, right){
-        ret += l * r
-    }
+    assert(left.count == right.count, "cannot calculate inner product due to unsame dim")
     
-    return ret
+    return zip(left, right).map(*).reduce(0, +)
 }

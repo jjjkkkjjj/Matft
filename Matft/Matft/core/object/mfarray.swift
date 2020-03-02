@@ -34,15 +34,10 @@ public class MfArray{
     }
     // return flatten array
     public var data: [Any]{
-        return unsafeMRBPtr2array_viaForD(self.dataptr, mftype: self.mftype, size: self.size)
+        return unsafeMRBPtr2array_viaForD(self.dataptr, mftype: self.mftype, size: self.storedSize)
     }
     internal var dataptr: UnsafeMutableRawBufferPointer{
-        if let base = self.base{
-            return base.dataptr
-        }
-        else{
-            return self.mfdata._data
-        }
+        return self.mfdata._data
     }
     internal var dataptrF: UnsafeMutableBufferPointer<Float>?{
         return self.storedType == .Float ? self.dataptr.bindMemory(to: Float.self) : nil
@@ -58,6 +53,9 @@ public class MfArray{
     }
     
     public var base: MfArray?
+    public var offsetFlattenIndex: Int{
+        return self.mfdata._offsetFlattenIndex
+    }
     
     public init (_ array: [Any], mftype: MfType? = nil, shape: [Int]? = nil) {
         

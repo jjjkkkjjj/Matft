@@ -11,7 +11,7 @@ import Accelerate
 
 extension Matft.mfarray{
     public static func astype(_ mfarray: MfArray, mftype: MfType) -> MfArray{
-        //let newarray = Matft.mfarray.create_view(mfarray)
+        //let newarray = Matft.mfarray.shallowcopy(mfarray)
         //newarray.mfdata._mftype = mftype
         let newdata = mfarray.mfdata.astype(mftype)
         return MfArray(mfdata: newdata)
@@ -47,7 +47,7 @@ extension Matft.mfarray{
             newStrides.append(mfarray.strides[permutation[i]])
         }
         
-        let newarray = Matft.mfarray.create_view(mfarray)
+        let newarray = Matft.mfarray.shallowcopy(mfarray)
         newarray.mfdata._shape = array2UnsafeMBPtrT(&newShape)
         newarray.mfdata._strides = array2UnsafeMBPtrT(&newStrides)
         
@@ -85,7 +85,7 @@ extension Matft.mfarray{
             out_strides[idim] = 0
         }
         
-        let newarray = Matft.mfarray.create_view(mfarray)
+        let newarray = Matft.mfarray.shallowcopy(mfarray)
         newarray.mfdata._shape = array2UnsafeMBPtrT(&shape)
         newarray.mfdata._strides = array2UnsafeMBPtrT(&out_strides)
         
