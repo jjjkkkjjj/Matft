@@ -13,13 +13,16 @@ extension MfArray: CustomStringConvertible{
         var desc = "mfarray = \n"
         desc += String(repeating: "[", count: self.shapeptr.count)
         var shapeptr = self.shapeptr
+        let flattenData = self.data
+        
         if self.size > 1000{//if size > 1000, some elements left out will be viewed
-            var indices_ = get_leaveout_indices(&shapeptr)
+            let flattenLOIndSeq = FlattenLOIndSequence(storedSize: self.storedSize, shapeptr: self.shapeptr, stridesptr: self.stridesptr)
             
-            for (i, indices) in indices_.enumerated(){
+            var lastIndices: [Int]? = nil
+            for (flattenIndex, indices) in flattenLOIndSeq{
                 
-                if var indices = indices{
-                    desc += "\t\(self[indices]),\t"
+                if var indices = indices, let flattenIndex = flattenIndex{
+                    desc += "\t\(flattenData[flattenIndex]),\t"
                     
                     if indices.last! == self.shapeptr.last! - 1{
                         let clousureNum = _clousure_number(mfarray: self, indices: &indices)
@@ -28,11 +31,12 @@ extension MfArray: CustomStringConvertible{
                         //append "]", "," "\n" and "["
                         desc += String(repeating: "]", count: clousureNum) + "," + String(repeating: "\n", count: clousureNum) + String(repeating: "[", count: clousureNum)
                     }
+                    lastIndices = indices
                 }
                 else{ //skip
-                    if indices_[i - 1]?.last! == self.shapeptr.last! - 1{// \t and \n
+                    if var lastIndices = lastIndices, lastIndices.last! == self.shapeptr.last! - 1{// \t and \n
                         
-                        let clousureNum = _clousure_number(mfarray: self, indices: &indices_[i - 1]!)
+                        let clousureNum = _clousure_number(mfarray: self, indices: &lastIndices)
 
                         //remove \n and [
                         desc = String(desc.dropLast(2 * clousureNum))
@@ -52,34 +56,19 @@ extension MfArray: CustomStringConvertible{
             }
         }
         else{ // all elements will be viewed
-            let flattenSequenceIndices = FlattenSequenceIndices(storedSize: self.storedSize, shapeptr: self.shapeptr, stridesptr: self.stridesptr)
-            let flattenData = self.data
-            for (ind, flattenIndex) in flattenSequenceIndices.enumerated(){
-                desc += "\t\(flattenData[flattenIndex]),\t"
+            let flattenIndSeq = FlattenIndSequence(storedSize: self.storedSize, shapeptr: self.shapeptr, stridesptr: self.stridesptr)
+            
+            for var ret in flattenIndSeq{
+                desc += "\t\(flattenData[ret.flattenIndex]),\t"
 
-                if ind % self.shapeptr.last! == self.shapeptr.last! - 1{
-                    let clousureNum = _clousure_number(mfarray: self, ind: ind)
+                if ret.indices.last! == self.shapeptr.last! - 1{
+                    let clousureNum = _clousure_number(mfarray: self, indices: &ret.indices)
                     //remove "\t" and ","
                     desc = String(desc.dropLast(2))
                     //append "]", "," "\n" and "["
                     desc += String(repeating: "]", count: clousureNum) + "," + String(repeating: "\n", count: clousureNum) + String(repeating: "[", count: clousureNum)
                 }
             }
-            /*
-            let indices_ = get_indices(&shapeptr)
-
-            for indices in indices_{
-                desc += "\t\(self[indices]),\t"
-                
-                if indices.last! == self.shapeptr.last! - 1{
-                    var indices = indices
-                    let clousureNum = _clousure_number(mfarray: self, indices: &indices)
-                    //remove "\t" and ","
-                    desc = String(desc.dropLast(2))
-                    //append "]", "," "\n" and "["
-                    desc += String(repeating: "]", count: clousureNum) + "," + String(repeating: "\n", count: clousureNum) + String(repeating: "[", count: clousureNum)
-                }
-            }*/
         }
         //remove redundunt "[", "\n" and "\n"
         desc = String(desc.dropLast((self.ndim - 1)*2 + 2))
@@ -90,6 +79,7 @@ extension MfArray: CustomStringConvertible{
     }
 }
 
+/*
 //count clousure "[" number
 fileprivate func _clousure_number(mfarray: MfArray, ind: Int) -> Int{
     var clousureNum = 1
@@ -110,7 +100,7 @@ fileprivate func _clousure_number(mfarray: MfArray, ind: Int) -> Int{
     }
 
     return clousureNum
-}
+}*/
 
 //count clousure "[" number
 fileprivate func _clousure_number(mfarray: MfArray, indices: inout [Int]) -> Int{

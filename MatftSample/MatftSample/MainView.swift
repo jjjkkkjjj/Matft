@@ -19,12 +19,9 @@ class MainView: UIView {
     
     func check_MfArray(){
         /*
-        print(Matft.mfarray.nums(1, shape: [5, 5]))
         let arr = MfArray([[0,1],[2,3]])
-        print(-arr.astype(.Double) * arr.T)
-        /*
-        let arrr = try! MfArray([0,1])
-        let arrrr = try! MfArray([[0]])*/
+        print(-arr.astype(.Double) * arr.T)*/
+
         let arr2 = MfArray([[[ 0,  1,  2,  3],
                                   [ 4,  5,  6,  7]],
                                      
@@ -47,19 +44,20 @@ class MainView: UIView {
         //print(arr.broadcast_to(shape: [4, 2, 2]))
         //print(arr + arr22)
         //print(arr22)
-        */
         
-        let a = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10, 10, 10, 10, 10, 10], mftype: .Float)
+        
+        //let a = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10, 10, 10, 10, 10, 10], mftype: .Float)
         //let a = Matft.mfarray.arange(start: 0, stop: 3*3*3*3, step: 1, shape: [3, 3, 3, 3], mftype: .Float)
-        
-        let k = ~<=6~~2
+        //print(a)
+        /*
+        let k = 1~<=6~~2
         print(k.start, k.to, k.by)
         let b = a.transpose()
         let c = a.transpose(axes: [1,2,3,4,5,0])
         var start = Date()
-        let d = b + c
+        let d = a + a
         var elapsed = Date().timeIntervalSince(start)
-        print(elapsed)
+        print(elapsed)*/
     }
     
     
