@@ -44,6 +44,12 @@ public class MfArray{
             return self.mfdata._data
         }
     }
+    internal var dataptrF: UnsafeMutableBufferPointer<Float>?{
+        return self.storedType == .Float ? self.dataptr.bindMemory(to: Float.self) : nil
+    }
+    internal var dataptrD: UnsafeMutableBufferPointer<Double>?{
+        return self.storedType == .Double ? self.dataptr.bindMemory(to: Double.self) : nil
+    }
     internal var storedSize: Int{
         return self.mfdata._storedSize
     }

@@ -46,41 +46,41 @@ extension MfArray{
             }
             
             precondition(flattenIndex < self.size, "indices \(indices) is out of bounds")
-            if let newValue = newValue as? Double, self.mftype == .Double{
-                self.dataptr.bindMemory(to: Double.self)[flattenIndex] = newValue
+            if let newValue = newValue as? Double, let dataptr = self.dataptrD{
+                dataptr[flattenIndex] = newValue
             }
-            else if let newValue = newValue as? UInt8{
-                self.dataptr.bindMemory(to: Float.self)[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? UInt8, let dataptr = self.dataptrF{
+                dataptr[flattenIndex] = Float(newValue)
             }
-            else if let newValue = newValue as? UInt16{
-                self.dataptr.bindMemory(to: Float.self)[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? UInt16, let dataptr = self.dataptrF{
+                dataptr[flattenIndex] = Float(newValue)
             }
-            else if let newValue = newValue as? UInt32{
-                self.dataptr.bindMemory(to: Float.self)[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? UInt32, let dataptr = self.dataptrF{
+                dataptr[flattenIndex] = Float(newValue)
             }
-            else if let newValue = newValue as? UInt64{
-                self.dataptr.bindMemory(to: Float.self)[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? UInt64, let dataptr = self.dataptrF{
+                dataptr[flattenIndex] = Float(newValue)
             }
-            else if let newValue = newValue as? UInt{
-                self.dataptr.bindMemory(to: Float.self)[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? UInt, let dataptr = self.dataptrF{
+                dataptr[flattenIndex] = Float(newValue)
             }
-            else if let newValue = newValue as? Int8{
-                self.dataptr.bindMemory(to: Float.self)[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? Int8, let dataptr = self.dataptrF{
+                dataptr[flattenIndex] = Float(newValue)
             }
-            else if let newValue = newValue as? Int16{
-                self.dataptr.bindMemory(to: Float.self)[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? Int16, let dataptr = self.dataptrF{
+                dataptr[flattenIndex] = Float(newValue)
             }
-            else if let newValue = newValue as? Int32{
-                self.dataptr.bindMemory(to: Float.self)[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? Int32, let dataptr = self.dataptrF{
+                dataptr[flattenIndex] = Float(newValue)
             }
-            else if let newValue = newValue as? Int64{
-                self.dataptr.bindMemory(to: Float.self)[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? Int64, let dataptr = self.dataptrF{
+                dataptr[flattenIndex] = Float(newValue)
             }
-            else if let newValue = newValue as? Int{
-                self.dataptr.bindMemory(to: Float.self)[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? Int, let dataptr = self.dataptrF{
+                dataptr[flattenIndex] = Float(newValue)
             }
-            else if let newValue = newValue as? Float{
-                self.dataptr.bindMemory(to: Float.self)[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? Float, let dataptr = self.dataptrF{
+                dataptr[flattenIndex] = Float(newValue)
             }
             else{
                 fatalError("Unsupported type was input")
