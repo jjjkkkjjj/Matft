@@ -10,8 +10,29 @@ import Foundation
 
 public struct MfData{
     public var _data: UnsafeMutableRawBufferPointer
-    public var _shape: UnsafeMutableBufferPointer<Int>
-    public var _strides: UnsafeMutableBufferPointer<Int>
+    private var __shape: UnsafeMutableBufferPointer<Int>
+    public var _shape: UnsafeMutableBufferPointer<Int>{
+        get{
+            return self.__shape
+        }
+        set(newValue){
+            //free
+            //self.__shape.deallocate()
+            self.__shape = newValue
+        }
+    }
+    private var __strides: UnsafeMutableBufferPointer<Int>
+    public var _strides: UnsafeMutableBufferPointer<Int>{
+        get{
+            return self.__strides
+        }
+        set(newValue){
+            //free
+            //self.__strides.deallocate()
+            self.__strides = newValue
+        }
+    }
+
     public var _mftype: MfType
     public var _size: Int
     public var _storedSize: Int
@@ -49,35 +70,35 @@ public struct MfData{
         
         self._data = dataptr
         self._storedSize = storedSize
-        self._shape = shapeptr
+        self.__shape = shapeptr
         self._size = shape2size(shapeptr)
         if let stridesptr = stridesptr{
-            self._strides = stridesptr
+            self.__strides = stridesptr
         }
         else{
-            self._strides = shape2strides(self._shape)
+            self.__strides = shape2strides(shapeptr)
         }
         self._mftype = mftype
     }
     public init(mfdata: MfData){
         self._data = mfdata._data
         self._storedSize = mfdata._storedSize
-        self._shape = mfdata._shape
+        self.__shape = mfdata._shape
         self._size = mfdata._size
-        self._strides = mfdata._strides
+        self.__strides = mfdata._strides
         self._mftype = mfdata._mftype
     }
     // create view
     public init(refdata: MfData, offset: Int, shapeptr: UnsafeMutableBufferPointer<Int>, stridesptr: UnsafeMutableBufferPointer<Int>? = nil){
         self._data = refdata._data
         self._storedSize = refdata._storedSize
-        self._shape = shapeptr
+        self.__shape = shapeptr
         self._size = shape2size(shapeptr)
         if let stridesptr = stridesptr{
-            self._strides = stridesptr
+            self.__strides = stridesptr
         }
         else{
-            self._strides = shape2strides(self._shape)
+            self.__strides = shape2strides(shapeptr)
         }
         self._mftype = refdata._mftype
         
@@ -88,8 +109,8 @@ public struct MfData{
         if !self._isView{
             self._data.deallocate()
         }
-        self._shape.deallocate()
-        self._strides.deallocate()
+        self.__shape.deallocate()
+        self.__strides.deallocate()
     }
 }
 
