@@ -12,10 +12,11 @@ import Accelerate
 //convert rawpointer to flattenarray via float or Double array
 //All kinds of int and uint has been handled as float
 internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, mftype: MfType, size: Int) -> [Any]{
-    let ptrF = ptr.bindMemory(to: Float.self)
     
     switch MfType.storedType(mftype) {
     case .Float://in case that storedtype is Float
+        let ptrF = ptr.bindMemory(to: Float.self)
+        
         switch mftype {
         case .UInt8:
             let ptrui8 = create_unsafeMPtrT(type: UInt8.self, count: size)
@@ -86,9 +87,9 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
         }
         
     case .Double://in case that storedtype is Double
+        let ptrD = ptr.bindMemory(to: Double.self)
         switch mftype {
             case .Double:
-                let ptrD = ptr.bindMemory(to: Double.self)
                 let ret = Array(ptrD) as [Any]
 
                 return ret

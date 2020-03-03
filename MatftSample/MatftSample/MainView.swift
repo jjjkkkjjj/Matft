@@ -18,16 +18,18 @@ class MainView: UIView {
     }
     
     func check_MfArray(){
-        
+        /*
         let arr = Matft.mfarray.arange(start: 0, stop: 100, step: 1, shape: [2, 5, 10], mftype: .Int)
         let a = arr[~~3, 1~<?~~2, 3~<]
-        //let _ = a + a
+        print(a + a)
         print(a)
-
+        */
         
-        print(Matft.mfarray.nums(1, shape: [5, 5]))
+        //print(Matft.mfarray.nums(1, shape: [5, 5]))
         let ar = MfArray([[0,1],[2,3]])
-        let _ = -ar.astype(.Double) * ar.T
+        print((-ar.astype(.Double)).data)
+        let d = -ar.astype(.Double) * ar.T
+        print(d)
         print(ar)
         /*
         

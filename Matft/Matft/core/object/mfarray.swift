@@ -34,6 +34,7 @@ public class MfArray{
     }
     // return flatten array
     public var data: [Any]{
+        print(self.dataptr.bindMemory(to: Double.self).count)//->0
         return unsafeMRBPtr2array_viaForD(self.dataptr, mftype: self.mftype, size: self.storedSize)
     }
     internal var dataptr: UnsafeMutableRawBufferPointer{

@@ -125,9 +125,9 @@ extension Matft.mfarray.mfdata{
             let ptrD = create_unsafeMPtrT(type: Double.self, count: mfdata._storedSize)
             
             unsafePtrT2UnsafeMPtrU(ptrF, ptrD, vDSP_vspdp, mfdata._storedSize)
-            
+
             let dataptr = UnsafeMutableRawPointer(ptrD)
-            
+
             return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mftype, ndim: mfdata._ndim, stridesptr: stridesptr)
         }
     }

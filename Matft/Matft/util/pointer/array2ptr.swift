@@ -77,8 +77,6 @@ internal func flattenarray2UnsafeMRPtr_viaForD(_ flattenarray: inout [Any]) -> U
     
     let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
     
-    let ptrBF = UnsafeMutableBufferPointer(start: ptrF, count: flattenarray.count)
-    
     //UInt
     if let flattenarray = flattenarray as? [UInt8]{
         
@@ -170,6 +168,7 @@ internal func flattenarray2UnsafeMRPtr_viaForD(_ flattenarray: inout [Any]) -> U
     let ret = UnsafeMutableRawPointer(ptrF)
     
     //free
+    //ptrF.deinitialize(count: flattenarray.count)
     //ptrF.deallocate()
     
     return ret
