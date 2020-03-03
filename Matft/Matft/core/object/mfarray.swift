@@ -12,19 +12,19 @@ public class MfArray{
     public internal(set) var mfdata: MfData
     
     public var shape: [Int]{
-        return Array(self.mfdata._shape)
+        return Array(self.shapeptr)
     }
     internal var shapeptr: UnsafeMutableBufferPointer<Int>{
-        return self.mfdata._shape
+        return UnsafeMutableBufferPointer(start: self.mfdata._shape, count: self.ndim)
     }
     public var strides: [Int]{
-        return Array(self.mfdata._strides)
+        return Array(self.stridesptr)
     }
     internal var stridesptr: UnsafeMutableBufferPointer<Int>{
-        return self.mfdata._strides
+        return UnsafeMutableBufferPointer(start: self.mfdata._strides, count: self.ndim)
     }
     public var ndim: Int{
-        return self.mfdata._shape.count
+        return self.mfdata._ndim
     }
     public var size: Int{
         return self.mfdata._size
@@ -37,7 +37,7 @@ public class MfArray{
         return unsafeMRBPtr2array_viaForD(self.dataptr, mftype: self.mftype, size: self.storedSize)
     }
     internal var dataptr: UnsafeMutableRawBufferPointer{
-        return self.mfdata._data
+        return UnsafeMutableRawBufferPointer(start: self.mfdata._data, count: self.storedSize)
     }
     internal var dataptrF: UnsafeMutableBufferPointer<Float>?{
         return self.storedType == .Float ? self.dataptr.bindMemory(to: Float.self) : nil
@@ -76,15 +76,15 @@ public class MfArray{
             case .None:
                 fatalError("Matft does not support empty object.")
             default:
-                let ptr = flattenarray2UnsafeMRBPtr_viaForD(&flatten)
+                let ptr = flattenarray2UnsafeMRPtr_viaForD(&flatten)
                 if var shape = shape{
                     precondition(shape2size(&shape) == flatten.count, "Invalid shape, size must be \(flatten.count), but got \(shape2size(&shape))")
-                    let shapeptr = array2UnsafeMBPtrT(&shape)
-                    self.mfdata = MfData(dataptr: ptr, storedSize: flatten.count, shapeptr: shapeptr, mftype: _mftype)
+                    let shapeptr = array2UnsafeMPtrT(&shape)
+                    self.mfdata = MfData(dataptr: ptr, storedSize: flatten.count, shapeptr: shapeptr, mftype: _mftype, ndim: shape.count)
                 }
                 else{
-                    let shapeptr = array2UnsafeMBPtrT(&_shape)
-                    self.mfdata = MfData(dataptr: ptr, storedSize: flatten.count, shapeptr: shapeptr, mftype: _mftype)
+                    let shapeptr = array2UnsafeMPtrT(&_shape)
+                    self.mfdata = MfData(dataptr: ptr, storedSize: flatten.count, shapeptr: shapeptr, mftype: _mftype, ndim: _shape.count)
                 }
         }
     }

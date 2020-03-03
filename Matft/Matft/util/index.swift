@@ -60,10 +60,8 @@ fileprivate func _recursive_leaveout_indices(shapeptr: inout UnsafeMutableBuffer
         return
     }
     else{
-        let tmparr = create_unsafeMBPtrT(type: Int.self, count: shapeptr.count - (axis + 1))
-        memcpy(tmparr.baseAddress!, shapeptr.baseAddress! + axis + 1, MemoryLayout<Int>.stride * tmparr.count)
-        let restsize = shape2size(tmparr)
-        tmparr.deallocate()
+
+        let restsize = shape2size(shapeptr)
         
         if shapeptr[axis] < 6{ //not leave out
             for i in 0..<shapeptr[axis]{

@@ -9,13 +9,19 @@
 import Foundation
 
 //Note that returned value (UnsafeMutableBufferPointer<T>) will not be freed and was not initialized
-internal func create_unsafeMBPtrT<T>(type: T.Type, count: Int) -> UnsafeMutableBufferPointer<T>{
-    typealias pointer = UnsafeMutableBufferPointer<T>
-    return pointer.allocate(capacity: count)
+internal func create_unsafeMPtrT<T: Numeric>(type: T.Type, count: Int) -> UnsafeMutablePointer<T>{
+    typealias pointer = UnsafeMutablePointer<T>
+    let ret = pointer.allocate(capacity: count)
+    ret.initialize(repeating: T.zero, count: count)
+
+    return ret
 }
 
 //Note that returned value (UnsafeMutableRawBufferPointer) will not be freed and was not initialized
-internal func create_unsafeMRBPtr<T>(type: T.Type, count: Int) -> UnsafeMutableRawBufferPointer{
-    typealias pointer = UnsafeMutableRawBufferPointer
-    return pointer.allocate(byteCount: MemoryLayout<T>.stride * count, alignment: MemoryLayout<T>.alignment)
+internal func create_unsafeMRPtr<T: Numeric>(type: T.Type, count: Int) -> UnsafeMutableRawPointer{
+    typealias pointer = UnsafeMutableRawPointer
+    let ret = pointer.allocate(byteCount: MemoryLayout<T>.stride * count, alignment: MemoryLayout<T>.alignment)
+    ret.initializeMemory(as: T.self, repeating: T.zero, count: count)
+    
+    return ret
 }

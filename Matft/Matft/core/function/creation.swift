@@ -33,33 +33,36 @@ extension Matft.mfarray{
 extension Matft.mfarray.mfdata{
     static public func deepcopy(_ mfdata: MfData) -> MfData{
 
-        //copy data
-        let dataptr = mfdata._mftype == .Double ? create_unsafeMRBPtr(type: Double.self, count: mfdata._size) : create_unsafeMRBPtr(type: Float.self, count: mfdata._size)
-        memcpy(dataptr.baseAddress!, mfdata._data.baseAddress!, mfdata._data.count)
-        
         //copy shape
-        let shapeptr = create_unsafeMBPtrT(type: Int.self, count: mfdata._shape.count)
-        memcpy(shapeptr.baseAddress!, mfdata._shape.baseAddress!, MemoryLayout<Int>.size * mfdata._shape.count)
+        let shapeptr = create_unsafeMPtrT(type: Int.self, count: mfdata._ndim)
+        shapeptr.assign(from: mfdata._shape, count: mfdata._ndim)
         
         //copy strides
-        let stridesptr = create_unsafeMBPtrT(type: Int.self, count: mfdata._shape.count)
-        memcpy(stridesptr.baseAddress!, mfdata._strides.baseAddress!, MemoryLayout<Int>.size * mfdata._strides.count)
+        let stridesptr = create_unsafeMPtrT(type: Int.self, count: mfdata._ndim)
+        stridesptr.assign(from: mfdata._strides, count: mfdata._ndim)
         
-        let newmfdata = MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mfdata._mftype, stridesptr: stridesptr)
-        
-        return newmfdata
-        
+        //copy data
+        switch mfdata._storedType {
+        case .Float:
+            let dataptr = create_unsafeMRPtr(type: Float.self, count: mfdata._size)
+            dataptr.assumingMemoryBound(to: Float.self).assign(from: mfdata._data.assumingMemoryBound(to: Float.self), count: mfdata._storedSize)
+            return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mfdata._mftype, ndim: mfdata._ndim, stridesptr: stridesptr)
+        case .Double:
+            let dataptr = create_unsafeMRPtr(type: Double.self, count: mfdata._size)
+            dataptr.assumingMemoryBound(to: Double.self).assign(from: mfdata._data.assumingMemoryBound(to: Double.self), count: mfdata._storedSize)
+            return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mfdata._mftype, ndim: mfdata._ndim, stridesptr: stridesptr)
+        }
     }
     static public func shallowcopy(_ mfdata: MfData) -> MfData{
         //copy shape
-        let shapeptr = create_unsafeMBPtrT(type: Int.self, count: mfdata._shape.count)
-        memcpy(shapeptr.baseAddress!, mfdata._shape.baseAddress!, MemoryLayout<Int>.size * mfdata._shape.count)
+        let shapeptr = create_unsafeMPtrT(type: Int.self, count: mfdata._ndim)
+        shapeptr.assign(from: mfdata._shape, count: mfdata._ndim)
         
         //copy strides
-        let stridesptr = create_unsafeMBPtrT(type: Int.self, count: mfdata._shape.count)
-        memcpy(stridesptr.baseAddress!, mfdata._strides.baseAddress!, MemoryLayout<Int>.size * mfdata._strides.count)
+        let stridesptr = create_unsafeMPtrT(type: Int.self, count: mfdata._ndim)
+        stridesptr.assign(from: mfdata._strides, count: mfdata._ndim)
         
-        let newmfdata = MfData(refdata: mfdata, offset: 0, shapeptr: shapeptr, stridesptr: stridesptr)
+        let newmfdata = MfData(refdata: mfdata, offset: 0, shapeptr: shapeptr, ndim: mfdata._ndim, stridesptr: stridesptr)
         
         return newmfdata
     }

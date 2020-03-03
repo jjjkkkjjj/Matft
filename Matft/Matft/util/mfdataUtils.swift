@@ -126,14 +126,15 @@ internal func shape2size(_ shape: inout [Int]) -> Int{
 }
 
 internal func shape2strides(_ shapeptr: UnsafeMutableBufferPointer<Int>) -> UnsafeMutableBufferPointer<Int>{
-    let stridesptr = create_unsafeMBPtrT(type: Int.self, count: shapeptr.count)
+    let stridesptr = create_unsafeMPtrT(type: Int.self, count: shapeptr.count)
+    let ret = UnsafeMutableBufferPointer(start: stridesptr, count: shapeptr.count)
     
     var prevAxisNum = shape2size(shapeptr)
     for index in 0..<shapeptr.count{
-        stridesptr[index] = prevAxisNum / shapeptr[index]
-        prevAxisNum = stridesptr[index]
+        ret[index] = prevAxisNum / shapeptr[index]
+        prevAxisNum = ret[index]
     }
-    return stridesptr
+    return ret
 }
 
 internal func get_storedSize(_ shapeptr: UnsafeMutableBufferPointer<Int>, _ stridesptr: UnsafeMutableBufferPointer<Int>) -> Int{

@@ -61,10 +61,10 @@ fileprivate func _array2UnsafeRawPtr<T: Numeric>(_ array: inout [T]?) -> UnsafeM
 
 */
 
-internal func array2UnsafeMBPtrT<T: Numeric>(_ array: inout [T]) -> UnsafeMutableBufferPointer<T>{
-    let ptr = create_unsafeMBPtrT(type: T.self, count: array.count)
-    let _ = array.withUnsafeMutableBytes{
-        memcpy(ptr.baseAddress!, $0.baseAddress!, $0.count)
+internal func array2UnsafeMPtrT<T: Numeric>(_ array: inout [T]) -> UnsafeMutablePointer<T>{
+    let ptr = create_unsafeMPtrT(type: T.self, count: array.count)
+    array.withUnsafeBufferPointer{
+        ptr.assign(from: $0.baseAddress!, count: $0.count)
     }
     return ptr
 }
@@ -73,24 +73,27 @@ internal func array2UnsafeMBPtrT<T: Numeric>(_ array: inout [T]) -> UnsafeMutabl
 
 //convert flattenarray to rawpointer via float or Double array
 //All kinds of int and uint will be handled as float
-internal func flattenarray2UnsafeMRBPtr_viaForD(_ flattenarray: inout [Any]) -> UnsafeMutableRawBufferPointer {
+internal func flattenarray2UnsafeMRPtr_viaForD(_ flattenarray: inout [Any]) -> UnsafeMutableRawPointer {
     
-    let ptrF = create_unsafeMBPtrT(type: Float.self, count: flattenarray.count)
+    let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
+    
+    let ptrBF = UnsafeMutableBufferPointer(start: ptrF, count: flattenarray.count)
     
     //UInt
     if let flattenarray = flattenarray as? [UInt8]{
+        
         flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu8, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vfltu8, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [UInt16]{
         flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu16, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vfltu16, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [UInt32]{
         flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu32, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vfltu32, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [UInt64]{
@@ -98,7 +101,7 @@ internal func flattenarray2UnsafeMRBPtr_viaForD(_ flattenarray: inout [Any]) -> 
         let flatten32array = flattenarray.map{ UInt32($0) }
         
         flatten32array.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu32, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vfltu32, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [UInt]{
@@ -108,23 +111,23 @@ internal func flattenarray2UnsafeMRBPtr_viaForD(_ flattenarray: inout [Any]) -> 
         let flatten32array = flattenarray.map{ UInt32($0) }
         
         flatten32array.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vfltu32, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vfltu32, flattenarray.count)
         }
     }
     //Int
     else if let flattenarray = flattenarray as? [Int8]{
         flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt8, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vflt8, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [Int16]{
         flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt16, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vflt16, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [Int32]{
         flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt32, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vflt32, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [Int64]{
@@ -132,7 +135,7 @@ internal func flattenarray2UnsafeMRBPtr_viaForD(_ flattenarray: inout [Any]) -> 
         let flatten32array = flattenarray.map{ Int32($0) }
         
         flatten32array.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt32, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vflt32, flattenarray.count)
         }
     }
     else if let flattenarray = flattenarray as? [Int]{
@@ -140,30 +143,34 @@ internal func flattenarray2UnsafeMRBPtr_viaForD(_ flattenarray: inout [Any]) -> 
         let flatten32array = flattenarray.map{ Int32($0) }
         
         flatten32array.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vflt32, flattenarray.count)
+            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vflt32, flattenarray.count)
         }
     }
     else if var flattenarray = flattenarray as? [Float]{
-        let ret = flattenarray.withUnsafeMutableBufferPointer{
-            unsafeMBPtrT2UnsafeMRBPtr($0)
+        let _ = flattenarray.withUnsafeMutableBufferPointer{
+            ptrF.assign(from: $0.baseAddress!, count: $0.count)
         }
-        return ret
+        return UnsafeMutableRawPointer(ptrF)
     }
     else if var flattenarray = flattenarray as? [Double]{
-        let ret = flattenarray.withUnsafeMutableBufferPointer{
-            unsafeMBPtrT2UnsafeMRBPtr($0)
+        ptrF.deinitialize(count: flattenarray.count)
+        ptrF.deallocate()
+        
+        let ptrD = create_unsafeMPtrT(type: Double.self, count: flattenarray.count)
+        let _ = flattenarray.withUnsafeMutableBufferPointer{
+            ptrD.assign(from: $0.baseAddress!, count: $0.count)
         }
-        return ret
+        return UnsafeMutableRawPointer(ptrD)
     }
     else{
         fatalError("Cannot cast flattenarray")
     }
     
     //create raw pointer
-    let ret = unsafeMBPtrT2UnsafeMRBPtr(ptrF)
+    let ret = UnsafeMutableRawPointer(ptrF)
     
     //free
-    ptrF.deallocate()
+    //ptrF.deallocate()
     
     return ret
 }

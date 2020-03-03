@@ -18,86 +18,62 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
     case .Float://in case that storedtype is Float
         switch mftype {
         case .UInt8:
-            var ptrui8 = create_unsafeMBPtrT(type: UInt8.self, count: size)
-            ptrui8.withUnsafeMutableBufferPointer{
-                retptr in
-                ptrF.withUnsafeBufferPointer{
-                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixru8, size)
-                }
-            }
-            let ret = Array(ptrui8) as [Any]
+            let ptrui8 = create_unsafeMPtrT(type: UInt8.self, count: size)
+            unsafePtrT2UnsafeMPtrU(ptrF.baseAddress!, ptrui8, vDSP_vfixru8, size)
+            let ret = Array(UnsafeMutableBufferPointer(start: ptrui8, count: size)) as [Any]
             
             //free
+            ptrui8.deinitialize(count: size)
             ptrui8.deallocate()
 
             return ret
         case .UInt16:
-            var ptrui16 = create_unsafeMBPtrT(type: UInt16.self, count: size)
-            ptrui16.withUnsafeMutableBufferPointer{
-                retptr in
-                ptrF.withUnsafeBufferPointer{
-                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixru16, size)
-                }
-            }
-            let ret = Array(ptrui16) as [Any]
+            let ptrui16 = create_unsafeMPtrT(type: UInt16.self, count: size)
+            unsafePtrT2UnsafeMPtrU(ptrF.baseAddress!, ptrui16, vDSP_vfixru16, size)
+            let ret = Array(UnsafeMutableBufferPointer(start: ptrui16, count: size)) as [Any]
             
             //free
+            ptrui16.deinitialize(count: size)
             ptrui16.deallocate()
 
             return ret
         case .UInt32, .UInt64, .UInt:
-            var ptrui32 = create_unsafeMBPtrT(type: UInt32.self, count: size)
-            ptrui32.withUnsafeMutableBufferPointer{
-                retptr in
-                ptrF.withUnsafeBufferPointer{
-                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixru32, size)
-                }
-            }
-            let ret = Array(ptrui32) as [Any]
+            let ptrui32 = create_unsafeMPtrT(type: UInt32.self, count: size)
+            unsafePtrT2UnsafeMPtrU(ptrF.baseAddress!, ptrui32, vDSP_vfixru32, size)
+            let ret = Array(UnsafeMutableBufferPointer(start: ptrui32, count: size)) as [Any]
             
             //free
+            ptrui32.deinitialize(count: size)
             ptrui32.deallocate()
 
             return ret
         case .Int8:
-            var ptri8 = create_unsafeMBPtrT(type: Int8.self, count: size)
-            ptri8.withUnsafeMutableBufferPointer{
-                retptr in
-                ptrF.withUnsafeBufferPointer{
-                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixr8, size)
-                }
-            }
-            let ret = Array(ptri8) as [Any]
+            let ptri8 = create_unsafeMPtrT(type: Int8.self, count: size)
+            unsafePtrT2UnsafeMPtrU(ptrF.baseAddress!, ptri8, vDSP_vfixr8, size)
+            let ret = Array(UnsafeMutableBufferPointer(start: ptri8, count: size)) as [Any]
             
             //free
+            ptri8.deinitialize(count: size)
             ptri8.deallocate()
 
             return ret
         case .Int16:
-            var ptri16 = create_unsafeMBPtrT(type: Int16.self, count: size)
-            ptri16.withUnsafeMutableBufferPointer{
-                retptr in
-                ptrF.withUnsafeBufferPointer{
-                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixr16, size)
-                }
-            }
-            let ret = Array(ptri16) as [Any]
+            let ptri16 = create_unsafeMPtrT(type: Int16.self, count: size)
+            unsafePtrT2UnsafeMPtrU(ptrF.baseAddress!, ptri16, vDSP_vfixr16, size)
+            let ret = Array(UnsafeMutableBufferPointer(start: ptri16, count: size)) as [Any]
             
             //free
+            ptri16.deinitialize(count: size)
             ptri16.deallocate()
 
             return ret
         case .Int32, .Int64, .Int:
-            var ptri32 = create_unsafeMBPtrT(type: Int32.self, count: size)
-            ptri32.withUnsafeMutableBufferPointer{
-                retptr in
-                ptrF.withUnsafeBufferPointer{
-                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, retptr.baseAddress!, vDSP_vfixr32, size)
-                }
-            }
-            let ret = Array(ptri32) as [Any]
+            let ptri32 = create_unsafeMPtrT(type: Int32.self, count: size)
+            unsafePtrT2UnsafeMPtrU(ptrF.baseAddress!, ptri32, vDSP_vfixr32, size)
+            let ret = Array(UnsafeMutableBufferPointer(start: ptri32, count: size)) as [Any]
             
             //free
+            ptri32.deinitialize(count: size)
             ptri32.deallocate()
 
             return ret

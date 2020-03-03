@@ -8,10 +8,8 @@
 
 import Foundation
 
-internal func unsafeMBPtrT2UnsafeMRBPtr<T>(_ ptrT: UnsafeMutableBufferPointer<T>) -> UnsafeMutableRawBufferPointer{
-    let ret = create_unsafeMRBPtr(type: T.self, count: ptrT.count)
+internal func unsafeMBPtrT2UnsafeMRBPtr<T: Numeric>(_ ptrT: UnsafeMutableBufferPointer<T>) -> UnsafeMutableRawBufferPointer{
+    let ret = create_unsafeMRPtr(type: T.self, count: ptrT.count)
     
-    memcpy(ret.baseAddress!, ptrT.baseAddress!, MemoryLayout<T>.size * ptrT.count)
-    
-    return ret
+    return UnsafeMutableRawBufferPointer(start: ret, count: ptrT.count)
 }

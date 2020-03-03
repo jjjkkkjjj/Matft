@@ -48,8 +48,8 @@ extension Matft.mfarray{
         }
         
         let newarray = Matft.mfarray.shallowcopy(mfarray)
-        newarray.mfdata._shape = array2UnsafeMBPtrT(&newShape)
-        newarray.mfdata._strides = array2UnsafeMBPtrT(&newStrides)
+        newarray.mfdata._shape = array2UnsafeMPtrT(&newShape)
+        newarray.mfdata._strides = array2UnsafeMPtrT(&newStrides)
         
         return newarray
     }
@@ -86,8 +86,8 @@ extension Matft.mfarray{
         }
         
         let newarray = Matft.mfarray.shallowcopy(mfarray)
-        newarray.mfdata._shape = array2UnsafeMBPtrT(&shape)
-        newarray.mfdata._strides = array2UnsafeMBPtrT(&out_strides)
+        newarray.mfdata._shape = array2UnsafeMPtrT(&shape)
+        newarray.mfdata._strides = array2UnsafeMPtrT(&out_strides)
         
         return newarray
     }
@@ -102,37 +102,33 @@ extension Matft.mfarray.mfdata{
         }
         
         //copy shape
-        let shapeptr = create_unsafeMBPtrT(type: Int.self, count: mfdata._shape.count)
-        memcpy(shapeptr.baseAddress!, mfdata._shape.baseAddress!, MemoryLayout<Int>.size * mfdata._shape.count)
+        let shapeptr = create_unsafeMPtrT(type: Int.self, count: mfdata._ndim)
+        shapeptr.assign(from: mfdata._shape, count: mfdata._ndim)
         
         //copy strides
-        let stridesptr = create_unsafeMBPtrT(type: Int.self, count: mfdata._shape.count)
-        memcpy(stridesptr.baseAddress!, mfdata._strides.baseAddress!, MemoryLayout<Int>.size * mfdata._strides.count)
+        let stridesptr = create_unsafeMPtrT(type: Int.self, count: mfdata._ndim)
+        stridesptr.assign(from: mfdata._strides, count: mfdata._ndim)
         
         switch newStoredType{
         case .Float://double to float
-            let ptrD = mfdata._data.bindMemory(to: Double.self)
-            let ptrF = create_unsafeMBPtrT(type: Float.self, count: mfdata._storedSize)
-            ptrD.withContiguousStorageIfAvailable{
-                unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF.baseAddress!, vDSP_vdpsp, mfdata._storedSize)
-            }
+            let ptrD = mfdata._data.bindMemory(to: Double.self, capacity: mfdata._storedSize)
+            let ptrF = create_unsafeMPtrT(type: Float.self, count: mfdata._storedSize)
             
-            let dataptr = unsafeMBPtrT2UnsafeMRBPtr(ptrF)
-            ptrF.deallocate()
+            unsafePtrT2UnsafeMPtrU(ptrD, ptrF, vDSP_vdpsp, mfdata._storedSize)
             
-            return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mftype, stridesptr: stridesptr)
+            let dataptr = UnsafeMutableRawPointer(ptrF)
+            
+            return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mftype, ndim: mfdata._ndim, stridesptr: stridesptr)
             
         case .Double://float to double
-            let ptrF = mfdata._data.bindMemory(to: Float.self)
-            let ptrD = create_unsafeMBPtrT(type: Double.self, count: mfdata._storedSize)
-            ptrF.withContiguousStorageIfAvailable{
-                unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrD.baseAddress!, vDSP_vspdp, mfdata._storedSize)
-            }
+            let ptrF = mfdata._data.bindMemory(to: Float.self, capacity: mfdata._storedSize)
+            let ptrD = create_unsafeMPtrT(type: Double.self, count: mfdata._storedSize)
             
-            let dataptr = unsafeMBPtrT2UnsafeMRBPtr(ptrD)
-            ptrD.deallocate()
+            unsafePtrT2UnsafeMPtrU(ptrF, ptrD, vDSP_vspdp, mfdata._storedSize)
             
-            return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mftype, stridesptr: stridesptr)
+            let dataptr = UnsafeMutableRawPointer(ptrD)
+            
+            return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mftype, ndim: mfdata._ndim, stridesptr: stridesptr)
         }
     }
 }

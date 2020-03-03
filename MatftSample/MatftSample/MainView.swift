@@ -21,7 +21,7 @@ class MainView: UIView {
         
         let arr = Matft.mfarray.arange(start: 0, stop: 100, step: 1, shape: [2, 5, 10], mftype: .Int)
         let a = arr[~~3, 1~<?~~2, 3~<]
-        let _ = a + a
+        //let _ = a + a
         print(a)
 
         

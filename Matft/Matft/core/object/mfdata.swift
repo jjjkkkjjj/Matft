@@ -9,26 +9,28 @@
 import Foundation
 
 public struct MfData{
-    public var _data: UnsafeMutableRawBufferPointer
-    private var __shape: UnsafeMutableBufferPointer<Int>
-    public var _shape: UnsafeMutableBufferPointer<Int>{
+    public var _data: UnsafeMutableRawPointer
+    private var __shape: UnsafeMutablePointer<Int>
+    public var _shape: UnsafeMutablePointer<Int>{
         get{
             return self.__shape
         }
         set(newValue){
             //free
-            //self.__shape.deallocate()
+            self.__shape.deinitialize(count: self._ndim)
+            self.__shape.deallocate()
             self.__shape = newValue
         }
     }
-    private var __strides: UnsafeMutableBufferPointer<Int>
-    public var _strides: UnsafeMutableBufferPointer<Int>{
+    private var __strides: UnsafeMutablePointer<Int>
+    public var _strides: UnsafeMutablePointer<Int>{
         get{
             return self.__strides
         }
         set(newValue){
             //free
-            //self.__strides.deallocate()
+            self.__strides.deinitialize(count: self._ndim)
+            self.__strides.deallocate()
             self.__strides = newValue
         }
     }
@@ -36,6 +38,7 @@ public struct MfData{
     public var _mftype: MfType
     public var _size: Int
     public var _storedSize: Int
+    public var _ndim: Int
     public var _isView: Bool{
         return self.__offset != nil
     }
@@ -66,17 +69,19 @@ public struct MfData{
         return MfType.storedType(self._mftype)
     }
     
-    public init(dataptr: UnsafeMutableRawBufferPointer, storedSize: Int, shapeptr: UnsafeMutableBufferPointer<Int>, mftype: MfType, stridesptr: UnsafeMutableBufferPointer<Int>? = nil){
+    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, shapeptr: UnsafeMutablePointer<Int>, mftype: MfType, ndim: Int, stridesptr: UnsafeMutablePointer<Int>? = nil){
         
         self._data = dataptr
         self._storedSize = storedSize
         self.__shape = shapeptr
-        self._size = shape2size(shapeptr)
+        self._ndim = ndim
+        let _shapeptr = UnsafeMutableBufferPointer<Int>(start: shapeptr, count: ndim)
+        self._size = shape2size(_shapeptr)
         if let stridesptr = stridesptr{
             self.__strides = stridesptr
         }
         else{
-            self.__strides = shape2strides(shapeptr)
+            self.__strides = UnsafeMutablePointer<Int>(shape2strides(_shapeptr).baseAddress!)
         }
         self._mftype = mftype
     }
@@ -87,29 +92,44 @@ public struct MfData{
         self._size = mfdata._size
         self.__strides = mfdata._strides
         self._mftype = mfdata._mftype
+        self._ndim = mfdata._ndim
     }
     // create view
-    public init(refdata: MfData, offset: Int, shapeptr: UnsafeMutableBufferPointer<Int>, stridesptr: UnsafeMutableBufferPointer<Int>? = nil){
+    public init(refdata: MfData, offset: Int, shapeptr: UnsafeMutablePointer<Int>, ndim: Int, stridesptr: UnsafeMutablePointer<Int>? = nil){
         self._data = refdata._data
         self._storedSize = refdata._storedSize
         self.__shape = shapeptr
-        self._size = shape2size(shapeptr)
+        let _shapeptr = UnsafeMutableBufferPointer(start: shapeptr, count: ndim)
+        self._size = shape2size(_shapeptr)
         if let stridesptr = stridesptr{
             self.__strides = stridesptr
         }
         else{
-            self.__strides = shape2strides(shapeptr)
+            self.__strides = UnsafeMutablePointer<Int>(shape2strides(_shapeptr).baseAddress!)
         }
         self._mftype = refdata._mftype
+        self._ndim = ndim
         
         self.__offset = offset
     }
     
     internal func free() {
         if !self._isView{
-            self._data.deallocate()
+            switch self._storedType {
+            case .Float:
+                let dataptr = self._data.bindMemory(to: Float.self, capacity: self._storedSize)
+                dataptr.deinitialize(count: self._storedSize)
+                dataptr.deallocate()
+            case .Double:
+                let dataptr = self._data.bindMemory(to: Double.self, capacity: self._storedSize)
+                dataptr.deinitialize(count: self._storedSize)
+                dataptr.deallocate()
+            }
+            //self._data.deallocate()
         }
+        self.__shape.deinitialize(count: self._ndim)
         self.__shape.deallocate()
+        self.__strides.deinitialize(count: self._ndim)
         self.__strides.deallocate()
     }
 }
