@@ -64,7 +64,7 @@ public class MfArray{
             flatten_array(ptr: $0, mftype: &_mftype)
         }
     
-        if _mftype == .Object{
+        if _mftype == .Object || mftype == .Object{
             //print(flatten)
             fatalError("Matft does not support Object. Shape was \(_shape)")
         }
@@ -86,6 +86,10 @@ public class MfArray{
                     let shapeptr = array2UnsafeMPtrT(&_shape)
                     self.mfdata = MfData(dataptr: ptr, storedSize: flatten.count, shapeptr: shapeptr, mftype: _mftype, ndim: _shape.count)
                 }
+        }
+        
+        if let mftype = mftype, mftype != _mftype{
+            self.mfdata = self.mfdata.astype(mftype)
         }
     }
     public init (mfdata: MfData){

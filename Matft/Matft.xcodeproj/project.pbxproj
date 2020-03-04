@@ -47,6 +47,7 @@
 		01B37B862406C49F004AF2EF /* subscript.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B37B852406C49F004AF2EF /* subscript.swift */; };
 		D64D95E5240F455000C88D85 /* leaner_algebra.swift in Sources */ = {isa = PBXBuildFile; fileRef = D64D95E4240F455000C88D85 /* leaner_algebra.swift */; };
 		D64D95E7240F6EF000C88D85 /* LAPACK.swift in Sources */ = {isa = PBXBuildFile; fileRef = D64D95E6240F6EF000C88D85 /* LAPACK.swift */; };
+		D64D95E9240F974D00C88D85 /* math.swift in Sources */ = {isa = PBXBuildFile; fileRef = D64D95E8240F974D00C88D85 /* math.swift */; };
 		D672166B23935A7B00040BD0 /* Matft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D672166123935A7B00040BD0 /* Matft.framework */; };
 		D672167023935A7B00040BD0 /* MatftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672166F23935A7B00040BD0 /* MatftTests.swift */; };
 		D672167223935A7B00040BD0 /* Matft.h in Headers */ = {isa = PBXBuildFile; fileRef = D672166423935A7B00040BD0 /* Matft.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -89,6 +90,7 @@
 		01B37B852406C49F004AF2EF /* subscript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = subscript.swift; sourceTree = "<group>"; };
 		D64D95E4240F455000C88D85 /* leaner_algebra.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = leaner_algebra.swift; sourceTree = "<group>"; };
 		D64D95E6240F6EF000C88D85 /* LAPACK.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LAPACK.swift; sourceTree = "<group>"; };
+		D64D95E8240F974D00C88D85 /* math.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = math.swift; sourceTree = "<group>"; };
 		D672166123935A7B00040BD0 /* Matft.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Matft.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D672166423935A7B00040BD0 /* Matft.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Matft.h; sourceTree = "<group>"; };
 		D672166523935A7B00040BD0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -170,6 +172,7 @@
 			children = (
 				0108417F240690EA00BBFEB8 /* conversion.swift */,
 				010841842406960600BBFEB8 /* creation.swift */,
+				D64D95E8240F974D00C88D85 /* math.swift */,
 				018C355A240798930098A5A2 /* operation.swift */,
 				D64D95E4240F455000C88D85 /* leaner_algebra.swift */,
 			);
@@ -397,6 +400,7 @@
 				010841852406960600BBFEB8 /* creation.swift in Sources */,
 				010841762406745E00BBFEB8 /* mfdataUtils.swift in Sources */,
 				018C3559240795D00098A5A2 /* vDSP.swift in Sources */,
+				D64D95E9240F974D00C88D85 /* math.swift in Sources */,
 				01B37B812406A53F004AF2EF /* print.swift in Sources */,
 				011CEDF1240AB6D300D14228 /* op_mfslice.swift in Sources */,
 				0108417A2406745E00BBFEB8 /* exception.swift in Sources */,

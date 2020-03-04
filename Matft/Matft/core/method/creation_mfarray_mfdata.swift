@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Accelerate
 
 extension MfArray{
     /**
@@ -22,6 +23,15 @@ extension MfArray{
     */
     public func shallowcopy() -> MfArray{
         return Matft.mfarray.shallowcopy(self)
+    }
+    
+    /**
+        Flatten array
+     */
+    public func flatten(){
+        var ret = Matft.mfarray.nums(0, shape: [self.size], mftype: self.mftype)
+        
+        //cblas_scopy(<#T##__N: Int32##Int32#>, <#T##__X: UnsafePointer<Float>!##UnsafePointer<Float>!#>, <#T##__incX: Int32##Int32#>, <#T##__Y: UnsafeMutablePointer<Float>!##UnsafeMutablePointer<Float>!#>, <#T##__incY: Int32##Int32#>)
     }
 }
  

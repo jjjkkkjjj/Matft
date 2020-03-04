@@ -33,6 +33,28 @@ internal func preop_by_vDSP<T: Numeric>(_ mfarray: MfArray, _ vDSP_func: vDSP_co
     return MfArray(mfdata: newdata)
 }
 
+internal typealias vDSP_vv_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
+
+internal func math_vv_by_vDSP<T: Numeric>(_ mfarray: MfArray, _ vDSP_func: vDSP_vv_func<T>) -> MfArray{
+    let dstptrT = create_unsafeMPtrT(type: T.self, count: mfarray.storedSize)
+    let srcptrT = mfarray.dataptr.bindMemory(to: T.self)
+
+    var storedSize = Int32(mfarray.storedSize)
+    
+    vDSP_func(dstptrT, srcptrT.baseAddress!, &storedSize)
+    
+    let dstptr = UnsafeMutableRawPointer(dstptrT)
+    
+    let shapeptr = create_unsafeMPtrT(type: Int.self, count: mfarray.ndim)
+    shapeptr.assign(from: mfarray.mfdata._shape, count: mfarray.ndim)
+    
+    let stridesptr = create_unsafeMPtrT(type: Int.self, count: mfarray.ndim)
+    stridesptr.assign(from: mfarray.mfdata._strides, count: mfarray.ndim)
+    
+    let newdata = MfData(dataptr: dstptr, storedSize: mfarray.storedSize, shapeptr: shapeptr, mftype: mfarray.mftype, ndim: mfarray.ndim, stridesptr: stridesptr)
+    return MfArray(mfdata: newdata)
+}
+
 
 //binary operation
 internal typealias vDSP_biop_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
