@@ -59,9 +59,14 @@ class MainView: UIView {
         //print(arr + arr22)
         //print(arr22)
         */
-
         
+        let a = MfArray([[4, 2],
+                        [4, 5]])
+        let b = MfArray([[2, -7]])
+        let x = try! Matft.mfarray.linalg.solve(a, b: b)
+        print(x)
         
+        /*
         let a = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10, 10, 10, 10, 10, 10], mftype: .Float)
         //let a = Matft.mfarray.arange(start: 0, stop: 3*3*3*3, step: 1, shape: [3, 3, 3, 3], mftype: .Float)
         //print(a)
@@ -73,7 +78,7 @@ class MainView: UIView {
         var start = Date()
         let d = b + c
         var elapsed = Date().timeIntervalSince(start)
-        print(elapsed)
+        print(elapsed)*/
     }
     
     
