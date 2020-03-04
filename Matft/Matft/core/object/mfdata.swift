@@ -38,12 +38,28 @@ public struct MfData{
     public var _mftype: MfType
     public var _size: Int
     public var _storedSize: Int
+    public var _storedByteSize: Int{
+        switch self._storedType {
+        case .Float:
+            return self._storedSize * MemoryLayout<Float>.size
+        case .Double:
+            return self._storedSize * MemoryLayout<Double>.size
+        }
+    }
     public var _ndim: Int
     public var _isView: Bool{
         return self.__offset != nil
     }
     private var __offset: Int?
     public var _offset: Int{
+        get{
+            return self.__offset ?? 0
+        }
+        set{
+            self.__offset = newValue
+        }
+    }
+    public var _byteOffset: Int{
         get{
             guard let offset = self.__offset else{
                 return 0
@@ -54,14 +70,6 @@ public struct MfData{
             case .Double:
                 return offset * MemoryLayout<Double>.size
             }
-        }
-    }
-    public var _offsetFlattenIndex: Int{
-        get{
-            return self.__offset ?? 0
-        }
-        set (newValue){
-            self.__offset = newValue
         }
     }
     
