@@ -45,12 +45,25 @@ extension Matft.mfarray{
        Create arithmetic sequence mfarray
        - parameters:
             - start: the start term of arithmetic sequence
-            - stop: the end term of arithmetic sequence, which is included.
+            - stop: the end term of arithmetic sequence, which is not included.
             - shape: (Optional) shape
             - mftype: (Optional) the type of mfarray
     */
     static public func arange<T: Strideable>(start: T, stop: T, step: T.Stride, shape: [Int]? = nil, mftype: MfType? = nil) -> MfArray{
         return MfArray(Array(stride(from: start, to: stop, by: step)), mftype: mftype, shape: shape)
+    }
+    /**
+       Create identity matrix. The size is (dim, dim)
+       - parameters:
+            - dim: the dimension, returned mfarray's shape is (dim, dim)
+            - mftype: (Optional) the type of mfarray
+    */
+    static public func eye(dim: Int, mftype: MfType? = nil) -> MfArray{
+        var eye = Array(repeating: Array(repeating: 0, count: dim), count: dim)
+        for i in 0..<dim{
+            eye[i][i] = 1
+        }
+        return MfArray(eye, mftype: mftype)
     }
 }
 

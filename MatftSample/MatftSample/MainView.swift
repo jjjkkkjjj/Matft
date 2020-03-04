@@ -59,7 +59,7 @@ class MainView: UIView {
         //print(arr + arr22)
         //print(arr22)
         */
-        
+        print(Matft.mfarray.eye(dim: 3))
         let a = MfArray([[4, 2],
                         [4, 5]])
         let b = MfArray([[2, -7]])
