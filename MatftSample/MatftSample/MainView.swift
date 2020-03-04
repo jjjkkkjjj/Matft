@@ -20,18 +20,17 @@ class MainView: UIView {
     func check_MfArray(){
         
         let arr = Matft.mfarray.arange(start: 0, stop: 100, step: 1, shape: [2, 5, 10], mftype: .Int)
+        /*
         let a = arr[~~3, 1~<?~~2, 3~<]
+        
         print(a + a)
-        print(a)
+        print(a)*/
         
-        
+        /*
         //print(Matft.mfarray.nums(1, shape: [5, 5]))
         let ar = MfArray([[0,1],[2,3]])
-        print(ar.data)
-        print((-ar.astype(.Double)).data)
-        let d = -ar.astype(.Double) * ar.T
-        print(d)
-        print(ar)
+
+        print(ar)*/
         /*
         
         let arrr = try! MfArray([0,1])
@@ -62,7 +61,7 @@ class MainView: UIView {
         */
 
         
-        /*
+        
         let a = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10, 10, 10, 10, 10, 10], mftype: .Float)
         //let a = Matft.mfarray.arange(start: 0, stop: 3*3*3*3, step: 1, shape: [3, 3, 3, 3], mftype: .Float)
         //print(a)
@@ -74,7 +73,7 @@ class MainView: UIView {
         var start = Date()
         let d = b + c
         var elapsed = Date().timeIntervalSince(start)
-        print(elapsed)*/
+        print(elapsed)
     }
     
     

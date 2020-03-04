@@ -44,9 +44,6 @@ internal func biop_unsafePtrT<T>(_ lptr: UnsafePointer<T>, _ lstride: Int, _ rpt
 internal func biop_by_vDSP<T: Numeric>(_ bigger_mfarray: MfArray, _ smaller_mfarray: MfArray, vDSP_func: vDSP_biop_func<T>) -> MfArray{
     let dstptr = create_unsafeMPtrT(type: T.self, count: bigger_mfarray.size)
     
-    print(bigger_mfarray)
-    print(smaller_mfarray)
-    
     bigger_mfarray.dataptr.bindMemory(to: T.self).withUnsafeBufferPointer{
                lptr in
         smaller_mfarray.dataptr.bindMemory(to: T.self).withUnsafeBufferPointer{
