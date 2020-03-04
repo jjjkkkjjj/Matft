@@ -116,7 +116,9 @@ extension Matft.mfarray.mfdata{
         
         let newStoredType = MfType.storedType(mftype)
         if mfdata._storedType == newStoredType{
-            return mfdata.deepcopy()
+            var ret = mfdata.deepcopy()
+            ret._mftype = mftype
+            return ret
         }
         
         //copy shape

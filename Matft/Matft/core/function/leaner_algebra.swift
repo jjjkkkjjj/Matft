@@ -18,7 +18,8 @@ extension Matft.mfarray.linalg{
         An error of type `MfError.LinAlg.FactorizationError`
      */
     public static func solve(_ coef: MfArray, b: MfArray) throws -> MfArray{
-        return MfArray([1])
+        precondition(((coef.ndim == b.ndim) && (b.ndim == 2)), "cannot solve non linear simultaneous equations")
+        
     }
     
 }
