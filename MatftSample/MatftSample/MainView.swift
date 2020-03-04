@@ -59,8 +59,8 @@ class MainView: UIView {
         //print(arr + arr22)
         //print(arr22)
         */
-        let e = Matft.mfarray.eye(dim: 3, mftype: .Double)
-        print(Matft.mfarray.exp(e))
+        let e = Matft.mfarray.arange(start: 0, stop: 5, step: 1)
+        print(Matft.mfarray.power(e, exponents: 2))
         
         let a = MfArray([[4, 2],
                         [4, 5]])
