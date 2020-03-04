@@ -11,8 +11,13 @@ import Foundation
 public class Matft{
 
     public class mfarray{
+        /**
+           Leanear algebra
+        */
         public class linalg{}
-        
+        /**
+           The kernel of mfarray.
+        */
         internal class mfdata{}
     }
 }

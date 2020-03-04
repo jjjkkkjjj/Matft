@@ -10,13 +10,24 @@ import Foundation
 import Accelerate
 
 extension Matft.mfarray{
+    /**
+       Create another typed mfarray. Created mfarray will be different object from original one
+       - parameters:
+            - mfarray: mfarray
+            - mftype: the type of mfarray
+    */
     public static func astype(_ mfarray: MfArray, mftype: MfType) -> MfArray{
         //let newarray = Matft.mfarray.shallowcopy(mfarray)
         //newarray.mfdata._mftype = mftype
         let newdata = mfarray.mfdata.astype(mftype)
         return MfArray(mfdata: newdata)
     }
-    
+    /**
+       Create any ordered transposed mfarray. Created mfarray will be sharing data with original one
+       - parameters:
+            - mfarray: mfarray
+            - axes: (Optional) the indices of shape. In case this is left out, get transposed mfarray
+    */
     public static func transpose(_ mfarray: MfArray, axes: [Int]? = nil) -> MfArray{
         var permutation: [Int] = [], reverse_permutation: [Int] = []
         let ndim =  mfarray.shape.count
@@ -49,7 +60,14 @@ extension Matft.mfarray{
         
         return newarray
     }
-    
+    /**
+       Create broadcasted mfarray.
+       - parameters:
+            - mfarray: mfarray
+            - shape: shape
+       - throws:
+        An error of type `MfError.conversionError`
+    */
     public static func broadcast_to(_ mfarray: MfArray, shape: [Int]) throws -> MfArray{
         var shape = shape
         let newarray = Matft.mfarray.shallowcopy(mfarray)
@@ -88,6 +106,12 @@ extension Matft.mfarray{
 }
 
 extension Matft.mfarray.mfdata{
+    /**
+       Create another typed mfdata. Created mfdata will be different object from original one
+       - parameters:
+            - mfdata: mfdata
+            - mftype: the type of mfarray
+    */
     public static func astype(_ mfdata: MfData, mftype: MfType) -> MfData{
         
         let newStoredType = MfType.storedType(mftype)

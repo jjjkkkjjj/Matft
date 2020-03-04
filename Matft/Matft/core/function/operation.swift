@@ -11,20 +11,49 @@ import Accelerate
 
 extension Matft.mfarray{
     //infix
+    /**
+       Element-wise addition of  two mfarray
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_mfarray: right mfarray
+    */
     public static func add(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _binary_operation(l_mfarray, r_mfarray, .add)
     }
+    /**
+       Element-wise subtraction right mfarray from left mfarray
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_mfarray: right mfarray
+    */
     public static func sub(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _binary_operation(l_mfarray, r_mfarray, .sub)
     }
+    /**
+       Element-wise multiplication of two mfarray
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_mfarray: right mfarray
+    */
     public static func mul(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _binary_operation(l_mfarray, r_mfarray, .mul)
     }
+    /**
+       Element-wise division left mfarray by right mfarray
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_mfarray: right mfarray
+    */
     public static func div(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _binary_operation(l_mfarray, r_mfarray, .div)
     }
     
     //prefix
+    /**
+       Element-wise negativity
+       - parameters:
+           - mfarray: mfarray
+    */
     public static func neg(_ mfarray: MfArray) -> MfArray{
         return _prefix_operation(mfarray, .neg)
     }

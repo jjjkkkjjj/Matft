@@ -9,18 +9,34 @@
 import Foundation
 
 extension MfArray{
+    /**
+       Create deep copy of mfarray. Deep means copied mfarray will be different object from original one
+       - parameters:
+    */
     public func deepcopy() -> MfArray{
         return Matft.mfarray.deepcopy(self)
     }
+    /**
+       Create shallow copy of mfarray. Shallow means copied mfarray will be  sharing data with original one
+       - parameters:
+    */
     public func shallowcopy() -> MfArray{
         return Matft.mfarray.shallowcopy(self)
     }
 }
  
 extension MfData{
+    /**
+       Create deep copy of mfdata. Deep means copied mfdata will be different object from original one
+       - parameters:
+    */
     public func deepcopy() -> MfData{
         return Matft.mfarray.mfdata.deepcopy(self)
     }
+    /**
+       Create shallow copy of mfdata. Shallow means copied mfdata will be  sharing data with original one
+       - parameters:
+    */
     public func shallowcopy() -> MfData{
         return Matft.mfarray.mfdata.shallowcopy(self)
     }

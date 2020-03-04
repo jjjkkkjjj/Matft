@@ -45,6 +45,7 @@
 		01B37B812406A53F004AF2EF /* print.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B37B802406A53F004AF2EF /* print.swift */; };
 		01B37B842406A62E004AF2EF /* index.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B37B832406A62E004AF2EF /* index.swift */; };
 		01B37B862406C49F004AF2EF /* subscript.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B37B852406C49F004AF2EF /* subscript.swift */; };
+		D64D95E5240F455000C88D85 /* LinAlg.swift in Sources */ = {isa = PBXBuildFile; fileRef = D64D95E4240F455000C88D85 /* LinAlg.swift */; };
 		D672166B23935A7B00040BD0 /* Matft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D672166123935A7B00040BD0 /* Matft.framework */; };
 		D672167023935A7B00040BD0 /* MatftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672166F23935A7B00040BD0 /* MatftTests.swift */; };
 		D672167223935A7B00040BD0 /* Matft.h in Headers */ = {isa = PBXBuildFile; fileRef = D672166423935A7B00040BD0 /* Matft.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -85,6 +86,7 @@
 		01B37B802406A53F004AF2EF /* print.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = print.swift; sourceTree = "<group>"; };
 		01B37B832406A62E004AF2EF /* index.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = index.swift; sourceTree = "<group>"; };
 		01B37B852406C49F004AF2EF /* subscript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = subscript.swift; sourceTree = "<group>"; };
+		D64D95E4240F455000C88D85 /* LinAlg.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinAlg.swift; sourceTree = "<group>"; };
 		D672166123935A7B00040BD0 /* Matft.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Matft.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D672166423935A7B00040BD0 /* Matft.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Matft.h; sourceTree = "<group>"; };
 		D672166523935A7B00040BD0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -166,6 +168,7 @@
 				0108417F240690EA00BBFEB8 /* conversion.swift */,
 				010841842406960600BBFEB8 /* creation.swift */,
 				018C355A240798930098A5A2 /* operation.swift */,
+				D64D95E4240F455000C88D85 /* LinAlg.swift */,
 			);
 			path = function;
 			sourceTree = "<group>";
@@ -402,6 +405,7 @@
 				01B37B7F24069E6B004AF2EF /* creation_mfarray_mfdata.swift in Sources */,
 				010841772406745E00BBFEB8 /* ptr2ptr.swift in Sources */,
 				01B37B842406A62E004AF2EF /* index.swift in Sources */,
+				D64D95E5240F455000C88D85 /* LinAlg.swift in Sources */,
 				010841722406745E00BBFEB8 /* Matft.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
