@@ -60,7 +60,7 @@ class MainView: UIView {
         //print(arr22)
         */
         let e = Matft.mfarray.arange(start: 0, stop: 5, step: 1)
-        print(Matft.mfarray.power(e, exponents: 2))
+        print(Matft.mfarray.power(e, exponents: Matft.mfarray.arange(start: 0, stop: 5, step: 1)).astype(.Int))
         
         let a = MfArray([[4, 2],
                         [4, 5]])

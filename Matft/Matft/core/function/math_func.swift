@@ -460,5 +460,22 @@ extension Matft.mfarray{//use math_vv_by_vecLib
             return ret
         }
     }
+    public static func power(_ mfarray: MfArray, exponents: MfArray) -> MfArray{
+        guard let exponents = try? exponents.broadcast_to(shape: mfarray.shape)
+            else{
+                fatalError("cannot align given shape of mfarray and exponents")
+        }
+        
+        switch mfarray.storedType {
+        case .Float:
+            let ret = math_1arg_vv_by_vecLib(mfarray, exponents.dataptr.bindMemory(to: Float.self).baseAddress!, vvpowf)
+            ret.mfdata._mftype = .Float
+            return ret
+        case .Double:
+            let ret = math_1arg_vv_by_vecLib(mfarray, exponents.dataptr.bindMemory(to: Double.self).baseAddress!, vvpow)
+            ret.mfdata._mftype = .Double
+            return ret
+        }
+    }
 }
 
