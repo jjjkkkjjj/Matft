@@ -105,6 +105,28 @@ extension Matft.mfarray{
         
         return newarray
     }
+    /**
+       Convert order of stored data.
+       - parameters:
+            - mfarray: mfarray
+            - mforder: mforder
+    */
+    public static func conv_order(_ mfarray: MfArray, mforder: MfOrder) -> MfArray{
+        switch mforder {
+        case .Row:
+            return to_row_major(mfarray)
+        case .Column:
+            return to_column_major(mfarray)
+        }
+    }
+    public static func flatten(_ mfarray: MfArray, mforder: MfOrder) -> MfArray{
+        switch mforder {
+        case .Row:
+            return to_row_major(mfarray)
+        case .Column:
+            return to_column_major(mfarray)
+        }
+    }
 }
 
 extension Matft.mfarray.mfdata{

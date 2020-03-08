@@ -170,16 +170,40 @@ fileprivate func _recurrsion_flatten(elements: Any, mftype : inout MfType, shape
 */
 
 
-/*
-internal func to_row_major(){
-    for vDSPPrams in vDSPOptParams(bigger_mfarray: bigger_mfarray, smaller_mfarray: smaller_mfarray){
-        biop_unsafePtrT(lptr.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, rptr.baseAddress! + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptr + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSPPrams.blocksize, vDSP_func)
+internal func to_row_major(_ mfarray: MfArray) -> MfArray{
+    if mfarray.mfflags.row_contiguous{
+        return mfarray.deepcopy()
+    }
+    
+    let ret = mfarray.deepcopy()
+    let newstridesptr = shape2strides(mfarray.shapeptr, mforder: .Row)
+    ret.mfdata._strides.assign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+    ret.mfdata.updateContiguous()
+    
+    switch mfarray.storedType {
+    case .Float:
+        return convorder_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_scopy)
+    case .Double:
+        return convorder_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_dcopy)
+    }
+    
+}
+
+internal func to_column_major(_ mfarray: MfArray) -> MfArray{
+    if mfarray.mfflags.column_contiguous{
+        return mfarray.deepcopy()
+    }
+    
+    let ret = mfarray.deepcopy()
+    let newstridesptr = shape2strides(mfarray.shapeptr, mforder: .Column)
+    ret.mfdata._strides.assign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+    ret.mfdata.updateContiguous()
+    
+    switch mfarray.storedType {
+    case .Float:
+        return convorder_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_scopy)
+    case .Double:
+        return convorder_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_dcopy)
     }
 }
 
-internal func to_column_major(){
-    cblas_scopy(<#T##__N: Int32##Int32#>, <#T##__X: UnsafePointer<Float>!##UnsafePointer<Float>!#>, <#T##__incX: Int32##Int32#>, <#T##__Y: UnsafeMutablePointer<Float>!##UnsafeMutablePointer<Float>!#>, <#T##__incY: Int32##Int32#>)
-    cblas_dcopy(<#T##__N: Int32##Int32#>, <#T##__X: UnsafePointer<Double>!##UnsafePointer<Double>!#>, <#T##__incX: Int32##Int32#>, <#T##__Y: UnsafeMutablePointer<Double>!##UnsafeMutablePointer<Double>!#>, <#T##__incY: Int32##Int32#>)
-}
-
-*/
