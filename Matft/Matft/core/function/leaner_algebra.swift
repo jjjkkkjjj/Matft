@@ -53,5 +53,22 @@ extension Matft.mfarray.linalg{
             return ret
         }
     }
+    /*
+    public static func inv(_ mfarray: MfArray) throws -> MfArray{
+        precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        precondition(mfarray.shapeptr[mfarray.ndim - 1] == mfarray.shapeptr[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        
+        let squaredSize = mfarray.shapeptr[mfarray.ndim - 1]
+        let matricesNum = mfarray.size / (squaredSize * squaredSize)
+        
+        let inversedMfArray = mfarray.deepcopy()
+        var dataPointer = inversedMfArray.data
+        for _ in 0..<matricesNum{
+            let eye = Matft.mfarray.eye(dim: squaredSize)
+            try Matft.mfarray.linalg.solve(<#T##coef: MfArray##MfArray#>, b: <#T##MfArray#>)
+
+            dataPointer += squaredSize * squaredSize
+        }
+    }*/
 }
 

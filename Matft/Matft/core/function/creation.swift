@@ -65,6 +65,34 @@ extension Matft.mfarray{
         }
         return MfArray(eye, mftype: mftype)
     }
+    /**
+       Concatenate given arrays vertically(for row)
+       - parameters:
+            - mfarrays: the array of MfArray.
+    */
+    static public func vstack(_ mfarrays: [MfArray]) {
+        Matft.mfarray.concatenate(mfarrays, axis: 0)
+    }
+    /**
+       Concatenate given arrays horizontally(for column)
+       - parameters:
+            - mfarrays: the array of MfArray.
+    */
+    static public func hstack(_ mfarrays: [MfArray]) {
+        Matft.mfarray.concatenate(mfarrays, axis: 1)
+    }
+    /**
+       Concatenate given arrays for arbitrary axis
+       - parameters:
+            - mfarrays: the array of MfArray.
+            - axis: the axis to concatenate
+    */
+    static public func concatenate(_ mfarrays: [MfArray], axis: Int = 0){
+        for mfarray in mfarrays{
+            
+        }
+        precondition(true, "all the input array dimensions except for the concatenation axis must match exactly")
+    }
 }
 
 extension Matft.mfarray.mfdata{
