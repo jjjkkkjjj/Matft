@@ -52,6 +52,9 @@ public class MfArray{
         return self.mfdata._storedType
     }
     
+    public var mfflags: MfFlags{
+        return self.mfdata._flags
+    }
     public var mforder: MfOrder{
         return self.mfdata._order
     }
@@ -61,10 +64,10 @@ public class MfArray{
         return self.mfdata._offset
     }
     
-    public init (_ array: [Any], mftype: MfType? = nil, shape: [Int]? = nil, mforder: MfOrder? = nil) {
+    public init (_ array: [Any], mftype: MfType? = nil, shape: [Int]? = nil, mforder: MfOrder = .Row) {
         
         var _mftype: MfType = .None
-        var _mforder = mforder ?? .Row
+        var _mforder = mforder
         
         var (flatten, _shape) = array.withUnsafeBufferPointer{
             flatten_array(ptr: $0, mftype: &_mftype, mforder: &_mforder)

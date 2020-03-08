@@ -57,6 +57,7 @@ extension Matft.mfarray{
             newarray.shapeptr[i] = mfarray.shapeptr[permutation[i]]
             newarray.stridesptr[i] = mfarray.stridesptr[permutation[i]]
         }
+        newarray.mfdata.updateContiguous()
         
         return newarray
     }
@@ -100,6 +101,7 @@ extension Matft.mfarray{
         for idim in 0..<idim_start{
             newarray.stridesptr[idim] = 0
         }
+        newarray.mfdata.updateContiguous()
         
         return newarray
     }

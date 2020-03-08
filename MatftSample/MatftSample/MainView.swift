@@ -18,9 +18,9 @@ class MainView: UIView {
     }
     
     func check_MfArray(){
-        let a = MfArray([[1,2,3],
+        let a = MfArray([[1,2,3.0],
                          [4,5,6]], mforder: .Column)
-
+        print(a.T.mfflags)
         //let arr = Matft.mfarray.arange(start: 0, stop: 100, step: 1, shape: [2, 5, 10], mftype: .Int)
         /*
         let a = arr[~~3, 1~<?~~2, 3~<]

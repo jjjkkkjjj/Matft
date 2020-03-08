@@ -115,3 +115,13 @@ fileprivate func _clousure_number(mfarray: MfArray, indices: inout [Int]) -> Int
     return clousureNum
 }
 
+
+
+extension MfFlags: CustomStringConvertible{
+    public var description: String{
+        var ret = ""
+        ret += "Row contiguous\t\t: \(self.row_contiguous)\n"
+        ret += "Column contiguous\t: \(self.column_contiguous)\n"
+        return ret
+    }
+}

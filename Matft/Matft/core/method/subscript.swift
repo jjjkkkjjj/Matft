@@ -132,6 +132,7 @@ extension MfArray{
         }
         newarray.mfdata._offset = offset
         newarray.mfdata._size = shape2size(newarray.shapeptr)
+        newarray.mfdata.updateContiguous()
         //newarray.mfdata._storedSize = get_storedSize(newarray.shapeptr, newarray.stridesptr)
         //print(newarray.shape, newarray.mfdata._size, newarray.mfdata._storedSize)
         return newarray

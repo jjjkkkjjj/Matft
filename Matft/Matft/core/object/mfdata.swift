@@ -10,30 +10,8 @@ import Foundation
 
 public struct MfData{
     public var _data: UnsafeMutableRawPointer
-    private var __shape: UnsafeMutablePointer<Int>
-    public var _shape: UnsafeMutablePointer<Int>{
-        get{
-            return self.__shape
-        }
-        set(newValue){
-            //free
-            self.__shape.deinitialize(count: self._ndim)
-            self.__shape.deallocate()
-            self.__shape = newValue
-        }
-    }
-    private var __strides: UnsafeMutablePointer<Int>
-    public var _strides: UnsafeMutablePointer<Int>{
-        get{
-            return self.__strides
-        }
-        set(newValue){
-            //free
-            self.__strides.deinitialize(count: self._ndim)
-            self.__strides.deallocate()
-            self.__strides = newValue
-        }
-    }
+    public var _shape: UnsafeMutablePointer<Int>
+    public var _strides: UnsafeMutablePointer<Int>
 
     public var _mftype: MfType
     public var _size: Int
@@ -77,33 +55,38 @@ public struct MfData{
         return MfType.storedType(self._mftype)
     }
     
-    public var _order: MfOrder
+    public var _flags: MfFlags
+    public var _order: MfOrder{
+        return MfOrder.get_order(mfflags: self._flags)
+    }
     
     public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, shapeptr: UnsafeMutablePointer<Int>, mftype: MfType, ndim: Int, mforder: MfOrder, stridesptr: UnsafeMutablePointer<Int>? = nil){
         
         self._data = dataptr
         self._storedSize = storedSize
-        self.__shape = shapeptr
+        self._shape = shapeptr
         self._ndim = ndim
         let _shapeptr = UnsafeMutableBufferPointer<Int>(start: shapeptr, count: ndim)
         self._size = shape2size(_shapeptr)
-        self._order = mforder
         
         if let stridesptr = stridesptr{
-            self.__strides = stridesptr
+            self._strides = stridesptr
+            self._flags = MfFlags(shapeptr: shapeptr, stridesptr: stridesptr, ndim: ndim)
         }
         else{
-            self.__strides = UnsafeMutablePointer<Int>(shape2strides(_shapeptr, mforder: mforder).baseAddress!)
+            let stridesptr = UnsafeMutablePointer<Int>(shape2strides(_shapeptr, mforder: mforder).baseAddress!)
+            self._strides = stridesptr
+            self._flags = MfFlags(shapeptr: shapeptr, stridesptr: stridesptr, ndim: ndim)
         }
         self._mftype = mftype
     }
     public init(mfdata: MfData){
         self._data = mfdata._data
         self._storedSize = mfdata._storedSize
-        self.__shape = mfdata._shape
+        self._shape = mfdata._shape
         self._size = mfdata._size
-        self._order = mfdata._order
-        self.__strides = mfdata._strides
+        self._flags = mfdata._flags
+        self._strides = mfdata._strides
         self._mftype = mfdata._mftype
         self._ndim = mfdata._ndim
     }
@@ -111,16 +94,18 @@ public struct MfData{
     public init(refdata: MfData, offset: Int, shapeptr: UnsafeMutablePointer<Int>, ndim: Int, mforder: MfOrder, stridesptr: UnsafeMutablePointer<Int>? = nil){
         self._data = refdata._data
         self._storedSize = refdata._storedSize
-        self.__shape = shapeptr
+        self._shape = shapeptr
         let _shapeptr = UnsafeMutableBufferPointer(start: shapeptr, count: ndim)
         self._size = shape2size(_shapeptr)
-        self._order = mforder
         
         if let stridesptr = stridesptr{
-            self.__strides = stridesptr
+            self._strides = stridesptr
+            self._flags = MfFlags(shapeptr: shapeptr, stridesptr: stridesptr, ndim: ndim)
         }
         else{
-            self.__strides = UnsafeMutablePointer<Int>(shape2strides(_shapeptr, mforder: mforder).baseAddress!)
+            let stridesptr = UnsafeMutablePointer<Int>(shape2strides(_shapeptr, mforder: mforder).baseAddress!)
+            self._strides = stridesptr
+            self._flags = MfFlags(shapeptr: shapeptr, stridesptr: stridesptr, ndim: ndim)
         }
         self._mftype = refdata._mftype
         self._ndim = ndim
@@ -142,10 +127,10 @@ public struct MfData{
             }
             //self._data.deallocate()
         }
-        self.__shape.deinitialize(count: self._ndim)
-        self.__shape.deallocate()
-        self.__strides.deinitialize(count: self._ndim)
-        self.__strides.deallocate()
+        self._shape.deinitialize(count: self._ndim)
+        self._shape.deallocate()
+        self._strides.deinitialize(count: self._ndim)
+        self._strides.deallocate()
     }
 }
 
