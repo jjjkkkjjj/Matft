@@ -29,7 +29,7 @@ internal func preop_by_vDSP<T: Numeric>(_ mfarray: MfArray, _ vDSP_func: vDSP_co
     let stridesptr = create_unsafeMPtrT(type: Int.self, count: mfarray.ndim)
     stridesptr.assign(from: mfarray.mfdata._strides, count: mfarray.ndim)
     
-    let newdata = MfData(dataptr: dstptr, storedSize: mfarray.storedSize, shapeptr: shapeptr, mftype: mfarray.mftype, ndim: mfarray.ndim, stridesptr: stridesptr)
+    let newdata = MfData(dataptr: dstptr, storedSize: mfarray.storedSize, shapeptr: shapeptr, mftype: mfarray.mftype, ndim: mfarray.ndim, mforder: mfarray.mforder, stridesptr: stridesptr)
     return MfArray(mfdata: newdata)
 }
 
@@ -47,7 +47,7 @@ internal func biop_by_vDSP<T: Numeric>(_ bigger_mfarray: MfArray, _ smaller_mfar
                lptr in
         smaller_mfarray.dataptr.bindMemory(to: T.self).withUnsafeBufferPointer{
                    rptr in
-            for vDSPPrams in vDSPOptParams(bigger_mfarray: bigger_mfarray, smaller_mfarray: smaller_mfarray){
+            for vDSPPrams in OptOffsetParams(bigger_mfarray: bigger_mfarray, smaller_mfarray: smaller_mfarray){
                 biop_unsafePtrT(lptr.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, rptr.baseAddress! + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptr + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSPPrams.blocksize, vDSP_func)
             }
         }
@@ -60,6 +60,6 @@ internal func biop_by_vDSP<T: Numeric>(_ bigger_mfarray: MfArray, _ smaller_mfar
     let stridesptr = create_unsafeMPtrT(type: Int.self, count: bigger_mfarray.ndim)
     stridesptr.assign(from: bigger_mfarray.mfdata._strides, count: bigger_mfarray.ndim)
     
-    let newdata = MfData(dataptr: dstptr, storedSize: bigger_mfarray.storedSize, shapeptr: shapeptr, mftype: bigger_mfarray.mftype, ndim: bigger_mfarray.ndim, stridesptr: stridesptr)
+    let newdata = MfData(dataptr: dstptr, storedSize: bigger_mfarray.storedSize, shapeptr: shapeptr, mftype: bigger_mfarray.mftype, ndim: bigger_mfarray.ndim, mforder: .Row, stridesptr: stridesptr)
     return MfArray(mfdata: newdata)
 }

@@ -27,7 +27,7 @@ internal func math_vv_by_vecLib<T: Numeric>(_ mfarray: MfArray, _ vDSP_func: vDS
     let stridesptr = create_unsafeMPtrT(type: Int.self, count: mfarray.ndim)
     stridesptr.assign(from: mfarray.mfdata._strides, count: mfarray.ndim)
     
-    let newdata = MfData(dataptr: dstptr, storedSize: mfarray.storedSize, shapeptr: shapeptr, mftype: mfarray.mftype, ndim: mfarray.ndim, stridesptr: stridesptr)
+    let newdata = MfData(dataptr: dstptr, storedSize: mfarray.storedSize, shapeptr: shapeptr, mftype: mfarray.mftype, ndim: mfarray.ndim, mforder: mfarray.mforder, stridesptr: stridesptr)
     return MfArray(mfdata: newdata)
 }
 
@@ -49,6 +49,6 @@ internal func math_1arg_vv_by_vecLib<T: Numeric>(_ mfarray: MfArray, _ arg: Unsa
     let stridesptr = create_unsafeMPtrT(type: Int.self, count: mfarray.ndim)
     stridesptr.assign(from: mfarray.mfdata._strides, count: mfarray.ndim)
     
-    let newdata = MfData(dataptr: dstptr, storedSize: mfarray.storedSize, shapeptr: shapeptr, mftype: mfarray.mftype, ndim: mfarray.ndim, stridesptr: stridesptr)
+    let newdata = MfData(dataptr: dstptr, storedSize: mfarray.storedSize, shapeptr: shapeptr, mftype: mfarray.mftype, ndim: mfarray.ndim, mforder: mfarray.mforder, stridesptr: stridesptr)
     return MfArray(mfdata: newdata)
 }

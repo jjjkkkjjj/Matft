@@ -8,7 +8,7 @@
 
 import Foundation
 
-internal struct vDSPOptParams: Sequence{
+internal struct OptOffsetParams: Sequence{
     let bigger_mfarray: MfArray
     let smaller_mfarray: MfArray
     
@@ -17,12 +17,12 @@ internal struct vDSPOptParams: Sequence{
         self.smaller_mfarray = smaller_mfarray
     }
     
-    func makeIterator() -> vDSPOptParamIterator {
-        return vDSPOptParamIterator(optParams: self)
+    func makeIterator() -> OptOffsetParamIterator {
+        return OptOffsetParamIterator(optParams: self)
     }
 }
 
-internal struct vDSPOptParamIterator: IteratorProtocol{
+internal struct OptOffsetParamIterator: IteratorProtocol{
     let stride: (b: Int, s: Int)
     let blocksize: Int
     let itershapes: [Int]
@@ -32,7 +32,7 @@ internal struct vDSPOptParamIterator: IteratorProtocol{
     var indicesOfAxes: [Int]
     var offset: (b: Int, s: Int)?
     
-    public init(optParams: vDSPOptParams){
+    public init(optParams: OptOffsetParams){
         let (axis, blocksize, iterAxes) = _optStrides(shapeptr: optParams.bigger_mfarray.shapeptr, l_strideptr: optParams.bigger_mfarray.stridesptr, r_strideptr: optParams.smaller_mfarray.stridesptr)
         
         self.stride.b = optParams.bigger_mfarray.stridesptr[axis]

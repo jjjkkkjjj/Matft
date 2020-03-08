@@ -8,16 +8,23 @@
 
 import Foundation
 
-internal func flatten_array(ptr: UnsafeBufferPointer<Any>, mftype: inout MfType) -> (flatten: [Any], shape: [Int]){
-    
+internal func flatten_array(ptr: UnsafeBufferPointer<Any>, mftype: inout MfType, mforder: inout MfOrder) -> (flatten: [Any], shape: [Int]){
     var shape: [Int] = [ptr.count]
     var queue = ptr.compactMap{ $0 }
     
-    return (_get_flatten_byBFS(queue: &queue, shape: &shape, mftype: &mftype), shape)
+    switch mforder {
+    case .Row:
+        return (_get_flatten_row_major(queue: &queue, shape: &shape, mftype: &mftype), shape)
+    case .Column:
+        return (_get_flatten_column_major(queue: &queue, shape: &shape, mftype: &mftype), shape)
+    case .None:
+        fatalError("Select row or column as MfOrder.")
+    }
 }
 
+//row major order
 //breadth-first search
-fileprivate func _get_flatten_byBFS(queue: inout [Any], shape: inout [Int], mftype : inout MfType) -> [Any]{
+fileprivate func _get_flatten_row_major(queue: inout [Any], shape: inout [Int], mftype : inout MfType) -> [Any]{
     precondition(shape.count == 1, "shape must have only one element")
     var cnt = 0 // count up the number that value is extracted from queue for while statement, reset 0 when iteration number reaches size
     var size = queue.count
@@ -58,6 +65,58 @@ fileprivate func _get_flatten_byBFS(queue: inout [Any], shape: inout [Int], mfty
     
     return queue
 }
+
+//column major order
+fileprivate func _get_flatten_column_major(queue: inout [Any], shape: inout [Int], mftype: inout MfType) -> [Any]{
+    //precondition(shape.count == 1, "shape must have only one element")
+    var cnt = 0 // count up the number that value is extracted from queue for while statement, reset 0 when iteration number reaches size
+    //var axis = 0//the axis in searching
+    let dim = queue.count // given
+    
+    var newqueue: [Any] = []
+    while queue.count > 0{
+        //get first element
+        let elements = queue[0]
+        
+        if var elements = elements as? [Any]{
+            if cnt == 0{ //append next dim
+                shape.append(elements.count)
+                //axis += 1
+            }
+            else if cnt < dim{// check if same dim is or not
+                if shape.last! != elements.count{
+                    shape = shape.dropLast()
+                    mftype = .Object
+                    break
+                }
+            }
+            cnt += 1
+            
+            newqueue.append(elements.removeFirst())
+            if elements.count > 0{
+                queue.append(elements)
+            }
+            
+            
+        }
+        else{ // value was detected. this means queue in this case becomes flatten array
+            let _mftype = MfType.mftype(value: elements)
+            mftype = MfType.priority(mftype, _mftype)
+            return queue
+        }
+        
+        let _ = queue.removeFirst()
+    }
+    
+    if mftype != .Object{
+        //recurrsive
+        return _get_flatten_column_major(queue: &newqueue, shape: &shape, mftype: &mftype)
+    }
+    else{
+        return newqueue
+    }
+}
+
 
 /*
 fileprivate func _recurrsion_flatten(elements: Any, mftype : inout MfType, shape: inout [Int], depth: Int = 1) -> [Any]{
@@ -125,15 +184,24 @@ internal func shape2size(_ shape: inout [Int]) -> Int{
     }
 }
 
-internal func shape2strides(_ shapeptr: UnsafeMutableBufferPointer<Int>) -> UnsafeMutableBufferPointer<Int>{
+internal func shape2strides(_ shapeptr: UnsafeMutableBufferPointer<Int>, mforder: MfOrder) -> UnsafeMutableBufferPointer<Int>{
     let stridesptr = create_unsafeMPtrT(type: Int.self, count: shapeptr.count)
     let ret = UnsafeMutableBufferPointer(start: stridesptr, count: shapeptr.count)
     
-    var prevAxisNum = shape2size(shapeptr)
-    for index in 0..<shapeptr.count{
-        ret[index] = prevAxisNum / shapeptr[index]
-        prevAxisNum = ret[index]
+    switch mforder {
+    case .Row, .None:
+        var prevAxisNum = shape2size(shapeptr)
+        for index in 0..<shapeptr.count{
+            ret[index] = prevAxisNum / shapeptr[index]
+            prevAxisNum = ret[index]
+        }
+    case .Column:
+        ret[0] = 1
+        for index in 1..<shapeptr.count{
+            ret[index] = ret[index - 1] * shapeptr[index - 1]
+        }
     }
+    
     return ret
 }
 

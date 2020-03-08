@@ -77,7 +77,9 @@ public struct MfData{
         return MfType.storedType(self._mftype)
     }
     
-    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, shapeptr: UnsafeMutablePointer<Int>, mftype: MfType, ndim: Int, stridesptr: UnsafeMutablePointer<Int>? = nil){
+    public var _order: MfOrder
+    
+    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, shapeptr: UnsafeMutablePointer<Int>, mftype: MfType, ndim: Int, mforder: MfOrder, stridesptr: UnsafeMutablePointer<Int>? = nil){
         
         self._data = dataptr
         self._storedSize = storedSize
@@ -85,11 +87,13 @@ public struct MfData{
         self._ndim = ndim
         let _shapeptr = UnsafeMutableBufferPointer<Int>(start: shapeptr, count: ndim)
         self._size = shape2size(_shapeptr)
+        self._order = mforder
+        
         if let stridesptr = stridesptr{
             self.__strides = stridesptr
         }
         else{
-            self.__strides = UnsafeMutablePointer<Int>(shape2strides(_shapeptr).baseAddress!)
+            self.__strides = UnsafeMutablePointer<Int>(shape2strides(_shapeptr, mforder: mforder).baseAddress!)
         }
         self._mftype = mftype
     }
@@ -98,22 +102,25 @@ public struct MfData{
         self._storedSize = mfdata._storedSize
         self.__shape = mfdata._shape
         self._size = mfdata._size
+        self._order = mfdata._order
         self.__strides = mfdata._strides
         self._mftype = mfdata._mftype
         self._ndim = mfdata._ndim
     }
     // create view
-    public init(refdata: MfData, offset: Int, shapeptr: UnsafeMutablePointer<Int>, ndim: Int, stridesptr: UnsafeMutablePointer<Int>? = nil){
+    public init(refdata: MfData, offset: Int, shapeptr: UnsafeMutablePointer<Int>, ndim: Int, mforder: MfOrder, stridesptr: UnsafeMutablePointer<Int>? = nil){
         self._data = refdata._data
         self._storedSize = refdata._storedSize
         self.__shape = shapeptr
         let _shapeptr = UnsafeMutableBufferPointer(start: shapeptr, count: ndim)
         self._size = shape2size(_shapeptr)
+        self._order = mforder
+        
         if let stridesptr = stridesptr{
             self.__strides = stridesptr
         }
         else{
-            self.__strides = UnsafeMutablePointer<Int>(shape2strides(_shapeptr).baseAddress!)
+            self.__strides = UnsafeMutablePointer<Int>(shape2strides(_shapeptr, mforder: mforder).baseAddress!)
         }
         self._mftype = refdata._mftype
         self._ndim = ndim

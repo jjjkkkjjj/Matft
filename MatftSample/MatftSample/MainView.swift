@@ -18,8 +18,10 @@ class MainView: UIView {
     }
     
     func check_MfArray(){
-        
-        let arr = Matft.mfarray.arange(start: 0, stop: 100, step: 1, shape: [2, 5, 10], mftype: .Int)
+        let a = MfArray([[1,2,3],
+                         [4,5,6]], mforder: .Column)
+
+        //let arr = Matft.mfarray.arange(start: 0, stop: 100, step: 1, shape: [2, 5, 10], mftype: .Int)
         /*
         let a = arr[~~3, 1~<?~~2, 3~<]
         
@@ -59,6 +61,7 @@ class MainView: UIView {
         //print(arr + arr22)
         //print(arr22)
         */
+        /*
         let e = Matft.mfarray.arange(start: 0, stop: 5, step: 1)
         print(Matft.mfarray.power(e, exponents: Matft.mfarray.arange(start: 0, stop: 5, step: 1)).astype(.Int))
         
@@ -68,13 +71,12 @@ class MainView: UIView {
         let x = try! Matft.mfarray.linalg.solve(a, b: b)
         print(x)
         
+        */
         /*
         let a = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10, 10, 10, 10, 10, 10], mftype: .Float)
         //let a = Matft.mfarray.arange(start: 0, stop: 3*3*3*3, step: 1, shape: [3, 3, 3, 3], mftype: .Float)
         //print(a)
 
-        let k = 1~<=6~~2
-        print(k.start, k.to, k.by)
         let b = a.transpose()
         let c = a.transpose(axes: [1,2,3,4,5,0])
         var start = Date()

@@ -88,11 +88,11 @@ extension Matft.mfarray.mfdata{
         case .Float:
             let dataptr = create_unsafeMRPtr(type: Float.self, count: mfdata._size)
             dataptr.assumingMemoryBound(to: Float.self).assign(from: mfdata._data.assumingMemoryBound(to: Float.self), count: mfdata._storedSize)
-            return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mfdata._mftype, ndim: mfdata._ndim, stridesptr: stridesptr)
+            return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mfdata._mftype, ndim: mfdata._ndim, mforder: mfdata._order, stridesptr: stridesptr)
         case .Double:
             let dataptr = create_unsafeMRPtr(type: Double.self, count: mfdata._size)
             dataptr.assumingMemoryBound(to: Double.self).assign(from: mfdata._data.assumingMemoryBound(to: Double.self), count: mfdata._storedSize)
-            return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mfdata._mftype, ndim: mfdata._ndim, stridesptr: stridesptr)
+            return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mfdata._mftype, ndim: mfdata._ndim, mforder: mfdata._order, stridesptr: stridesptr)
         }
     }
     /**
@@ -109,7 +109,7 @@ extension Matft.mfarray.mfdata{
         let stridesptr = create_unsafeMPtrT(type: Int.self, count: mfdata._ndim)
         stridesptr.assign(from: mfdata._strides, count: mfdata._ndim)
         
-        let newmfdata = MfData(refdata: mfdata, offset: 0, shapeptr: shapeptr, ndim: mfdata._ndim, stridesptr: stridesptr)
+        let newmfdata = MfData(refdata: mfdata, offset: 0, shapeptr: shapeptr, ndim: mfdata._ndim, mforder: mfdata._order, stridesptr: stridesptr)
         
         return newmfdata
     }

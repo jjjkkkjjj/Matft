@@ -138,7 +138,7 @@ extension Matft.mfarray.mfdata{
             
             let dataptr = UnsafeMutableRawPointer(ptrF)
             
-            return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mftype, ndim: mfdata._ndim, stridesptr: stridesptr)
+            return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mftype, ndim: mfdata._ndim, mforder: mfdata._order, stridesptr: stridesptr)
             
         case .Double://float to double
             let ptrF = mfdata._data.bindMemory(to: Float.self, capacity: mfdata._storedSize)
@@ -148,7 +148,7 @@ extension Matft.mfarray.mfdata{
 
             let dataptr = UnsafeMutableRawPointer(ptrD)
 
-            return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mftype, ndim: mfdata._ndim, stridesptr: stridesptr)
+            return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mftype, ndim: mfdata._ndim, mforder: mfdata._order, stridesptr: stridesptr)
         }
     }
 }
