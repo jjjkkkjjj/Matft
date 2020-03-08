@@ -18,11 +18,10 @@ class MainView: UIView {
     }
     
     func check_MfArray(){
-        let a = MfArray([[1,2,3.0],
-                         [4,5,6]], mforder: .Column)
-        print(a.mfflags, a.strides)
-        let b = Matft.mfarray.conv_order(a, mforder: .Row)
-        print(b.mfflags, b.strides)
+        let a = Matft.mfarray.arange(start: 0, stop: 8, step: 1, shape: [2,2,2])
+        print(a.transpose(axes: [1,2,0]))
+        let b = a.transpose(axes: [1,2,0]).flatten(.Column)
+        print(b)
         
         //let arr = Matft.mfarray.arange(start: 0, stop: 100, step: 1, shape: [2, 5, 10], mftype: .Int)
         /*

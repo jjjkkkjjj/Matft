@@ -27,6 +27,9 @@ internal func convorder_by_cblas<T: Numeric>(_ mfarray: MfArray, dsttmpMfarray: 
         }
     }
     
-    dsttmpMfarray.mfdata._data.moveInitializeMemory(as: T.self, from: dstptr, count: mfarray.size)
+    dsttmpMfarray.mfdata.free_data()
+    dsttmpMfarray.mfdata._data = UnsafeMutableRawPointer(dstptr)
+    dsttmpMfarray.mfdata._storedSize = mfarray.size
+    dsttmpMfarray.mfdata._size = mfarray.size
     return dsttmpMfarray
 }

@@ -105,6 +105,7 @@ extension Matft.mfarray{
         
         return newarray
     }
+
     /**
        Convert order of stored data.
        - parameters:
@@ -119,13 +120,34 @@ extension Matft.mfarray{
             return to_column_major(mfarray)
         }
     }
-    public static func flatten(_ mfarray: MfArray, mforder: MfOrder) -> MfArray{
-        switch mforder {
-        case .Row:
-            return to_row_major(mfarray)
-        case .Column:
-            return to_column_major(mfarray)
+    /**
+       Flatten 1d-mfarray
+       - parameters:
+            - mfarray: mfarray
+            - mforder: (Optional) mforder, default is Row
+    */
+    public static func flatten(_ mfarray: MfArray, mforder: MfOrder = .Row) -> MfArray{
+        let ret = Matft.mfarray.conv_order(mfarray, mforder: mforder)
+        var newshape = [ret.size]
+        var newstrides = [1]
+        
+        //shape
+        ret.mfdata.free_shape()
+        let newshapeptr = create_unsafeMPtrT(type: Int.self, count: 1)
+        newshape.withUnsafeMutableBufferPointer{
+            newshapeptr.assign(from: $0.baseAddress!, count: 1)
         }
+        ret.mfdata._shape = newshapeptr
+        
+        //strides
+        ret.mfdata.free_strides()
+        let newstridesptr = create_unsafeMPtrT(type: Int.self, count: 1)
+        newstrides.withUnsafeMutableBufferPointer{
+            newstridesptr.assign(from: $0.baseAddress!, count: 1)
+        }
+        ret.mfdata._strides = newstridesptr
+        ret.mfdata._ndim = 1
+        return ret
     }
 }
 

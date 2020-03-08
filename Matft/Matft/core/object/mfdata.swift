@@ -123,23 +123,9 @@ public struct MfData{
     }
     
     internal func free() {
-        if !self._isView{
-            switch self._storedType {
-            case .Float:
-                let dataptr = self._data.bindMemory(to: Float.self, capacity: self._storedSize)
-                dataptr.deinitialize(count: self._storedSize)
-                dataptr.deallocate()
-            case .Double:
-                let dataptr = self._data.bindMemory(to: Double.self, capacity: self._storedSize)
-                dataptr.deinitialize(count: self._storedSize)
-                dataptr.deallocate()
-            }
-            //self._data.deallocate()
-        }
-        self._shape.deinitialize(count: self._ndim)
-        self._shape.deallocate()
-        self._strides.deinitialize(count: self._ndim)
-        self._strides.deallocate()
+        self.free_data()
+        self.free_shape()
+        self.free_strides()
     }
 }
 
