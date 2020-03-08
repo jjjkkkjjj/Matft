@@ -18,9 +18,10 @@ class MainView: UIView {
     }
     
     func check_MfArray(){
-        let a = MfArray([[1,2,3.0],
+        /*let a = MfArray([[1,2,3.0],
                          [4,5,6]], mforder: .Column)
-        print(a.T.mfflags)
+        print(a.T.mfflags)*/
+        
         //let arr = Matft.mfarray.arange(start: 0, stop: 100, step: 1, shape: [2, 5, 10], mftype: .Int)
         /*
         let a = arr[~~3, 1~<?~~2, 3~<]
@@ -33,8 +34,8 @@ class MainView: UIView {
         let ar = MfArray([[0,1],[2,3]])
 
         print(ar)*/
-        /*
         
+        /*
         let arrr = try! MfArray([0,1])
         let arrrr = try! MfArray([[0]])
 
@@ -43,7 +44,7 @@ class MainView: UIView {
                                      
                                  [[ 8,  9, 10, 11],
                                   [12, 13, 14, 15]]])
-        print(arr2)
+        print(arr2.T)
         
         let arr22 = MfArray([[[ 0,  8],
                                    [ 4, 12]],
@@ -56,11 +57,11 @@ class MainView: UIView {
                                     
                                   [[ 3, 11],
                                    [ 7, 15]]])
-        print(arr2.T + arr22)
+        print(arr2.T + arr22)*/
         //print(arr.broadcast_to(shape: [4, 2, 2]))
         //print(arr + arr22)
         //print(arr22)
-        */
+        
         /*
         let e = Matft.mfarray.arange(start: 0, stop: 5, step: 1)
         print(Matft.mfarray.power(e, exponents: Matft.mfarray.arange(start: 0, stop: 5, step: 1)).astype(.Int))

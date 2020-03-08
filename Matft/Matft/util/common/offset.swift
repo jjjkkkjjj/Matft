@@ -115,6 +115,7 @@ fileprivate func _optStrides(shapeptr: UnsafeMutableBufferPointer<Int>, l_stride
         r_strides[axis] = nil
         
         var n = 0
+        var last_contiguous_axis = axis
         var blockSize = shapeptr[axis]
         var iterAxes: [Int] = []
         while n < ndim{
@@ -123,15 +124,20 @@ fileprivate func _optStrides(shapeptr: UnsafeMutableBufferPointer<Int>, l_stride
                 continue
             }
             
-            if (lst == l_strideptr[axis] * shapeptr[axis]) && (rst == r_strideptr[axis] * shapeptr[axis]){//
+            if (lst == l_strideptr[last_contiguous_axis] * shapeptr[last_contiguous_axis]) && (rst == r_strideptr[last_contiguous_axis] * shapeptr[last_contiguous_axis]){//
                 l_strides[n] = nil//set flag as already checked
                 r_strides[n] = nil
                 
                 //update blocksize
                 blockSize *= shapeptr[n]
                 
+                //update last_contiguous_axis
+                last_contiguous_axis = n
+                
                 //re-search
                 n = 0
+                iterAxes = []
+                
                 continue
             }
             

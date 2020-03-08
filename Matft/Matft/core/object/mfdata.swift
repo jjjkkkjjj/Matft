@@ -60,7 +60,7 @@ public struct MfData{
         return MfOrder.get_order(mfflags: self._flags)
     }
     
-    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, shapeptr: UnsafeMutablePointer<Int>, mftype: MfType, ndim: Int, mforder: MfOrder, stridesptr: UnsafeMutablePointer<Int>? = nil){
+    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, shapeptr: UnsafeMutablePointer<Int>, mftype: MfType, ndim: Int, stridesptr: UnsafeMutablePointer<Int>){
         
         self._data = dataptr
         self._storedSize = storedSize
@@ -69,15 +69,24 @@ public struct MfData{
         let _shapeptr = UnsafeMutableBufferPointer<Int>(start: shapeptr, count: ndim)
         self._size = shape2size(_shapeptr)
         
-        if let stridesptr = stridesptr{
-            self._strides = stridesptr
-            self._flags = MfFlags(shapeptr: shapeptr, stridesptr: stridesptr, ndim: ndim)
-        }
-        else{
-            let stridesptr = UnsafeMutablePointer<Int>(shape2strides(_shapeptr, mforder: mforder).baseAddress!)
-            self._strides = stridesptr
-            self._flags = MfFlags(shapeptr: shapeptr, stridesptr: stridesptr, ndim: ndim)
-        }
+        self._strides = stridesptr
+        self._flags = MfFlags(shapeptr: shapeptr, stridesptr: stridesptr, ndim: ndim)
+        
+        self._mftype = mftype
+    }
+    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, shapeptr: UnsafeMutablePointer<Int>, mftype: MfType, ndim: Int, mforder: MfOrder){
+        
+        self._data = dataptr
+        self._storedSize = storedSize
+        self._shape = shapeptr
+        self._ndim = ndim
+        let _shapeptr = UnsafeMutableBufferPointer<Int>(start: shapeptr, count: ndim)
+        self._size = shape2size(_shapeptr)
+        
+        let stridesptr = UnsafeMutablePointer<Int>(shape2strides(_shapeptr, mforder: mforder).baseAddress!)
+        self._strides = stridesptr
+        self._flags = MfFlags(shapeptr: shapeptr, stridesptr: stridesptr, ndim: ndim)
+        
         self._mftype = mftype
     }
     public init(mfdata: MfData){
