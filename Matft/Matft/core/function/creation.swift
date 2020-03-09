@@ -88,10 +88,37 @@ extension Matft.mfarray{
             - axis: the axis to concatenate
     */
     static public func concatenate(_ mfarrays: [MfArray], axis: Int = 0){
-        for mfarray in mfarrays{
+        precondition(mfarrays.count >= 2, "inputs mfarrays must consist of more than 2")
+        
+        let basearray = mfarrays.first!
+        var concatShape = basearray.shape
+        concatShape.remove(at: axis)
+        
+        var retStoredType = basearray.storedType
+        
+        //check if argument is valid or not
+        for i in 1..<mfarrays.count{
+            var shapeExceptAxis = mfarrays[i].shape
+            shapeExceptAxis.remove(at: axis)
             
+            retStoredType = StoredType.priority(retStoredType, mfarrays[i].storedType)
+            
+            precondition(concatShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
         }
-        precondition(true, "all the input array dimensions except for the concatenation axis must match exactly")
+        
+        let retsize = concatShape.reduce(1, *) * mfarrays.count
+        
+        switch retStoredType {
+        case .Float:
+            let dstptr = create_unsafeMPtrT(type: Float.self, count: retsize)
+            for mfarray in mfarrays{
+                
+            }
+            
+        case .Double:
+            let dstptr = create_unsafeMPtrT(type: Double.self, count: retsize)
+        }
+        
     }
 }
 
