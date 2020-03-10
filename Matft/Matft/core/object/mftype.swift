@@ -86,7 +86,7 @@ public enum MfType: Int{
     //}
 }
 
-internal enum StoredType: Int{
+public enum StoredType: Int{
     case Float
     case Double
     

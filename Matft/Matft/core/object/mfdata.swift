@@ -10,11 +10,7 @@ import Foundation
 
 public struct MfData{
     public var _data: UnsafeMutableRawPointer
-    public var _shape: UnsafeMutablePointer<Int>
-    public var _strides: UnsafeMutablePointer<Int>
-
-    public var _mftype: MfType
-    public var _size: Int
+    internal var _storedType: StoredType
     public var _storedSize: Int
     public var _storedByteSize: Int{
         switch self._storedType {
@@ -24,7 +20,7 @@ public struct MfData{
             return self._storedSize * MemoryLayout<Double>.size
         }
     }
-    public var _ndim: Int
+
     public var _isView: Bool{
         return self.__offset != nil
     }
@@ -51,81 +47,41 @@ public struct MfData{
         }
     }
     
-    internal var _storedType: StoredType{
-        return MfType.storedType(self._mftype)
-    }
     
-    public var _flags: MfFlags
-    public var _order: MfOrder{
-        return MfOrder.get_order(mfflags: self._flags)
-    }
     
-    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, shapeptr: UnsafeMutablePointer<Int>, mftype: MfType, ndim: Int, stridesptr: UnsafeMutablePointer<Int>){
-        
+    
+    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, storedType: StoredType){
         self._data = dataptr
         self._storedSize = storedSize
-        self._shape = shapeptr
-        self._ndim = ndim
-        let _shapeptr = UnsafeMutableBufferPointer<Int>(start: shapeptr, count: ndim)
-        self._size = shape2size(_shapeptr)
-        
-        self._strides = stridesptr
-        self._flags = MfFlags(shapeptr: shapeptr, stridesptr: stridesptr, ndim: ndim)
-        
-        self._mftype = mftype
-    }
-    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, shapeptr: UnsafeMutablePointer<Int>, mftype: MfType, ndim: Int, mforder: MfOrder){
-        
-        self._data = dataptr
-        self._storedSize = storedSize
-        self._shape = shapeptr
-        self._ndim = ndim
-        let _shapeptr = UnsafeMutableBufferPointer<Int>(start: shapeptr, count: ndim)
-        self._size = shape2size(_shapeptr)
-        
-        let stridesptr = UnsafeMutablePointer<Int>(shape2strides(_shapeptr, mforder: mforder).baseAddress!)
-        self._strides = stridesptr
-        self._flags = MfFlags(shapeptr: shapeptr, stridesptr: stridesptr, ndim: ndim)
-        
-        self._mftype = mftype
+        self._storedType = storedType
     }
     public init(mfdata: MfData){
         self._data = mfdata._data
         self._storedSize = mfdata._storedSize
-        self._shape = mfdata._shape
-        self._size = mfdata._size
-        self._flags = mfdata._flags
-        self._strides = mfdata._strides
-        self._mftype = mfdata._mftype
-        self._ndim = mfdata._ndim
+        self._storedType = mfdata._storedType
     }
+    // create dummy
+    public init(storedSize: Int, storedType: StoredType){
+        switch storedType {
+        case .Float:
+            self._data = create_unsafeMRPtr(type: Float.self, count: storedSize)
+        case .Double:
+            self._data = create_unsafeMRPtr(type: Double.self, count: storedSize)
+        }
+        self._storedSize = storedSize
+        self._storedType = storedType
+    }
+    
     // create view
-    public init(refdata: MfData, offset: Int, shapeptr: UnsafeMutablePointer<Int>, ndim: Int, mforder: MfOrder, stridesptr: UnsafeMutablePointer<Int>? = nil){
+    public init(refdata: MfData, offset: Int){
         self._data = refdata._data
         self._storedSize = refdata._storedSize
-        self._shape = shapeptr
-        let _shapeptr = UnsafeMutableBufferPointer(start: shapeptr, count: ndim)
-        self._size = shape2size(_shapeptr)
-        
-        if let stridesptr = stridesptr{
-            self._strides = stridesptr
-            self._flags = MfFlags(shapeptr: shapeptr, stridesptr: stridesptr, ndim: ndim)
-        }
-        else{
-            let stridesptr = UnsafeMutablePointer<Int>(shape2strides(_shapeptr, mforder: mforder).baseAddress!)
-            self._strides = stridesptr
-            self._flags = MfFlags(shapeptr: shapeptr, stridesptr: stridesptr, ndim: ndim)
-        }
-        self._mftype = refdata._mftype
-        self._ndim = ndim
-        
+        self._storedType = refdata._storedType
         self.__offset = offset
     }
     
     internal func free() {
         self.free_data()
-        self.free_shape()
-        self.free_strides()
     }
 }
 

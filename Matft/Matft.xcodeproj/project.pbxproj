@@ -53,6 +53,9 @@
 		D64D95E7240F6EF000C88D85 /* LAPACK.swift in Sources */ = {isa = PBXBuildFile; fileRef = D64D95E6240F6EF000C88D85 /* LAPACK.swift */; };
 		D64D95E9240F974D00C88D85 /* math_func.swift in Sources */ = {isa = PBXBuildFile; fileRef = D64D95E8240F974D00C88D85 /* math_func.swift */; };
 		D64D95EB240FA11800C88D85 /* vecLib.swift in Sources */ = {isa = PBXBuildFile; fileRef = D64D95EA240FA11800C88D85 /* vecLib.swift */; };
+		D65E133F241739F500E3A8D2 /* mfarrayProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = D65E133E241739F500E3A8D2 /* mfarrayProtocol.swift */; };
+		D65E134324173AF200E3A8D2 /* withPtr.swift in Sources */ = {isa = PBXBuildFile; fileRef = D65E134224173AF200E3A8D2 /* withPtr.swift */; };
+		D65E1345241793A400E3A8D2 /* mfstructure.swift in Sources */ = {isa = PBXBuildFile; fileRef = D65E1344241793A400E3A8D2 /* mfstructure.swift */; };
 		D672166B23935A7B00040BD0 /* Matft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D672166123935A7B00040BD0 /* Matft.framework */; };
 		D672167023935A7B00040BD0 /* MatftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672166F23935A7B00040BD0 /* MatftTests.swift */; };
 		D672167223935A7B00040BD0 /* Matft.h in Headers */ = {isa = PBXBuildFile; fileRef = D672166423935A7B00040BD0 /* Matft.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -101,6 +104,9 @@
 		D64D95E6240F6EF000C88D85 /* LAPACK.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LAPACK.swift; sourceTree = "<group>"; };
 		D64D95E8240F974D00C88D85 /* math_func.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = math_func.swift; sourceTree = "<group>"; };
 		D64D95EA240FA11800C88D85 /* vecLib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vecLib.swift; sourceTree = "<group>"; };
+		D65E133E241739F500E3A8D2 /* mfarrayProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mfarrayProtocol.swift; sourceTree = "<group>"; };
+		D65E134224173AF200E3A8D2 /* withPtr.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = withPtr.swift; sourceTree = "<group>"; };
+		D65E1344241793A400E3A8D2 /* mfstructure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mfstructure.swift; sourceTree = "<group>"; };
 		D672166123935A7B00040BD0 /* Matft.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Matft.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D672166423935A7B00040BD0 /* Matft.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Matft.h; sourceTree = "<group>"; };
 		D672166523935A7B00040BD0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -149,6 +155,7 @@
 				010841682406745E00BBFEB8 /* mfarray.swift */,
 				011CEDEE240AB63300D14228 /* mfslice.swift */,
 				010841692406745E00BBFEB8 /* mfdata.swift */,
+				D65E1344241793A400E3A8D2 /* mfstructure.swift */,
 				01E1A7B22413DEBA00067D6C /* mforder.swift */,
 				010841702406745E00BBFEB8 /* mferror.swift */,
 			);
@@ -158,6 +165,7 @@
 		0108416A2406745E00BBFEB8 /* util */ = {
 			isa = PBXGroup;
 			children = (
+				D65E133D241739DA00E3A8D2 /* protocol */,
 				01CA70542413713100A59F40 /* common */,
 				0108416C2406745E00BBFEB8 /* pointer */,
 				0156BDFE24127FCA009D15F1 /* library */,
@@ -194,6 +202,7 @@
 				01084182240693D900BBFEB8 /* conversion_mfarray_mfdata.swift */,
 				01B37B852406C49F004AF2EF /* subscript.swift */,
 				01B37B7E24069E6B004AF2EF /* creation_mfarray_mfdata.swift */,
+				D65E134224173AF200E3A8D2 /* withPtr.swift */,
 			);
 			path = method;
 			sourceTree = "<group>";
@@ -226,6 +235,14 @@
 				01CA70552413715200A59F40 /* offset.swift */,
 			);
 			path = common;
+			sourceTree = "<group>";
+		};
+		D65E133D241739DA00E3A8D2 /* protocol */ = {
+			isa = PBXGroup;
+			children = (
+				D65E133E241739F500E3A8D2 /* mfarrayProtocol.swift */,
+			);
+			path = protocol;
 			sourceTree = "<group>";
 		};
 		D672165723935A7B00040BD0 = {
@@ -446,8 +463,10 @@
 				01CA705224136D6900A59F40 /* cblas.swift in Sources */,
 				D64D95E9240F974D00C88D85 /* math_func.swift in Sources */,
 				01B37B812406A53F004AF2EF /* print.swift in Sources */,
+				D65E1345241793A400E3A8D2 /* mfstructure.swift in Sources */,
 				011CEDF1240AB6D300D14228 /* op_mfslice.swift in Sources */,
 				0108417A2406745E00BBFEB8 /* mferror.swift in Sources */,
+				D65E133F241739F500E3A8D2 /* mfarrayProtocol.swift in Sources */,
 				010841742406745E00BBFEB8 /* mfarray.swift in Sources */,
 				D6C029D324089F6F002184B8 /* infix.swift in Sources */,
 				D64D95E7240F6EF000C88D85 /* LAPACK.swift in Sources */,
@@ -455,6 +474,7 @@
 				01084180240690EA00BBFEB8 /* conversion.swift in Sources */,
 				010841732406745E00BBFEB8 /* mftype.swift in Sources */,
 				01B37B7F24069E6B004AF2EF /* creation_mfarray_mfdata.swift in Sources */,
+				D65E134324173AF200E3A8D2 /* withPtr.swift in Sources */,
 				010841772406745E00BBFEB8 /* ptr2ptr.swift in Sources */,
 				01B37B842406A62E004AF2EF /* index.swift in Sources */,
 				D64D95E5240F455000C88D85 /* leaner_algebra.swift in Sources */,
