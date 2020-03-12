@@ -9,7 +9,7 @@
 import Foundation
 
 extension MfStructure{
-    public mutating func updateContiguous(){
+    public func updateContiguous(){
         self._flags.updateContiguous(shapeptr: self._shape, stridesptr: self._strides, ndim: self._ndim)
     }
     
@@ -31,6 +31,9 @@ internal func shape2size(_ shape: inout [Int]) -> Int{
     }
 }
 
+/**
+    - Important: this function allocate new memory, so don't forget deallocate!
+ */
 internal func shape2strides(_ shapeptr: UnsafeMutableBufferPointer<Int>, mforder: MfOrder) -> UnsafeMutableBufferPointer<Int>{
     let stridesptr = create_unsafeMPtrT(type: Int.self, count: shapeptr.count)
     let ret = UnsafeMutableBufferPointer(start: stridesptr, count: shapeptr.count)

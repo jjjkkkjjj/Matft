@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct MfData{
+public class MfData{
     public internal(set) var _data: UnsafeMutableRawPointer
     public internal(set) var _mftype: MfType
     internal var _storedType: StoredType{
@@ -83,7 +83,7 @@ public struct MfData{
         self.__offset = offset
     }
     
-    internal func free() {
+    deinit {
         if !self._isView{
             switch self._storedType {
             case .Float:

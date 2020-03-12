@@ -23,13 +23,13 @@ class MainView: UIView {
         print(a.transpose(axes: [1,2,0]))
         let b = a.transpose(axes: [1,2,0]).flatten(.Column)
         print(b)*/
-        
+        /*
         let arr = Matft.mfarray.arange(start: 0, stop: 100, step: 1, shape: [2, 5, 10], mftype: .Int)
         
         let a = arr[~~3, 1~<?~~2, 3~<]
         
         print(a + a)
-        print(a)
+        print(a)*/
         
         /*
         //print(Matft.mfarray.nums(1, shape: [5, 5]))
@@ -56,12 +56,12 @@ class MainView: UIView {
                                     
                                   [[ 3, 11],
                                    [ 7, 15]]])
-        print(arr2.T + arr22)
+        print(arr2.T + arr22)*/
         //print(arr.broadcast_to(shape: [4, 2, 2]))
         //print(arr + arr22)
         //print(arr22)*/
         
-        /*
+        
         let e = Matft.mfarray.arange(start: 0, stop: 5, step: 1)
         print(Matft.mfarray.power(e, exponents: Matft.mfarray.arange(start: 0, stop: 5, step: 1)).astype(.Int))
         
@@ -69,7 +69,7 @@ class MainView: UIView {
                         [4, 5]])
         let b = MfArray([[2, -7]])
         let x = try! Matft.mfarray.linalg.solve(a, b: b)
-        //print(x)*/
+        print(x)
         
         
         /*

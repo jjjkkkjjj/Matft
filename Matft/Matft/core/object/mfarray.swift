@@ -128,7 +128,8 @@ public class MfArray{
     }
 
     deinit {
-        self.mfdata.free()
+        //self.mfdata.free()
+        //self.mfstructure.free()
     }
 }
 

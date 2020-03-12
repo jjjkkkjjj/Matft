@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct MfStructure{
+public class MfStructure{
     public var _shape: UnsafeMutablePointer<Int>
     public var _strides: UnsafeMutablePointer<Int>
     public var _ndim: Int
@@ -34,7 +34,7 @@ public struct MfStructure{
         
         self._flags = MfFlags(shapeptr: self._shape, stridesptr: self._strides, ndim: self._ndim)
     }
-    internal func free(){
+    deinit {
         self._shape.deinitialize(count: self._ndim)
         self._shape.deallocate()
         

@@ -61,6 +61,9 @@ fileprivate func _array2UnsafeRawPtr<T: Numeric>(_ array: inout [T]?) -> UnsafeM
 
 */
 
+/**
+   - Important: this function allocate new memory, so don't forget deallocate!
+*/
 internal func array2UnsafeMPtrT<T: Numeric>(_ array: inout [T]) -> UnsafeMutablePointer<T>{
     let ptr = create_unsafeMPtrT(type: T.self, count: array.count)
     array.withUnsafeBufferPointer{
@@ -73,6 +76,9 @@ internal func array2UnsafeMPtrT<T: Numeric>(_ array: inout [T]) -> UnsafeMutable
 
 //convert flattenarray to rawpointer via float or Double array
 //All kinds of int and uint will be handled as float
+/**
+   - Important: this function allocate new memory, so don't forget deallocate!
+*/
 internal func flattenarray2UnsafeMRPtr_viaForD(_ flattenarray: inout [Any]) -> UnsafeMutableRawPointer {
     
     let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)

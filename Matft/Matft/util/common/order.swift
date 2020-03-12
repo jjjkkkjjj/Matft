@@ -187,6 +187,8 @@ internal func to_row_major(_ mfarray: MfArray) -> MfArray{
                 
                 //move
                 stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+                //free
+                newstridesptr.deallocate()
             }
         }
 
@@ -217,6 +219,8 @@ internal func to_column_major(_ mfarray: MfArray) -> MfArray{
             
             //move
             stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+            //free
+            newstridesptr.deallocate()
         }
     }
     
