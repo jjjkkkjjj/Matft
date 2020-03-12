@@ -34,7 +34,7 @@ extension MfArray{
         return Matft.mfarray.flatten(self, mforder: mforder)
     }
 }
- 
+ /*
 extension MfData{
     /**
        Create deep copy of mfdata. Deep means copied mfdata will be different object from original one
@@ -51,3 +51,4 @@ extension MfData{
         return Matft.mfarray.mfdata.shallowcopy(self)
     }
 }
+*/

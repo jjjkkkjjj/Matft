@@ -40,7 +40,13 @@ extension Matft.mfarray.linalg{
             let _coefflatten = coefflatten.astype(.Float) //even if original one is float, create copy
             let ret = b.astype(.Float) //even if original one is float, create copy
             
-            try solve_by_lapack(copiedCoefPtr: _coefflatten.dataptr.bindMemory(to: Float.self).baseAddress!, coef.shapeptr[0], ret.dataptr.bindMemory(to: Float.self).baseAddress!, ret.shapeptr[1], sgesv_)
+            try _coefflatten.withDataUnsafeMBPtrT(datatype: Float.self){
+                _coefflattenptr in
+                try ret.withDataUnsafeMBPtrT(datatype: Float.self){
+                    try solve_by_lapack(copiedCoefPtr: _coefflattenptr.baseAddress!, coef.shape[0], $0.baseAddress!, ret.shape[1], sgesv_)
+                }
+            }
+            
             
             return ret
             
@@ -48,7 +54,12 @@ extension Matft.mfarray.linalg{
             let _coefflatten = coefflatten.astype(.Double) //even if original one is float, create copy
             let ret = b.astype(.Double) //even if original one is float, create copy
             
-            try solve_by_lapack(copiedCoefPtr: _coefflatten.dataptr.bindMemory(to: Double.self).baseAddress!, coef.shapeptr[0], ret.dataptr.bindMemory(to: Double.self).baseAddress!, ret.shapeptr[1], dgesv_)
+            try _coefflatten.withDataUnsafeMBPtrT(datatype: Double.self){
+                _coefflattenptr in
+                try ret.withDataUnsafeMBPtrT(datatype: Double.self){
+                    try solve_by_lapack(copiedCoefPtr: _coefflattenptr.baseAddress!, coef.shape[0], $0.baseAddress!, ret.shape[1], dgesv_)
+                }
+            }
             
             return ret
         }

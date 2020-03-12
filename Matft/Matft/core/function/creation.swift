@@ -15,7 +15,7 @@ extension Matft.mfarray{
            - mfarray: mfarray
     */
     static public func shallowcopy(_ mfarray: MfArray) -> MfArray{
-        return MfArray(base: mfarray)
+        return MfArray(base: mfarray, offset: 0)
     }
     /**
        Create deep copy of mfarray. Deep means copied mfarray will be different object from original one
@@ -23,9 +23,26 @@ extension Matft.mfarray{
             - mfarray: mfarray
     */
     static public func deepcopy(_ mfarray: MfArray) -> MfArray{
+        let newmfdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.storedSize){
+            dstptr in
+            mfarray.withDataUnsafeMRBPtr{
+                dstptr.copyMemory(from: $0.baseAddress!, byteCount: mfarray.storedByteSize)
+            }
+        }
+        let newmfstructure = withDummyShapeStridesMPtr(mfarray.ndim){
+            (dstshapeptr, dststridesptr) in
+            mfarray.withShapeUnsafeMPtr{
+                dstshapeptr.assign(from: $0, count: mfarray.ndim)
+            }
+            mfarray.withStridesUnsafeMPtr{
+                dststridesptr.assign(from: $0, count: mfarray.ndim)
+            }
+        }
+        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+        /*
         let newdata = Matft.mfarray.mfdata.deepcopy(mfarray.mfdata)
         let newarray = MfArray(mfdata: newdata)
-        return newarray
+        return newarray*/
     }
     /**
        Create same value's mfarray
@@ -121,7 +138,7 @@ extension Matft.mfarray{
         
     }
 }
-
+/*
 extension Matft.mfarray.mfdata{
     /**
        Create deep copy of mfdata. Deep means copied mfdata will be different object from original one
@@ -169,3 +186,4 @@ extension Matft.mfarray.mfdata{
         return newmfdata
     }
 }
+*/

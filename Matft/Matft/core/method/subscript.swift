@@ -43,10 +43,12 @@ extension MfArray{
         get{
             var indices = indices
             precondition(indices.count == self.ndim, "cannot return value because given indices were invalid")
-            let flattenIndex = indices.withUnsafeMutableBufferPointer{
-                _inner_product($0, self.stridesptr)
+            let flattenIndex = self.withStridesUnsafeMBPtr{
+                stridesptr in
+                indices.withUnsafeMutableBufferPointer{
+                    _inner_product($0, stridesptr)
+                }
             }
-                
 
             precondition(flattenIndex < self.size, "indices \(indices) is out of bounds")
             if self.mftype == .Double{
@@ -59,46 +61,73 @@ extension MfArray{
         set(newValue){
             var indices = indices
             precondition(indices.count == self.ndim, "cannot return value because given indices were invalid")
-            let flattenIndex = indices.withUnsafeMutableBufferPointer{
-                _inner_product($0, self.stridesptr)
+            let flattenIndex = self.withStridesUnsafeMBPtr{
+                stridesptr in
+                indices.withUnsafeMutableBufferPointer{
+                    _inner_product($0, stridesptr)
+                }
             }
             
             precondition(flattenIndex < self.size, "indices \(indices) is out of bounds")
-            if let newValue = newValue as? Double, let dataptr = self.dataptrD{
-                dataptr[flattenIndex] = newValue
+            if let newValue = newValue as? Double{
+                self.withDataUnsafeMBPtrT(datatype: Double.self){
+                    $0[flattenIndex] = newValue
+                }
             }
-            else if let newValue = newValue as? UInt8, let dataptr = self.dataptrF{
-                dataptr[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? UInt8{
+                self.withDataUnsafeMBPtrT(datatype: Float.self){
+                    $0[flattenIndex] = Float(newValue)
+                }
             }
-            else if let newValue = newValue as? UInt16, let dataptr = self.dataptrF{
-                dataptr[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? UInt16{
+                self.withDataUnsafeMBPtrT(datatype: Float.self){
+                    $0[flattenIndex] = Float(newValue)
+                }
             }
-            else if let newValue = newValue as? UInt32, let dataptr = self.dataptrF{
-                dataptr[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? UInt32{
+                self.withDataUnsafeMBPtrT(datatype: Float.self){
+                    $0[flattenIndex] = Float(newValue)
+                }
             }
-            else if let newValue = newValue as? UInt64, let dataptr = self.dataptrF{
-                dataptr[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? UInt64{
+                self.withDataUnsafeMBPtrT(datatype: Float.self){
+                    $0[flattenIndex] = Float(newValue)
+                }
             }
-            else if let newValue = newValue as? UInt, let dataptr = self.dataptrF{
-                dataptr[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? UInt{
+                self.withDataUnsafeMBPtrT(datatype: Float.self){
+                    $0[flattenIndex] = Float(newValue)
+                }
             }
-            else if let newValue = newValue as? Int8, let dataptr = self.dataptrF{
-                dataptr[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? Int8{
+                self.withDataUnsafeMBPtrT(datatype: Float.self){
+                    $0[flattenIndex] = Float(newValue)
+                }
             }
-            else if let newValue = newValue as? Int16, let dataptr = self.dataptrF{
-                dataptr[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? Int16{
+                self.withDataUnsafeMBPtrT(datatype: Float.self){
+                    $0[flattenIndex] = Float(newValue)
+                }
             }
-            else if let newValue = newValue as? Int32, let dataptr = self.dataptrF{
-                dataptr[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? Int32{
+                self.withDataUnsafeMBPtrT(datatype: Float.self){
+                    $0[flattenIndex] = Float(newValue)
+                }
             }
-            else if let newValue = newValue as? Int64, let dataptr = self.dataptrF{
-                dataptr[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? Int64{
+                self.withDataUnsafeMBPtrT(datatype: Float.self){
+                    $0[flattenIndex] = Float(newValue)
+                }
             }
-            else if let newValue = newValue as? Int, let dataptr = self.dataptrF{
-                dataptr[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? Int{
+                self.withDataUnsafeMBPtrT(datatype: Float.self){
+                    $0[flattenIndex] = Float(newValue)
+                }
             }
-            else if let newValue = newValue as? Float, let dataptr = self.dataptrF{
-                dataptr[flattenIndex] = Float(newValue)
+            else if let newValue = newValue as? Float{
+                self.withDataUnsafeMBPtrT(datatype: Float.self){
+                    $0[flattenIndex] = Float(newValue)
+                }
             }
             else{
                 fatalError("Unsupported type was input")
@@ -116,26 +145,30 @@ extension MfArray{
             }
         }
         
-        let newarray = self.shallowcopy()
         var offset = 0
-        for (axis, mfslice) in mfslices.enumerated(){
-            offset += mfslice.start * self.stridesptr[axis]
-            
-            if let to = mfslice.to{//0<=to-1-start<dim
-                newarray.shapeptr[axis] = max(min(self.shapeptr[axis], to - 1 - mfslice.start), 0)
-            }//note that nil indicates all elements
-            else{
-                let tmpdim = ceil(Float(self.shapeptr[axis] - mfslice.start)/Float(mfslice.by))
-                newarray.shapeptr[axis] = max(min(self.shapeptr[axis], Int(tmpdim)), 0)
+        let newstructure = withDummyShapeStridesMBPtr(self.ndim){
+            newshapeptr, newstridesptr in
+            self.withShapeStridesUnsafeMBPtr{
+                orig_shapeptr, orig_stridesptr in
+                    for (axis, mfslice) in mfslices.enumerated(){
+                        offset += mfslice.start * orig_stridesptr[axis]
+                        
+                        if let to = mfslice.to{//0<=to-1-start<dim
+                            newshapeptr[axis] = max(min(orig_shapeptr[axis], to - 1 - mfslice.start), 0)
+                        }//note that nil indicates all elements
+                        else{
+                            let tmpdim = ceil(Float(orig_stridesptr[axis] - mfslice.start)/Float(mfslice.by))
+                            newshapeptr[axis] = max(min(orig_shapeptr[axis], Int(tmpdim)), 0)
+                        }
+                        newstridesptr[axis] *= mfslice.by
+                    }
+                }
             }
-            newarray.stridesptr[axis] *= mfslice.by
-        }
-        newarray.mfdata._offset = offset
-        newarray.mfdata._size = shape2size(newarray.shapeptr)
-        newarray.mfdata.updateContiguous()
+        
+        
         //newarray.mfdata._storedSize = get_storedSize(newarray.shapeptr, newarray.stridesptr)
         //print(newarray.shape, newarray.mfdata._size, newarray.mfdata._storedSize)
-        return newarray
+        return MfArray(base: self, mfstructure: newstructure, offset: offset)
     }
     
 }

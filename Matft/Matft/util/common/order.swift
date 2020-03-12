@@ -175,11 +175,23 @@ internal func to_row_major(_ mfarray: MfArray) -> MfArray{
         return mfarray.deepcopy()
     }
     
-    let ret = mfarray.deepcopy()
-    let newstridesptr = shape2strides(mfarray.shapeptr, mforder: .Row)
-    ret.mfdata._strides.assign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
-    ret.mfdata.updateContiguous()
     
+    let newstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
+            shapeptr, stridesptr in
+            mfarray.withShapeUnsafeMBPtr{
+            orig_shapeptr in
+                let newstridesptr = shape2strides(orig_shapeptr, mforder: .Row)
+                
+                //copy
+                shapeptr.baseAddress!.assign(from: orig_shapeptr.baseAddress!, count: mfarray.ndim)
+                
+                //move
+                stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+            }
+        }
+
+    let ret = mfarray.deepcopy()
+    ret.mfstructure = newstructure
     switch mfarray.storedType {
     case .Float:
         return convorder_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_scopy)
@@ -194,11 +206,22 @@ internal func to_column_major(_ mfarray: MfArray) -> MfArray{
         return mfarray.deepcopy()
     }
     
-    let ret = mfarray.deepcopy()
-    let newstridesptr = shape2strides(mfarray.shapeptr, mforder: .Column)
-    ret.mfdata._strides.assign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
-    ret.mfdata.updateContiguous()
+    let newstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
+        shapeptr, stridesptr in
+        mfarray.withShapeUnsafeMBPtr{
+        orig_shapeptr in
+            let newstridesptr = shape2strides(orig_shapeptr, mforder: .Column)
+            
+            //copy
+            shapeptr.baseAddress!.assign(from: orig_shapeptr.baseAddress!, count: mfarray.ndim)
+            
+            //move
+            stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+        }
+    }
     
+    let ret = mfarray.deepcopy()
+    ret.mfstructure = newstructure
     switch mfarray.storedType {
     case .Float:
         return convorder_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_scopy)

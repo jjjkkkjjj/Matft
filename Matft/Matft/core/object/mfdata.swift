@@ -9,9 +9,12 @@
 import Foundation
 
 public struct MfData{
-    public var _data: UnsafeMutableRawPointer
-    internal var _storedType: StoredType
-    public var _storedSize: Int
+    public internal(set) var _data: UnsafeMutableRawPointer
+    public internal(set) var _mftype: MfType
+    internal var _storedType: StoredType{
+        return MfType.storedType(self._mftype)
+    }
+    public internal(set) var _storedSize: Int
     public var _storedByteSize: Int{
         switch self._storedType {
         case .Float:
@@ -50,38 +53,50 @@ public struct MfData{
     
     
     
-    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, storedType: StoredType){
+    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, mftype: MfType){
         self._data = dataptr
         self._storedSize = storedSize
-        self._storedType = storedType
+        self._mftype = mftype
     }
     public init(mfdata: MfData){
         self._data = mfdata._data
         self._storedSize = mfdata._storedSize
-        self._storedType = mfdata._storedType
+        self._mftype = mfdata._mftype
     }
     // create dummy
-    public init(storedSize: Int, storedType: StoredType){
-        switch storedType {
+    public init(storedSize: Int, mftype: MfType){
+        switch MfType.storedType(mftype) {
         case .Float:
             self._data = create_unsafeMRPtr(type: Float.self, count: storedSize)
         case .Double:
             self._data = create_unsafeMRPtr(type: Double.self, count: storedSize)
         }
         self._storedSize = storedSize
-        self._storedType = storedType
+        self._mftype = mftype
     }
     
     // create view
     public init(refdata: MfData, offset: Int){
         self._data = refdata._data
         self._storedSize = refdata._storedSize
-        self._storedType = refdata._storedType
+        self._mftype = refdata._mftype
         self.__offset = offset
     }
     
     internal func free() {
-        self.free_data()
+        if !self._isView{
+            switch self._storedType {
+            case .Float:
+                let dataptr = self._data.bindMemory(to: Float.self, capacity: self._storedSize)
+                dataptr.deinitialize(count: self._storedSize)
+                dataptr.deallocate()
+            case .Double:
+                let dataptr = self._data.bindMemory(to: Double.self, capacity: self._storedSize)
+                dataptr.deinitialize(count: self._storedSize)
+                dataptr.deallocate()
+            }
+            //self._data.deallocate()
+        }
     }
 }
 

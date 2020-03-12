@@ -33,15 +33,21 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
     var offset: (b: Int, s: Int)?
     
     public init(optParams: OptOffsetParams){
-        let (axis, blocksize, iterAxes) = _optStrides(shapeptr: optParams.bigger_mfarray.shapeptr, l_strideptr: optParams.bigger_mfarray.stridesptr, r_strideptr: optParams.smaller_mfarray.stridesptr)
+        var shape = optParams.bigger_mfarray.shape
+        var b_strides = optParams.bigger_mfarray.strides
+        var s_strides = optParams.smaller_mfarray.strides
+        let (axis, blocksize, iterAxes) =
         
-        self.stride.b = optParams.bigger_mfarray.stridesptr[axis]
-        self.stride.s = optParams.smaller_mfarray.stridesptr[axis]
+            _optStrides(shape: &shape, l_strides: &b_strides, r_strides: &s_strides)
+        
+        
+        self.stride.b = b_strides[axis]
+        self.stride.s = s_strides[axis]
         self.blocksize = blocksize
         
-        self.itershapes = iterAxes.map{ optParams.bigger_mfarray.shapeptr[$0] }
-        self.iter_strides.b = iterAxes.map{ optParams.bigger_mfarray.stridesptr[$0] }
-        self.iter_strides.s = iterAxes.map{ optParams.smaller_mfarray.stridesptr[$0] }
+        self.itershapes = iterAxes.map{ shape[$0] }
+        self.iter_strides.b = iterAxes.map{ b_strides[$0] }
+        self.iter_strides.s = iterAxes.map{ s_strides[$0] }
         
         
         if self.itershapes.isEmpty{
@@ -101,35 +107,35 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
  *      blocksize   : maximum size calculated once by vDSP
  *      iterAxes    : indices of non-contiguous strides
  */
-fileprivate func _optStrides(shapeptr: UnsafeMutableBufferPointer<Int>, l_strideptr: UnsafeMutableBufferPointer<Int>, r_strideptr: UnsafeMutableBufferPointer<Int>) -> (axis: Int, blocksize: Int, iterAxes: [Int]){
+fileprivate func _optStrides(shape: inout [Int], l_strides: inout [Int], r_strides: inout [Int]) -> (axis: Int, blocksize: Int, iterAxes: [Int]){
     var optaxis = 0, optBlockSize = -1
     
-    let ndim = shapeptr.count
+    let ndim = shape.count
     var optiterAxes: [Int] = Array(0..<ndim)
     
     // search optimimal strides
     for axis in 0..<ndim{
-        var l_strides = Array(l_strideptr) as [Int?]
-        var r_strides = Array(r_strideptr) as [Int?]
-        l_strides[axis] = nil//flag for skip
-        r_strides[axis] = nil
+        var lsts = Array(l_strides) as [Int?]
+        var rsts = Array(r_strides) as [Int?]
+        lsts[axis] = nil//flag for skip
+        rsts[axis] = nil
         
         var n = 0
         var last_contiguous_axis = axis
-        var blockSize = shapeptr[axis]
+        var blockSize = shape[axis]
         var iterAxes: [Int] = []
         while n < ndim{
-            guard let lst = l_strides[n], let rst = r_strides[n] else {//skip
+            guard let lst = lsts[n], let rst = rsts[n] else {//skip
                 n += 1
                 continue
             }
             
-            if (lst == l_strideptr[last_contiguous_axis] * shapeptr[last_contiguous_axis]) && (rst == r_strideptr[last_contiguous_axis] * shapeptr[last_contiguous_axis]){//
-                l_strides[n] = nil//set flag as already checked
-                r_strides[n] = nil
+            if (lst == l_strides[last_contiguous_axis] * shape[last_contiguous_axis]) && (rst == r_strides[last_contiguous_axis] * shape[last_contiguous_axis]){//
+                lsts[n] = nil//set flag as already checked
+                rsts[n] = nil
                 
                 //update blocksize
-                blockSize *= shapeptr[n]
+                blockSize *= shape[n]
                 
                 //update last_contiguous_axis
                 last_contiguous_axis = n

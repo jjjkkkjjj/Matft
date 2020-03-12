@@ -19,8 +19,45 @@ extension Matft.mfarray{
     public static func astype(_ mfarray: MfArray, mftype: MfType) -> MfArray{
         //let newarray = Matft.mfarray.shallowcopy(mfarray)
         //newarray.mfdata._mftype = mftype
-        let newdata = mfarray.mfdata.astype(mftype)
-        return MfArray(mfdata: newdata)
+        let newStoredType = MfType.storedType(mftype)
+        if mfarray.storedType == newStoredType{
+            let ret = mfarray.deepcopy()
+            ret.mfdata._mftype = mftype
+            return ret
+        }
+        
+        //copy shape and strides
+        let newmfstructure = withDummyShapeStridesMPtr(mfarray.ndim){
+            (dstshapeptr, dststridesptr) in
+            mfarray.withShapeUnsafeMPtr{
+                dstshapeptr.assign(from: $0, count: mfarray.ndim)
+            }
+            mfarray.withStridesUnsafeMPtr{
+                dststridesptr.assign(from: $0, count: mfarray.ndim)
+            }
+        }
+
+        switch newStoredType{
+        case .Float://double to float
+            let newdata = withDummyDataMRPtr(mftype, storedSize: mfarray.storedSize){
+                let dstptr = $0.assumingMemoryBound(to: Float.self)
+                mfarray.withDataUnsafeMBPtrT(datatype: Double.self){
+                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vdpsp, mfarray.storedSize)
+                }
+            }
+            
+            return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+            
+        case .Double://float to double
+            let newdata = withDummyDataMRPtr(mftype, storedSize: mfarray.storedSize){
+                let dstptr = $0.assumingMemoryBound(to: Double.self)
+                mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+                     unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vspdp, mfarray.storedSize)
+                }
+            }
+            
+            return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+        }
     }
     /**
        Create any ordered transposed mfarray. Created mfarray will be sharing data with original one
@@ -52,12 +89,15 @@ extension Matft.mfarray{
                 permutation.append(ndim - 1 - i)
             }
         }
-        
-        for i in 0..<ndim{
-            newarray.shapeptr[i] = mfarray.shapeptr[permutation[i]]
-            newarray.stridesptr[i] = mfarray.stridesptr[permutation[i]]
+        let origShape = mfarray.shape
+        let origStrides = mfarray.strides
+        newarray.withShapeStridesUnsafeMBPtr{
+            shapeptr, stridesptr in
+            for i in 0..<ndim{
+                shapeptr[i] = origShape[permutation[i]]
+                stridesptr[i] = origStrides[permutation[i]]
+            }
         }
-        newarray.mfdata.updateContiguous()
         
         return newarray
     }
@@ -70,38 +110,44 @@ extension Matft.mfarray{
         An error of type `MfError.conversionError`
     */
     public static func broadcast_to(_ mfarray: MfArray, shape: [Int]) throws -> MfArray{
-        var shape = shape
+        var new_shape = shape
         let newarray = Matft.mfarray.shallowcopy(mfarray)
-        newarray.mfdata._shape.assign(from: &shape, count: shape.count)
-        newarray.mfdata._ndim = shape2ndim(&shape)
-        newarray.mfdata._size = shape2size(&shape)
+        let new_ndim = shape2ndim(&new_shape)
         
-        let idim_start = newarray.ndim  - mfarray.ndim
+        let idim_start = new_ndim  - mfarray.ndim
         
         
         if idim_start < 0{
             throw MfError.conversionError("can't broadcast to fewer dimensions")
         }
         
-        for idim in (idim_start..<newarray.ndim ).reversed(){
-            let strides_shape_value = mfarray.shape[idim - idim_start]
-            /* If it doesn't have dimension one, it must match */
-            if strides_shape_value == 1{
-                newarray.stridesptr[idim] = 0
+        let orig_strides = mfarray.strides
+        let newstructure =  try withDummyShapeStridesMBPtr(new_ndim){
+            shapteptr, stridesptr in
+            
+            for idim in (idim_start..<new_ndim).reversed(){
+                let strides_shape_value = mfarray.shape[idim - idim_start]
+                /* If it doesn't have dimension one, it must match */
+                if strides_shape_value == 1{
+                    stridesptr[idim] = 0
+                }
+                else if strides_shape_value != shape[idim]{
+                    throw MfError.conversionError("could not broadcast from shape \(mfarray.ndim), \(mfarray.shape) into shape \(new_ndim), \(shape)")
+                }
+                else{
+                    stridesptr[idim] = orig_strides[idim - idim_start]
+                }
             }
-            else if strides_shape_value != shape[idim]{
-                throw MfError.conversionError("could not broadcast from shape \(mfarray.ndim), \(mfarray.shape) into shape \(newarray.ndim), \(shape)")
+            
+            /* New dimensions get a zero stride */
+            for idim in 0..<idim_start{
+                stridesptr[idim] = 0
             }
-            else{
-                newarray.stridesptr[idim] = mfarray.stridesptr[idim - idim_start]
-            }
+            
+            shapteptr.baseAddress!.moveAssign(from: &new_shape, count: new_ndim)
         }
         
-        /* New dimensions get a zero stride */
-        for idim in 0..<idim_start{
-            newarray.stridesptr[idim] = 0
-        }
-        newarray.mfdata.updateContiguous()
+        newarray.mfstructure = newstructure
         
         return newarray
     }
@@ -128,29 +174,21 @@ extension Matft.mfarray{
     */
     public static func flatten(_ mfarray: MfArray, mforder: MfOrder = .Row) -> MfArray{
         let ret = Matft.mfarray.conv_order(mfarray, mforder: mforder)
-        var newshape = [ret.size]
-        var newstrides = [1]
         
         //shape
-        ret.mfdata.free_shape()
-        let newshapeptr = create_unsafeMPtrT(type: Int.self, count: 1)
-        newshape.withUnsafeMutableBufferPointer{
-            newshapeptr.assign(from: $0.baseAddress!, count: 1)
+        let newstructure = withDummyShapeStridesMBPtr(1){
+            shapeptr, stridesptr in
+            shapeptr[0] = ret.size
+            stridesptr[0] = 1
         }
-        ret.mfdata._shape = newshapeptr
         
-        //strides
-        ret.mfdata.free_strides()
-        let newstridesptr = create_unsafeMPtrT(type: Int.self, count: 1)
-        newstrides.withUnsafeMutableBufferPointer{
-            newstridesptr.assign(from: $0.baseAddress!, count: 1)
-        }
-        ret.mfdata._strides = newstridesptr
-        ret.mfdata._ndim = 1
+        ret.mfstructure = newstructure
+        
         return ret
     }
 }
 
+/*
 extension Matft.mfarray.mfdata{
     /**
        Create another typed mfdata. Created mfdata will be different object from original one
@@ -198,3 +236,4 @@ extension Matft.mfarray.mfdata{
         }
     }
 }
+*/

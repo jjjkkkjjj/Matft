@@ -11,12 +11,19 @@ import Foundation
 extension MfArray: CustomStringConvertible{
     public var description: String{
         var desc = "mfarray = \n"
-        desc += String(repeating: "[", count: self.shapeptr.count)
+        desc += String(repeating: "[", count: self.ndim)
         
         let flattenData = self.data
-        
+        var shape = self.shape
+        var strides = self.strides
         if self.size > 1000{//if size > 1000, some elements left out will be viewed
-            let flattenLOIndSeq = FlattenLOIndSequence(storedSize: self.storedSize, shapeptr: self.shapeptr, stridesptr: self.stridesptr)
+            let flattenLOIndSeq = shape.withUnsafeMutableBufferPointer{
+                shapeptr in
+                strides.withUnsafeMutableBufferPointer{
+                    stridesptr in
+                    FlattenLOIndSequence(storedSize: self.storedSize, shapeptr: shapeptr, stridesptr: stridesptr)
+                }
+            }
             
             var lastIndices: [Int]? = nil
             for (flattenIndex, indices) in flattenLOIndSeq{
@@ -24,7 +31,7 @@ extension MfArray: CustomStringConvertible{
                 if var indices = indices, let flattenIndex = flattenIndex{
                     desc += "\t\(flattenData[flattenIndex]),\t"
                     
-                    if indices.last! == self.shapeptr.last! - 1{
+                    if indices.last! == shape.last! - 1{
                         let clousureNum = _clousure_number(mfarray: self, indices: &indices)
                         //remove "\t" and ","
                         desc = String(desc.dropLast(2))
@@ -34,7 +41,7 @@ extension MfArray: CustomStringConvertible{
                     lastIndices = indices
                 }
                 else{ //skip
-                    if var lastIndices = lastIndices, lastIndices.last! == self.shapeptr.last! - 1{// \t and \n
+                    if var lastIndices = lastIndices, lastIndices.last! == shape.last! - 1{// \t and \n
                         
                         let clousureNum = _clousure_number(mfarray: self, indices: &lastIndices)
 
@@ -56,11 +63,17 @@ extension MfArray: CustomStringConvertible{
             }
         }
         else{ // all elements will be viewed
-            let flattenIndSeq = FlattenIndSequence(shapeptr: self.shapeptr, stridesptr: self.stridesptr)
+            let flattenIndSeq = shape.withUnsafeMutableBufferPointer{
+                shapeptr in
+                strides.withUnsafeMutableBufferPointer{
+                    stridesptr in
+                    FlattenIndSequence(shapeptr: shapeptr, stridesptr: stridesptr)
+                }
+            }
             for var ret in flattenIndSeq{
                 desc += "\t\(flattenData[ret.flattenIndex]),\t"
 
-                if ret.indices.last! == self.shapeptr.last! - 1{
+                if ret.indices.last! == shape.last! - 1{
                     let clousureNum = _clousure_number(mfarray: self, indices: &ret.indices)
                     //remove "\t" and ","
                     desc = String(desc.dropLast(2))
@@ -104,8 +117,9 @@ fileprivate func _clousure_number(mfarray: MfArray, ind: Int) -> Int{
 //count clousure "[" number
 fileprivate func _clousure_number(mfarray: MfArray, indices: inout [Int]) -> Int{
     var clousureNum = 1
+    let shape = mfarray.shape
     for axis in (0..<indices.count - 1).reversed(){
-        if indices[axis] == mfarray.shapeptr[axis] - 1{
+        if indices[axis] == shape[axis] - 1{
             clousureNum += 1
         }
         else{

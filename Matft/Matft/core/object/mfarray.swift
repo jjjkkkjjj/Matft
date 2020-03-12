@@ -7,61 +7,61 @@
 //
 
 import Foundation
+import Accelerate
 
 public class MfArray{
-    /*================ data ====================
-    data, shape, strides
-    */
-    public internal(set) var mfdata: MfData{
-        didSet{
-            self.mfflags = MfFlags(shapeptr: self.mfdata._shape, stridesptr: self.mfdata._strides, ndim: ndim)
-        }
-    }
-    public var data: [Any]{
-        return unsafeMRBPtr2array_viaForD(self.dataptr, mftype: self.mftype, size: self.storedSize)
-    }
-    public var shape: [Int]{
-        return Array(self.shapeptr)
-    }
-    public var strides: [Int]{
-        return Array(self.stridesptr)
-    }
-    public var ndim: Int{
-        return self.mfdata._ndim
-    }
-    public var size: Int{
-        return self.mfdata._size
-    }
+    public internal(set) var mfdata: MfData // Only setter is private
+    public internal(set) var mfstructure: MfStructure
 
-    internal var storedSize: Int{
-        return self.mfdata._storedSize
-    }
-    
-    internal var storedType: StoredType{
-        return self.mfdata._storedType
-    }
-    
-
-    public var mforder: MfOrder{
-        return MfOrder.get_order(mfflags: self.mfflags)
-    }
-    
-    public var base: MfArray?
+    public internal(set) var base: MfArray?
     public var offsetFlattenIndex: Int{
         return self.mfdata._offset
     }
-    /*================ order ====================
-     
-     */
-    public internal(set) var mfflags: MfFlags
     
-    
-    public internal(set) var mftype: MfType
 
-    internal var _storedType: StoredType{
-        return MfType.storedType(self.mftype)
+    
+    //mfdata getter
+    public var data: [Any]{
+        return self.withDataUnsafeMRBPtr{
+            unsafeMRBPtr2array_viaForD($0, mftype: self.mftype, size: self.storedSize)
+        }
     }
     
+    public var mftype: MfType{
+        return self.mfdata._mftype
+    }
+    public var storedType: StoredType{
+        return self.mfdata._storedType
+    }
+    public var storedSize: Int{
+        return self.mfdata._storedSize
+    }
+    public var storedByteSize: Int{
+        return self.mfdata._storedByteSize
+    }
+    
+    //mfstructure getter
+    public var shape: [Int]{
+        return self.withShapeUnsafeMBPtr{
+            Array($0)
+        }
+    }
+    public var strides: [Int]{
+        return self.withStridesUnsafeMBPtr{
+            Array($0)
+        }
+    }
+    
+    public var ndim: Int{
+        return self.mfstructure._ndim
+    }
+    public var size: Int{
+        return self.mfstructure._size
+    }
+    public var mfflags: MfFlags{
+        return self.mfstructure._flags
+    }
+
     public init (_ array: [Any], mftype: MfType? = nil, shape: [Int]? = nil, mforder: MfOrder = .Row) {
         
         var _mftype: MfType = .None
@@ -88,23 +88,50 @@ public class MfArray{
                 var shape = shape ?? _shape
                 precondition(shape2size(&shape) == flatten.count, "Invalid shape, size must be \(flatten.count), but got \(shape2size(&shape))")
                 let shapeptr = array2UnsafeMPtrT(&shape)
-                self.mfdata = MfData(dataptr: ptr, storedSize: flatten.count, shapeptr: shapeptr, mftype: _mftype, ndim: shape.count, mforder: _mforder)
+                self.mfdata = MfData(dataptr: ptr, storedSize: flatten.count, mftype: _mftype)
+                self.mfstructure = MfStructure(shapeptr: shapeptr, mforder: _mforder, ndim: shape.count)
         }
         
         if let mftype = mftype, mftype != _mftype{
-            self.mfdata = self.mfdata.astype(mftype)
+            switch MfType.storedType(mftype){
+            case .Float://double to float
+                let newdata = withDummyDataMRPtr(mftype, storedSize: self.storedSize){
+                    let dstptr = $0.assumingMemoryBound(to: Float.self)
+                    self.withDataUnsafeMBPtrT(datatype: Double.self){
+                        unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vdpsp, self.storedSize)
+                    }
+                }
+                
+                self.mfdata = newdata
+                
+            case .Double://float to double
+                let newdata = withDummyDataMRPtr(mftype, storedSize: self.storedSize){
+                    let dstptr = $0.assumingMemoryBound(to: Double.self)
+                    self.withDataUnsafeMBPtrT(datatype: Float.self){
+                         unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vspdp, self.storedSize)
+                    }
+                }
+                
+                self.mfdata = newdata
+            }
         }
     }
-    public init (mfdata: MfData){
+    public init (mfdata: MfData, mfstructure: MfStructure){
         self.mfdata = mfdata
+        self.mfstructure = mfstructure
     }
-    public init (base: MfArray){
+    //create view
+    public init (base: MfArray, mfstructure: MfStructure? = nil, offset: Int){
         self.base = base
-        self.mfdata = base.mfdata.shallowcopy()
+        self.mfdata = MfData(refdata: base.mfdata, offset: offset)
+        self.mfstructure = mfstructure ?? base.mfstructure //mfstructure will be copied because mfstructure is struct
     }
+
     deinit {
         self.mfdata.free()
     }
 }
+
+
 
 

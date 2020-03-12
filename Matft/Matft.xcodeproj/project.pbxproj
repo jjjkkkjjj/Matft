@@ -34,7 +34,7 @@
 		0108417B2406745E00BBFEB8 /* ptrcreation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010841712406745E00BBFEB8 /* ptrcreation.swift */; };
 		0108417D24068FE900BBFEB8 /* Matft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0108417C24068FE900BBFEB8 /* Matft.framework */; };
 		01084180240690EA00BBFEB8 /* conversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0108417F240690EA00BBFEB8 /* conversion.swift */; };
-		01084183240693D900BBFEB8 /* conversion_mfarray_mfdata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01084182240693D900BBFEB8 /* conversion_mfarray_mfdata.swift */; };
+		01084183240693D900BBFEB8 /* conversion_mfarray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01084182240693D900BBFEB8 /* conversion_mfarray.swift */; };
 		010841852406960600BBFEB8 /* creation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010841842406960600BBFEB8 /* creation.swift */; };
 		011CEDEF240AB63300D14228 /* mfslice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 011CEDEE240AB63300D14228 /* mfslice.swift */; };
 		011CEDF1240AB6D300D14228 /* op_mfslice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 011CEDF0240AB6D300D14228 /* op_mfslice.swift */; };
@@ -42,7 +42,7 @@
 		018C3559240795D00098A5A2 /* vDSP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 018C3558240795D00098A5A2 /* vDSP.swift */; };
 		018C355B240798930098A5A2 /* operation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 018C355A240798930098A5A2 /* operation.swift */; };
 		01A7FC0A240A5CC4008ECC65 /* prefix.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01A7FC09240A5CC4008ECC65 /* prefix.swift */; };
-		01B37B7F24069E6B004AF2EF /* creation_mfarray_mfdata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B37B7E24069E6B004AF2EF /* creation_mfarray_mfdata.swift */; };
+		01B37B7F24069E6B004AF2EF /* creation_mfarray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B37B7E24069E6B004AF2EF /* creation_mfarray.swift */; };
 		01B37B812406A53F004AF2EF /* print.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B37B802406A53F004AF2EF /* print.swift */; };
 		01B37B842406A62E004AF2EF /* index.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B37B832406A62E004AF2EF /* index.swift */; };
 		01B37B862406C49F004AF2EF /* subscript.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B37B852406C49F004AF2EF /* subscript.swift */; };
@@ -85,7 +85,7 @@
 		010841712406745E00BBFEB8 /* ptrcreation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ptrcreation.swift; sourceTree = "<group>"; };
 		0108417C24068FE900BBFEB8 /* Matft.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Matft.framework; sourceTree = SOURCE_ROOT; };
 		0108417F240690EA00BBFEB8 /* conversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = conversion.swift; sourceTree = "<group>"; };
-		01084182240693D900BBFEB8 /* conversion_mfarray_mfdata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = conversion_mfarray_mfdata.swift; sourceTree = "<group>"; };
+		01084182240693D900BBFEB8 /* conversion_mfarray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = conversion_mfarray.swift; sourceTree = "<group>"; };
 		010841842406960600BBFEB8 /* creation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = creation.swift; sourceTree = "<group>"; };
 		011CEDEE240AB63300D14228 /* mfslice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mfslice.swift; sourceTree = "<group>"; };
 		011CEDF0240AB6D300D14228 /* op_mfslice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = op_mfslice.swift; sourceTree = "<group>"; };
@@ -93,7 +93,7 @@
 		018C3558240795D00098A5A2 /* vDSP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = vDSP.swift; sourceTree = "<group>"; };
 		018C355A240798930098A5A2 /* operation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = operation.swift; sourceTree = "<group>"; };
 		01A7FC09240A5CC4008ECC65 /* prefix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = prefix.swift; sourceTree = "<group>"; };
-		01B37B7E24069E6B004AF2EF /* creation_mfarray_mfdata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = creation_mfarray_mfdata.swift; sourceTree = "<group>"; };
+		01B37B7E24069E6B004AF2EF /* creation_mfarray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = creation_mfarray.swift; sourceTree = "<group>"; };
 		01B37B802406A53F004AF2EF /* print.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = print.swift; sourceTree = "<group>"; };
 		01B37B832406A62E004AF2EF /* index.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = index.swift; sourceTree = "<group>"; };
 		01B37B852406C49F004AF2EF /* subscript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = subscript.swift; sourceTree = "<group>"; };
@@ -199,9 +199,9 @@
 		01084181240693BF00BBFEB8 /* method */ = {
 			isa = PBXGroup;
 			children = (
-				01084182240693D900BBFEB8 /* conversion_mfarray_mfdata.swift */,
+				01084182240693D900BBFEB8 /* conversion_mfarray.swift */,
 				01B37B852406C49F004AF2EF /* subscript.swift */,
-				01B37B7E24069E6B004AF2EF /* creation_mfarray_mfdata.swift */,
+				01B37B7E24069E6B004AF2EF /* creation_mfarray.swift */,
 				D65E134224173AF200E3A8D2 /* withPtr.swift */,
 			);
 			path = method;
@@ -450,7 +450,7 @@
 				01CA70562413715200A59F40 /* offset.swift in Sources */,
 				0156BE0024128017009D15F1 /* order.swift in Sources */,
 				010841782406745E00BBFEB8 /* array2ptr.swift in Sources */,
-				01084183240693D900BBFEB8 /* conversion_mfarray_mfdata.swift in Sources */,
+				01084183240693D900BBFEB8 /* conversion_mfarray.swift in Sources */,
 				01B37B862406C49F004AF2EF /* subscript.swift in Sources */,
 				010841792406745E00BBFEB8 /* ptr2array.swift in Sources */,
 				01E1A7B32413DEBA00067D6C /* mforder.swift in Sources */,
@@ -473,7 +473,7 @@
 				018C355B240798930098A5A2 /* operation.swift in Sources */,
 				01084180240690EA00BBFEB8 /* conversion.swift in Sources */,
 				010841732406745E00BBFEB8 /* mftype.swift in Sources */,
-				01B37B7F24069E6B004AF2EF /* creation_mfarray_mfdata.swift in Sources */,
+				01B37B7F24069E6B004AF2EF /* creation_mfarray.swift in Sources */,
 				D65E134324173AF200E3A8D2 /* withPtr.swift in Sources */,
 				010841772406745E00BBFEB8 /* ptr2ptr.swift in Sources */,
 				01B37B842406A62E004AF2EF /* index.swift in Sources */,

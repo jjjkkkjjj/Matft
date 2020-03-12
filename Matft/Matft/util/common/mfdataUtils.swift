@@ -8,34 +8,11 @@
 
 import Foundation
 
-extension MfData{
+extension MfStructure{
     public mutating func updateContiguous(){
         self._flags.updateContiguous(shapeptr: self._shape, stridesptr: self._strides, ndim: self._ndim)
     }
     
-    internal func free_data(){
-        if !self._isView{
-            switch self._storedType {
-            case .Float:
-                let dataptr = self._data.bindMemory(to: Float.self, capacity: self._storedSize)
-                dataptr.deinitialize(count: self._storedSize)
-                dataptr.deallocate()
-            case .Double:
-                let dataptr = self._data.bindMemory(to: Double.self, capacity: self._storedSize)
-                dataptr.deinitialize(count: self._storedSize)
-                dataptr.deallocate()
-            }
-            //self._data.deallocate()
-        }
-    }
-    internal func free_shape(){
-        self._shape.deinitialize(count: self._ndim)
-        self._shape.deallocate()
-    }
-    internal func free_strides(){
-        self._strides.deinitialize(count: self._ndim)
-        self._strides.deallocate()
-    }
 }
 
 internal func shape2ndim(_ shape: inout [Int]) -> Int{

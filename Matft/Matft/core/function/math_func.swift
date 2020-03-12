@@ -468,11 +468,15 @@ extension Matft.mfarray{//use math_vv_by_vecLib
         
         switch mfarray.storedType {
         case .Float:
-            let ret = math_1arg_vv_by_vecLib(mfarray, exponents.dataptr.bindMemory(to: Float.self).baseAddress!, vvpowf)
+            let ret = exponents.withDataUnsafeMBPtrT(datatype: Float.self){
+                math_1arg_vv_by_vecLib(mfarray, $0.baseAddress!, vvpowf)
+            }
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_1arg_vv_by_vecLib(mfarray, exponents.dataptr.bindMemory(to: Double.self).baseAddress!, vvpow)
+            let ret = exponents.withDataUnsafeMBPtrT(datatype: Double.self){
+                math_1arg_vv_by_vecLib(mfarray, $0.baseAddress!, vvpow)
+            }
             ret.mfdata._mftype = .Double
             return ret
         }

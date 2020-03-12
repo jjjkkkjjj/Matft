@@ -8,8 +8,8 @@
 
 import Foundation
 
-/*
+
 public protocol MfArrayProtocol{
     associatedtype ArrayType
+    
 }
-*/

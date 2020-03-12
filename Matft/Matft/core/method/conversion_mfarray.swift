@@ -43,7 +43,7 @@ extension MfArray{
         return try Matft.mfarray.broadcast_to(self, shape: shape)
     }
 }
-
+/*
 extension MfData{
     /**
        Create another typed mfdata. Created mfdata will be different object from original one
@@ -54,3 +54,4 @@ extension MfData{
         return Matft.mfarray.mfdata.astype(self, mftype: mftype)
     }
 }
+*/
