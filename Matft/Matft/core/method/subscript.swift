@@ -150,6 +150,8 @@ extension MfArray{
             newshapeptr, newstridesptr in
             self.withShapeStridesUnsafeMBPtr{
                 orig_shapeptr, orig_stridesptr in
+                //copy strides
+                newstridesptr.baseAddress!.assign(from: orig_stridesptr.baseAddress!, count: self.ndim)
                     for (axis, mfslice) in mfslices.enumerated(){
                         offset += mfslice.start * orig_stridesptr[axis]
                         
@@ -157,7 +159,7 @@ extension MfArray{
                             newshapeptr[axis] = max(min(orig_shapeptr[axis], to - 1 - mfslice.start), 0)
                         }//note that nil indicates all elements
                         else{
-                            let tmpdim = ceil(Float(orig_stridesptr[axis] - mfslice.start)/Float(mfslice.by))
+                            let tmpdim = ceil(Float(orig_shapeptr[axis] - mfslice.start)/Float(mfslice.by))
                             newshapeptr[axis] = max(min(orig_shapeptr[axis], Int(tmpdim)), 0)
                         }
                         newstridesptr[axis] *= mfslice.by
