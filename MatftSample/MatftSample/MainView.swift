@@ -62,11 +62,13 @@ class MainView: UIView {
         //print(arr22)*/
         
         
-        let e = Matft.mfarray.arange(start: 0, stop: 5, step: 1)
-        print(Matft.mfarray.power(e, exponents: Matft.mfarray.arange(start: 0, stop: 5, step: 1)).astype(.Int))
+        let e = Matft.mfarray.arange(start: 0, stop: 12, step: 1, shape: [2,3,2])
+        print(e[0~<, ~~-1, 0~<])
+        print(Matft.mfarray.flip(e, axis: nil))
         
         let a = MfArray([[4, 2],
                         [4, 5]])
+        print(a)
         let b = MfArray([[2, -7]])
         let x = try! Matft.mfarray.linalg.solve(a, b: b)
         print(x)

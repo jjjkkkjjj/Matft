@@ -51,7 +51,7 @@ public func ~~ (mfslice: MfSlice, by: Int) -> MfSlice{
     return MfSlice(start: mfslice.start, to: mfslice.to, by: by)
 }
 
-/*Future work
+/*
 prefix operator ~<-  //a[:-2]
 public prefix func ~<-(to: Int) -> MfSlice{
     return MfSlice(to: -to)
@@ -59,7 +59,7 @@ public prefix func ~<-(to: Int) -> MfSlice{
 prefix operator ~<=-  //a[:-2+1]
 public prefix func ~<=-(to: Int) -> MfSlice{
     return MfSlice(to: -to + 1)
-}
+}*/
 
 infix operator ~<?~~- //a[2::-2]
 public func ~<?~~-(start: Int, by: Int) -> MfSlice{
@@ -70,7 +70,7 @@ prefix operator ~~- //a[::-2]
 public prefix func ~~-(by: Int) -> MfSlice{
     return MfSlice(by: -by)
 }
-
+/*
 infix operator ~<-: MfSlicePrecedence //a[1:-3]
 public func ~<- (start: Int, to: Int) -> MfSlice {
     return MfSlice(start: start, to: -to)
@@ -78,9 +78,9 @@ public func ~<- (start: Int, to: Int) -> MfSlice {
 infix operator ~<=-: MfSlicePrecedence //a[1:-3+1]
 public func ~<=-(start: Int, through: Int) -> MfSlice{
     return MfSlice(start: start, to: -through + 1)
-}
+}*/
 infix operator ~~- : MfBySlicePrecedence  //a[1:9:2]
 public func ~~- (mfslice: MfSlice, by: Int) -> MfSlice{
     return MfSlice(start: mfslice.start, to: mfslice.to, by: -by)
 }
-*/
+

@@ -188,6 +188,39 @@ extension Matft.mfarray{
         
         return ret
     }
+    
+    /**
+       Reverse the mfarray order along given axis
+       - parameters:
+            - mfarray: mfarray
+            - axis: (optional) the reversed axis
+    */
+    public static func flip(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
+        if let axis = axis{
+            precondition(axis < mfarray.ndim, "Invalid axis, must be < \(mfarray.ndim)")
+            var slices = Array<MfSlice>(repeating: MfSlice(start: 0, to: nil, by: 1), count: mfarray.ndim)
+            slices[axis] = MfSlice(start: 0, to: nil, by: -1)
+            return mfarray[slices]
+        }
+        else{
+            return Matft.mfarray.flip(mfarray, axes: nil)
+        }
+    }
+    /**
+       Reverse the mfarray order along given axes
+       - parameters:
+            - mfarray: mfarray
+            - axes: (optional) the reversed axis of list
+    */
+    public static func flip(_ mfarray: MfArray, axes: [Int]? = nil) -> MfArray{
+        let axes = axes ?? Array(stride(from: 0, to: mfarray.ndim, by: 1))
+        
+        var slices = Array<MfSlice>(repeating: MfSlice(start: 0, to: nil, by: 1), count: mfarray.ndim)
+        for axis in axes{
+            slices[axis] = MfSlice(start: 0, to: nil, by: -1)
+        }
+        return mfarray[slices]
+    }
 }
 
 /*

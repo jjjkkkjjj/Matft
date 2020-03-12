@@ -37,7 +37,13 @@ extension MfArray{
             return self.get_mfarray(mfslices: &mfslices)
         }
     }
-
+    public subscript(indices: [MfSlice]) -> MfArray{
+        get{
+            var mfslices = indices
+            return self.get_mfarray(mfslices: &mfslices)
+        }
+    }
+    
     public subscript(indices: [Int]) -> Any{
         
         get{
@@ -135,7 +141,7 @@ extension MfArray{
         }
         
     }
-    
+    //Use opaque?
     private func get_mfarray(mfslices: inout [MfSlice]) -> MfArray{
         precondition(mfslices.count <= self.ndim, "cannot return value because given indices were too many")
         
@@ -159,7 +165,7 @@ extension MfArray{
                             newshapeptr[axis] = max(min(orig_shapeptr[axis], to - 1 - mfslice.start), 0)
                         }//note that nil indicates all elements
                         else{
-                            let tmpdim = ceil(Float(orig_shapeptr[axis] - mfslice.start)/Float(mfslice.by))
+                            let tmpdim = ceil(Float(orig_shapeptr[axis] - mfslice.start)/fabsf(Float(mfslice.by)))
                             newshapeptr[axis] = max(min(orig_shapeptr[axis], Int(tmpdim)), 0)
                         }
                         newstridesptr[axis] *= mfslice.by
