@@ -148,6 +148,7 @@ internal func flattenarray2UnsafeMRPtr_viaForD(_ flattenarray: inout [Any]) -> U
         let _ = flattenarray.withUnsafeMutableBufferPointer{
             ptrF.assign(from: $0.baseAddress!, count: $0.count)
         }
+        
         return UnsafeMutableRawPointer(ptrF)
     }
     else if var flattenarray = flattenarray as? [Double]{
@@ -166,7 +167,7 @@ internal func flattenarray2UnsafeMRPtr_viaForD(_ flattenarray: inout [Any]) -> U
     
     //create raw pointer
     let ret = UnsafeMutableRawPointer(ptrF)
-    
+
     //free
     //ptrF.deinitialize(count: flattenarray.count)
     //ptrF.deallocate()

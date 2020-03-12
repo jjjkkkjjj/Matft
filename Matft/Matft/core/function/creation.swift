@@ -15,7 +15,16 @@ extension Matft.mfarray{
            - mfarray: mfarray
     */
     static public func shallowcopy(_ mfarray: MfArray) -> MfArray{
-        return MfArray(base: mfarray, offset: 0)
+        let newstructure = withDummyShapeStridesMPtr(mfarray.ndim){
+            shapeptr, stridesptr in
+            mfarray.withShapeUnsafeMPtr{
+                shapeptr.assign(from: $0, count: mfarray.ndim)
+            }
+            mfarray.withStridesUnsafeMPtr{
+                stridesptr.assign(from: $0, count: mfarray.ndim)
+            }
+        }
+        return MfArray(base: mfarray, mfstructure: newstructure, offset: 0)
     }
     /**
        Create deep copy of mfarray. Deep means copied mfarray will be different object from original one
@@ -25,8 +34,8 @@ extension Matft.mfarray{
     static public func deepcopy(_ mfarray: MfArray) -> MfArray{
         let newmfdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.storedSize){
             dstptr in
-            mfarray.withDataUnsafeMRBPtr{
-                dstptr.copyMemory(from: $0.baseAddress!, byteCount: mfarray.storedByteSize)
+            mfarray.withDataUnsafeMRPtr{
+                dstptr.copyMemory(from: $0, byteCount: mfarray.storedByteSize)
             }
         }
         let newmfstructure = withDummyShapeStridesMPtr(mfarray.ndim){

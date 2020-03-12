@@ -15,15 +15,15 @@ extension MfArray{
         
         return try body(UnsafeMutableBufferPointer(start: self.mfstructure._shape, count: self.ndim))
     }*/
-    public func withDataUnsafeMRBPtr<R>(_ body: (UnsafeMutableRawBufferPointer) throws -> R) rethrows -> R{
-        return try body(UnsafeMutableRawBufferPointer(start: self.mfdata._data + self.mfdata._byteOffset, count: self.storedSize))
+    public func withDataUnsafeMRPtr<R>(_ body: (UnsafeMutableRawPointer) throws -> R) rethrows -> R{
+        return try body(self.mfdata._data + self.mfdata._byteOffset)
     }
     public func withDataUnsafeMBPtrT<T, R>(datatype: T.Type, _ body: (UnsafeMutableBufferPointer<T>) throws -> R) rethrows -> R{
-        let dataptr = self.withDataUnsafeMRBPtr{
-            $0.bindMemory(to: T.self)
+        let dataptr = self.withDataUnsafeMRPtr{
+            $0.bindMemory(to: T.self, capacity: self.storedSize)
         }
         
-        return try body(dataptr)
+        return try body(UnsafeMutableBufferPointer(start: dataptr, count: self.storedSize))
     }
     
     public func withShapeUnsafeMBPtr<R>(_ body: (UnsafeMutableBufferPointer<Int>) throws -> R) rethrows -> R{

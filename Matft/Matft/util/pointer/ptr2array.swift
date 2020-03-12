@@ -11,16 +11,16 @@ import Accelerate
 
 //convert rawpointer to flattenarray via float or Double array
 //All kinds of int and uint has been handled as float
-internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, mftype: MfType, size: Int) -> [Any]{
+internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawPointer, mftype: MfType, size: Int) -> [Any]{
     
     switch MfType.storedType(mftype) {
     case .Float://in case that storedtype is Float
-        let ptrF = ptr.bindMemory(to: Float.self)
-        
+        let ptrF = ptr.bindMemory(to: Float.self, capacity: size)
+    
         switch mftype {
         case .UInt8:
             let ptrui8 = create_unsafeMPtrT(type: UInt8.self, count: size)
-            unsafePtrT2UnsafeMPtrU(ptrF.baseAddress!, ptrui8, vDSP_vfixru8, size)
+            unsafePtrT2UnsafeMPtrU(ptrF, ptrui8, vDSP_vfixru8, size)
             let ret = Array(UnsafeMutableBufferPointer(start: ptrui8, count: size)) as [Any]
             
             //free
@@ -30,7 +30,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
             return ret
         case .UInt16:
             let ptrui16 = create_unsafeMPtrT(type: UInt16.self, count: size)
-            unsafePtrT2UnsafeMPtrU(ptrF.baseAddress!, ptrui16, vDSP_vfixru16, size)
+            unsafePtrT2UnsafeMPtrU(ptrF, ptrui16, vDSP_vfixru16, size)
             let ret = Array(UnsafeMutableBufferPointer(start: ptrui16, count: size)) as [Any]
             
             //free
@@ -40,7 +40,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
             return ret
         case .UInt32, .UInt64, .UInt:
             let ptrui32 = create_unsafeMPtrT(type: UInt32.self, count: size)
-            unsafePtrT2UnsafeMPtrU(ptrF.baseAddress!, ptrui32, vDSP_vfixru32, size)
+            unsafePtrT2UnsafeMPtrU(ptrF, ptrui32, vDSP_vfixru32, size)
             let ret = Array(UnsafeMutableBufferPointer(start: ptrui32, count: size)) as [Any]
             
             //free
@@ -50,7 +50,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
             return ret
         case .Int8:
             let ptri8 = create_unsafeMPtrT(type: Int8.self, count: size)
-            unsafePtrT2UnsafeMPtrU(ptrF.baseAddress!, ptri8, vDSP_vfixr8, size)
+            unsafePtrT2UnsafeMPtrU(ptrF, ptri8, vDSP_vfixr8, size)
             let ret = Array(UnsafeMutableBufferPointer(start: ptri8, count: size)) as [Any]
             
             //free
@@ -60,7 +60,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
             return ret
         case .Int16:
             let ptri16 = create_unsafeMPtrT(type: Int16.self, count: size)
-            unsafePtrT2UnsafeMPtrU(ptrF.baseAddress!, ptri16, vDSP_vfixr16, size)
+            unsafePtrT2UnsafeMPtrU(ptrF, ptri16, vDSP_vfixr16, size)
             let ret = Array(UnsafeMutableBufferPointer(start: ptri16, count: size)) as [Any]
             
             //free
@@ -70,7 +70,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
             return ret
         case .Int32, .Int64, .Int:
             let ptri32 = create_unsafeMPtrT(type: Int32.self, count: size)
-            unsafePtrT2UnsafeMPtrU(ptrF.baseAddress!, ptri32, vDSP_vfixr32, size)
+            unsafePtrT2UnsafeMPtrU(ptrF, ptri32, vDSP_vfixr32, size)
             let ret = Array(UnsafeMutableBufferPointer(start: ptri32, count: size)) as [Any]
             
             //free
@@ -79,7 +79,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
 
             return ret
         case .Float:
-            let ret = Array(ptrF) as [Any]
+            let ret = Array(UnsafeMutableBufferPointer(start: ptrF, count: size)) as [Any]
             
             return ret
         default:
@@ -87,10 +87,10 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawBufferPointer, m
         }
         
     case .Double://in case that storedtype is Double
-        let ptrD = ptr.bindMemory(to: Double.self)
+        let ptrD = ptr.bindMemory(to: Double.self, capacity: size)
         switch mftype {
             case .Double:
-                let ret = Array(ptrD) as [Any]
+                let ret = Array(UnsafeMutableBufferPointer(start: ptrD, count: size)) as [Any]
 
                 return ret
             default:

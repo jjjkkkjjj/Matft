@@ -18,13 +18,14 @@ class MainView: UIView {
     }
     
     func check_MfArray(){
-        /*let a = Matft.mfarray.arange(start: 0, stop: 8, step: 1, shape: [2,2,2])
+        /*
+        let a = Matft.mfarray.arange(start: 0, stop: 8, step: 1, shape: [2,2,2])
         print(a.transpose(axes: [1,2,0]))
         let b = a.transpose(axes: [1,2,0]).flatten(.Column)
         print(b)*/
-        
-        //let arr = Matft.mfarray.arange(start: 0, stop: 100, step: 1, shape: [2, 5, 10], mftype: .Int)
         /*
+        let arr = Matft.mfarray.arange(start: 0, stop: 100, step: 1, shape: [2, 5, 10], mftype: .Int)
+        
         let a = arr[~~3, 1~<?~~2, 3~<]
         
         print(a + a)
@@ -37,9 +38,6 @@ class MainView: UIView {
         print(ar)*/
         
         /*
-        let arrr = try! MfArray([0,1])
-        let arrrr = try! MfArray([[0]])
-
         let arr2 = MfArray([[[ 0,  1,  2,  3],
                                   [ 4,  5,  6,  7]],
                                      
@@ -58,10 +56,10 @@ class MainView: UIView {
                                     
                                   [[ 3, 11],
                                    [ 7, 15]]])
-        print(arr2.T + arr22)*/
+        print(arr2.T + arr22)
         //print(arr.broadcast_to(shape: [4, 2, 2]))
         //print(arr + arr22)
-        //print(arr22)
+        //print(arr22)*/
         
         /*
         let e = Matft.mfarray.arange(start: 0, stop: 5, step: 1)
@@ -74,17 +72,17 @@ class MainView: UIView {
         //print(x)*/
         
         
-        
+        /*
         let a = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10, 10, 10, 10, 10, 10], mftype: .Float)
         //let a = Matft.mfarray.arange(start: 0, stop: 3*3*3*3, step: 1, shape: [3, 3, 3, 3], mftype: .Float)
-        //print(a)
+        //print(a.data)
 
         let b = a.transpose()
         let c = a.transpose(axes: [1,2,3,4,5,0])
         var start = Date()
         let d = b + c
         var elapsed = Date().timeIntervalSince(start)
-        print(elapsed)
+        print(elapsed)*/
     }
     
     

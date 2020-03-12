@@ -91,6 +91,7 @@ extension Matft.mfarray{
         }
         let origShape = mfarray.shape
         let origStrides = mfarray.strides
+
         newarray.withShapeStridesUnsafeMBPtr{
             shapeptr, stridesptr in
             for i in 0..<ndim{
@@ -98,7 +99,7 @@ extension Matft.mfarray{
                 stridesptr[i] = origStrides[permutation[i]]
             }
         }
-        
+
         return newarray
     }
     /**
@@ -122,17 +123,18 @@ extension Matft.mfarray{
         }
         
         let orig_strides = mfarray.strides
+        let orig_shape = mfarray.shape
         let newstructure =  try withDummyShapeStridesMBPtr(new_ndim){
             shapteptr, stridesptr in
             
             for idim in (idim_start..<new_ndim).reversed(){
-                let strides_shape_value = mfarray.shape[idim - idim_start]
+                let strides_shape_value = orig_shape[idim - idim_start]
                 /* If it doesn't have dimension one, it must match */
                 if strides_shape_value == 1{
                     stridesptr[idim] = 0
                 }
                 else if strides_shape_value != shape[idim]{
-                    throw MfError.conversionError("could not broadcast from shape \(mfarray.ndim), \(mfarray.shape) into shape \(new_ndim), \(shape)")
+                    throw MfError.conversionError("could not broadcast from shape \(mfarray.ndim), \(orig_shape) into shape \(new_ndim), \(shape)")
                 }
                 else{
                     stridesptr[idim] = orig_strides[idim - idim_start]

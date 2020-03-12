@@ -22,7 +22,7 @@ public class MfArray{
     
     //mfdata getter
     public var data: [Any]{
-        return self.withDataUnsafeMRBPtr{
+        return self.withDataUnsafeMRPtr{
             unsafeMRBPtr2array_viaForD($0, mftype: self.mftype, size: self.storedSize)
         }
     }
@@ -76,7 +76,6 @@ public class MfArray{
             fatalError("Matft does not support Object. Shape was \(_shape)")
         }
         
-        
         //flatten array to pointer
         switch _mftype {
             case .Object:
@@ -85,6 +84,7 @@ public class MfArray{
                 fatalError("Matft does not support empty object.")
             default:
                 let ptr = flattenarray2UnsafeMRPtr_viaForD(&flatten)
+                
                 var shape = shape ?? _shape
                 precondition(shape2size(&shape) == flatten.count, "Invalid shape, size must be \(flatten.count), but got \(shape2size(&shape))")
                 let shapeptr = array2UnsafeMPtrT(&shape)
@@ -92,7 +92,7 @@ public class MfArray{
                 self.mfstructure = MfStructure(shapeptr: shapeptr, mforder: _mforder, ndim: shape.count)
         }
         
-        if let mftype = mftype, mftype != _mftype{
+        if let mftype = mftype, MfType.storedType(mftype) != MfType.storedType(_mftype){
             switch MfType.storedType(mftype){
             case .Float://double to float
                 let newdata = withDummyDataMRPtr(mftype, storedSize: self.storedSize){
@@ -121,10 +121,10 @@ public class MfArray{
         self.mfstructure = mfstructure
     }
     //create view
-    public init (base: MfArray, mfstructure: MfStructure? = nil, offset: Int){
+    public init (base: MfArray, mfstructure: MfStructure, offset: Int){
         self.base = base
         self.mfdata = MfData(refdata: base.mfdata, offset: offset)
-        self.mfstructure = mfstructure ?? base.mfstructure //mfstructure will be copied because mfstructure is struct
+        self.mfstructure = mfstructure//mfstructure will be copied because mfstructure is struct
     }
 
     deinit {
