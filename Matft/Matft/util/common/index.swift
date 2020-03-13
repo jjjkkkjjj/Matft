@@ -123,7 +123,6 @@ internal struct FlattenIndSequenceIterator: IteratorProtocol{
     public var shapeptr: UnsafeMutableBufferPointer<Int>{
         return self.flattenIndSeq.shapeptr
     }
-    public var size: Int
     
     public var indicesOfAxes: [Int]
     public var flattenIndex: Int = 0
@@ -133,7 +132,6 @@ internal struct FlattenIndSequenceIterator: IteratorProtocol{
         self.flattenIndSeq = flattenIndSeq
         
         self.indicesOfAxes = Array(repeating: 0, count: flattenIndSeq.shapeptr.count)
-        self.size = shape2size(flattenIndSeq.shapeptr)
         let ndim = shape2ndim(flattenIndSeq.shapeptr)
         for axis in 0..<ndim{
             self.flattenIndex += self.stridesptr[axis] >= 0 ? 0 : -self.stridesptr[axis]*self.shapeptr[axis] + self.stridesptr[axis]
@@ -203,14 +201,17 @@ internal struct FlattenLOIndSequenceIterator: IteratorProtocol{
     }
     
     public var indicesOfAxes: [Int]
-    public var flattenIndex: Int
-    public var upaxis: Int //indicates which axis will be counted up
+    public var flattenIndex: Int = 0
+    public var upaxis: Int  = -1//indicates which axis will be counted up
     
     public init(_ flattenLOIndSeq: FlattenLOIndSequence){
         self.flattenLOIndSeq = flattenLOIndSeq
         
         self.indicesOfAxes = Array(repeating: 0, count: flattenLOIndSeq.shapeptr.count)
-        self.flattenIndex = 0
+        let ndim = shape2ndim(flattenLOIndSeq.shapeptr)
+        for axis in 0..<ndim{
+            self.flattenIndex += self.stridesptr[axis] >= 0 ? 0 : -self.stridesptr[axis]*self.shapeptr[axis] + self.stridesptr[axis]
+        }
         self.upaxis = -1
     }
     

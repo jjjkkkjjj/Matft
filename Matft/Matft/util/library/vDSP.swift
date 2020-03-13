@@ -44,8 +44,10 @@ internal func biop_by_vDSP<T: Numeric>(_ bigger_mfarray: MfArray, _ smaller_mfar
             bptr in
             smaller_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
                 sptr in
+                print(bigger_mfarray.strides, smaller_mfarray.strides)
                 for vDSPPrams in OptOffsetParams(bigger_mfarray: bigger_mfarray, smaller_mfarray: smaller_mfarray){
                 biop_unsafePtrT(bptr.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, sptr.baseAddress! + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSPPrams.blocksize, vDSP_func)
+                    //print(vDSPPrams.b_offset,vDSPPrams.b_stride,vDSPPrams.s_offset, vDSPPrams.s_stride)
                 }
             }
         }

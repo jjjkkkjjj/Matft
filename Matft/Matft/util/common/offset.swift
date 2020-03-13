@@ -30,7 +30,7 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
     
     var upaxis: Int //indicates which axis will be counted up
     var indicesOfAxes: [Int]
-    var offset: (b: Int, s: Int)?
+    var offset: (b: Int, s: Int)? = (0, 0)
     
     public init(optParams: OptOffsetParams){
         var shape = optParams.bigger_mfarray.shape
@@ -41,8 +41,8 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
             _optStrides(shape: &shape, l_strides: &b_strides, r_strides: &s_strides)
         
         
-        self.stride.b = b_strides[axis]
-        self.stride.s = s_strides[axis]
+        self.stride.b = abs(b_strides[axis])
+        self.stride.s = abs(s_strides[axis])
         self.blocksize = blocksize
         
         self.itershapes = iterAxes.map{ shape[$0] }
@@ -58,7 +58,10 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
             self.upaxis = 0
             self.indicesOfAxes = Array(repeating: 0, count: self.itershapes.count)
         }
-        self.offset = (0, 0)
+        for axis in iterAxes{
+            self.offset!.b +=  b_strides[axis] >= 0 ? 0 : -b_strides[axis]*shape[axis] + b_strides[axis]
+            self.offset!.s +=  s_strides[axis] >= 0 ? 0 : -s_strides[axis]*shape[axis] + s_strides[axis]
+        }
     }
     
     mutating func next() -> (b_offset: Int, b_stride: Int, s_offset: Int, s_stride: Int, blocksize: Int)? {
@@ -130,7 +133,7 @@ fileprivate func _optStrides(shape: inout [Int], l_strides: inout [Int], r_strid
                 continue
             }
             
-            if (lst == l_strides[last_contiguous_axis] * shape[last_contiguous_axis]) && (rst == r_strides[last_contiguous_axis] * shape[last_contiguous_axis]){//
+            if (abs(lst) == abs(l_strides[last_contiguous_axis]) * shape[last_contiguous_axis]) && (abs(rst) == abs(r_strides[last_contiguous_axis]) * shape[last_contiguous_axis]){//
                 lsts[n] = nil//set flag as already checked
                 rsts[n] = nil
                 

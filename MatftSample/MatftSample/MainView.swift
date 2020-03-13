@@ -62,9 +62,12 @@ class MainView: UIView {
         //print(arr22)*/
         
         
-        let e = Matft.mfarray.arange(start: 0, stop: 12, step: 1, shape: [2,3,2])
-        print(e[0~<, ~~-1, 0~<])
-        print(Matft.mfarray.flip(e, axis: nil))
+        let e = Matft.mfarray.arange(start: 0, stop: 27, step: 1, shape: [3,3,3])
+        let eflip1 = e[0~<, ~~-1, 0~<]
+        print(eflip1)
+        let eflip1T = e.T
+        print(eflip1T)
+        print(eflip1 + eflip1T)
         
         let a = MfArray([[4, 2],
                         [4, 5]])
