@@ -68,6 +68,7 @@ class MainView: UIView {
         let eflip1T = e.T
         print(eflip1T)
         print(eflip1 + eflip1T)
+        print(e[-2~-1])
         
         let a = MfArray([[4, 2],
                         [4, 5]])

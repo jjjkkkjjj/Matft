@@ -159,15 +159,15 @@ extension MfArray{
                 //copy strides
                 newstridesptr.baseAddress!.assign(from: orig_stridesptr.baseAddress!, count: self.ndim)
                     for (axis, mfslice) in mfslices.enumerated(){
-                        offset += mfslice.start * orig_stridesptr[axis]
+                        let start = mfslice.start >= 0 ? mfslice.start * orig_stridesptr[axis] : orig_shapeptr[axis] + mfslice.start
+                        var to = mfslice.to ?? orig_shapeptr[axis]
+                        to = to >= 0 ? to : orig_shapeptr[axis] + to
                         
-                        if let to = mfslice.to{//0<=to-1-start<dim
-                            newshapeptr[axis] = max(min(orig_shapeptr[axis], to - 1 - mfslice.start), 0)
-                        }//note that nil indicates all elements
-                        else{
-                            let tmpdim = ceil(Float(orig_shapeptr[axis] - mfslice.start)/fabsf(Float(mfslice.by)))
-                            newshapeptr[axis] = max(min(orig_shapeptr[axis], Int(tmpdim)), 0)
-                        }
+                        offset += start * orig_stridesptr[axis]
+                        
+                        let tmpdim = ceil(Float(to - start)/Float(abs(mfslice.by)))
+                        newshapeptr[axis] = max(min(orig_shapeptr[axis], Int(tmpdim)), 0)
+                        
                         newstridesptr[axis] *= mfslice.by
                     }
                 }
