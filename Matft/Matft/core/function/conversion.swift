@@ -103,6 +103,40 @@ extension Matft.mfarray{
         return newarray
     }
     /**
+       Convert new shaped mfarray
+       - parameters:
+            - mfarray: mfarray
+            - shape: the new shape
+       - Important: this function will create copy not view
+    */
+    public static func reshape(_ mfarray: MfArray, newshape: [Int]) -> MfArray{
+        var newshape = newshape
+        precondition(mfarray.size == shape2size(&newshape), "new shape's size:\(shape2size(&newshape)) must be same as mfarray's size:\(mfarray.size)")
+        
+        if mfarray.mfflags.column_contiguous{
+            let flattenArray = mfarray.flatten(.Column)
+            return MfArray(flattenArray.data, mftype: mfarray.mftype, shape: newshape, mforder: .Column)
+        }
+        else{
+            let flattenArray = mfarray.flatten(.Row)
+            return MfArray(flattenArray.data, mftype: mfarray.mftype, shape: newshape, mforder: .Row)
+        }
+        
+        /* i wanna implement no copy version
+        let new_ndim = newshape.count
+        let newarray = Matft.mfarray.shallowcopy(mfarray)
+        
+        let newstructure = withDummyShapeStridesMBPtr(new_ndim){
+            shapeptr, stridesptr in
+            //move from newshape
+            shapeptr.baseAddress!.moveAssign(from: &newshape, count: new_ndim)
+            
+            for axis in 0..<new_ndim{
+                
+            }
+        }*/
+    }
+    /**
        Create broadcasted mfarray.
        - parameters:
             - mfarray: mfarray

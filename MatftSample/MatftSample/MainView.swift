@@ -61,7 +61,11 @@ class MainView: UIView {
         //print(arr + arr22)
         //print(arr22)*/
         
+        let w = Matft.mfarray.arange(start: 0, stop: 81, step: 1, shape: [3,3,3,3]).transpose(axes: [0,2,1,3])
+        print(w)
+        print(w.reshape([1,9,1,3,3]))
         
+        /*
         let e = Matft.mfarray.arange(start: 0, stop: 27, step: 1, shape: [3,3,3])
         let eflip1 = e[0~, ~~-1, 0~]
         print(eflip1)
@@ -76,7 +80,7 @@ class MainView: UIView {
         let b = MfArray([[2, -7]])
         let x = try! Matft.mfarray.linalg.solve(a, b: b)
         print(x)
-        
+        */
         
         /*
         let a = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10, 10, 10, 10, 10, 10], mftype: .Float)

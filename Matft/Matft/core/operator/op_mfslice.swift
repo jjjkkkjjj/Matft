@@ -21,6 +21,7 @@ public prefix func ~-(to: Int) -> MfSlice{
     return MfSlice(to: -to)
 }
 
+//a[0~] = a[:]
 //a[2~] = a[2:]
 //a[-2~] = a[-2:]
 postfix operator ~

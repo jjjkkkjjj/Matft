@@ -33,6 +33,14 @@ extension MfArray{
         return Matft.mfarray.transpose(self)
     }
     /**
+       Convert new shaped mfarray
+       - parameters:
+            - newshape: the new shape
+    */
+    public func reshape(_ newshape: [Int]) -> MfArray{
+        return Matft.mfarray.reshape(self, newshape: newshape)
+    }
+    /**
        Create broadcasted mfarray.
        - parameters:
             - shape: shape
