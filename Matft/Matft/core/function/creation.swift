@@ -96,16 +96,16 @@ extension Matft.mfarray{
        - parameters:
             - mfarrays: the array of MfArray.
     */
-    static public func vstack(_ mfarrays: [MfArray]) {
-        Matft.mfarray.concatenate(mfarrays, axis: 0)
+    static public func vstack(_ mfarrays: [MfArray]) -> MfArray {
+        return Matft.mfarray.concatenate(mfarrays, axis: 0)
     }
     /**
        Concatenate given arrays horizontally(for column)
        - parameters:
             - mfarrays: the array of MfArray.
     */
-    static public func hstack(_ mfarrays: [MfArray]) {
-        Matft.mfarray.concatenate(mfarrays, axis: 1)
+    static public func hstack(_ mfarrays: [MfArray]) -> MfArray {
+        return Matft.mfarray.concatenate(mfarrays, axis: -1)
     }
     /**
        Concatenate given arrays for arbitrary axis
@@ -113,38 +113,64 @@ extension Matft.mfarray{
             - mfarrays: the array of MfArray.
             - axis: the axis to concatenate
     */
-    static public func concatenate(_ mfarrays: [MfArray], axis: Int = 0){
-        precondition(mfarrays.count >= 2, "inputs mfarrays must consist of more than 2")
+    static public func concatenate(_ mfarrays: [MfArray], axis: Int = 0) -> MfArray{
+        if mfarrays.count == 1{
+            return mfarrays[0].deepcopy()
+        }
         
-        let basearray = mfarrays.first!
-        var concatShape = basearray.shape
-        concatShape.remove(at: axis)
+        var restShape = mfarrays.first!.shape // shape except for given axis
+        let retndim = mfarrays.first!.ndim
+        let axis = axis >= 0 ? axis : retndim + axis
+        precondition(axis >= 0 && axis < retndim, "Invalid axis")
         
-        var retStoredType = basearray.storedType
+        var concatDim = restShape.remove(at: axis)
+        
+        var retMfType = mfarrays.first!.mftype
         
         //check if argument is valid or not
         for i in 1..<mfarrays.count{
             var shapeExceptAxis = mfarrays[i].shape
-            shapeExceptAxis.remove(at: axis)
+            concatDim += shapeExceptAxis.remove(at: axis)
             
-            retStoredType = StoredType.priority(retStoredType, mfarrays[i].storedType)
+            retMfType = MfType.priority(retMfType, mfarrays[i].mftype)
             
-            precondition(concatShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
+            precondition(restShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
         }
         
-        let retsize = concatShape.reduce(1, *) * mfarrays.count
+        restShape.insert(concatDim, at: axis)
+        var retShape = restShape
         
-        switch retStoredType {
-        case .Float:
-            let dstptr = create_unsafeMPtrT(type: Float.self, count: retsize)
-            for mfarray in mfarrays{
+        let retsize = shape2size(&retShape)
+        let flattenArrays = mfarrays.map{
+            $0.astype(retMfType).flatten()
+        }
+        
+        let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retsize){
+            dstptr in
+            var offset = 0
+            for flatArray in flattenArrays{
+                flatArray.withDataUnsafeMRPtr{
+                    (dstptr + offset).copyMemory(from: $0, byteCount: flatArray.storedByteSize)
+                    offset += flatArray.storedByteSize
+                }
+            }
+        
+        }
+        let newmfstructure = withDummyShapeStridesMPtr(retndim){
+            (dstshapeptr, dststridesptr) in
+            
+            retShape.withUnsafeMutableBufferPointer{
+                let stridesptr = shape2strides($0, mforder: .Row)
+                dstshapeptr.moveAssign(from: $0.baseAddress!, count: retndim)
                 
+                dststridesptr.moveAssign(from: stridesptr.baseAddress!, count: retndim)
+                
+                stridesptr.deallocate()
             }
             
-        case .Double:
-            let dstptr = create_unsafeMPtrT(type: Double.self, count: retsize)
         }
         
+        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
 }
 /*
