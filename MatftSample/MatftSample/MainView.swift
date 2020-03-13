@@ -67,6 +67,7 @@ class MainView: UIView {
         
         let a = Matft.mfarray.arange(start: 0, stop: 81, step: 1, shape: [3,3,3,3])
         let b = a.transpose(axes: [2,3,0,1])
+        print(a[0~, Matft.mfarray.newaxis()])
         print(Matft.mfarray.concatenate([a, b], axis: -1))
         
         /*

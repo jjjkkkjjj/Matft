@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct MfSlice {
+public struct MfSlice: MfSlicable {
     public let to: Int? // nil means all value
     public let start: Int
     public let by: Int
@@ -19,4 +19,15 @@ public struct MfSlice {
         self.by = by
     }
     
+}
+
+extension Int: MfSlicable{
+}
+
+extension Matft.mfarray{
+    public struct newaxis: MfSlicable{
+        public init(){
+            
+        }
+    }
 }

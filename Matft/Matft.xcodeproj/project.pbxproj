@@ -60,6 +60,7 @@
 		D672167023935A7B00040BD0 /* MatftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D672166F23935A7B00040BD0 /* MatftTests.swift */; };
 		D672167223935A7B00040BD0 /* Matft.h in Headers */ = {isa = PBXBuildFile; fileRef = D672166423935A7B00040BD0 /* Matft.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D6C029D324089F6F002184B8 /* infix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C029D224089F6F002184B8 /* infix.swift */; };
+		D6C25C2D241B7D050039457E /* mfslicable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C25C2C241B7D050039457E /* mfslicable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -114,6 +115,7 @@
 		D672166F23935A7B00040BD0 /* MatftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatftTests.swift; sourceTree = "<group>"; };
 		D672167123935A7B00040BD0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D6C029D224089F6F002184B8 /* infix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = infix.swift; sourceTree = "<group>"; };
+		D6C25C2C241B7D050039457E /* mfslicable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mfslicable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -241,6 +243,7 @@
 			isa = PBXGroup;
 			children = (
 				D65E133E241739F500E3A8D2 /* mfarrayProtocol.swift */,
+				D6C25C2C241B7D050039457E /* mfslicable.swift */,
 			);
 			path = protocol;
 			sourceTree = "<group>";
@@ -450,6 +453,7 @@
 				01CA70562413715200A59F40 /* offset.swift in Sources */,
 				0156BE0024128017009D15F1 /* order.swift in Sources */,
 				010841782406745E00BBFEB8 /* array2ptr.swift in Sources */,
+				D6C25C2D241B7D050039457E /* mfslicable.swift in Sources */,
 				01084183240693D900BBFEB8 /* conversion_mfarray.swift in Sources */,
 				01B37B862406C49F004AF2EF /* subscript.swift in Sources */,
 				010841792406745E00BBFEB8 /* ptr2array.swift in Sources */,

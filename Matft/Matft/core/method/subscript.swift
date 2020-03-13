@@ -20,21 +20,33 @@ extension MfArray{
         //    self[indices] = newValue
         //}
     }
+    //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
     public subscript(indices: Any...) -> MfArray{
         get{
-            var mfslices = indices.map{
-                (index) -> MfSlice in
+            var axes: [Int] = []
+            var mfslices: [MfSlice] = []
+            for (axis, index) in indices.enumerated(){
                 if let index = index as? Int{
-                    return MfSlice(to: index + 1)
+                    mfslices.append(MfSlice(to: index + 1))
                 }
                 else if let index = index as? MfSlice{
-                    return index
+                    mfslices.append(index)
+                }
+                else if let _ = index as? Matft.mfarray.newaxis{
+                    axes.append(axis)
+                    mfslices.append(MfSlice())
                 }
                 else{
                     fatalError("\(index) is not subscriptable value")
                 }
             }
-            return self.get_mfarray(mfslices: &mfslices)
+            
+            if axes.count > 0{
+                return self.get_mfarray(mfslices: &mfslices, newaxes: axes)
+            }
+            else{
+                return self.get_mfarray(mfslices: &mfslices)
+            }
         }
     }
     public subscript(indices: [MfSlice]) -> MfArray{
@@ -142,22 +154,29 @@ extension MfArray{
         
     }
     //Use opaque?
-    private func get_mfarray(mfslices: inout [MfSlice]) -> MfArray{
+    private func get_mfarray(mfslices: inout [MfSlice], newaxes: [Int]? = nil) -> MfArray{
         precondition(mfslices.count <= self.ndim, "cannot return value because given indices were too many")
+        var mfarray = self
+        if let newaxes = newaxes{
+            //note that newaxes has already sorted
+            for axis in newaxes.reversed(){
+                mfarray = Matft.mfarray.expand_dims(mfarray, axis: axis)
+            }
+        }
         
-        if mfslices.count < self.ndim{
-            for _ in 0..<self.ndim - mfslices.count{
+        if mfslices.count < mfarray.ndim{
+            for _ in 0..<mfarray.ndim - mfslices.count{
                 mfslices.append(MfSlice())
             }
         }
         
         var offset = 0
-        let newstructure = withDummyShapeStridesMBPtr(self.ndim){
+        let newstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
             newshapeptr, newstridesptr in
-            self.withShapeStridesUnsafeMBPtr{
+            mfarray.withShapeStridesUnsafeMBPtr{
                 orig_shapeptr, orig_stridesptr in
                 //copy strides
-                newstridesptr.baseAddress!.assign(from: orig_stridesptr.baseAddress!, count: self.ndim)
+                newstridesptr.baseAddress!.assign(from: orig_stridesptr.baseAddress!, count: mfarray.ndim)
                     for (axis, mfslice) in mfslices.enumerated(){
                         let start = mfslice.start >= 0 ? mfslice.start * orig_stridesptr[axis] : orig_shapeptr[axis] + mfslice.start
                         var to = mfslice.to ?? orig_shapeptr[axis]
@@ -176,7 +195,7 @@ extension MfArray{
         
         //newarray.mfdata._storedSize = get_storedSize(newarray.shapeptr, newarray.stridesptr)
         //print(newarray.shape, newarray.mfdata._size, newarray.mfdata._storedSize)
-        return MfArray(base: self, mfstructure: newstructure, offset: offset)
+        return MfArray(base: mfarray, mfstructure: newstructure, offset: offset)
     }
     
 }

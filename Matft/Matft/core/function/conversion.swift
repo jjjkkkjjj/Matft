@@ -137,6 +137,60 @@ extension Matft.mfarray{
         }*/
     }
     /**
+       Create mfarray expanded dimension for given axis
+       - parameters:
+            - mfarray: mfarray
+            - axis: the expanded axis
+    */
+    public static func expand_dims(_ mfarray: MfArray, axis: Int) -> MfArray{
+        let newarray = mfarray.shallowcopy()
+        
+        var newshape = mfarray.shape
+        newshape.insert(1, at: axis)
+        var newstrides = mfarray.strides
+        newstrides.insert(0, at: axis)
+        
+        let newmfstructure = withDummyShapeStridesMPtr(mfarray.ndim + 1){
+            shapeptr, stridesptr in
+            newshape.withUnsafeMutableBufferPointer{
+                shapeptr.moveAssign(from: $0.baseAddress!, count: mfarray.ndim + 1)
+            }
+            newstrides.withUnsafeMutableBufferPointer{
+                stridesptr.moveAssign(from: $0.baseAddress!, count: mfarray.ndim + 1)
+            }
+        }
+        newarray.mfstructure = newmfstructure
+        
+        return newarray
+    }
+    /**
+       Create mfarray removed for 1-dimension
+       - parameters:
+            - mfarray: mfarray
+            - axis: the removed axis
+       - Important: this function will create copy not view
+    */
+    public static func squeeze(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
+        var newshape = mfarray.shape
+        
+        if let axis = axis{
+            precondition(newshape.remove(at: axis) == 1, "cannot select an axis to squeeze out which has size not equal to one")
+        }
+        else{
+            newshape = newshape.filter{ $0 != 1 } // remove all 1-dimension from array
+        }
+        
+        if mfarray.mfflags.column_contiguous{
+            let flattenArray = mfarray.flatten(.Column)
+            return MfArray(flattenArray.data, mftype: mfarray.mftype, shape: newshape, mforder: .Column)
+        }
+        else{
+            let flattenArray = mfarray.flatten(.Row)
+            return MfArray(flattenArray.data, mftype: mfarray.mftype, shape: newshape, mforder: .Row)
+        }
+        // i wanna implement no copy version too
+    }
+    /**
        Create broadcasted mfarray.
        - parameters:
             - mfarray: mfarray
