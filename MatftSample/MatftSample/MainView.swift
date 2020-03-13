@@ -63,7 +63,7 @@ class MainView: UIView {
         
         
         let e = Matft.mfarray.arange(start: 0, stop: 27, step: 1, shape: [3,3,3])
-        let eflip1 = e[0~<, ~~-1, 0~<]
+        let eflip1 = e[0~, ~~-1, 0~]
         print(eflip1)
         let eflip1T = e.T
         print(eflip1T)
