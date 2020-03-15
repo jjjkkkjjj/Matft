@@ -27,6 +27,21 @@ extension Matft.mfarray.linalg{
             print(x)
             ==> mfarray =
                 [[    2.0,        -3.0]], type=Float, shape=[1, 2]
+     
+            
+            //numpy
+            >>> a = np.array([[4,2],[4,5]])
+            >>> b = np.array([2,-7])
+            >>> np.linalg.solve(a,b)
+            array([ 2., -3.])
+            >>> np.linalg.solve(a,b.T)
+            array([ 2., -3.])
+            >>> b = np.array([[2,-7]])
+            >>> np.linalg.solve(a,b.T)
+            array([[ 2.],
+                   [-3.]])
+
+                
             */
      */
     public static func solve(_ coef: MfArray, b: MfArray) throws -> MfArray{
