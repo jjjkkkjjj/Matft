@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Accelerate
 
 extension Matft.mfarray{
     /**
@@ -97,7 +98,66 @@ extension Matft.mfarray{
             - mfarrays: the array of MfArray.
     */
     static public func vstack(_ mfarrays: [MfArray]) -> MfArray {
-        return Matft.mfarray.concatenate(mfarrays, axis: 0)
+        if mfarrays.count == 1{
+            return mfarrays[0].deepcopy()
+        }
+        
+        var retShape = mfarrays.first!.shape // shape except for given axis first, return shape later
+        var retMfType = mfarrays.first!.mftype
+        var concatDim = retShape.remove(at: 0)
+        
+        //check if argument is valid or not
+        for i in 1..<mfarrays.count{
+            var shapeExceptAxis = mfarrays[i].shape
+            concatDim += shapeExceptAxis.remove(at: 0)
+            
+            retMfType = MfType.priority(retMfType, mfarrays[i].mftype)
+            
+            precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
+        }
+        
+        retShape.insert(concatDim, at: 0)// return shape
+        
+        let rmajorArrays = mfarrays.map{ Matft.mfarray.conv_order($0, mforder: .Row) }
+        let retSize = shape2size(&retShape)
+        
+        let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
+            dstptr in
+            switch MfType.storedType(retMfType){
+            case .Float:
+                let dstptrF = dstptr.bindMemory(to: Float.self, capacity: retSize)
+                var offset = 0
+                for array in rmajorArrays{
+                    array.withDataUnsafeMBPtrT(datatype: Float.self){
+                        copy_unsafeptrT(array.storedSize, $0.baseAddress!, 1, dstptrF + offset, 1, cblas_scopy)
+                    }
+                    offset += array.storedSize
+                }
+                
+            case .Double:
+                let dstptrD = dstptr.bindMemory(to: Double.self, capacity: retSize)
+                var offset = 0
+                for array in rmajorArrays{
+                    array.withDataUnsafeMBPtrT(datatype: Double.self){
+                        copy_unsafeptrT(array.storedSize, $0.baseAddress!, 1, dstptrD + offset, 1, cblas_dcopy)
+                    }
+                    offset += array.storedSize
+                }
+            }
+        }
+        
+        let newmfstructure = withDummyShapeStridesMBPtr(retShape.count){
+            shapeptr, stridesptr in
+            retShape.withUnsafeMutableBufferPointer{
+                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: shapeptr.count)
+            }
+            
+            let newstrides = shape2strides(shapeptr, mforder: .Row)
+            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: shapeptr.count)
+            
+            newstrides.deallocate()
+        }
+        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
     /**
        Concatenate given arrays horizontally(for column)
@@ -105,7 +165,66 @@ extension Matft.mfarray{
             - mfarrays: the array of MfArray.
     */
     static public func hstack(_ mfarrays: [MfArray]) -> MfArray {
-        return Matft.mfarray.concatenate(mfarrays, axis: -1)
+        if mfarrays.count == 1{
+            return mfarrays[0].deepcopy()
+        }
+        
+        var retShape = mfarrays.first!.shape // shape except for given axis first, return shape later
+        var retMfType = mfarrays.first!.mftype
+        var concatDim = retShape.remove(at: retShape.count - 1)
+        
+        //check if argument is valid or not
+        for i in 1..<mfarrays.count{
+            var shapeExceptAxis = mfarrays[i].shape
+            concatDim += shapeExceptAxis.remove(at: shapeExceptAxis.count - 1)
+            
+            retMfType = MfType.priority(retMfType, mfarrays[i].mftype)
+            
+            precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
+        }
+        
+        retShape.insert(concatDim, at: retShape.endIndex)// return shape
+        
+        let cmajorArrays = mfarrays.map{ Matft.mfarray.conv_order($0, mforder: .Column) }
+        let retSize = shape2size(&retShape)
+        
+        let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
+            dstptr in
+            switch MfType.storedType(retMfType){
+            case .Float:
+                let dstptrF = dstptr.bindMemory(to: Float.self, capacity: retSize)
+                var offset = 0
+                for array in cmajorArrays{
+                    array.withDataUnsafeMBPtrT(datatype: Float.self){
+                        copy_unsafeptrT(array.storedSize, $0.baseAddress!, 1, dstptrF + offset, 1, cblas_scopy)
+                    }
+                    offset += array.storedSize
+                }
+                
+            case .Double:
+                let dstptrD = dstptr.bindMemory(to: Double.self, capacity: retSize)
+                var offset = 0
+                for array in cmajorArrays{
+                    array.withDataUnsafeMBPtrT(datatype: Double.self){
+                        copy_unsafeptrT(array.storedSize, $0.baseAddress!, 1, dstptrD + offset, 1, cblas_dcopy)
+                    }
+                    offset += array.storedSize
+                }
+            }
+        }
+        
+        let newmfstructure = withDummyShapeStridesMBPtr(retShape.count){
+            shapeptr, stridesptr in
+            retShape.withUnsafeMutableBufferPointer{
+                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: shapeptr.count)
+            }
+            
+            let newstrides = shape2strides(shapeptr, mforder: .Column)
+            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: shapeptr.count)
+            
+            newstrides.deallocate()
+        }
+        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
     /**
        Concatenate given arrays for arbitrary axis
@@ -118,12 +237,19 @@ extension Matft.mfarray{
             return mfarrays[0].deepcopy()
         }
         
-        var restShape = mfarrays.first!.shape // shape except for given axis
+        var retShape = mfarrays.first!.shape // shape except for given axis first, return shape later
         let retndim = mfarrays.first!.ndim
         let axis = axis >= 0 ? axis : retndim + axis
         precondition(axis >= 0 && axis < retndim, "Invalid axis")
+        if axis == 0{// vstack is faster than this function
+            return Matft.mfarray.vstack(mfarrays)
+        }
+        else if axis == retndim - 1{// hstack is faster than this function
+            return Matft.mfarray.hstack(mfarrays)
+        }
+    
         
-        var concatDim = restShape.remove(at: axis)
+        var concatDim = retShape.remove(at: axis)
         
         var retMfType = mfarrays.first!.mftype
         
@@ -134,40 +260,69 @@ extension Matft.mfarray{
             
             retMfType = MfType.priority(retMfType, mfarrays[i].mftype)
             
-            precondition(restShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
+            precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
         }
         
-        restShape.insert(concatDim, at: axis)
-        var retShape = restShape
+        retShape.insert(concatDim, at: axis)// return shape
         
-        let retsize = shape2size(&retShape)
-        let flattenArrays = mfarrays.map{
-            $0.astype(retMfType).flatten()
-        }
+        var columnShape = retShape // the left side shape splited by axis, must have more than one elements
+        columnShape.removeSubrange(axis..<retShape.count)
+        let columnSize = shape2size(&columnShape)
+        var rowShape = retShape// the right side shape splited by axis, must have more than one elements
+        rowShape.removeSubrange(0...axis)
+        let rowSize = shape2size(&rowShape)
         
-        let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retsize){
+        let fasterOrder = rowSize >= columnSize ? MfOrder.Row : MfOrder.Column
+        let fasterBlockSize = rowSize >= columnSize ? rowSize : columnSize
+        let slowerBlockSize = rowSize >= columnSize ? columnSize : rowSize
+        
+        let majorArrays = mfarrays.map{ Matft.mfarray.conv_order($0, mforder: fasterOrder) }
+        let retSize = shape2size(&retShape)
+        
+        let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
             dstptr in
-            var offset = 0
-            for flatArray in flattenArrays{
-                flatArray.withDataUnsafeMRPtr{
-                    (dstptr + offset).copyMemory(from: $0, byteCount: flatArray.storedByteSize)
-                    offset += flatArray.storedByteSize
+            switch MfType.storedType(retMfType){
+            case .Float:
+                let dstptrF = dstptr.bindMemory(to: Float.self, capacity: retSize)
+    
+                var dst_offset = 0
+                for sb in 0..<slowerBlockSize{
+                    for array in majorArrays{
+                        let concatSize = array.shape[axis]
+                        
+                        array.withDataUnsafeMBPtrT(datatype: Float.self){
+                            copy_unsafeptrT(fasterBlockSize * concatSize, $0.baseAddress! + sb * fasterBlockSize * concatSize, 1, dstptrF + dst_offset, 1, cblas_scopy)
+                        }
+                        dst_offset += fasterBlockSize * concatSize
+                    }
+                }
+                
+            case .Double:
+                let dstptrD = dstptr.bindMemory(to: Double.self, capacity: retSize)
+                var dst_offset = 0
+                for sb in 0..<slowerBlockSize{
+                    for array in majorArrays{
+                        let concatSize = array.shape[axis]
+                        
+                        array.withDataUnsafeMBPtrT(datatype: Double.self){
+                            copy_unsafeptrT(fasterBlockSize * concatSize, $0.baseAddress! + sb * fasterBlockSize * concatSize, 1, dstptrD + dst_offset, 1, cblas_dcopy)
+                        }
+                        dst_offset += fasterBlockSize * concatSize
+                    }
                 }
             }
-        
         }
-        let newmfstructure = withDummyShapeStridesMPtr(retndim){
-            (dstshapeptr, dststridesptr) in
-            
+        
+        let newmfstructure = withDummyShapeStridesMBPtr(retShape.count){
+            shapeptr, stridesptr in
             retShape.withUnsafeMutableBufferPointer{
-                let stridesptr = shape2strides($0, mforder: .Row)
-                dstshapeptr.moveAssign(from: $0.baseAddress!, count: retndim)
-                
-                dststridesptr.moveAssign(from: stridesptr.baseAddress!, count: retndim)
-                
-                stridesptr.deallocate()
+                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: shapeptr.count)
             }
             
+            let newstrides = shape2strides(shapeptr, mforder: fasterOrder)
+            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: shapeptr.count)
+            
+            newstrides.deallocate()
         }
         
         return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
