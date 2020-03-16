@@ -14,7 +14,8 @@ extension MfArray{
         get {
             var mfslices = indices.map{ MfSlice(start: $0, to: $0 + 1) }
             let ret = self._get_mfarray(mfslices: &mfslices)
-            if let scalar = self.scalar{
+
+            if let scalar = ret.scalar{
                 return scalar
             }
             else{
@@ -215,15 +216,17 @@ extension MfArray{
                 orig_shapeptr, orig_stridesptr in
                 //copy strides
                 newstridesptr.baseAddress!.assign(from: orig_stridesptr.baseAddress!, count: mfarray.ndim)
-                    for (axis, mfslice) in mfslices.enumerated(){
-                        let start = mfslice.start >= 0 ? mfslice.start * orig_stridesptr[axis] : orig_shapeptr[axis] + mfslice.start
-                        var to = mfslice.to ?? orig_shapeptr[axis]
-                        to = to >= 0 ? to * orig_stridesptr[axis] : orig_shapeptr[axis] + to
+
+                for (axis, mfslice) in mfslices.enumerated(){
+                        let startIndex = mfslice.start >= 0 ? mfslice.start : orig_shapeptr[axis] + mfslice.start
                         
-                        offset += start * orig_stridesptr[axis]
+                        var toIndex = mfslice.to ?? orig_shapeptr[axis]
+                        toIndex = toIndex >= 0 ? toIndex : orig_shapeptr[axis] + toIndex
                         
-                        let tmpdim = ceil(Float(to - start)/Float(abs(mfslice.by)))
-                        newshapeptr[axis] = max(min(orig_shapeptr[axis], Int(tmpdim)), 0)
+                        offset += startIndex * orig_stridesptr[axis]
+                        
+                        let tmpdim = ceil(Float(toIndex - startIndex)/Float(abs(mfslice.by)))
+                        newshapeptr[axis] = max(Int(tmpdim), 0)
                         
                         newstridesptr[axis] *= mfslice.by
                     }
@@ -240,7 +243,7 @@ extension MfArray{
         //note that this function is alike _binary_operation
         let array = self._get_mfarray(mfslices: &mfslices)
         var newValue = newValue
-        print(Matft.mfarray.squeeze(array))
+
         if array.mftype != newValue.mftype{
             newValue = newValue.astype(array.mftype)
         }

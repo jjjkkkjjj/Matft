@@ -9,7 +9,7 @@
 import Foundation
 
 extension MfArray{
-    public var first: Any?{
+    public var first: AnyObject?{
         if self.size == 0{
             return nil
         }
@@ -36,7 +36,7 @@ extension MfArray{
         }
     }
     
-    public var scalar: Any?{
+    public var scalar: AnyObject?{
         return self.size == 1 ? self.first! : nil
     }
     public func scalar<T>(_ type: T.Type) -> T?{
@@ -46,32 +46,32 @@ extension MfArray{
 }
 
 
-fileprivate func _T2U2Any<T: BinaryFloatingPoint>(_ value: T, mftype: MfType) -> Any{
+fileprivate func _T2U2Any<T: BinaryFloatingPoint>(_ value: T, mftype: MfType) -> AnyObject{
     switch mftype {
         case .Int8:
-            return Int8(exactly: value) as Any
+            return Int8(exactly: value) as AnyObject
         case .Int16:
-            return Int16(exactly: value) as Any
+            return Int16(exactly: value) as AnyObject
         case .Int32:
-            return Int32(exactly: value) as Any
+            return Int32(exactly: value) as AnyObject
         case .Int64:
-            return Int64(exactly: value) as Any
+            return Int64(exactly: value) as AnyObject
         case .Int:
-            return Int(exactly: value) as Any
+            return Int(exactly: value) as AnyObject
         case .UInt8:
-            return UInt8(exactly: value) as Any
+            return UInt8(exactly: value) as AnyObject
         case .UInt16:
-            return UInt16(exactly: value) as Any
+            return UInt16(exactly: value) as AnyObject
         case .UInt32:
-            return UInt32(exactly: value) as Any
+            return UInt32(exactly: value) as AnyObject
         case .UInt64:
-            return UInt64(exactly: value) as Any
+            return UInt64(exactly: value) as AnyObject
         case .UInt:
-            return UInt(exactly: value) as Any
+            return UInt(exactly: value) as AnyObject
         case .Float:
-            return Float(exactly: value) as Any
+            return Float(exactly: value) as AnyObject
         case .Double:
-            return Double(exactly: value) as Any
+            return Double(exactly: value) as AnyObject
         default:
             fatalError("Unexpected type was detected")
     }
