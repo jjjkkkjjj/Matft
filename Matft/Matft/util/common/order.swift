@@ -196,9 +196,9 @@ internal func to_row_major(_ mfarray: MfArray) -> MfArray{
     ret.mfstructure = newstructure
     switch mfarray.storedType {
     case .Float:
-        return convorder_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_scopy)
+        return copy_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_scopy)
     case .Double:
-        return convorder_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_dcopy)
+        return copy_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_dcopy)
     }
     
 }
@@ -228,9 +228,9 @@ internal func to_column_major(_ mfarray: MfArray) -> MfArray{
     ret.mfstructure = newstructure
     switch mfarray.storedType {
     case .Float:
-        return convorder_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_scopy)
+        return copy_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_scopy)
     case .Double:
-        return convorder_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_dcopy)
+        return copy_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_dcopy)
     }
 }
 

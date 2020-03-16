@@ -11,3 +11,10 @@ import Foundation
 public protocol MfSlicable {
     
 }
+
+public protocol MfSubscriptable{
+    
+}
+
+extension MfSlice: MfSubscriptable{}
+extension Int: MfSubscriptable{}

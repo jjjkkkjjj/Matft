@@ -15,9 +15,22 @@ public class Matft{
            Leanear algebra
         */
         public class linalg{}
+        
+        /**
+           Basic math function
+        */
+        public class math{}
+        
         /**
            The kernel of mfarray.
         */
-        internal class mfdata{}
+        //internal class mfdata{}
+        
+        /**
+           Using in subscript, expand dimension
+        */
+        public static var newaxis: SubscriptOps{
+            return .newaxis
+        }
     }
 }

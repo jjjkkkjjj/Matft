@@ -24,10 +24,6 @@ public struct MfSlice: MfSlicable {
 extension Int: MfSlicable{
 }
 
-extension Matft.mfarray{
-    public struct newaxis: MfSlicable{
-        public init(){
-            
-        }
-    }
+public enum SubscriptOps: MfSlicable{
+    case newaxis
 }

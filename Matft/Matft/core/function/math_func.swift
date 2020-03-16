@@ -11,7 +11,7 @@ import Accelerate
 
 //ref https://developer.apple.com/documentation/accelerate/veclib/vforce
 
-extension Matft.mfarray{//use math_vv_by_vecLib
+extension Matft.mfarray.math{//use math_vv_by_vecLib
     //
     // trigonometric
     //

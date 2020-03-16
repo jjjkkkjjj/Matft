@@ -71,21 +71,27 @@ class MainView: UIView {
         //print(Matft.mfarray.squeeze(a[0~, Matft.mfarray.newaxis()]))
         print(Matft.mfarray.concatenate([a, b], axis: 1))*/
         
-        
+        /*
         let e = Matft.mfarray.arange(start: 0, stop: 27, step: 1, shape: [3,3,3])
         let eflip1 = e[0~, ~~-1, 0~]
         print(eflip1)
         let eflip1T = e.T
         print(eflip1T)
         print(eflip1 + eflip1T)
-        print(e[-2~-1])
+        print(e[-2~-1])*/
         
+        let e = Matft.mfarray.arange(start: 0, stop: 27, step: 1, shape: [3,3,3])
+        print(e)
+        e[1,1,1] = 9999999
+        print(e)
+        
+        /*
         let a = MfArray([[4, 2],
                         [4, 5]])
         print(a)
         let b = MfArray([[2, -7]])
         let x = try! Matft.mfarray.linalg.solve(a, b: b)
-        print(x)
+        print(x)*/
         
         
         /*
