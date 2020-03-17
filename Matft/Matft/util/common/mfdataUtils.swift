@@ -23,7 +23,8 @@ internal func shape2ndim(_ shapeptr: UnsafeMutableBufferPointer<Int>) -> Int{
 }
 
 internal func shape2size(_ shapeptr: UnsafeMutableBufferPointer<Int>) -> Int{
-    return shapeptr.filter{ $0 != 0 }.reduce(1, *)
+    return shapeptr.reduce(1, *)
+    //return shapeptr.filter{ $0 != 0 }.reduce(1, *)
 }
 internal func shape2size(_ shape: inout [Int]) -> Int{
     return shape.withUnsafeMutableBufferPointer{

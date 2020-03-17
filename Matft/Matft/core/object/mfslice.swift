@@ -10,10 +10,11 @@ import Foundation
 
 public struct MfSlice: MfSlicable {
     public let to: Int? // nil means all value
-    public let start: Int
+    public let start: Int?
     public let by: Int
     
-    public init(start: Int = 0, to: Int? = nil, by: Int = 1){
+    public init(start: Int? = nil, to: Int? = nil, by: Int = 1){
+        precondition(by != 0, "by must not be 0")
         self.to = to
         self.start = start
         self.by = by

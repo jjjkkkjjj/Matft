@@ -11,11 +11,17 @@ import Foundation
 extension MfArray: CustomStringConvertible{
     public var description: String{
         var desc = "mfarray = \n"
+        if self.size == 0{
+            desc += "\t[], type=\(self.mftype), shape=\(self.shape)"
+            return desc
+        }
+        
         desc += String(repeating: "[", count: self.ndim)
         
         let flattenData = self.data
         var shape = self.shape
         var strides = self.strides
+        
         if self.size > 1000{//if size > 1000, some elements left out will be viewed
             let flattenLOIndSeq = shape.withUnsafeMutableBufferPointer{
                 shapeptr in
