@@ -14,16 +14,22 @@ public class MfArray{
     public internal(set) var mfstructure: MfStructure
 
     public internal(set) var base: MfArray?
-    public var offsetFlattenIndex: Int{
+    public var offsetIndex: Int{
         return self.mfdata._offset
     }
     
 
     
     //mfdata getter
+    //return base's data
     public var data: [Any]{
-        return self.withDataUnsafeMRPtr{
-            unsafeMRBPtr2array_viaForD($0, mftype: self.mftype, size: self.storedSize)
+        if let base = self.base{
+            return base.data
+        }
+        else{
+            return self.withDataUnsafeMRPtr{
+                unsafeMRBPtr2array_viaForD($0, mftype: self.mftype, size: self.storedSize)
+            }
         }
     }
     

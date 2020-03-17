@@ -81,10 +81,11 @@ class MainView: UIView {
         print(e[-2~-1])*/
         
         let e = Matft.mfarray.arange(start: 0, stop: 27, step: 1, shape: [3,3,3])
+        
         //print(e[-2~1])
-        //print(e[-4~1])
-        //print(e[-1~1])
-        //print(e[0~4])
+        print(e[-4~1])
+        print(e[-1~1])
+        print(e[0~4])
         print(e[-1~~-1])
         print(e[-2~0~-1])
         print(e[2~0~-1])

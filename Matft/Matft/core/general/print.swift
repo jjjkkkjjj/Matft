@@ -35,7 +35,7 @@ extension MfArray: CustomStringConvertible{
             for (flattenIndex, indices) in flattenLOIndSeq{
                 
                 if var indices = indices, let flattenIndex = flattenIndex{
-                    desc += "\t\(flattenData[flattenIndex]),\t"
+                    desc += "\t\(flattenData[flattenIndex + self.offsetIndex]),\t"
                     
                     if indices.last! == shape.last! - 1{
                         let clousureNum = _clousure_number(mfarray: self, indices: &indices)
@@ -77,7 +77,7 @@ extension MfArray: CustomStringConvertible{
                 }
             }
             for var ret in flattenIndSeq{
-                desc += "\t\(flattenData[ret.flattenIndex]),\t"
+                desc += "\t\(flattenData[ret.flattenIndex + self.offsetIndex]),\t"
 
                 if ret.indices.last! == shape.last! - 1{
                     let clousureNum = _clousure_number(mfarray: self, indices: &ret.indices)

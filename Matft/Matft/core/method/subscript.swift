@@ -222,45 +222,57 @@ extension MfArray{
                     let orig_dim = orig_shapeptr[axis]
                     //default value is 0(if by >= 0), dim - 1(if by < 0)
                     var startIndex = mfslice.start ?? (mfslice.by >= 0 ? 0 : orig_dim - 1)
-                    //negative value is dim + value
+                    
                     startIndex = startIndex >= 0 ? startIndex : orig_dim + startIndex
+                    /*
+                    if startIndex >= orig_dim{//dim
+                        startIndex = orig_dim
+                    }
+                    else if startIndex < 0{
+                        startIndex = 0
+                    }*/
                     
                     //default value is dim(if by >= 0), -dim - 1(if by < 0)
                     var toIndex = mfslice.to ?? (mfslice.by >= 0 ? orig_dim : -orig_dim - 1)
-                    //negative value is dim + value
+                    
                     toIndex = toIndex >= 0 ? toIndex : orig_dim + toIndex
                     /*
-                    if mfslice.by < 0{
-                        swap(&startIndex, &toIndex)
+                    if toIndex >= orig_dim{//dim
+                        toIndex = orig_dim
+                    }
+                    else if toIndex < 0{
+                        toIndex = 0
                     }*/
                     
-                    /*
-                    Note that numpy's index priority is by, start(to)
-                    e.g)
-                    >>> a=np.arange(27).reshape(3,3,3)
-                    >>> a[1::-1]
-                    array([[[ 9, 10, 11],
-                            [12, 13, 14],
-                            [15, 16, 17]],
-
-                           [[ 0,  1,  2],
-                            [ 3,  4,  5],
-                            [ 6,  7,  8]]])
-                    namely a[1::-1] is equiverent to a[::-1][1:]
-                    */
-                    //negative tmpdim is zero, and maximum tmpdim is orig_dim
-                    newshapeptr[axis] = (toIndex - startIndex) / mfslice.by + (toIndex - startIndex) % mfslice.by
-                    
-                    newstridesptr[axis] *= mfslice.by
-                    if newshapeptr[axis] != 0{
-                        newsize *= newshapeptr[axis]
-                        //startIndex = newshapeptr[axis] + startIndex
-                        offset += startIndex * newstridesptr[axis]
+                    var by = mfslice.by
+                    if !(-orig_dim < startIndex && startIndex <= orig_dim && -orig_dim < toIndex && toIndex <= orig_dim){
+                        if startIndex > orig_dim{//dim
+                            startIndex = orig_dim
+                        }
+                        else if startIndex < 0{
+                            startIndex = 0
+                        }
+                        
+                        if toIndex > orig_dim{//dim
+                            toIndex = orig_dim
+                        }
+                        else if toIndex < 0{
+                            toIndex = 0
+                        }
+                    }
+                   
+                    var nsteps = (toIndex - startIndex) / mfslice.by + (toIndex - startIndex) % mfslice.by
+                    if nsteps <= 0{
+                        nsteps = 0
+                        by = 1
+                        startIndex = 0
                     }
                     
-                }
-                if offset != 0{
-                    offset = offset >= 0 ? offset % mfarray.storedSize : mfarray.storedSize - -offset % mfarray.storedSize
+                    newshapeptr[axis] = min(nsteps, orig_dim)
+                    newstridesptr[axis] *= by
+                    newsize *= newshapeptr[axis]
+                    offset += startIndex * orig_stridesptr[axis]
+                    
                 }
                 }
             }

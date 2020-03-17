@@ -58,10 +58,6 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
             self.upaxis = 0
             self.indicesOfAxes = Array(repeating: 0, count: self.itershapes.count)
         }
-        for axis in iterAxes{
-            self.offset!.b +=  b_strides[axis] >= 0 ? 0 : -b_strides[axis]*shape[axis] + b_strides[axis]
-            self.offset!.s +=  s_strides[axis] >= 0 ? 0 : -s_strides[axis]*shape[axis] + s_strides[axis]
-        }
     }
     
     mutating func next() -> (b_offset: Int, b_stride: Int, s_offset: Int, s_stride: Int, blocksize: Int)? {

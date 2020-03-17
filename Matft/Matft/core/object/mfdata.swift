@@ -63,17 +63,7 @@ public class MfData{
         self._storedSize = mfdata._storedSize
         self._mftype = mfdata._mftype
     }
-    // create dummy
-    public init(storedSize: Int, mftype: MfType){
-        switch MfType.storedType(mftype) {
-        case .Float:
-            self._data = create_unsafeMRPtr(type: Float.self, count: storedSize)
-        case .Double:
-            self._data = create_unsafeMRPtr(type: Double.self, count: storedSize)
-        }
-        self._storedSize = storedSize
-        self._mftype = mftype
-    }
+    
     
     // create view
     public init(refdata: MfData, offset: Int){

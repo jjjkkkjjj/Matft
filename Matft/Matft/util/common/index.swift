@@ -132,10 +132,7 @@ internal struct FlattenIndSequenceIterator: IteratorProtocol{
         self.flattenIndSeq = flattenIndSeq
         
         self.indicesOfAxes = Array(repeating: 0, count: flattenIndSeq.shapeptr.count)
-        let ndim = shape2ndim(flattenIndSeq.shapeptr)
-        for axis in 0..<ndim{
-            self.flattenIndex += self.stridesptr[axis] >= 0 ? 0 : -self.stridesptr[axis]*self.shapeptr[axis] + self.stridesptr[axis]
-        }
+        self.flattenIndex = 0
         self.upaxis = -1
     }
     
@@ -208,10 +205,7 @@ internal struct FlattenLOIndSequenceIterator: IteratorProtocol{
         self.flattenLOIndSeq = flattenLOIndSeq
         
         self.indicesOfAxes = Array(repeating: 0, count: flattenLOIndSeq.shapeptr.count)
-        let ndim = shape2ndim(flattenLOIndSeq.shapeptr)
-        for axis in 0..<ndim{
-            self.flattenIndex += self.stridesptr[axis] >= 0 ? 0 : -self.stridesptr[axis]*self.shapeptr[axis] + self.stridesptr[axis]
-        }
+        self.flattenIndex = 0
         self.upaxis = -1
     }
     
