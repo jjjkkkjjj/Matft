@@ -90,6 +90,14 @@ fileprivate func _binary_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _
             fatalError("cannot calculate binary operation due to broadcasting error")
         }
     }
+    //print(bigger_mfarray)
+    //return mfarray must be either row or column major
+    if smaller_mfarray.mfflags.column_contiguous{
+        bigger_mfarray = Matft.mfarray.conv_order(bigger_mfarray, mforder: .Column)
+    }
+    else{
+        bigger_mfarray = Matft.mfarray.conv_order(bigger_mfarray, mforder: .Row)
+    }
     
     let calctype = bigger_mfarray.mftype
     switch biop {

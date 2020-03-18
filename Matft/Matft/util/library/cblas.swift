@@ -23,8 +23,29 @@ internal func copy_by_cblas<T: Numeric>(_ mfarray: MfArray, dsttmpMfarray: MfArr
         dstptr in
         mfarray.withDataUnsafeMBPtrT(datatype: T.self){
             srcptr in
+            /*
+            var b = [5,6,7,2.0]
+            var c = [0,0,0,0.0]
+            
+            //vDSP_vaddD(&a, vDSP_Stride(1), &b + 3, vDSP_Stride(-1), &c, vDSP_Stride(1), vDSP_Length(4))
+            let add = UnsafePointer(b)
+            cblas_dcopy(Int32(4), add + 4, Int32(-1), &c, Int32(1))
+
+            print(c)
+            //->[0.0, 6.95325517022694e-310, 6.9532551702297e-310, 1.061256928e-314]
+            //Cannot copy!!!!
+             
+            cblas_dcopy(Int32(4), &b, Int32(-1), &c, Int32(1))
+            print(c)
+            //[2.0, 7.0, 6.0, 5.0]
+            //Copied!!!!!!!!!
+            */
             for cblasPrams in OptOffsetParams(bigger_mfarray: dsttmpMfarray, smaller_mfarray: mfarray){
-                copy_unsafeptrT(cblasPrams.blocksize, srcptr.baseAddress! + cblasPrams.s_offset, cblasPrams.s_stride, dstptr.baseAddress! + cblasPrams.b_offset, cblasPrams.b_stride, cblas_func)
+                //if negative offset, move proper position
+                let srcptr = cblasPrams.s_offset >= 0 ? srcptr.baseAddress! + cblasPrams.s_offset : srcptr.baseAddress! + mfarray.offsetIndex + cblasPrams.s_offset
+                let dstptr = cblasPrams.b_offset >= 0 ? dstptr.baseAddress! + cblasPrams.b_offset : dstptr.baseAddress! + dsttmpMfarray.offsetIndex + cblasPrams.b_offset
+                copy_unsafeptrT(cblasPrams.blocksize, srcptr, cblasPrams.s_stride, dstptr, cblasPrams.b_stride, cblas_func)
+                //print(cblasPrams.blocksize, cblasPrams.b_offset, cblasPrams.b_stride, cblasPrams.s_offset, cblasPrams.s_stride)
             }
         }
     }

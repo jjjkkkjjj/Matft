@@ -31,11 +31,7 @@ class MainView: UIView {
         print(a + a)
         print(a)*/
         
-        /*
-        //print(Matft.mfarray.nums(1, shape: [5, 5]))
-        let ar = MfArray([[0,1],[2,3]])
-
-        print(ar)*/
+        
         
         /*
         let arr2 = MfArray([[[ 0,  1,  2,  3],
@@ -59,7 +55,7 @@ class MainView: UIView {
         print(arr2.T + arr22)*/
         //print(arr.broadcast_to(shape: [4, 2, 2]))
         //print(arr + arr22)
-        //print(arr22)*/
+        //print(arr22)
         /*
         let w = Matft.mfarray.arange(start: 0, stop: 81, step: 1, shape: [3,3,3,3]).transpose(axes: [0,2,1,3])
         print(w)
@@ -82,7 +78,7 @@ class MainView: UIView {
         
         
         let e = Matft.mfarray.arange(start: 0, stop: 27, step: 1, shape: [3,3,3])
-        
+        /*
         print(e[-2~1])
         print(e[-4~1])
         print(e[-1~1])
@@ -95,7 +91,11 @@ class MainView: UIView {
         
         print(e[1,1,1])
         e[1,1] = 5
-        print(e)
+        print(e)*/
+        
+        let d = Matft.mfarray.conv_order(e[-1~~-1], mforder: .Row)
+        print(d)
+        print(e[-1~~-1] + e.T)
         
         /*
         let a = MfArray([[4, 2],

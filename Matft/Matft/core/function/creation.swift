@@ -25,30 +25,32 @@ extension Matft.mfarray{
                 stridesptr.assign(from: $0, count: mfarray.ndim)
             }
         }
-        return MfArray(base: mfarray, mfstructure: newstructure, offset: 0)
+        return MfArray(base: mfarray, mfstructure: newstructure, offset: mfarray.offsetIndex)
     }
     /**
        Create deep copy of mfarray. Deep means copied mfarray will be different object from original one
        - parameters:
             - mfarray: mfarray
+            - order: (Optional) order, default is nil, which means close to either row or column major if possibe.
     */
-    static public func deepcopy(_ mfarray: MfArray) -> MfArray{
-        let newmfdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.storedSize){
-            dstptr in
-            mfarray.withDataUnsafeMRPtr{
-                dstptr.copyMemory(from: $0, byteCount: mfarray.storedByteSize)
+    static public func deepcopy(_ mfarray: MfArray, order: MfOrder? = nil) -> MfArray{
+        if let order = order{
+            switch order {
+            case .Row:
+                return to_row_major(mfarray)
+            case .Column:
+                return to_column_major(mfarray)
             }
         }
-        let newmfstructure = withDummyShapeStridesMPtr(mfarray.ndim){
-            (dstshapeptr, dststridesptr) in
-            mfarray.withShapeUnsafeMPtr{
-                dstshapeptr.assign(from: $0, count: mfarray.ndim)
+        else{
+            if (mfarray.withStridesUnsafeMBPtr{ isReverse($0) }){// contain reverse, close to row major
+                return to_row_major(mfarray)
             }
-            mfarray.withStridesUnsafeMPtr{
-                dststridesptr.assign(from: $0, count: mfarray.ndim)
+            else{// all including strides will be copied
+                return copyAll(mfarray)
             }
         }
-        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+        
         /*
         let newdata = Matft.mfarray.mfdata.deepcopy(mfarray.mfdata)
         let newarray = MfArray(mfdata: newdata)

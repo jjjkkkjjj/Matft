@@ -168,14 +168,34 @@ fileprivate func _recurrsion_flatten(elements: Any, mftype : inout MfType, shape
 }
 
 */
-
+/**
+    - Important: strides must be checked before calling this function
+ */
+internal func copyAll(_ mfarray: MfArray) -> MfArray{
+    let newmfdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.storedSize){
+        dstptr in
+        mfarray.withDataUnsafeMRPtr{
+            dstptr.copyMemory(from: $0, byteCount: mfarray.storedByteSize)
+        }
+    }
+    let newmfstructure = withDummyShapeStridesMPtr(mfarray.ndim){
+        (dstshapeptr, dststridesptr) in
+        mfarray.withShapeUnsafeMPtr{
+            dstshapeptr.assign(from: $0, count: mfarray.ndim)
+        }
+        mfarray.withStridesUnsafeMPtr{
+            dststridesptr.assign(from: $0, count: mfarray.ndim)
+        }
+    }
+    return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+}
 
 internal func to_row_major(_ mfarray: MfArray) -> MfArray{
     if mfarray.mfflags.row_contiguous{
-        return mfarray.deepcopy()
+        return copyAll(mfarray)
     }
     
-    
+    let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.size){_ in}//dummy
     let newstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
             shapeptr, stridesptr in
             mfarray.withShapeUnsafeMBPtr{
@@ -192,8 +212,8 @@ internal func to_row_major(_ mfarray: MfArray) -> MfArray{
             }
         }
 
-    let ret = mfarray.deepcopy()
-    ret.mfstructure = newstructure
+    let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
+    
     switch mfarray.storedType {
     case .Float:
         return copy_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_scopy)
@@ -205,9 +225,10 @@ internal func to_row_major(_ mfarray: MfArray) -> MfArray{
 
 internal func to_column_major(_ mfarray: MfArray) -> MfArray{
     if mfarray.mfflags.column_contiguous{
-        return mfarray.deepcopy()
+        return copyAll(mfarray)
     }
     
+    let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.size){_ in}//dummy
     let newstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
         shapeptr, stridesptr in
         mfarray.withShapeUnsafeMBPtr{
@@ -224,8 +245,7 @@ internal func to_column_major(_ mfarray: MfArray) -> MfArray{
         }
     }
     
-    let ret = mfarray.deepcopy()
-    ret.mfstructure = newstructure
+    let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
     switch mfarray.storedType {
     case .Float:
         return copy_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_scopy)

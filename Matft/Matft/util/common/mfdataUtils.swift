@@ -65,3 +65,10 @@ internal func get_storedSize(_ shapeptr: UnsafeMutableBufferPointer<Int>, _ stri
     }
     return ret
 }
+
+/**
+        return boolean represents whether to contain reverse
+ */
+internal func isReverse(_ stridesptr: UnsafeMutableBufferPointer<Int>) -> Bool{
+    return stridesptr.contains{ $0 < 0 }
+}

@@ -41,8 +41,8 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
             _optStrides(shape: &shape, l_strides: &b_strides, r_strides: &s_strides)
         
         
-        self.stride.b = abs(b_strides[axis])
-        self.stride.s = abs(s_strides[axis])
+        self.stride.b = b_strides[axis]
+        self.stride.s = s_strides[axis]
         self.blocksize = blocksize
         
         self.itershapes = iterAxes.map{ shape[$0] }
@@ -129,7 +129,7 @@ fileprivate func _optStrides(shape: inout [Int], l_strides: inout [Int], r_strid
                 continue
             }
             
-            if (abs(lst) == abs(l_strides[last_contiguous_axis]) * shape[last_contiguous_axis]) && (abs(rst) == abs(r_strides[last_contiguous_axis]) * shape[last_contiguous_axis]){//
+            if (lst == l_strides[last_contiguous_axis] * shape[last_contiguous_axis]) && (rst == r_strides[last_contiguous_axis] * shape[last_contiguous_axis]){//
                 lsts[n] = nil//set flag as already checked
                 rsts[n] = nil
                 

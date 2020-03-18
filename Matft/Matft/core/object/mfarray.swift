@@ -64,6 +64,14 @@ public class MfArray{
     public var size: Int{
         return self.mfstructure._size
     }
+    public var byteSize: Int{
+        switch self.storedType {
+        case .Float:
+            return self.size * MemoryLayout<Float>.size
+        case .Double:
+            return self.size * MemoryLayout<Double>.size
+        }
+    }
     public var mfflags: MfFlags{
         return self.mfstructure._flags
     }

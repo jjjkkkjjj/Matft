@@ -14,8 +14,8 @@ extension MfArray{
        Create deep copy of mfarray. Deep means copied mfarray will be different object from original one
        - parameters:
     */
-    public func deepcopy() -> MfArray{
-        return Matft.mfarray.deepcopy(self)
+    public func deepcopy(_ order: MfOrder? = nil) -> MfArray{
+        return Matft.mfarray.deepcopy(self, order: order)
     }
     /**
        Create shallow copy of mfarray. Shallow means copied mfarray will be  sharing data with original one
