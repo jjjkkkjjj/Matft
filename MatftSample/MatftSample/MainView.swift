@@ -97,16 +97,16 @@ class MainView: UIView {
         print(d)
         print(e[-1~~-1] + e.T)*/
         
-        /*
+        
         let a = MfArray([[4, 2],
                         [4, 5]])
         print(a)
-        let b = MfArray([[2, -7]]).T
+        let b = Matft.mfarray.eye(dim: 2)
         print(b)
         //let b = MfArray([2,-7,9,1,1,1]).reshape([2,3])
-        let x = try! Matft.mfarray.linalg.solve(a, b: b)
+        let x = try! Matft.mfarray.linalg.inv(a)
         print(x)
-        */
+        
         
         /*
         let a = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10, 10, 10, 10, 10, 10], mftype: .Float)

@@ -99,22 +99,104 @@ extension Matft.mfarray.linalg{
             return ret
         }
     }
-    /*
+    
     public static func inv(_ mfarray: MfArray) throws -> MfArray{
+        let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
-        precondition(mfarray.shapeptr[mfarray.ndim - 1] == mfarray.shapeptr[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
         
-        let squaredSize = mfarray.shapeptr[mfarray.ndim - 1]
+        let squaredSize = shape[mfarray.ndim - 1]
         let matricesNum = mfarray.size / (squaredSize * squaredSize)
         
-        let inversedMfArray = mfarray.deepcopy()
-        var dataPointer = inversedMfArray.data
-        for _ in 0..<matricesNum{
-            let eye = Matft.mfarray.eye(dim: squaredSize)
-            try Matft.mfarray.linalg.solve(<#T##coef: MfArray##MfArray#>, b: <#T##MfArray#>)
+        
+        
+        switch mfarray.storedType {
+        case .Float:
+            let mfarray = to_column_major(mfarray.astype(.Float))
+            
+            let newmfdata = try withDummyDataMRPtr(.Float, storedSize: mfarray.size){
+                dstptr in
+                let dstptrF = dstptr.bindMemory(to: Float.self, capacity: mfarray.size)
+                try mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+                    srcptr in
+                    var offset = 0
+                    for _ in 0..<matricesNum{
+                        //create eye matrix, fortunately, eye matrix can be any order
+                        var eye = Array(repeating: Float(0), count: squaredSize * squaredSize)
+                        for i in 1...squaredSize{
+                            eye[i*i - 1] = Float(1)
+                        }
 
-            dataPointer += squaredSize * squaredSize
+                        try solve_by_lapack(copiedCoefPtr: srcptr.baseAddress! + offset, squaredSize, &eye, squaredSize, sgesv_)
+
+                        //move
+                        (dstptrF + offset).moveAssign(from: &eye, count: squaredSize*squaredSize)
+                        
+                        offset += squaredSize * squaredSize
+                    }
+                }
+            }
+            
+            let newmfstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
+                shapeptr, stridesptr in
+                
+                //shape
+                mfarray.withShapeUnsafeMBPtr{
+                    shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: mfarray.ndim)
+                }
+                
+                //strides
+                let newstridesptr = shape2strides(shapeptr, mforder: .Column)
+                stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+                
+                newstridesptr.deallocate()
+            }
+            
+            return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+            
+        case .Double:
+            let mfarray = to_column_major(mfarray.astype(.Double))
+            
+            let newmfdata = try withDummyDataMRPtr(.Double, storedSize: mfarray.size){
+                dstptr in
+                let dstptrD = dstptr.bindMemory(to: Double.self, capacity: mfarray.size)
+                try mfarray.withDataUnsafeMBPtrT(datatype: Double.self){
+                    srcptr in
+                    var offset = 0
+                    for _ in 0..<matricesNum{
+                        //create eye matrix, fortunately, eye matrix can be any order
+                        var eye = Array(repeating: Double(0), count: squaredSize * squaredSize)
+                        for i in 0..<squaredSize{
+                            eye[i*i] = Double(1)
+                        }
+
+                        try solve_by_lapack(copiedCoefPtr: srcptr.baseAddress! + offset, squaredSize, &eye, squaredSize, dgesv_)
+                        //move
+                        (dstptrD + offset).moveAssign(from: &eye, count: squaredSize*squaredSize)
+                        
+                        offset += squaredSize * squaredSize
+                    }
+                }
+            }
+            
+            let newmfstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
+                shapeptr, stridesptr in
+                
+                //shape
+                mfarray.withShapeUnsafeMBPtr{
+                    shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: mfarray.ndim)
+                }
+                
+                //strides
+                let newstridesptr = shape2strides(shapeptr, mforder: .Column)
+                stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+                
+                newstridesptr.deallocate()
+            }
+            
+            return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
         }
-    }*/
+
+    }
 }
 

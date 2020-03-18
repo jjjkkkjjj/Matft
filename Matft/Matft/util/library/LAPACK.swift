@@ -38,4 +38,3 @@ internal func solve_by_lapack<T>(copiedCoefPtr: UnsafeMutablePointer<T>, _ eqNum
         throw MfError.LinAlgError.singularMatrix("The factorization has been completed, but the factor U(of A=PLU) is exactly singular, so the solution could not be computed.")
     }
 }
-
