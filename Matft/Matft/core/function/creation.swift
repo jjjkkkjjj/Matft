@@ -62,13 +62,14 @@ extension Matft.mfarray{
             - value: the value of T, which must conform to Numeric protocol
             - shape: shape
             - mftype: (Optional) the type of mfarray
+            - order: (Optional) order, default is nil, which means close to row major
     */
-    static public func nums<T: Numeric>(_ value: T, shape: [Int], mftype: MfType? = nil) -> MfArray{
+    static public func nums<T: Numeric>(_ value: T, shape: [Int], mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
         var shape = shape
         let size = shape.withUnsafeMutableBufferPointer{
             shape2size($0)
         }
-        return MfArray(Array(repeating: value, count: size), mftype: mftype, shape: shape)
+        return MfArray(Array(repeating: value, count: size), mftype: mftype, shape: shape, mforder: mforder)
     }
     /**
        Create arithmetic sequence mfarray
@@ -77,22 +78,24 @@ extension Matft.mfarray{
             - stop: the end term of arithmetic sequence, which is not included.
             - shape: (Optional) shape
             - mftype: (Optional) the type of mfarray
+            - order: (Optional) order, default is nil, which means close to row major
     */
-    static public func arange<T: Strideable>(start: T, stop: T, step: T.Stride, shape: [Int]? = nil, mftype: MfType? = nil) -> MfArray{
-        return MfArray(Array(stride(from: start, to: stop, by: step)), mftype: mftype, shape: shape)
+    static public func arange<T: Strideable>(start: T, stop: T, step: T.Stride, shape: [Int]? = nil, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
+        return MfArray(Array(stride(from: start, to: stop, by: step)), mftype: mftype, shape: shape, mforder: mforder)
     }
     /**
        Create identity matrix. The size is (dim, dim)
        - parameters:
             - dim: the dimension, returned mfarray's shape is (dim, dim)
             - mftype: (Optional) the type of mfarray
+            - order: (Optional) order, default is nil, which means close to row major
     */
-    static public func eye(dim: Int, mftype: MfType? = nil) -> MfArray{
+    static public func eye(dim: Int, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
         var eye = Array(repeating: Array(repeating: 0, count: dim), count: dim)
         for i in 0..<dim{
             eye[i][i] = 1
         }
-        return MfArray(eye, mftype: mftype)
+        return MfArray(eye, mftype: mftype, mforder: mforder)
     }
     /**
        Concatenate given arrays vertically(for row)
