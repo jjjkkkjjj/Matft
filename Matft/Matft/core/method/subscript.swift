@@ -222,44 +222,55 @@ extension MfArray{
                     let orig_dim = orig_shapeptr[axis]
                     //default value is 0(if by >= 0), dim - 1(if by < 0)
                     var startIndex = mfslice.start ?? (mfslice.by >= 0 ? 0 : orig_dim - 1)
-                    
-                    startIndex = startIndex >= 0 ? startIndex : orig_dim + startIndex
-                    /*
-                    if startIndex >= orig_dim{//dim
-                        startIndex = orig_dim
-                    }
-                    else if startIndex < 0{
-                        startIndex = 0
-                    }*/
-                    
                     //default value is dim(if by >= 0), -dim - 1(if by < 0)
                     var toIndex = mfslice.to ?? (mfslice.by >= 0 ? orig_dim : -orig_dim - 1)
-                    
-                    toIndex = toIndex >= 0 ? toIndex : orig_dim + toIndex
-                    /*
-                    if toIndex >= orig_dim{//dim
-                        toIndex = orig_dim
-                    }
-                    else if toIndex < 0{
-                        toIndex = 0
-                    }*/
-                    
                     var by = mfslice.by
-                    if !(-orig_dim < startIndex && startIndex <= orig_dim && -orig_dim < toIndex && toIndex <= orig_dim){
-                        if startIndex > orig_dim{//dim
-                            startIndex = orig_dim
-                        }
-                        else if startIndex < 0{
+                    /*
+                     align with proper value
+                     by > 0
+                     startIndex <= -orig_dim ==> 0
+                     startIndex > orig_dim ==> orig_dim
+                     orig_dim < toIndex ==> orig_dim
+                     toIndex <= -orig_dim ==> 0
+                     
+                     by < 0
+                     startIndex < -orig_dim ==> -orig_dim-1
+                     startIndex > orig_dim ==> orig_dim
+                     orig_dim < toIndex ==> orig_dim
+                     toIndex < -orig_dim ==> -orig_dim-1
+                     */
+                    if by >= 0{
+                        if startIndex <= -orig_dim{
                             startIndex = 0
                         }
-                        
-                        if toIndex > orig_dim{//dim
+                        else if startIndex > orig_dim{
+                            startIndex = orig_dim
+                        }
+                        if orig_dim < toIndex{
                             toIndex = orig_dim
                         }
-                        else if toIndex < 0{
+                        else if toIndex < -orig_dim{
                             toIndex = 0
                         }
                     }
+                    else{
+                        if startIndex < -orig_dim{
+                            startIndex = -orig_dim - 1
+                        }
+                        else if startIndex > orig_dim{
+                            startIndex = orig_dim
+                        }
+                        if orig_dim < toIndex{
+                            toIndex = orig_dim
+                        }
+                        else if toIndex < -orig_dim{
+                            toIndex = -orig_dim - 1
+                        }
+                    }
+                    
+                    // convert negative index to proper positive index
+                    startIndex = startIndex >= 0 ? startIndex : orig_dim + startIndex
+                    toIndex = toIndex >= 0 ? toIndex : orig_dim + toIndex
                    
                     var nsteps = (toIndex - startIndex) / mfslice.by + (toIndex - startIndex) % mfslice.by
                     if nsteps <= 0{
