@@ -45,20 +45,40 @@ extension Matft.mfarray.linalg{
             */
      */
     public static func solve(_ coef: MfArray, b: MfArray) throws -> MfArray{
-        precondition(((coef.ndim == b.ndim) && (b.ndim == 2)), "cannot solve non linear simultaneous equations")
+        precondition((coef.ndim == 2), "cannot solve non linear simultaneous equations")
+        
+        let coefShape = coef.shape
+        let bShape = b.shape
+        
+        precondition(b.ndim <= 2, "Invalid b. Dimension must be 1 or 2")
+        var dstColNum = 0
+        // check argument
+        if b.ndim == 1{
+            //(m,m)(m)=(m)
+            precondition((coefShape[0] == coefShape[1] && bShape[0] == coefShape[0]), "cannot solve (\(coefShape[0]),\(coefShape[1]))(\(bShape[0]))=(\(bShape[0])) problem")
+            dstColNum = coef.shape[0]
+        }
+        else{//ndim == 2
+            //(m,m)(m,n)=(m,n)
+            precondition((coefShape[0] == coefShape[1] && bShape[0] == coefShape[0]), "cannot solve (\(coefShape[0]),\(coefShape[1]))(\(bShape[0]),\(bShape[1]))=(\(bShape[0]),\(bShape[1])) problem")
+            dstColNum = bShape[1] == 1 ? bShape[0] : bShape[1]
+        }
+                
         let returnedType = StoredType.priority(coef.storedType, b.storedType)
         
         //get column flatten
-        let coefflatten = coef.flatten(.Column)
+        let coef_column_major = to_column_major(coef)
+        let b_column_major = to_column_major(b)
+
         switch returnedType{
         case .Float:
-            let _coefflatten = coefflatten.astype(.Float) //even if original one is float, create copy
-            let ret = b.astype(.Float) //even if original one is float, create copy
-            
-            try _coefflatten.withDataUnsafeMBPtrT(datatype: Float.self){
-                _coefflattenptr in
+            let coefF = coef_column_major.astype(.Float) //even if original one is float, create copy
+            let ret = b_column_major.astype(.Float) //even if original one is float, create copy for lapack calculation
+
+            try coefF.withDataUnsafeMBPtrT(datatype: Float.self){
+                coefptr in
                 try ret.withDataUnsafeMBPtrT(datatype: Float.self){
-                    try solve_by_lapack(copiedCoefPtr: _coefflattenptr.baseAddress!, coef.shape[0], $0.baseAddress!, ret.shape[1], sgesv_)
+                    try solve_by_lapack(copiedCoefPtr: coefptr.baseAddress!, coef.shape[0], $0.baseAddress!, dstColNum, sgesv_)
                 }
             }
             
@@ -66,13 +86,13 @@ extension Matft.mfarray.linalg{
             return ret
             
         case .Double:
-            let _coefflatten = coefflatten.astype(.Double) //even if original one is float, create copy
+            let coefD = coef_column_major.astype(.Double) //even if original one is float, create copy
             let ret = b.astype(.Double) //even if original one is float, create copy
             
-            try _coefflatten.withDataUnsafeMBPtrT(datatype: Double.self){
-                _coefflattenptr in
+            try coefD.withDataUnsafeMBPtrT(datatype: Double.self){
+                coefptr in
                 try ret.withDataUnsafeMBPtrT(datatype: Double.self){
-                    try solve_by_lapack(copiedCoefPtr: _coefflattenptr.baseAddress!, coef.shape[0], $0.baseAddress!, ret.shape[1], dgesv_)
+                    try solve_by_lapack(copiedCoefPtr: coefptr.baseAddress!, coef.shape[0], $0.baseAddress!, dstColNum, dgesv_)
                 }
             }
             

@@ -107,18 +107,24 @@ extension Matft.mfarray{
        - parameters:
             - mfarray: mfarray
             - shape: the new shape
+            - order: (Optional) order, default is nil, which means close to either row or column major if possibe.
        - Important: this function will create copy not view
     */
-    public static func reshape(_ mfarray: MfArray, newshape: [Int]) -> MfArray{
+    public static func reshape(_ mfarray: MfArray, newshape: [Int], order: MfOrder? = nil) -> MfArray{
         var newshape = newshape
         precondition(mfarray.size == shape2size(&newshape), "new shape's size:\(shape2size(&newshape)) must be same as mfarray's size:\(mfarray.size)")
         
+        var order = order ?? .Row
         if mfarray.mfflags.column_contiguous{
-            let flattenArray = mfarray.flatten(.Column)
-            return MfArray(flattenArray.data, mftype: mfarray.mftype, shape: newshape, mforder: .Column)
+            order = .Column
         }
-        else{
+        
+        switch order {
+        case .Row:
             let flattenArray = mfarray.flatten(.Row)
+            return MfArray(flattenArray.data, mftype: mfarray.mftype, shape: newshape, mforder: .Row)
+        case .Column:
+            let flattenArray = mfarray.flatten(.Column)
             return MfArray(flattenArray.data, mftype: mfarray.mftype, shape: newshape, mforder: .Row)
         }
         
