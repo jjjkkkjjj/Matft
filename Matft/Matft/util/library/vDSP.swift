@@ -47,9 +47,9 @@ internal func biop_by_vDSP<T: Numeric>(_ bigger_mfarray: MfArray, _ smaller_mfar
                 sptr in
                 //print(bigger_mfarray.strides, smaller_mfarray.strides)
                 for vDSPPrams in OptOffsetParams(bigger_mfarray: bigger_mfarray, smaller_mfarray: smaller_mfarray){
-                    let bptr = vDSPPrams.b_offset >= 0 ? bptr.baseAddress! + vDSPPrams.b_offset : bptr.baseAddress! + bigger_mfarray.offsetIndex + vDSPPrams.b_offset
-                    let sptr = vDSPPrams.s_offset >= 0 ? sptr.baseAddress! + vDSPPrams.s_offset : sptr.baseAddress! + smaller_mfarray.offsetIndex + vDSPPrams.s_offset
-                    dstptrT = vDSPPrams.b_offset >= 0 ? dstptrT + vDSPPrams.b_offset : dstptrT + bigger_mfarray.offsetIndex + vDSPPrams.b_offset
+                    let bptr = vDSPPrams.b_stride >= 0 ? bptr.baseAddress! + vDSPPrams.b_offset : bptr.baseAddress! - bigger_mfarray.offsetIndex + vDSPPrams.b_offset
+                    let sptr = vDSPPrams.s_stride >= 0 ? sptr.baseAddress! + vDSPPrams.s_offset : sptr.baseAddress! - smaller_mfarray.offsetIndex + vDSPPrams.s_offset
+                    dstptrT = vDSPPrams.b_stride >= 0 ? dstptrT + vDSPPrams.b_offset : dstptrT + bigger_mfarray.offsetIndex + vDSPPrams.b_offset
                     biop_unsafePtrT(bptr, vDSPPrams.b_stride, sptr, vDSPPrams.s_stride, dstptrT, vDSPPrams.b_stride, vDSPPrams.blocksize, vDSP_func)
                     //print(vDSPPrams.b_offset,vDSPPrams.b_stride,vDSPPrams.s_offset, vDSPPrams.s_stride)
                 }
