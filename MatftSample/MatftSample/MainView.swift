@@ -101,6 +101,8 @@ class MainView: UIView {
         print(e.T)
         print(e[-1~~-1] + e.T)
         
+        print(Matft.mfarray.stats.argmax(e))
+        print(Matft.mfarray.stats.argmax(e, axis: 2))
         /*
         let a = MfArray([[4, 2],
                         [4, 5]])

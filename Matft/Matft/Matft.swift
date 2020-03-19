@@ -22,6 +22,10 @@ public class Matft{
         public class math{}
         
         /**
+           MfArray Infomation
+        */
+        public class stats{}
+        /**
            The kernel of mfarray.
         */
         //internal class mfdata{}
