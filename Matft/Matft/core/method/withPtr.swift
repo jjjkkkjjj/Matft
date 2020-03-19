@@ -104,3 +104,16 @@ internal func withDummy(mftype: MfType, storedSize: Int, ndim: Int, _ body: (Uns
     
     return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
 }
+
+internal func withDummy2ShapeStridesMBPtr(_ ndim: Int, _ body: (UnsafeMutableBufferPointer<Int>, UnsafeMutableBufferPointer<Int>, UnsafeMutableBufferPointer<Int>, UnsafeMutableBufferPointer<Int>) throws -> Void) rethrows -> (l: MfStructure, r: MfStructure){
+    
+    let l_dummyShapePtr = UnsafeMutableBufferPointer(start: create_unsafeMPtrT(type: Int.self, count: ndim), count: ndim)
+    let l_dummyStridesPtr = UnsafeMutableBufferPointer(start: create_unsafeMPtrT(type: Int.self, count: ndim), count: ndim)
+    
+    let r_dummyShapePtr = UnsafeMutableBufferPointer(start: create_unsafeMPtrT(type: Int.self, count: ndim), count: ndim)
+    let r_dummyStridesPtr = UnsafeMutableBufferPointer(start: create_unsafeMPtrT(type: Int.self, count: ndim), count: ndim)
+    
+    try body(l_dummyShapePtr, l_dummyStridesPtr, r_dummyShapePtr, r_dummyStridesPtr)
+    
+    return (MfStructure(shapeptr: l_dummyShapePtr.baseAddress!, stridesptr: l_dummyStridesPtr.baseAddress!, ndim: ndim), MfStructure(shapeptr: r_dummyShapePtr.baseAddress!, stridesptr: r_dummyStridesPtr.baseAddress!, ndim: ndim))
+}

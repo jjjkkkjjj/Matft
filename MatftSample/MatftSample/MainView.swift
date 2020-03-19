@@ -76,9 +76,9 @@ class MainView: UIView {
         print(eflip1 + eflip1T)
         print(e[-2~-1])*/
         
-        
-        let e = Matft.mfarray.arange(start: 0, stop: 27, step: 1, shape: [3,3,3])
         /*
+        let e = Matft.mfarray.arange(start: 0, stop: 27, step: 1, shape: [3,3,3])
+        
         print(e[-2~1])
         print(e[-4~1])
         print(e[-1~1])
@@ -91,7 +91,7 @@ class MainView: UIView {
         
         print(e[1,1,1])
         e[1,1] = 5
-        print(e)*/
+        print(e)
         
         //let c = Matft.mfarray.conv_order(e[-1~~-1], mforder: .Row)
         //print(c)
@@ -102,7 +102,7 @@ class MainView: UIView {
         print(e[-1~~-1] + e.T)
         
         print(Matft.mfarray.stats.argmax(e))
-        print(Matft.mfarray.stats.argmax(e, axis: 2))
+        print(Matft.mfarray.stats.argmax(e, axis: 2))*/
         /*
         let a = MfArray([[4, 2],
                         [4, 5]])
@@ -112,8 +112,9 @@ class MainView: UIView {
         //let b = MfArray([2,-7,9,1,1,1]).reshape([2,3])
         let x = try! Matft.mfarray.linalg.inv(a)
         print(x)*/
-        
-        
+        let a = Matft.mfarray.arange(start: 0, stop: 2*2*4, step: 1, shape: [2,2,4])
+        let b = Matft.mfarray.arange(start: 0, stop: 2*2*4, step: 1, shape: [2,4,2])
+        print(a*&b)
         /*
         let a = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10, 10, 10, 10, 10, 10], mftype: .Float)
         //let a = Matft.mfarray.arange(start: 0, stop: 3*3*3*3, step: 1, shape: [3, 3, 3, 3], mftype: .Float)

@@ -20,3 +20,8 @@ public func *(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
 public func /(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
     Matft.mfarray.div(l_mfarray, r_mfarray)
 }
+
+infix operator *&: MultiplicationPrecedence //matmul
+public func *&(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
+    Matft.mfarray.matmul(l_mfarray, r_mfarray)
+}

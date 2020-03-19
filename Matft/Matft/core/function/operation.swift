@@ -47,6 +47,15 @@ extension Matft.mfarray{
     public static func div(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _binary_operation(l_mfarray, r_mfarray, .div)
     }
+    /**
+       Matrix multiplication
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_mfarray: right mfarray
+    */
+    public static func matmul(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+        return _matmul_operation(l_mfarray, r_mfarray)
+    }
     
     //prefix
     /**
@@ -157,5 +166,255 @@ fileprivate func _prefix_operation(_ mfarray: MfArray, _ preop: PreOp) -> MfArra
         case .Double:
             return preop_by_vDSP(mfarray, vDSP_vnegD)
         }
+    }
+}
+
+/*
+ >>> a = np.arange(100).reshape(10,2,5)
+ >>> b = np.arange(135).reshape(5,3,9)
+ >>> np.matmul(a,b)
+ Traceback (most recent call last):
+   File "<stdin>", line 1, in <module>
+ ValueError: matmul: Input operand 1 has a mismatch in its core dimension 0, with gufunc signature (n?,k),(k,m?)->(n?,m?) (size 3 is different from 5)
+ 
+ >>> a = np.arange(100).reshape(10,2,5)
+ >>> b = np.arange(135).reshape(3,5,9)
+ >>> np.matmul(a,b)
+ Traceback (most recent call last):
+   File "<stdin>", line 1, in <module>
+ ValueError: operands could not be broadcast together with remapped shapes [original->remapped]: (10,2,5)->(10,newaxis,newaxis) (3,5,9)->(3,newaxis,newaxis) and requested shape (2,9)
+ 
+ For N dimensions it is a sum product over the last axis of a and the second-to-last of b:
+ 
+ >>> a = np.arange(2 * 2 * 4).reshape((2, 2, 4))
+ >>> b = np.arange(2 * 2 * 4).reshape((2, 4, 2))
+ >>> np.matmul(a,b).shape
+ (2, 2, 2)
+ >>> np.matmul(a, b)[0, 1, 1]
+ 98
+ >>> sum(a[0, 1, :] * b[0 , :, 1])
+ 98
+ 
+ 
+ //nice reference: https://stackoverflow.com/questions/34142485/difference-between-numpy-dot-and-python-3-5-matrix-multiplication
+>>>From the above two definitions, you can see the requirements to use those two operations. Assume a.shape=(s1,s2,s3,s4) and b.shape=(t1,t2,t3,t4)
+
+To use dot(a,b) you need
+    t3=s4;
+
+To use matmul(a,b) you need
+    t3=s4
+    t2=s2, or one of t2 and s2 is 1 // <- for broadcast
+    t1=s1, or one of t1 and s1 is 1 // <- for broadcast
+
+ */
+
+//very dirty code....
+fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> MfArray{
+    precondition(lmfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+    precondition(rmfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+    
+    //preprocessing
+    //type
+    var lmfarray = lmfarray
+    var rmfarray = rmfarray
+    if lmfarray.mftype != rmfarray.mftype{
+        let returnedType = MfType.priority(lmfarray.mftype, rmfarray.mftype)
+        if returnedType != lmfarray.mftype{
+            lmfarray = lmfarray.astype(returnedType)
+        }
+        else{
+            rmfarray = rmfarray.astype(returnedType)
+        }
+    }
+    
+    
+    
+    // order
+    // must be close to either row or column major
+    //let retorder = _matmul_convorder(&lmfarray, &rmfarray)
+    
+    _matmul_broadcast_to(&lmfarray, &rmfarray)
+    let lshape = lmfarray.shape
+    let rshape = rmfarray.shape
+    var retshape = lmfarray.shape
+    let retndim = retshape.count
+    retshape[retndim - 1] = rshape[retndim - 1]
+    
+    // order
+    // must be close to either row or column major
+    let retorder = _matmul_convorder(&lmfarray, &rmfarray)
+    
+    let newmfstructure = withDummyShapeStridesMBPtr(retndim){
+        shapeptr, stridesptr in
+        //move
+        retshape.withUnsafeMutableBufferPointer{
+            shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
+        //move
+        let newstrides = shape2strides(shapeptr, mforder: retorder)
+        stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: retndim)
+        //free
+        newstrides.deallocate()
+    }
+    
+    var offset = 0 // note that offset is common to all of l, r, dst because close to either row or column major
+    let matricesNum = lshape[retndim - 2] * rshape[retndim - 1]
+    //run
+    switch MfType.storedType(lmfarray.mftype) {
+    case .Float:
+        let newmfdata = withDummyDataMRPtr(lmfarray.mftype, storedSize: newmfstructure._size){
+            dstptr in
+            let dstptrF = dstptr.bindMemory(to: Float.self, capacity: newmfstructure._size)
+            lmfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+                lptr in
+                rmfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+                    rptr in
+                    for _ in 0..<matricesNum{
+                        matmul_by_cblas(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr.baseAddress! + offset, rshape[retndim - 2], rshape[retndim - 1], rptr.baseAddress! + offset, dstptrF + offset, Float(1), Float(0), cblas_sgemm)
+                        
+                        offset += matricesNum
+                    }
+                }
+            }
+        }
+        
+        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+        
+    case .Double:
+        let newmfdata = withDummyDataMRPtr(lmfarray.mftype, storedSize: newmfstructure._size){
+            dstptr in
+            let dstptrD = dstptr.bindMemory(to: Double.self, capacity: newmfstructure._size)
+            lmfarray.withDataUnsafeMBPtrT(datatype: Double.self){
+                lptr in
+                rmfarray.withDataUnsafeMBPtrT(datatype: Double.self){
+                    rptr in
+                    for _ in 0..<matricesNum{
+                        matmul_by_cblas(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr.baseAddress! + offset, rshape[retndim - 2], rshape[retndim - 1], rptr.baseAddress! + offset, dstptrD + offset, Double(1), Double(0), cblas_dgemm)
+                        
+                        offset += matricesNum
+                    }
+                }
+            }
+        }
+        
+        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+    }
+    
+}
+
+
+fileprivate func _matmul_convorder(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray) -> MfOrder{
+    // order
+    // must be close to either row or column major
+    var retorder = MfOrder.Row
+    if !(lmfarray.mfflags.column_contiguous && rmfarray.mfflags.column_contiguous) || lmfarray.mfflags.row_contiguous && rmfarray.mfflags.row_contiguous{//convert either row or column major
+        if lmfarray.mfflags.column_contiguous{
+            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Column)
+            retorder = .Column
+        }
+        else if lmfarray.mfflags.row_contiguous{
+            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Row)
+            retorder = .Row
+        }
+        else if rmfarray.mfflags.column_contiguous{
+            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Column)
+            retorder = .Column
+        }
+        else if rmfarray.mfflags.row_contiguous{
+            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Row)
+            retorder = .Row
+        }
+        else{
+            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Row)
+            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Row)
+            retorder = .Row
+        }
+    }
+    else{
+        retorder = lmfarray.mfflags.row_contiguous ? .Row : .Column
+    }
+    
+    return retorder
+}
+
+fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray){
+    var lshape = lmfarray.shape
+    var lstrides = lmfarray.strides
+    var rshape = rmfarray.shape
+    var rstrides = rmfarray.strides
+    
+    precondition(lshape[lmfarray.ndim - 1] == rshape[rmfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+    
+    // broadcast
+    var retndim = lmfarray.ndim
+    
+    if lmfarray.ndim > rmfarray.ndim{ // r has smaller dim
+        lshape = Array<Int>(repeating: 1, count: lmfarray.ndim - rmfarray.ndim) + lshape // the 1 concatenated elements means broadcastable
+        lstrides = Array<Int>(repeating: 0, count: lmfarray.ndim - rmfarray.ndim) + lstrides// the 0 concatenated elements means broadcastable
+    }
+    else if lmfarray.ndim < rmfarray.ndim{// r has smaller dim
+        retndim = rmfarray.ndim
+        rshape = Array<Int>(repeating: 1, count: lmfarray.ndim - rmfarray.ndim) + rshape // the 1 concatenated elements means broadcastable
+        rstrides = Array<Int>(repeating: 0, count: lmfarray.ndim - rmfarray.ndim) + rstrides// the 0 concatenated elements means broadcastable
+    }
+
+    do{
+        let (l_mfstructure, r_mfstructure) = try withDummy2ShapeStridesMBPtr(retndim){
+            
+            l_shapeptr, l_stridesptr, r_shapeptr, r_stridesptr in
+            //move
+            lshape.withUnsafeMutableBufferPointer{
+                l_shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+            }
+            lstrides.withUnsafeMutableBufferPointer{
+                l_stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+            }
+            rshape.withUnsafeMutableBufferPointer{
+                r_shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+            }
+            rstrides.withUnsafeMutableBufferPointer{
+                r_stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+            }
+            
+            
+            for axis in (0..<retndim-2).reversed(){
+                if l_shapeptr[axis] == r_shapeptr[axis]{
+                    continue
+                }
+                else if l_shapeptr[axis] == 1{
+                    l_shapeptr[axis] = r_shapeptr[axis] // aligned to r
+                    l_stridesptr[axis] = 0 // broad casted 0
+                }
+                else if r_shapeptr[axis] == 1{
+                    r_shapeptr[axis] = l_shapeptr[axis] // aligned to l
+                    r_stridesptr[axis] = 0 // broad casted 0
+                }
+                else{
+                    throw MfError.conversionError("Broadcast error")
+                }
+            }
+        }
+        let l_mfdata = withDummyDataMRPtr(lmfarray.mftype, storedSize: lmfarray.storedSize){
+            dstptr in
+            lmfarray.withDataUnsafeMRPtr{
+                srcptr in
+                dstptr.copyMemory(from: srcptr, byteCount: lmfarray.storedByteSize)
+            }
+        }
+        let r_mfdata = withDummyDataMRPtr(rmfarray.mftype, storedSize: rmfarray.storedSize){
+            dstptr in
+            rmfarray.withDataUnsafeMRPtr{
+                srcptr in
+                dstptr.copyMemory(from: srcptr, byteCount: rmfarray.storedByteSize)
+            }
+        }
+        
+        lmfarray = MfArray(mfdata: l_mfdata, mfstructure: l_mfstructure)
+        rmfarray = MfArray(mfdata: r_mfdata, mfstructure: r_mfstructure)
+    }
+    catch{
+        //conversion error
+        fatalError("cannot calculate matrix multiplication due to broadcasting error. hint: For all dim < ndim-2, left.shape[dim] or right.shape[dim] is one, or left.shape[dim] == right.shape[dim]")
     }
 }
