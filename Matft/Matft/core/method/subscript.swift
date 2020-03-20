@@ -43,7 +43,7 @@ extension MfArray{
             return self._set_mfarray(mfslices: &mfslices, newValue: newValue)
         }
     }
-    //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
+    //public subscript<T: MfSubscriptable>(indices: T...) -> MfArray{
     public subscript(indices: Any...) -> MfArray{
         get{
             var axes: [Int] = []
