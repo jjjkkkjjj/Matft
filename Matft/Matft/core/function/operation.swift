@@ -279,7 +279,7 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
                     var rptr = rptr.baseAddress!
                     
                     for _ in 0..<iterNum{
-                        matmul_by_cblas(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr, rshape[retndim - 2], rshape[retndim - 1], rptr, dstptrF, Float(1), Float(0), cblas_sgemm)
+                        matmul_by_cblas(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr, rshape[retndim - 2], rshape[retndim - 1], rptr, dstptrF, cblas_sgemm)
                         
                         lptr += l_matNum
                         rptr += r_matNum
@@ -304,7 +304,7 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
                     var rptr = rptr.baseAddress!
                     
                     for _ in 0..<iterNum{
-                        matmul_by_cblas(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr, rshape[retndim - 2], rshape[retndim - 1], rptr, dstptrD, Double(1), Double(0), cblas_dgemm)
+                        matmul_by_cblas(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr, rshape[retndim - 2], rshape[retndim - 1], rptr, dstptrD, cblas_dgemm)
                         
                         lptr += l_matNum
                         rptr += r_matNum

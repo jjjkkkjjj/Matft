@@ -103,7 +103,7 @@ extension Matft.mfarray.stats{
 }
 
 
-fileprivate func _stats_calc<T: Numeric>(_ typedArray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_func<T>) -> MfArray{
+fileprivate func _stats_calc<T: MfStorable>(_ typedArray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_func<T>) -> MfArray{
     
     if axis != nil && typedArray.ndim > 1{// for given axis
         let axis = axis! >= 0 ? axis! : axis! + typedArray.ndim
@@ -121,7 +121,7 @@ fileprivate func _stats_calc<T: Numeric>(_ typedArray: MfArray, axis: Int?, keep
     }
 }
 
-fileprivate func _stats_calc_index<T: Numeric>(_ mfarray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_index_func<T>, vDSP_conv_func: vDSP_convert_func<Int32, T>) -> MfArray{
+fileprivate func _stats_calc_index<T: MfStorable>(_ mfarray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_index_func<T>, vDSP_conv_func: vDSP_convert_func<Int32, T>) -> MfArray{
     
     if axis != nil && mfarray.ndim > 1{// for given axis
         let axis = axis! >= 0 ? axis! : axis! + mfarray.ndim

@@ -59,12 +59,12 @@ extension Matft.mfarray{
     /**
        Create same value's mfarray
        - parameters:
-            - value: the value of T, which must conform to Numeric protocol
+            - value: the value of T, which must conform to MfTypable protocol
             - shape: shape
             - mftype: (Optional) the type of mfarray
             - order: (Optional) order, default is nil, which means close to row major
     */
-    static public func nums<T: Numeric>(_ value: T, shape: [Int], mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
+    static public func nums<T: MfTypable>(_ value: T, shape: [Int], mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
         var shape = shape
         let size = shape.withUnsafeMutableBufferPointer{
             shape2size($0)

@@ -16,7 +16,7 @@ internal func copy_unsafeptrT<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcS
     cblas_func(Int32(size), srcptr, Int32(srcStride), dstptr, Int32(dstStride))
 }
 
-internal func copy_by_cblas<T: Numeric>(_ mfarray: MfArray, dsttmpMfarray: MfArray, cblas_func: cblas_convorder_func<T>) -> MfArray{
+internal func copy_by_cblas<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfArray, cblas_func: cblas_convorder_func<T>) -> MfArray{
     
     
     dsttmpMfarray.withDataUnsafeMBPtrT(datatype: T.self){
@@ -66,7 +66,7 @@ internal func copy_by_cblas<T: Numeric>(_ mfarray: MfArray, dsttmpMfarray: MfArr
 //matrix multiplication
 internal typealias cblas_matmul_func<T> = (CBLAS_ORDER, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, Int32, Int32, Int32, T, UnsafePointer<T>, Int32, UnsafePointer<T>, Int32, T, UnsafeMutablePointer<T>, Int32) -> Void
 
-internal func matmul_by_cblas<T>(_ mforder: MfOrder, _ lrow: Int, _ lcol: Int, _ lptr: UnsafePointer<T>, _ rrow: Int, _ rcol: Int, _ rptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ one: T, _ zero: T, _ cblas_func: cblas_matmul_func<T>){
+internal func matmul_by_cblas<T: MfStorable>(_ mforder: MfOrder, _ lrow: Int, _ lcol: Int, _ lptr: UnsafePointer<T>, _ rrow: Int, _ rcol: Int, _ rptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ cblas_func: cblas_matmul_func<T>){
     let M = Int32(lrow)
     let N = Int32(rcol)
     let K = Int32(lcol)
@@ -77,13 +77,13 @@ internal func matmul_by_cblas<T>(_ mforder: MfOrder, _ lrow: Int, _ lcol: Int, _
         let lda = Int32(lrow)
         let ldb = Int32(rrow)
         let ldc = Int32(lrow)
-        cblas_func(order, CblasNoTrans, CblasNoTrans, M, N, K, one, lptr, lda, rptr, ldb, zero, dstptr, ldc)
+        cblas_func(order, CblasNoTrans, CblasNoTrans, M, N, K, T.num(1), lptr, lda, rptr, ldb, T.zero, dstptr, ldc)
     case .Row:
         let order = CblasRowMajor
         let lda = Int32(lcol)
         let ldb = Int32(rcol)
         let ldc = Int32(rcol)
-        cblas_func(order, CblasNoTrans, CblasNoTrans, M, N, K, one, lptr, lda, rptr, ldb, zero, dstptr, ldc)
+        cblas_func(order, CblasNoTrans, CblasNoTrans, M, N, K, T.num(1), lptr, lda, rptr, ldb, T.zero, dstptr, ldc)
     }
 }
 

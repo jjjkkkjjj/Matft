@@ -64,7 +64,7 @@ fileprivate func _array2UnsafeRawPtr<T: Numeric>(_ array: inout [T]?) -> UnsafeM
 /**
    - Important: this function allocate new memory, so don't forget deallocate!
 */
-internal func array2UnsafeMPtrT<T: Numeric>(_ array: inout [T]) -> UnsafeMutablePointer<T>{
+internal func array2UnsafeMPtrT<T: MfTypable>(_ array: inout [T]) -> UnsafeMutablePointer<T>{
     let ptr = create_unsafeMPtrT(type: T.self, count: array.count)
     array.withUnsafeBufferPointer{
         ptr.assign(from: $0.baseAddress!, count: $0.count)
