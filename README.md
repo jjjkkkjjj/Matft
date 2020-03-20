@@ -31,7 +31,7 @@
   - Set Cartfile
 
   	```/bin/bash
-echo 'github "realm/realm-cocoa"' > Cartfile
+    echo 'github "realm/realm-cocoa"' > Cartfile
   	carthage update ###or append '--platform ios'
   	```
 
