@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Matft",
+        "repositoryURL": "https://github.com/jjjkkkjjj/Matft",
+        "state": {
+          "branch": "master",
+          "revision": "4ef7c7b98576489168b0fb39e2e355859d21bdf2",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
