@@ -13,7 +13,7 @@
 		D6C2676424249310005731C6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D6C2676224249310005731C6 /* Main.storyboard */; };
 		D6C2676624249311005731C6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D6C2676524249311005731C6 /* Assets.xcassets */; };
 		D6C2676924249311005731C6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D6C2676724249311005731C6 /* LaunchScreen.storyboard */; };
-		D6D08D0024249B9A000F04D6 /* Matft in Frameworks */ = {isa = PBXBuildFile; productRef = D6D08CFF24249B9A000F04D6 /* Matft */; };
+		D6D08D032424A6E7000F04D6 /* Matft in Frameworks */ = {isa = PBXBuildFile; productRef = D6D08D022424A6E7000F04D6 /* Matft */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,7 +32,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D6D08D0024249B9A000F04D6 /* Matft in Frameworks */,
+				D6D08D032424A6E7000F04D6 /* Matft in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -44,6 +44,7 @@
 			children = (
 				D6C2675B24249310005731C6 /* MatftDemo */,
 				D6C2675A24249310005731C6 /* Products */,
+				D6D08D012424A6E7000F04D6 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -69,6 +70,13 @@
 			path = MatftDemo;
 			sourceTree = "<group>";
 		};
+		D6D08D012424A6E7000F04D6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -86,7 +94,7 @@
 			);
 			name = MatftDemo;
 			packageProductDependencies = (
-				D6D08CFF24249B9A000F04D6 /* Matft */,
+				D6D08D022424A6E7000F04D6 /* Matft */,
 			);
 			productName = MatftDemo;
 			productReference = D6C2675924249310005731C6 /* MatftDemo.app */;
@@ -359,7 +367,7 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		D6D08CFF24249B9A000F04D6 /* Matft */ = {
+		D6D08D022424A6E7000F04D6 /* Matft */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D6D08CFE24249B9A000F04D6 /* XCRemoteSwiftPackageReference "Matft" */;
 			productName = Matft;
