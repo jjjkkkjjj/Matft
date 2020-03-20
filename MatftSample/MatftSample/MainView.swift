@@ -112,9 +112,14 @@ class MainView: UIView {
         //let b = MfArray([2,-7,9,1,1,1]).reshape([2,3])
         let x = try! Matft.mfarray.linalg.inv(a)
         print(x)*/
-        let a = Matft.mfarray.arange(start: 0, stop: 2*2*4, step: 1, shape: [2,2,4])
-        let b = Matft.mfarray.arange(start: 0, stop: 2*2*4, step: 1, shape: [2,4,2])
+        
+        
+        let a = Matft.mfarray.arange(start: 0, stop: 2*2*4, step: 1, shape: [2,2,4], mforder: .Column)
+        //print(a)
+        let b = Matft.mfarray.arange(start: 0, stop: 2*2*4, step: 1, shape: [2,4,2], mforder: .Column)
+        //print(b)
         print(a*&b)
+        
         /*
         let a = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10, 10, 10, 10, 10, 10], mftype: .Float)
         //let a = Matft.mfarray.arange(start: 0, stop: 3*3*3*3, step: 1, shape: [3, 3, 3, 3], mftype: .Float)

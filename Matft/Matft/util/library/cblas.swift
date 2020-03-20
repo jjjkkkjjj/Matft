@@ -67,12 +67,23 @@ internal func copy_by_cblas<T: Numeric>(_ mfarray: MfArray, dsttmpMfarray: MfArr
 internal typealias cblas_matmul_func<T> = (CBLAS_ORDER, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, Int32, Int32, Int32, T, UnsafePointer<T>, Int32, UnsafePointer<T>, Int32, T, UnsafeMutablePointer<T>, Int32) -> Void
 
 internal func matmul_by_cblas<T>(_ mforder: MfOrder, _ lrow: Int, _ lcol: Int, _ lptr: UnsafePointer<T>, _ rrow: Int, _ rcol: Int, _ rptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ one: T, _ zero: T, _ cblas_func: cblas_matmul_func<T>){
-    let order = mforder == .Column ? CblasColMajor : CblasRowMajor
     let M = Int32(lrow)
     let N = Int32(rcol)
     let K = Int32(lcol)
-    let lda = mforder == .Column ? Int32(lrow) : Int32(lcol)
-    let ldb = mforder == .Column ? Int32(rrow) : Int32(rcol)
-    cblas_func(order, CblasNoTrans, CblasNoTrans, M, N, K, one, lptr, lda, rptr, ldb, zero, dstptr, N)
+    
+    switch mforder {
+    case .Column:
+        let order = CblasColMajor
+        let lda = Int32(lrow)
+        let ldb = Int32(rrow)
+        let ldc = Int32(lrow)
+        cblas_func(order, CblasNoTrans, CblasNoTrans, M, N, K, one, lptr, lda, rptr, ldb, zero, dstptr, ldc)
+    case .Row:
+        let order = CblasRowMajor
+        let lda = Int32(lcol)
+        let ldb = Int32(rcol)
+        let ldc = Int32(rcol)
+        cblas_func(order, CblasNoTrans, CblasNoTrans, M, N, K, one, lptr, lda, rptr, ldb, zero, dstptr, ldc)
+    }
 }
 

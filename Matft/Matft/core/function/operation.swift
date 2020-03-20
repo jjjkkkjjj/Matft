@@ -231,10 +231,12 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
     
     
     // order
-    // must be close to either row or column major
+    // must be row or column major
     //let retorder = _matmul_convorder(&lmfarray, &rmfarray)
     
+    //broadcast
     _matmul_broadcast_to(&lmfarray, &rmfarray)
+    
     let lshape = lmfarray.shape
     let rshape = rmfarray.shape
     var retshape = lmfarray.shape
@@ -242,7 +244,7 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
     retshape[retndim - 1] = rshape[retndim - 1]
     
     // order
-    // must be close to either row or column major
+    // must be row column major
     let retorder = _matmul_convorder(&lmfarray, &rmfarray)
     
     let newmfstructure = withDummyShapeStridesMBPtr(retndim){
@@ -258,22 +260,30 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
         newstrides.deallocate()
     }
     
-    var offset = 0 // note that offset is common to all of l, r, dst because close to either row or column major
-    let matricesNum = lshape[retndim - 2] * rshape[retndim - 1]
+
+    let matNum = lshape[retndim - 2] * rshape[retndim - 1]
+    let l_matNum = lshape[retndim - 2] * lshape[retndim - 1]
+    let r_matNum = rshape[retndim - 2] * rshape[retndim - 1]
+    let iterNum = newmfstructure._size / matNum
     //run
     switch MfType.storedType(lmfarray.mftype) {
     case .Float:
         let newmfdata = withDummyDataMRPtr(lmfarray.mftype, storedSize: newmfstructure._size){
             dstptr in
-            let dstptrF = dstptr.bindMemory(to: Float.self, capacity: newmfstructure._size)
+            var dstptrF = dstptr.bindMemory(to: Float.self, capacity: newmfstructure._size)
             lmfarray.withDataUnsafeMBPtrT(datatype: Float.self){
                 lptr in
+                var lptr = lptr.baseAddress!
                 rmfarray.withDataUnsafeMBPtrT(datatype: Float.self){
                     rptr in
-                    for _ in 0..<matricesNum{
-                        matmul_by_cblas(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr.baseAddress! + offset, rshape[retndim - 2], rshape[retndim - 1], rptr.baseAddress! + offset, dstptrF + offset, Float(1), Float(0), cblas_sgemm)
+                    var rptr = rptr.baseAddress!
+                    
+                    for _ in 0..<iterNum{
+                        matmul_by_cblas(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr, rshape[retndim - 2], rshape[retndim - 1], rptr, dstptrF, Float(1), Float(0), cblas_sgemm)
                         
-                        offset += matricesNum
+                        lptr += l_matNum
+                        rptr += r_matNum
+                        dstptrF += matNum
                     }
                 }
             }
@@ -284,15 +294,21 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
     case .Double:
         let newmfdata = withDummyDataMRPtr(lmfarray.mftype, storedSize: newmfstructure._size){
             dstptr in
-            let dstptrD = dstptr.bindMemory(to: Double.self, capacity: newmfstructure._size)
+            var dstptrD = dstptr.bindMemory(to: Double.self, capacity: newmfstructure._size)
             lmfarray.withDataUnsafeMBPtrT(datatype: Double.self){
                 lptr in
+                var lptr = lptr.baseAddress!
+                
                 rmfarray.withDataUnsafeMBPtrT(datatype: Double.self){
                     rptr in
-                    for _ in 0..<matricesNum{
-                        matmul_by_cblas(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr.baseAddress! + offset, rshape[retndim - 2], rshape[retndim - 1], rptr.baseAddress! + offset, dstptrD + offset, Double(1), Double(0), cblas_dgemm)
+                    var rptr = rptr.baseAddress!
+                    
+                    for _ in 0..<iterNum{
+                        matmul_by_cblas(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr, rshape[retndim - 2], rshape[retndim - 1], rptr, dstptrD, Double(1), Double(0), cblas_dgemm)
                         
-                        offset += matricesNum
+                        lptr += l_matNum
+                        rptr += r_matNum
+                        dstptrD += matNum
                     }
                 }
             }
@@ -306,6 +322,7 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
 
 fileprivate func _matmul_convorder(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray) -> MfOrder{
     // order
+    /*
     // must be close to either row or column major
     var retorder = MfOrder.Row
     if !(lmfarray.mfflags.column_contiguous && rmfarray.mfflags.column_contiguous) || lmfarray.mfflags.row_contiguous && rmfarray.mfflags.row_contiguous{//convert either row or column major
@@ -333,8 +350,16 @@ fileprivate func _matmul_convorder(_ lmfarray: inout MfArray, _ rmfarray: inout 
     }
     else{
         retorder = lmfarray.mfflags.row_contiguous ? .Row : .Column
+    }*/
+    let retorder = MfOrder.Row
+    if !(lmfarray.mfflags.row_contiguous && rmfarray.mfflags.row_contiguous){//convert row major
+        if !rmfarray.mfflags.row_contiguous{
+            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Row)
+        }
+        if !lmfarray.mfflags.row_contiguous{
+            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Row)
+        }
     }
-    
     return retorder
 }
 
