@@ -440,7 +440,7 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     }
 }
 
-extension Matft.mfarray{//use math_vv_by_vecLib
+extension Matft.mfarray.math{//use math_vv_by_vecLib
     /**
        Calculate power of each element
        - parameters:
@@ -461,9 +461,19 @@ extension Matft.mfarray{//use math_vv_by_vecLib
         }
     }
     public static func power(_ mfarray: MfArray, exponents: MfArray) -> MfArray{
-        guard let exponents = try? exponents.broadcast_to(shape: mfarray.shape)
+        guard var exponents = try? exponents.broadcast_to(shape: mfarray.shape)
             else{
                 fatalError("cannot align given shape of mfarray and exponents")
+        }
+        var mfarray = mfarray
+
+        if mfarray.mftype != exponents.mftype{
+            if mfarray.mftype == MfType.priority(mfarray.mftype, exponents.mftype){
+                exponents = exponents.astype(mfarray.mftype)
+            }
+            else{
+                mfarray = mfarray.astype(exponents.mftype)
+            }
         }
         
         switch mfarray.storedType {

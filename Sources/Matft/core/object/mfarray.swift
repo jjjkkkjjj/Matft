@@ -129,6 +129,10 @@ public class MfArray{
                 self.mfdata = newdata
             }
         }
+        else if let mftype = mftype, _mftype != mftype{
+            //same storedType
+            self.mfdata._mftype = mftype
+        }
     }
     public init (mfdata: MfData, mfstructure: MfStructure){
         self.mfdata = mfdata
