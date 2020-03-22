@@ -20,9 +20,9 @@ extension Matft.mfarray.stats{
     public static func mean(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc(mfarray.astype(.Float), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv)
+            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv)
         case .Double:
-            return _stats_calc(mfarray.astype(.Double), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanvD)
+            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanvD)
         }
     }
     /**
@@ -35,9 +35,9 @@ extension Matft.mfarray.stats{
     public static func max(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc(mfarray.astype(.Float), axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxv)
+            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxv)
         case .Double:
-            return _stats_calc(mfarray.astype(.Double), axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxvD)
+            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxvD)
         }
     }
     /**
@@ -65,9 +65,9 @@ extension Matft.mfarray.stats{
     public static func min(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc(mfarray.astype(.Float), axis: axis, keepDims: keepDims, vDSP_func: vDSP_minv)
+            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minv)
         case .Double:
-            return _stats_calc(mfarray.astype(.Double), axis: axis, keepDims: keepDims, vDSP_func: vDSP_minvD)
+            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minvD)
         }
     }
     /**
@@ -95,9 +95,9 @@ extension Matft.mfarray.stats{
     public static func sum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc(mfarray.astype(.Float), axis: axis, keepDims: keepDims, vDSP_func: vDSP_sve)
+            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sve)
         case .Double:
-            return _stats_calc(mfarray.astype(.Double), axis: axis, keepDims: keepDims, vDSP_func: vDSP_sveD)
+            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sveD)
         }
     }
 }

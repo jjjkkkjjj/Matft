@@ -118,7 +118,7 @@ internal func stats_all_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_func: vD
         _stats_run($0.baseAddress!, &dst, vDSP_func: vDSP_func, stride: 1, mfarray.size)
     }
     
-    return MfArray([dst])
+    return MfArray([dst], mftype: mfarray.mftype)
 }
 
 
