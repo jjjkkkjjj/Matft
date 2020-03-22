@@ -62,8 +62,6 @@ So, if you input big number to MfArray, it may be cause to overflow or strange r
       case Object // Unsupported
   ```
   
-  
-  
 - Also, you can convert MfType easily using ``astype``
 
   ```swift
