@@ -123,8 +123,8 @@ extension Matft.mfarray.linalg{
                     for _ in 0..<matricesNum{
                         //create eye matrix, fortunately, eye matrix can be any order
                         var eye = Array(repeating: Float(0), count: squaredSize * squaredSize)
-                        for i in 1...squaredSize{
-                            eye[i*i - 1] = Float(1)
+                        for i in 0..<squaredSize{
+                            eye[i + i*squaredSize] = Float(1)
                         }
 
                         try solve_by_lapack(copiedCoefPtr: srcptr.baseAddress! + offset, squaredSize, &eye, squaredSize, sgesv_)
