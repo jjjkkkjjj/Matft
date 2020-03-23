@@ -47,7 +47,7 @@ So, if you input big number to MfArray, it may be cause to overflow or strange r
   ```swift
 	public enum MfType: Int{
       case None // Unsupportted
-    	case Bool
+      case Bool
       case UInt8
       case UInt16
       case UInt32
@@ -134,11 +134,10 @@ You can set **MfSlice** (see below's list) to subscript.
   - ```swift
     MfSlice(start: Int? = nil, to: Int? = nil, by: Int = 1)
     ```
-  ```
   
   - ```swift
     Matft.mfarray.newaxis
-  ```
+    ```
 
   - ```swift
     ~ //this is prefix, postfix and infix operator. same as python's slice, ":"
@@ -616,7 +615,7 @@ Numpy was 1.15 tmes faster than matft...
 
 ※Swift's performance test was conducted in release mode
 
-However, my codes have several overhead and redundant part so this performance would be better than now.
+However, my codes have several overhead and redundant part so this performance could be better than now.
 
 ```python
 import numpy as np

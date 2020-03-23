@@ -22,14 +22,14 @@ final class MatftTests: XCTestCase {
         print(Matft.mfarray.arange(start: 7, stop: -1, step: -1, shape: [2,2,2]))
         let k = a[0~,0~,~~-1] - Matft.mfarray.arange(start: 7, stop: -1, step: -1, shape: [2,2,2])
         print(a[0~,0~,~~-1] == Matft.mfarray.arange(start: 7, stop: -1, step: -1, shape: [2,2,2]))*/
-        
+        /*
         let c = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10,10,10,10,10,10])
         let d = c.transpose(axes: [0,3,4,2,1,5])
         let e = c.T
         
         self.measure {
             let _ = d+e
-        }
+        }*/
         //XCTAssertEqual(Matft().text, "Hello, World!")
     }
     
