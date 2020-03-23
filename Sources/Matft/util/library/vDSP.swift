@@ -25,41 +25,72 @@ internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP
         }
     }
     
-    return MfArray(mfdata: newdata, mfstructure: mfarray.mfstructure)
+    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 
 //binary operation
 internal typealias vDSP_biop_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
 internal func biop_unsafePtrT<T: MfStorable>(lptr: UnsafePointer<T>, _ lstride: Int, rptr: UnsafePointer<T>, _ rstride: Int, dstptr: UnsafeMutablePointer<T>, _ dststride: Int, _ blockSize: Int, _ vDSP_func: vDSP_biop_func<T>){
-    vDSP_func(lptr, vDSP_Stride(lstride), rptr, vDSP_Stride(rstride), dstptr, vDSP_Stride(dststride), vDSP_Length(blockSize))
+    vDSP_func(rptr, vDSP_Stride(rstride), lptr, vDSP_Stride(lstride), dstptr, vDSP_Stride(dststride), vDSP_Length(blockSize))
 }
 
-internal func biop_by_vDSP<T: MfStorable>(_ bigger_mfarray: MfArray, _ smaller_mfarray: MfArray, vDSP_func: vDSP_biop_func<T>) -> MfArray{
+internal func biop_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, vDSP_func: vDSP_biop_func<T>) -> MfArray{
+    var biggerL = true // flag whether l is bigger than r
+    var l_mfarray = l_mfarray
+    var r_mfarray = r_mfarray
+    //return mfarray must be either row or column major
+    if l_mfarray.storedSize > r_mfarray.storedSize{
+        if r_mfarray.mfflags.column_contiguous{
+            l_mfarray = Matft.mfarray.conv_order(l_mfarray, mforder: .Column)
+        }
+        else{
+            l_mfarray = Matft.mfarray.conv_order(l_mfarray, mforder: .Row)
+        }
+    }
+    else{
+        if l_mfarray.mfflags.column_contiguous{
+            r_mfarray = Matft.mfarray.conv_order(r_mfarray, mforder: .Column)
+        }
+        else{
+            r_mfarray = Matft.mfarray.conv_order(r_mfarray, mforder: .Row)
+        }
+        biggerL = false
+    }
     
-    let newdata = withDummyDataMRPtr(bigger_mfarray.mftype, storedSize: bigger_mfarray.storedSize){
+    let newdata = withDummyDataMRPtr(l_mfarray.mftype, storedSize: l_mfarray.storedSize){
         dstptr in
-        let dstptrT = dstptr.bindMemory(to: T.self, capacity: bigger_mfarray.storedSize)
+        let dstptrT = dstptr.bindMemory(to: T.self, capacity: l_mfarray.storedSize)
         
-        bigger_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
-            bptr in
-            smaller_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
-                sptr in
-                //print(bigger_mfarray, smaller_mfarray)
-                //print(bigger_mfarray.storedSize, smaller_mfarray.storedSize)
-                for vDSPPrams in OptOffsetParams(bigger_mfarray: bigger_mfarray, smaller_mfarray: smaller_mfarray){
-                    /*
-                    let bptr = bptr.baseAddress! + vDSPPrams.b_offset
-                    let sptr = sptr.baseAddress! + vDSPPrams.s_offset
-                    dstptrT = dstptrT + vDSPPrams.b_offset*/
-                    biop_unsafePtrT(lptr: bptr.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, rptr: sptr.baseAddress! + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptr: dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSPPrams.blocksize, vDSP_func)
-                    //print(vDSPPrams.b_offset,vDSPPrams.b_stride,vDSPPrams.s_offset, vDSPPrams.s_stride)
+        l_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            lptr in
+            r_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+                rptr in
+                //print(l_mfarray, r_mfarray)
+                //print(l_mfarray.storedSize, r_mfarray.storedSize)
+                if biggerL{
+                    for vDSPPrams in OptOffsetParams(bigger_mfarray: l_mfarray, smaller_mfarray: r_mfarray){
+                        /*
+                        let bptr = bptr.baseAddress! + vDSPPrams.b_offset
+                        let sptr = sptr.baseAddress! + vDSPPrams.s_offset
+                        dstptrT = dstptrT + vDSPPrams.b_offset*/
+                        biop_unsafePtrT(lptr: lptr.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, rptr: rptr.baseAddress! + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptr: dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSPPrams.blocksize, vDSP_func)
+                        //print(vDSPPrams.b_offset,vDSPPrams.b_stride,vDSPPrams.s_offset, vDSPPrams.s_stride)
+                    }
+                }
+                else{
+                    for vDSPPrams in OptOffsetParams(bigger_mfarray: r_mfarray, smaller_mfarray: l_mfarray){
+                        biop_unsafePtrT(lptr: lptr.baseAddress! + vDSPPrams.s_offset, vDSPPrams.s_stride, rptr: rptr.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptr: dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSPPrams.blocksize, vDSP_func)
+                        //print(vDSPPrams.b_offset,vDSPPrams.b_stride,vDSPPrams.s_offset, vDSPPrams.s_stride)
+                    }
                 }
             }
         }
     }
     
-    return MfArray(mfdata: newdata, mfstructure: bigger_mfarray.mfstructure)
+    let newmfstructure = copy_mfstructure(biggerL ? l_mfarray.mfstructure : r_mfarray.mfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 
 //get stats for mfarray

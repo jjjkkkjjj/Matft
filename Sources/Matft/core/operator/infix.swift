@@ -20,8 +20,14 @@ public func *(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
 public func /(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
     return Matft.mfarray.div(l_mfarray, r_mfarray)
 }
-public func ==(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
+public func ===(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
     return Matft.mfarray.equal(l_mfarray, r_mfarray)
+}
+
+extension MfArray: Equatable{
+    public static func == (lhs: MfArray, rhs: MfArray) -> Bool {
+        return Matft.mfarray.allEqual(lhs, rhs)
+    }
 }
 
 infix operator *&: MultiplicationPrecedence //matmul

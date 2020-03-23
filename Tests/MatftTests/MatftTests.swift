@@ -15,7 +15,12 @@ final class MatftTests: XCTestCase {
         //view6()
         //view7()
         //view8()
-        view9()
+        //view9()
+        let a = Matft.mfarray.arange(start: 0, stop: 8, step: 1, shape: [2,2,2])
+        print(a[0~,0~,~~-1])
+        print(Matft.mfarray.arange(start: 7, stop: -1, step: -1, shape: [2,2,2]))
+        let k = a[0~,0~,~~-1] - Matft.mfarray.arange(start: 7, stop: -1, step: -1, shape: [2,2,2])
+        print(a[0~,0~,~~-1] == Matft.mfarray.arange(start: 7, stop: -1, step: -1, shape: [2,2,2]))
         /*
         let c = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10,10,10,10,10,10])
         let d = c.transpose(axes: [0,3,4,2,1,5])
@@ -26,7 +31,7 @@ final class MatftTests: XCTestCase {
         }*/
         //XCTAssertEqual(Matft().text, "Hello, World!")
     }
-
+    
     static var allTests = [
         ("testExample", testExample),
     ]
@@ -150,7 +155,9 @@ func view9(){
     let c = MfArray([2, 1, -3, 0])
     let d = MfArray([2.0, 1.01, -3.0, 0.0])
     
+    print(c === d)
     print(c == d)
     let e = MfArray([2.0, 1.0, -3.0, 0.0])
+    print(c === e)
     print(c == e)
 }

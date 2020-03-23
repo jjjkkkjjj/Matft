@@ -66,6 +66,15 @@ extension Matft.mfarray{
     public static func equal(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _equal_operation(l_mfarray, r_mfarray)
     }
+    /**
+        Check equality in element-wise, and then when all of elements are true, return true, otherwise false
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_mfarray: right mfarray
+    */
+    public static func allEqual(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> Bool{
+        return _equalAll_operation(l_mfarray, r_mfarray)
+    }
     
     //prefix
     /**
@@ -91,68 +100,67 @@ fileprivate func _binary_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _
     //precondition(l_mfarray.mftype == r_mfarray.mftype, "Two mfarray must be same mftype. but two mfarray having unsame mftype will be able to be calclulated in the future")
     
     
-    var bigger_mfarray = l_mfarray
-    var smaller_mfarray = r_mfarray
+    var l_mfarray = l_mfarray
+    var r_mfarray = r_mfarray
+    /*
     if l_mfarray.storedSize < r_mfarray.storedSize{
-        bigger_mfarray = r_mfarray
-        smaller_mfarray = l_mfarray
-    }
+        l_mfarray = r_mfarray
+        r_mfarray = l_mfarray
+    }*/
     
-    if bigger_mfarray.mftype != smaller_mfarray.mftype{
-        let rettype = MfType.priority(bigger_mfarray.mftype, smaller_mfarray.mftype)
-        if bigger_mfarray.mftype != rettype{
-            bigger_mfarray = bigger_mfarray.astype(rettype)
+    if l_mfarray.mftype != r_mfarray.mftype{
+        let rettype = MfType.priority(l_mfarray.mftype, r_mfarray.mftype)
+        if l_mfarray.mftype != rettype{
+            l_mfarray = l_mfarray.astype(rettype)
         }
         else{
-            smaller_mfarray = smaller_mfarray.astype(rettype)
+            r_mfarray = r_mfarray.astype(rettype)
         }
     }
     
-    if bigger_mfarray.shape != smaller_mfarray.shape{ // broadcast to bigger_mfarray
+    if l_mfarray.shape != r_mfarray.shape{ // broadcast to l_mfarray
         do{
-            smaller_mfarray = try smaller_mfarray.broadcast_to(shape: bigger_mfarray.shape)
+            if l_mfarray.size > r_mfarray.size{
+                r_mfarray = try r_mfarray.broadcast_to(shape: l_mfarray.shape)
+            }
+            else{
+                l_mfarray = try l_mfarray.broadcast_to(shape: r_mfarray.shape)
+            }
         }catch {//conversion error
             fatalError("cannot calculate binary operation due to broadcasting error")
         }
     }
-    //print(bigger_mfarray)
-    //return mfarray must be either row or column major
-    if smaller_mfarray.mfflags.column_contiguous{
-        bigger_mfarray = Matft.mfarray.conv_order(bigger_mfarray, mforder: .Column)
-    }
-    else{
-        bigger_mfarray = Matft.mfarray.conv_order(bigger_mfarray, mforder: .Row)
-    }
+    //print(l_mfarray)
     
-    let calctype = bigger_mfarray.mftype
+    let calctype = l_mfarray.mftype
     switch biop {
     case .add:
         switch MfType.storedType(calctype){
         case .Float:
-            return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vadd)
+            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
         case .Double:
-            return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vaddD)
+            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
         }
     case .sub:
         switch MfType.storedType(calctype){
         case .Float:
-            return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vsub)
+            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
         case .Double:
-            return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vsubD)
+            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD)
         }
     case .mul:
         switch MfType.storedType(calctype){
         case .Float:
-            return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vmul)
+            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul)
         case .Double:
-            return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vmulD)
+            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmulD)
         }
     case .div:
         switch MfType.storedType(calctype){
         case .Float:
-            return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vdiv)
+            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv)
         case .Double:
-            return biop_by_vDSP(bigger_mfarray, smaller_mfarray, vDSP_func: vDSP_vdivD)
+            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
         }
     default:
         fatalError()
@@ -496,4 +504,15 @@ fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
     }
     print(diff)*/
     return diff.astype(.Bool)
+}
+
+fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> Bool{
+    let diff = l_mfarray - r_mfarray
+    
+    // diff must be 0 if all of elements are same
+    guard let data = diff.astype(.Float).data as? [Float] else{
+        return false
+    }
+    
+    return data.allSatisfy{ $0 == Float.zero }
 }

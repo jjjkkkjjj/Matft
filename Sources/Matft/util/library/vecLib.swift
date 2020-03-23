@@ -22,7 +22,8 @@ internal func math_vv_by_vecLib<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: 
         }
     }
     
-    return MfArray(mfdata: newdata, mfstructure: mfarray.mfstructure)
+    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 
 internal typealias vDSP_1arg_vv_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
@@ -38,5 +39,6 @@ internal func math_1arg_vv_by_vecLib<T: MfStorable>(_ mfarray: MfArray, _ arg: U
         }
     }
     
-    return MfArray(mfdata: newdata, mfstructure: mfarray.mfstructure)
+    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }

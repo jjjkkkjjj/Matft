@@ -72,3 +72,11 @@ internal func get_storedSize(_ shapeptr: UnsafeMutableBufferPointer<Int>, _ stri
 internal func isReverse(_ stridesptr: UnsafeMutableBufferPointer<Int>) -> Bool{
     return stridesptr.contains{ $0 < 0 }
 }
+
+internal func copy_mfstructure(_ mfstructure: MfStructure) -> MfStructure{
+    return withDummyShapeStridesMBPtr(mfstructure._ndim){
+        shapeptr, stridesptr in
+        shapeptr.baseAddress!.assign(from: mfstructure._shape, count: mfstructure._ndim)
+        stridesptr.baseAddress!.assign(from: mfstructure._strides, count: mfstructure._ndim)
+    }
+}
