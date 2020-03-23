@@ -19,7 +19,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawPointer, mftype:
     
         switch mftype {
         case .Bool:
-            let ret = UnsafeMutableBufferPointer(start: ptrF, count: size).map{ $0 != 0 } as [Any]
+            let ret = UnsafeMutableBufferPointer(start: ptrF, count: size).map{ $0 != Float.zero } as [Any]
             
             return ret
         case .UInt8:

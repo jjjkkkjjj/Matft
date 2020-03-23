@@ -57,6 +57,16 @@ extension Matft.mfarray{
         return _matmul_operation(l_mfarray, r_mfarray)
     }
     
+    /**
+        Check equality in element-wise. Returned mfarray's type will be bool.
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_mfarray: right mfarray
+    */
+    public static func equal(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+        return _equal_operation(l_mfarray, r_mfarray)
+    }
+    
     //prefix
     /**
        Element-wise negativity
@@ -89,7 +99,13 @@ fileprivate func _binary_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _
     }
     
     if bigger_mfarray.mftype != smaller_mfarray.mftype{
-        smaller_mfarray = smaller_mfarray.astype(bigger_mfarray.mftype)
+        let rettype = MfType.priority(bigger_mfarray.mftype, smaller_mfarray.mftype)
+        if bigger_mfarray.mftype != rettype{
+            bigger_mfarray = bigger_mfarray.astype(rettype)
+        }
+        else{
+            smaller_mfarray = smaller_mfarray.astype(rettype)
+        }
     }
     
     if bigger_mfarray.shape != smaller_mfarray.shape{ // broadcast to bigger_mfarray
@@ -442,4 +458,42 @@ fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: ino
         //conversion error
         fatalError("cannot calculate matrix multiplication due to broadcasting error. hint: For all dim < ndim-2, left.shape[dim] or right.shape[dim] is one, or left.shape[dim] == right.shape[dim]")
     }
+}
+
+
+fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+    let diff = l_mfarray - r_mfarray
+    //print(diff)
+    
+    switch diff.storedType {
+    case .Float:
+        diff.withDataUnsafeMBPtrT(datatype: Float.self){
+            dataptr in
+            var newptr = dataptr.map{ $0 == Float.zero ? Float(1) : Float.zero }
+            newptr.withUnsafeMutableBufferPointer{
+                dataptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: diff.storedSize)
+            }
+        }
+    case .Double:
+        diff.withDataUnsafeMBPtrT(datatype: Double.self){
+            dataptr in
+            var newptr = dataptr.map{ $0 == Double.zero ? Double(1) : Double.zero }
+            newptr.withUnsafeMutableBufferPointer{
+                dataptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: diff.storedSize)
+            }
+        }
+    }
+    
+    /*
+    let diff = l_mfarray - r_mfarray
+    print(diff)
+    diff.withDataUnsafeMRPtr{
+        dataptr in
+        var bytes = UnsafeMutableRawBufferPointer(start: dataptr, count: diff.storedByteSize).map{ ~$0 }
+        bytes.withUnsafeMutableBufferPointer{
+            dataptr.copyMemory(from: $0.baseAddress!, byteCount: diff.storedByteSize)
+        }
+    }
+    print(diff)*/
+    return diff.astype(.Bool)
 }

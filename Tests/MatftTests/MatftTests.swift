@@ -139,9 +139,18 @@ func view8(){
 }
 
 func view9(){
+    
     let a = MfArray([true, false])
     print(a)
     //let b = MfArray([1, 3, true])
     //> Error!
+    let b = MfArray([0, 1, -2]).astype(.Bool)
+    print(b)
     
+    let c = MfArray([2, 1, -3, 0])
+    let d = MfArray([2.0, 1.01, -3.0, 0.0])
+    
+    print(c == d)
+    let e = MfArray([2.0, 1.0, -3.0, 0.0])
+    print(c == e)
 }

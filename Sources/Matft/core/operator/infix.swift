@@ -9,19 +9,22 @@
 import Foundation
 
 public func +(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
-    Matft.mfarray.add(l_mfarray, r_mfarray)
+    return Matft.mfarray.add(l_mfarray, r_mfarray)
 }
 public func -(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
-    Matft.mfarray.sub(l_mfarray, r_mfarray)
+    return Matft.mfarray.sub(l_mfarray, r_mfarray)
 }
 public func *(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
-    Matft.mfarray.mul(l_mfarray, r_mfarray)
+    return Matft.mfarray.mul(l_mfarray, r_mfarray)
 }
 public func /(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
-    Matft.mfarray.div(l_mfarray, r_mfarray)
+    return Matft.mfarray.div(l_mfarray, r_mfarray)
+}
+public func ==(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
+    return Matft.mfarray.equal(l_mfarray, r_mfarray)
 }
 
 infix operator *&: MultiplicationPrecedence //matmul
 public func *&(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
-    Matft.mfarray.matmul(l_mfarray, r_mfarray)
+    return Matft.mfarray.matmul(l_mfarray, r_mfarray)
 }

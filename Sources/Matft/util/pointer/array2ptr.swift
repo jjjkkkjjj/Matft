@@ -84,7 +84,7 @@ internal func flattenarray2UnsafeMRPtr_viaForD(_ flattenarray: inout [Any], mfty
     let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
     var mftype = MfType.None
     //UInt
-    if var flattenarray = flattenarray as? [UInt8]{
+    if let flattenarray = flattenarray as? [UInt8]{
         flattenarray.withUnsafeBufferPointer{
             unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vfltu8, flattenarray.count)
         }
