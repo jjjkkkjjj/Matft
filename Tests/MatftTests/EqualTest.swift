@@ -1,5 +1,6 @@
 import XCTest
-@testable import Matft
+//@testable import Matft
+import Matft
 
 final class EqualTests: XCTestCase {
     
@@ -67,10 +68,8 @@ final class EqualTests: XCTestCase {
                                              [[true,true],
                                               [true,true]]]))
             
-            print(a[0~,0~,~~-1])
-            print(Matft.mfarray.arange(start: 7, stop: -1, step: -1, shape: [2,2,2]))
-            
-            XCTAssertEqual(a[0~,0~,~~-1] === Matft.mfarray.arange(start: 7, stop: -1, step: -1, shape: [2,2,2]), MfArray([[[false,false],
+            XCTAssertEqual(a[0~,0~,~~-1] === Matft.mfarray.arange(start: 7, stop: -1, step: -1, shape: [2,2,2]),
+                                    MfArray([[[false,false],
                                               [false,false]],
             
                                              [[false,false],

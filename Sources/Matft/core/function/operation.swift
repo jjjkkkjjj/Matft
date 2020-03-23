@@ -108,27 +108,23 @@ fileprivate func _binary_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _
         r_mfarray = l_mfarray
     }*/
     
-    if l_mfarray.mftype != r_mfarray.mftype{
-        let rettype = MfType.priority(l_mfarray.mftype, r_mfarray.mftype)
-        if l_mfarray.mftype != rettype{
-            l_mfarray = l_mfarray.astype(rettype)
-        }
-        else{
-            r_mfarray = r_mfarray.astype(rettype)
-        }
+    let rettype = MfType.priority(l_mfarray.mftype, r_mfarray.mftype)
+    if l_mfarray.mftype != rettype{
+        l_mfarray = l_mfarray.astype(rettype)
+    }
+    else if r_mfarray.mftype != rettype{
+        r_mfarray = r_mfarray.astype(rettype)
     }
     
-    if l_mfarray.shape != r_mfarray.shape{ // broadcast to l_mfarray
-        do{
-            if l_mfarray.size > r_mfarray.size{
-                r_mfarray = try r_mfarray.broadcast_to(shape: l_mfarray.shape)
-            }
-            else{
-                l_mfarray = try l_mfarray.broadcast_to(shape: r_mfarray.shape)
-            }
-        }catch {//conversion error
-            fatalError("cannot calculate binary operation due to broadcasting error")
+    do{
+        if l_mfarray.size > r_mfarray.size{
+            r_mfarray = try r_mfarray.broadcast_to(shape: l_mfarray.shape)
         }
+        else if r_mfarray.size < l_mfarray.size{
+            l_mfarray = try l_mfarray.broadcast_to(shape: r_mfarray.shape)
+        }
+    }catch {//conversion error
+        fatalError("cannot calculate binary operation due to broadcasting error")
     }
     //print(l_mfarray)
     

@@ -47,6 +47,7 @@ So, if you input big number to MfArray, it may be cause to overflow or strange r
   ```swift
 	public enum MfType: Int{
       case None // Unsupportted
+    	case Bool
       case UInt8
       case UInt16
       case UInt32
@@ -605,13 +606,13 @@ let d = c.transpose(axes: [0,3,4,2,1,5])
 let e = c.T
 
 self.measure {
-  let e = d+e
+  let _ = d+e
 }
 /*
-Case '-[MatftTests.MatftTests testExample]' measured [Time, seconds] average: 0.007, relative standard deviation: 15.341%, values: [0.009625, 0.008172, 0.007529, 0.006696, 0.006418, 0.006249, 0.006222, 0.006284, 0.006348, 0.006354],
+Case '-[MatftTests.MatftTests testExample]' measured [Time, seconds] average: 0.005, relative standard deviation: 15.116%, values: [0.005595, 0.003951, 0.004055, 0.004021, 0.005191, 0.004023, 0.004660, 0.003965, 0.005272, 0.005776]
 */
 ```
-Numpy was 2.5 tmes faster than matft...
+Numpy was 1.15 tmes faster than matft...
 
 ※Swift's performance test was conducted in release mode
 
@@ -625,8 +626,8 @@ a = np.arange(10**6).reshape((10,10,10,10,10,10))
 b = a.transpose((0,3,4,2,1,5))
 c = a.T
 #timeit.timeit("b+c", repeat=10, globals=globals())
-%timeit -n 10 a+b
-###2.81 ms ± 327 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+%timeit -n 10 b+c
+###4.32 ms ± 988 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 ```
 
 

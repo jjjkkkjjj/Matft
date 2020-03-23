@@ -37,27 +37,20 @@ internal func biop_unsafePtrT<T: MfStorable>(lptr: UnsafePointer<T>, _ lstride: 
 }
 
 internal func biop_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, vDSP_func: vDSP_biop_func<T>) -> MfArray{
-    var biggerL = true // flag whether l is bigger than r
+    var biggerL: Bool // flag whether l is bigger than r
     var l_mfarray = l_mfarray
-    var r_mfarray = r_mfarray
     //return mfarray must be either row or column major
-    if l_mfarray.storedSize > r_mfarray.storedSize{
-        if r_mfarray.mfflags.column_contiguous{
-            l_mfarray = Matft.mfarray.conv_order(l_mfarray, mforder: .Column)
-        }
-        else{
-            l_mfarray = Matft.mfarray.conv_order(l_mfarray, mforder: .Row)
-        }
-    }
-    else{
-        if l_mfarray.mfflags.column_contiguous{
-            r_mfarray = Matft.mfarray.conv_order(r_mfarray, mforder: .Column)
-        }
-        else{
-            r_mfarray = Matft.mfarray.conv_order(r_mfarray, mforder: .Row)
-        }
+    if r_mfarray.mfflags.column_contiguous || r_mfarray.mfflags.row_contiguous{
         biggerL = false
     }
+    else if l_mfarray.mfflags.column_contiguous || l_mfarray.mfflags.row_contiguous{
+        biggerL = true
+    }
+    else{
+        l_mfarray = Matft.mfarray.conv_order(l_mfarray, mforder: .Row)
+        biggerL = true
+    }
+    
     
     let newdata = withDummyDataMRPtr(l_mfarray.mftype, storedSize: l_mfarray.storedSize){
         dstptr in
@@ -69,7 +62,7 @@ internal func biop_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfA
                 rptr in
                 //print(l_mfarray, r_mfarray)
                 //print(l_mfarray.storedSize, r_mfarray.storedSize)
-                if biggerL{
+                if biggerL{// l is bigger
                     for vDSPPrams in OptOffsetParams(bigger_mfarray: l_mfarray, smaller_mfarray: r_mfarray){
                         /*
                         let bptr = bptr.baseAddress! + vDSPPrams.b_offset
@@ -79,7 +72,7 @@ internal func biop_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfA
                         //print(vDSPPrams.b_offset,vDSPPrams.b_stride,vDSPPrams.s_offset, vDSPPrams.s_stride)
                     }
                 }
-                else{
+                else{// r is bigger
                     for vDSPPrams in OptOffsetParams(bigger_mfarray: r_mfarray, smaller_mfarray: l_mfarray){
                         biop_unsafePtrT(lptr: lptr.baseAddress! + vDSPPrams.s_offset, vDSPPrams.s_stride, rptr: rptr.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptr: dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSPPrams.blocksize, vDSP_func)
                         //print(vDSPPrams.b_offset,vDSPPrams.b_stride,vDSPPrams.s_offset, vDSPPrams.s_stride)
