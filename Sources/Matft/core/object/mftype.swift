@@ -10,6 +10,7 @@ import Foundation
 
 public enum MfType: Int{
     case None
+    case Bool
     case UInt8
     case UInt16
     case UInt32
@@ -26,6 +27,8 @@ public enum MfType: Int{
     
     static internal func mftype(value: Any) -> MfType{
         switch value{
+        case is Bool:
+            return .Bool
         case is UInt8:
             return .UInt8
         case is UInt16:

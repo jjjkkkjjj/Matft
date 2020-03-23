@@ -18,6 +18,10 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawPointer, mftype:
         let ptrF = ptr.bindMemory(to: Float.self, capacity: size)
     
         switch mftype {
+        case .Bool:
+            let ret = UnsafeMutableBufferPointer(start: ptrF, count: size).map{ $0 != 0 } as [Any]
+            
+            return ret
         case .UInt8:
             let ptrui8 = create_unsafeMPtrT(type: UInt8.self, count: size)
             unsafePtrT2UnsafeMPtrU(ptrF, ptrui8, vDSP_vfixru8, size)

@@ -15,14 +15,15 @@ final class MatftTests: XCTestCase {
         //view6()
         //view7()
         //view8()
-        
+        view9()
+        /*
         let c = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10,10,10,10,10,10])
         let d = c.transpose(axes: [0,3,4,2,1,5])
         let e = c.T
         
         self.measure {
             let e = d+e
-        }
+        }*/
         //XCTAssertEqual(Matft().text, "Hello, World!")
     }
 
@@ -135,4 +136,12 @@ func view8(){
     let ainv = try! Matft.mfarray.linalg.inv(a)
     print(ainv)
     print(a*&ainv)
+}
+
+func view9(){
+    let a = MfArray([true, false])
+    print(a)
+    //let b = MfArray([1, 3, true])
+    //> Error!
+    
 }

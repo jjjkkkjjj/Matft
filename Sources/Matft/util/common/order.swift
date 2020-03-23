@@ -9,15 +9,15 @@
 import Foundation
 import Accelerate
 
-internal func flatten_array(ptr: UnsafeBufferPointer<Any>, mftype: inout MfType, mforder: inout MfOrder) -> (flatten: [Any], shape: [Int]){
+internal func flatten_array(ptr: UnsafeBufferPointer<Any>, mforder: inout MfOrder) -> (flatten: [Any], shape: [Int]){
     var shape: [Int] = [ptr.count]
     var queue = ptr.compactMap{ $0 }
     
     switch mforder {
     case .Row:
-        return (_get_flatten_row_major(queue: &queue, shape: &shape, mftype: &mftype), shape)
+        return (_get_flatten_row_major(queue: &queue, shape: &shape), shape)
     case .Column:
-        return (_get_flatten_column_major(queue: &queue, shape: &shape, mftype: &mftype), shape)
+        return (_get_flatten_column_major(queue: &queue, shape: &shape), shape)
     /*case .None:
         fatalError("Select row or column as MfOrder.")*/
     }
@@ -25,7 +25,7 @@ internal func flatten_array(ptr: UnsafeBufferPointer<Any>, mftype: inout MfType,
 
 //row major order
 //breadth-first search
-fileprivate func _get_flatten_row_major(queue: inout [Any], shape: inout [Int], mftype : inout MfType) -> [Any]{
+fileprivate func _get_flatten_row_major(queue: inout [Any], shape: inout [Int]) -> [Any]{
     precondition(shape.count == 1, "shape must have only one element")
     var cnt = 0 // count up the number that value is extracted from queue for while statement, reset 0 when iteration number reaches size
     var size = queue.count
@@ -45,14 +45,11 @@ fileprivate func _get_flatten_row_major(queue: inout [Any], shape: inout [Int], 
             else{// check if same dim is or not
                 if shape[axis] != elements.count{
                     shape = shape.dropLast()
-                    mftype = .Object
                 }
             }
             cnt += 1
         }
         else{ // value was detected. this means queue in this case becomes flatten array
-            let _mftype = MfType.mftype(value: elements)
-            mftype = MfType.priority(mftype, _mftype)
             break
         }
         //remove first element from array
@@ -68,11 +65,13 @@ fileprivate func _get_flatten_row_major(queue: inout [Any], shape: inout [Int], 
 }
 
 //column major order
-fileprivate func _get_flatten_column_major(queue: inout [Any], shape: inout [Int], mftype: inout MfType) -> [Any]{
+fileprivate func _get_flatten_column_major(queue: inout [Any], shape: inout [Int]) -> [Any]{
     //precondition(shape.count == 1, "shape must have only one element")
     var cnt = 0 // count up the number that value is extracted from queue for while statement, reset 0 when iteration number reaches size
     //var axis = 0//the axis in searching
     let dim = queue.count // given
+    
+    var objectFlag = false
     
     var newqueue: [Any] = []
     while queue.count > 0{
@@ -87,7 +86,7 @@ fileprivate func _get_flatten_column_major(queue: inout [Any], shape: inout [Int
             else if cnt < dim{// check if same dim is or not
                 if shape.last! != elements.count{
                     shape = shape.dropLast()
-                    mftype = .Object
+                    objectFlag = true
                     break
                 }
             }
@@ -101,17 +100,15 @@ fileprivate func _get_flatten_column_major(queue: inout [Any], shape: inout [Int
             
         }
         else{ // value was detected. this means queue in this case becomes flatten array
-            let _mftype = MfType.mftype(value: elements)
-            mftype = MfType.priority(mftype, _mftype)
             return queue
         }
         
         let _ = queue.removeFirst()
     }
     
-    if mftype != .Object{
+    if !objectFlag{
         //recurrsive
-        return _get_flatten_column_major(queue: &newqueue, shape: &shape, mftype: &mftype)
+        return _get_flatten_column_major(queue: &newqueue, shape: &shape)
     }
     else{
         return newqueue
