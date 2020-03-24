@@ -1,9 +1,6 @@
-# ignore old files
-ignored
 
-
-# Created by https://www.gitignore.io/api/swift,xcode,macos,cocoapods
-# Edit at https://www.gitignore.io/?templates=swift,xcode,macos,cocoapods
+# Created by https://www.gitignore.io/api/xcode,macos,swift,cocoapods
+# Edit at https://www.gitignore.io/?templates=xcode,macos,swift,cocoapods
 
 ### CocoaPods ###
 ## CocoaPods GitIgnore Template
@@ -140,20 +137,5 @@ iOSInjectionProject/
 ### Xcode Patch ###
 **/xcshareddata/WorkspaceSettings.xcsettings
 
-### Carthage ###
-# Carthage
-#
-# Add this line if you want to avoid checking in source code from Carthage dependencies.
-# Carthage/Checkouts
-
-Carthage/Build
-
-### SwiftPackageManager ###
-Packages
-.build/
-xcuserdata
-DerivedData/
-*.xcodeproj
-
-# End of https://www.gitignore.io/api/swift,xcode,macos,cocoapods
+# End of https://www.gitignore.io/api/xcode,macos,swift,cocoapods
 

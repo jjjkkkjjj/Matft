@@ -36,6 +36,15 @@
   brew install carthage
   ```
   
+- dynamic frameworkの用意
+  →〜.xcodeprojの作成
+
+  ```bash
+  swift package generate-xcodeproj
+  ```
+
+- **面倒なのでしない！**
+
 - SchemeをShareする
 
   Product > Scheme > Manage Schemes
@@ -50,6 +59,83 @@
 - 問題なくできていたら，gitでタグ付けすればOK
 
   
+
+## CocoaPods
+
+- 開発者
+
+  - podspecファイル作成
+
+    ```bash
+    pod spec create Matft
+    ```
+
+  - 編集
+
+    ※`spec.version`は随時更新する必要ありそう
+
+    ```bash
+    Pod::Spec.new do |spec|
+      spec.name           = "Matft"
+      spec.version        = "0.1.1"
+      spec.summary        = "Numpy-like matrix operation library in swift"
+      spec.homepage       = "https://github.com/jjjkkkjjj/Matft"
+      spec.license        = { :type => 'BSD-3-Clause', :file => 'LICENSE' }
+      spec.author         = "jjjkkkjjj"
+      spec.platform       = :ios, "10.0"
+      spec.pod_target_xcconfig  = { 'SWIFT_VERSION' => '4.0' }
+      spec.source         = { :git => "https://github.com/jjjkkkjjj/Matft.git", :tag => "#{spec.version}" }
+      spec.source_files   = "Sources/**/*"
+    end
+    ```
+
+  - 確認
+
+    ```bash
+    pod lib lint
+    ```
+
+  - 登録（初回のみ）
+
+    ```bash
+    pod trunk register ~@mail 'name'
+    ```
+
+    →メールが届くので，認証する
+
+  - 更新
+
+    ```bash
+    pod trunk push Matft.podspec --allow-warnings
+    ```
+
+    ※ミスった場合は一回消す
+
+    ```bash
+    pod trunk delete Matft x.x.x(version number)
+    ```
+
+- 使用者
+
+  - Podfileファイル作成
+
+    ```bash
+    pod init
+    ```
+
+  - 以下追記
+
+    ```bash
+    target 'project' do
+      pod 'Matft'
+    end
+    ```
+
+  - インストール
+
+    ```bash
+    pod install
+    ```
 
 ## README.md
 
@@ -68,3 +154,6 @@
   https://qiita.com/am10/items/72dbc511efc512fc065a
 
   https://qiita.com/hironytic/items/09a4c16857b409c17d2c
+  
+- Carthage
+  https://qiita.com/mokumoku/items/340e089f34a284c0532a

@@ -643,6 +643,8 @@ c = a.T
   - File >Swift Packages >Update to Latest Package versions
     ![update](https://user-images.githubusercontent.com/16914891/77145225-4367c180-6acb-11ea-98ea-8d7a5a2a669f.png)
 
+<!--
+
 ### Carthage
 
 - Set Cartfile
@@ -654,3 +656,28 @@ c = a.T
 
 - Import Matft.framework made by above process to your project
 
+-->
+
+### CocoaPods
+
+- Create Podfile (Skip if you have already done)
+
+  ```bash
+  pod init
+  ```
+
+- Write `pod 'Matft'` in Podfile such like below
+
+  ```bash
+  target 'your project' do
+    pod 'Matft'
+  end
+  ```
+
+- Install Matft
+
+  ```bash
+  pod install
+  ```
+
+  

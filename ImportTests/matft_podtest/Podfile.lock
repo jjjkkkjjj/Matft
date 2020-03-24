@@ -1,0 +1,16 @@
+PODS:
+  - Matft (0.1.1)
+
+DEPENDENCIES:
+  - Matft
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - Matft
+
+SPEC CHECKSUMS:
+  Matft: dc6419f7dbf36f4d0c998698f6a83a8a45a775fc
+
+PODFILE CHECKSUM: 9e1a24f166f285522e1a3aa3cdc8f845d5afc295
+
+COCOAPODS: 1.7.5
