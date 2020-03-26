@@ -170,6 +170,38 @@ extension Matft.mfarray{
         return newarray
     }
     /**
+       Create mfarray expanded dimension for given axis
+       - parameters:
+            - mfarray: mfarray
+            - axes: the list of expanded axes
+    */
+    public static func expand_dims(_ mfarray: MfArray, axes: [Int]) -> MfArray{
+        let newarray = mfarray.shallowcopy()
+        // reorder descending
+        let axes = axes.sorted{ $0 > $1 }
+        var newshape = mfarray.shape
+        var newstrides = mfarray.strides
+        for axis in axes{
+            newshape.insert(1, at: axis)
+            newstrides.insert(0, at: axis)
+        }
+        
+        let newndim = newshape.count
+        
+        let newmfstructure = withDummyShapeStridesMPtr(newndim){
+            shapeptr, stridesptr in
+            newshape.withUnsafeMutableBufferPointer{
+                shapeptr.moveAssign(from: $0.baseAddress!, count: newndim)
+            }
+            newstrides.withUnsafeMutableBufferPointer{
+                stridesptr.moveAssign(from: $0.baseAddress!, count: newndim)
+            }
+        }
+        newarray.mfstructure = newmfstructure
+        
+        return newarray
+    }
+    /**
        Create mfarray removed for 1-dimension
        - parameters:
             - mfarray: mfarray
@@ -223,6 +255,38 @@ extension Matft.mfarray{
         // i wanna implement no copy version too
         */
     }
+    /**
+       Create mfarray removed for 1-dimension
+       - parameters:
+            - mfarray: mfarray
+            - axes: the list of  removed axes
+    */
+    public static func squeeze(_ mfarray: MfArray, axes: [Int]) -> MfArray{
+        // reoder descending
+        let axes = axes.sorted{ $0 > $1 }
+        var newshape = mfarray.shape
+        var newstrides = mfarray.strides
+        for axis in axes{
+            precondition(newshape.remove(at: axis) == 1, "cannot select an axis to squeeze out which has size not equal to one")
+            newstrides.remove(at: axis)
+        }
+        
+        
+        let newarray = mfarray.shallowcopy()
+        let newndim = newshape.count
+        let newmfstructure = withDummyShapeStridesMPtr(newndim){
+            shapeptr, stridesptr in
+            newshape.withUnsafeMutableBufferPointer{
+                shapeptr.moveAssign(from: $0.baseAddress!, count: newndim)
+            }
+            newstrides.withUnsafeMutableBufferPointer{
+                stridesptr.moveAssign(from: $0.baseAddress!, count: newndim)
+            }
+        }
+        newarray.mfstructure = newmfstructure
+        return newarray
+    }
+    
     /**
        Create broadcasted mfarray.
        - parameters:
