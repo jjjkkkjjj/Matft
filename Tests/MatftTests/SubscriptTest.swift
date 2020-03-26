@@ -56,6 +56,14 @@ final class SubscriptTests: XCTestCase {
                                             [[ 2, 20, 38],
                                              [ 8, 26, 44],
                                              [14, 32, 50]]], mftype: .Double))
+            XCTAssertNotEqual(a[~-1], MfArray([[[ 0, 18, 36],
+                                             [ 6, 24, 42],
+                                             [12, 30, 48]],
+
+                                            [[ 2, 20, 38],
+                                             [ 8, 2, 44],
+                                             [14, 32, 50]]], mftype: .Double))
+            
             XCTAssertEqual(a[0~,0~,~-1], MfArray([[[ 0, 18],
                                                    [ 6, 24],
                                                    [12, 30]],
@@ -97,6 +105,14 @@ final class SubscriptTests: XCTestCase {
                                                         [[[2]],
 
                                                          [[2]]]]))
+            XCTAssertNotEqual(a[0~,0~,~1~-1,~~3], MfArray([[[2],
+
+                                                            [2]],
+
+
+                                                           [[2],
+
+                                                            [2]]]))
             XCTAssertEqual(a[~1, ~~-2], MfArray([[[[ 2,  5, -1],
                                                    [ 3,  1,  0]]]]))
         }

@@ -4,6 +4,7 @@ import XCTest
 public func allTests() -> [XCTestCaseEntry] {
     return [
         testCase(MatftTests.allTests),
+        testCase(Ma)
     ]
 }
 #endif

@@ -12,8 +12,8 @@ import Accelerate
 extension MfArray{
     public subscript(indices: Int...) -> Any{
         get {
-            var mfslices = indices.map{ MfSlice(start: $0, to: $0 + 1) }
-            let ret = self._get_mfarray(mfslices: &mfslices)
+            var indices: [Any] = indices
+            let ret = self._get_mfarray(indices: &indices)
 
             if let scalar = ret.scalar{
                 return scalar
@@ -23,74 +23,35 @@ extension MfArray{
             }
         }
         set(newValue){
-            var mfslices = indices.map{ MfSlice(start: $0, to: $0 + 1) }
+            var indices: [Any] = indices
             
             if let newValue = newValue as? MfArray{
-                return self._set_mfarray(mfslices: &mfslices, newValue: newValue)
+                return self._set_mfarray(indices: &indices, newValue: newValue)
             }
             else{
-                return self._set_mfarray(mfslices: &mfslices, newValue: MfArray([newValue]))
+                return self._set_mfarray(indices: &indices, newValue: MfArray([newValue]))
             }
         }
     }
     public subscript(indices: MfSlice...) -> MfArray{
         get{
-            var mfslices = indices
-            return self._get_mfarray(mfslices: &mfslices)
+            var indices: [Any] = indices
+            return self._get_mfarray(indices: &indices)
         }
         set(newValue){
-            var mfslices = indices
-            return self._set_mfarray(mfslices: &mfslices, newValue: newValue)
+            var indices: [Any] = indices
+            return self._set_mfarray(indices: &indices, newValue: newValue)
         }
     }
-    //public subscript<T: MfSubscriptable>(indices: T...) -> MfArray{
+    //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
     public subscript(indices: Any...) -> MfArray{
         get{
-            var axes: [Int] = []
-            var mfslices: [MfSlice] = []
-            for (axis, index) in indices.enumerated(){
-                if let index = index as? Int{
-                    mfslices.append(MfSlice(start: index, to: index + 1))
-                }
-                else if let index = index as? MfSlice{
-                    mfslices.append(index)
-                }
-                else if let index = index as? SubscriptOps{
-                    switch index {
-                    case .newaxis:
-                        axes.append(axis)
-                        mfslices.append(MfSlice())
-                    }
-                }
-                else{
-                    fatalError("\(index) is not subscriptable value")
-                }
-            }
-            
-            if axes.count > 0{
-                return self._get_mfarray(mfslices: &mfslices, newaxes: axes)
-            }
-            else{
-                return self._get_mfarray(mfslices: &mfslices)
-            }
+            var indices = indices
+            return self._get_mfarray(indices: &indices)
         }
         set(newValue){
-            var mfslices: [MfSlice] = []
-            for index in indices{
-                if let index = index as? Int{
-                    mfslices.append(MfSlice(start: index, to: index + 1))
-                }
-                else if let index = index as? MfSlice{
-                    mfslices.append(index)
-                }
-                else if let _ = index as? SubscriptOps{
-                    fatalError("SubscriptOps must not be passed to setter")
-                }
-                else{
-                    fatalError("\(index) is not subscriptable value")
-                }
-            }
-            self._set_mfarray(mfslices: &mfslices, newValue: newValue)
+            var indices = indices
+            self._set_mfarray(indices: &indices, newValue: newValue)
         }
     }
     
@@ -193,52 +154,57 @@ extension MfArray{
         
     }*/
     //Use opaque?
-    private func _get_mfarray(mfslices: inout [MfSlice], newaxes: [Int]? = nil) -> MfArray{
-        precondition(mfslices.count <= self.ndim, "cannot return value because given indices were too many")
-        var mfarray = self
-        if let newaxes = newaxes{
-            //note that newaxes has already sorted
-            for axis in newaxes.reversed(){
-                mfarray = Matft.mfarray.expand_dims(mfarray, axis: axis)
+    private func _get_mfarray(indices: inout [Any]) -> MfArray{
+        precondition(indices.count <= self.ndim, "cannot return value because given indices were too many")
+
+        // supplement insufficient slices
+        if indices.count < self.ndim{
+            for _ in 0..<self.ndim - indices.count{
+                indices.append(MfSlice())
             }
         }
         
-        if mfslices.count < mfarray.ndim{
-            for _ in 0..<mfarray.ndim - mfslices.count{
-                mfslices.append(MfSlice())
-            }
-        }
+        var orig_axis = 0
+        var new_axis = 0
+        var newshape: [Int] = []
+        var newstrides: [Int] = []
+        var newsize = 1
         
         var offset = 0
-        let newstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
-            newshapeptr, newstridesptr in
-            mfarray.withShapeStridesUnsafeMBPtr{
-                orig_shapeptr, orig_stridesptr in
-                //copy strides
-                newstridesptr.baseAddress!.assign(from: orig_stridesptr.baseAddress!, count: mfarray.ndim)
-                var newsize = 1
-                //Indexing ref: https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
-                for (axis, mfslice) in mfslices.enumerated(){
-                    let orig_dim = orig_shapeptr[axis]
+        self.withShapeStridesUnsafeMBPtr{
+        orig_shapeptr, orig_stridesptr in
+            //Indexing ref: https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
+            while orig_axis < self.ndim {
+                if var index = indices[orig_axis] as? Int { // normal indexing
+                    let orig_dim = orig_shapeptr[orig_axis]
+                    index = index >= 0 ? index : index + orig_dim
+                    precondition(0 <= index && index < orig_dim, "\(index) is out of bounds for axis \(orig_axis) with \(orig_dim)")
+                    
+                    offset += index * orig_stridesptr[orig_axis]
+                    orig_axis += 1 // not move
+                    new_axis += 0
+                }
+                else if let mfslice = indices[orig_axis] as? MfSlice{// slicing
+                    let orig_dim = orig_shapeptr[orig_axis]
                     //default value is 0(if by >= 0), dim - 1(if by < 0)
                     var startIndex = mfslice.start ?? (mfslice.by >= 0 ? 0 : orig_dim - 1)
                     //default value is dim(if by >= 0), -dim - 1(if by < 0)
                     var toIndex = mfslice.to ?? (mfslice.by >= 0 ? orig_dim : -orig_dim - 1)
                     var by = mfslice.by
                     /*
-                     align with proper value
-                     by > 0
-                     startIndex <= -orig_dim ==> 0
-                     startIndex > orig_dim ==> orig_dim
-                     orig_dim < toIndex ==> orig_dim
-                     toIndex <= -orig_dim ==> 0
-                     
-                     by < 0
-                     startIndex < -orig_dim ==> -orig_dim-1
-                     startIndex > orig_dim ==> orig_dim
-                     orig_dim < toIndex ==> orig_dim
-                     toIndex < -orig_dim ==> -orig_dim-1
-                     */
+                    align with proper value
+                    by > 0
+                    startIndex <= -orig_dim ==> 0
+                    startIndex > orig_dim ==> orig_dim
+                    orig_dim < toIndex ==> orig_dim
+                    toIndex <= -orig_dim ==> 0
+                    
+                    by < 0
+                    startIndex < -orig_dim ==> -orig_dim-1
+                    startIndex > orig_dim ==> orig_dim
+                    orig_dim < toIndex ==> orig_dim
+                    toIndex < -orig_dim ==> -orig_dim-1
+                    */
                     if by >= 0{
                         if startIndex <= -orig_dim{
                             startIndex = 0
@@ -267,36 +233,72 @@ extension MfArray{
                             toIndex = -orig_dim - 1
                         }
                     }
-                    
+                     
                     // convert negative index to proper positive index
                     startIndex = startIndex >= 0 ? startIndex : orig_dim + startIndex
                     toIndex = toIndex >= 0 ? toIndex : orig_dim + toIndex
-                   
+                    
                     var nsteps = (toIndex - startIndex) / mfslice.by + (toIndex - startIndex) % mfslice.by
                     if nsteps <= 0{
                         nsteps = 0
                         by = 1
                         startIndex = 0
                     }
+                     
+                    newshape.append(min(nsteps, orig_dim))
+                    newstrides.append(orig_stridesptr[orig_axis] * by)
+                    newsize *= newshape.last!
+                    offset += startIndex * orig_stridesptr[orig_axis]
                     
-                    newshapeptr[axis] = min(nsteps, orig_dim)
-                    newstridesptr[axis] *= by
-                    newsize *= newshapeptr[axis]
-                    offset += startIndex * orig_stridesptr[axis]
-                    
+                    orig_axis += 1
+                    new_axis += 1
                 }
+                else if let subop = indices[orig_axis] as? SubscriptOps{// expand dim
+                    switch subop {
+                    case .newaxis:
+                        newshape.append(1)
+                        newstrides.append(0)
+                    /*
+                    default:
+                        fatalError("\(subop) is invalid in getter")*/
+                    }
+                    
+                    orig_axis += 0 // not move
+                    new_axis += 1
+                }
+                else{
+                    fatalError("\(indices[orig_axis]) is not subscriptable value")
                 }
             }
+        }
+        let newndim = newshape.count
         
-        
+        let newstructure = withDummyShapeStridesMBPtr(newndim){
+            newshapeptr, newstridesptr in
+            //move shape
+            newshape.withUnsafeMutableBufferPointer{
+                newshapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: newndim)
+            }
+            
+            //move strides
+            newstrides.withUnsafeMutableBufferPointer{
+                newstridesptr.baseAddress!.assign(from: $0.baseAddress!, count: newndim)
+            }
+        }
         //newarray.mfdata._storedSize = get_storedSize(newarray.shapeptr, newarray.stridesptr)
         //print(newarray.shape, newarray.mfdata._size, newarray.mfdata._storedSize)
-        return MfArray(base: mfarray, mfstructure: newstructure, offset: offset)
+        return MfArray(base: self, mfstructure: newstructure, offset: offset)
     }
     
-    private func _set_mfarray(mfslices: inout [MfSlice], newValue: MfArray){
+    private func _set_mfarray(indices: inout [Any], newValue: MfArray){
+        for index in indices{
+            if let _ = index as? SubscriptOps{
+                fatalError("SubscriptOps must not be passed to setter")
+            }
+        }
+        
         //note that this function is alike _binary_operation
-        let array = self._get_mfarray(mfslices: &mfslices)
+        let array = self._get_mfarray(indices: &indices)
         var newValue = newValue
 
         if array.mftype != newValue.mftype{

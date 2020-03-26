@@ -505,6 +505,10 @@ fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
 fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> Bool{
     let diff = l_mfarray - r_mfarray
     
+    if l_mfarray.shape != r_mfarray.shape{
+        return false
+    }
+    
     // diff must be 0 if all of elements are same
     guard let data = diff.astype(.Float).data as? [Float] else{
         return false
