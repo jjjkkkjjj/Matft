@@ -83,6 +83,7 @@
       spec.license        = { :type => 'BSD-3-Clause', :file => 'LICENSE' }
       spec.author         = "jjjkkkjjj"
       spec.platform       = :ios, "10.0"
+      spec.swift_versions = "4.0"
       spec.pod_target_xcconfig  = { 'SWIFT_VERSION' => '4.0' }
       spec.source         = { :git => "https://github.com/jjjkkkjjj/Matft.git", :tag => "#{spec.version}" }
       spec.source_files   = "Sources/**/*"
@@ -105,12 +106,14 @@
 
   - 更新
 
+    ※--allow-warningsはもし，``pod lib lint``でwarningが出て，無視して良い時．
+    
     ```bash
-    pod trunk push Matft.podspec --allow-warnings
+  pod trunk push Matft.podspec #--allow-warnings
     ```
 
     ※ミスった場合は一回消す
-
+    
     ```bash
     pod trunk delete Matft x.x.x(version number)
     ```
