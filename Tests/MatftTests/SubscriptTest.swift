@@ -41,7 +41,7 @@ final class SubscriptTests: XCTestCase {
     
 
     func testSlicing(){
-        /*
+        
         do{
             let a = Matft.mfarray.arange(start: 0, stop: 27*2, step: 2, shape: [3,3,3], mftype: .Double, mforder: .Column)
             XCTAssertEqual(a[~1], MfArray([[[ 0, 18, 36],
@@ -79,12 +79,26 @@ final class SubscriptTests: XCTestCase {
             XCTAssertEqual(a[0~,-1~-3~-1,-2], MfArray([[30, 24],
                                                        [32, 26],
                                                        [34, 28]], mftype: .Double))
-        }*/
+        }
         
         do{
-            let b = MfArray([[2, 5, -1],
-                             [3, 1, 0]])
-            let a = try! Matft.mfarray.broadcast_to(b, shape: [2,2,2,3])
+            let a = try! Matft.mfarray.broadcast_to(MfArray([[2, 5, -1],
+                                                             [3, 1, 0]]), shape: [2,2,2,3])
+            //print(a) ok
+            /*
+            let c = MfArray([[[[ 2,  5, -1],
+             [ 3,  1,  0]],
+
+            [[ 2,  5, -1],
+             [ 3,  1,  0]]],
+
+
+            [[[ 2,  5, -1],
+              [ 3,  1,  0]],
+
+             [[ 2,  5, -1],
+              [ 3,  1,  0]]]])
+            print(a - c)*/
             
             XCTAssertEqual(a, MfArray([[[[ 2,  5, -1],
                                         [ 3,  1,  0]],
