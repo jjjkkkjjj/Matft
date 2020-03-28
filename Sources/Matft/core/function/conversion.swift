@@ -27,21 +27,14 @@ extension Matft.mfarray{
         }
         
         //copy shape and strides
-        let newmfstructure = withDummyShapeStridesMPtr(mfarray.ndim){
-            (dstshapeptr, dststridesptr) in
-            mfarray.withShapeUnsafeMPtr{
-                dstshapeptr.assign(from: $0, count: mfarray.ndim)
-            }
-            mfarray.withStridesUnsafeMPtr{
-                dststridesptr.assign(from: $0, count: mfarray.ndim)
-            }
-        }
-
+        let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+        
         switch newStoredType{
         case .Float://double to float
             let newdata = withDummyDataMRPtr(mftype, storedSize: mfarray.storedSize){
                 let dstptr = $0.assumingMemoryBound(to: Float.self)
                 mfarray.withDataUnsafeMBPtrT(datatype: Double.self){
+                    [unowned mfarray] in
                     unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vdpsp, mfarray.storedSize)
                 }
             }
@@ -52,6 +45,7 @@ extension Matft.mfarray{
             let newdata = withDummyDataMRPtr(mftype, storedSize: mfarray.storedSize){
                 let dstptr = $0.assumingMemoryBound(to: Double.self)
                 mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+                    [unowned mfarray] in
                      unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vspdp, mfarray.storedSize)
                 }
             }
@@ -297,7 +291,7 @@ extension Matft.mfarray{
     */
     public static func broadcast_to(_ mfarray: MfArray, shape: [Int]) throws -> MfArray{
         var new_shape = shape
-        let newarray = Matft.mfarray.shallowcopy(mfarray)
+        //let newarray = Matft.mfarray.shallowcopy(mfarray)
         let new_ndim = shape2ndim(&new_shape)
         
         let idim_start = new_ndim  - mfarray.ndim
@@ -334,9 +328,9 @@ extension Matft.mfarray{
             shapteptr.baseAddress!.moveAssign(from: &new_shape, count: new_ndim)
         }
         
-        newarray.mfstructure = newstructure
-        
-        return newarray
+        //newarray.mfstructure = newstructure
+        //return newarray
+        return MfArray(base: mfarray, mfstructure: newstructure, offset: mfarray.offsetIndex)
     }
 
     /**

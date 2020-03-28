@@ -138,10 +138,11 @@ extension Matft.mfarray.linalg{
             }
             
             let newmfstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
-                shapeptr, stridesptr in
+                [unowned mfarray] (shapeptr, stridesptr) in
                 
                 //shape
                 mfarray.withShapeUnsafeMBPtr{
+                    [unowned mfarray] in
                     shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: mfarray.ndim)
                 }
                 
@@ -184,6 +185,7 @@ extension Matft.mfarray.linalg{
                 
                 //shape
                 mfarray.withShapeUnsafeMBPtr{
+                    [unowned mfarray] in
                     shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: mfarray.ndim)
                 }
                 

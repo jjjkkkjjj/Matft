@@ -28,6 +28,7 @@ public class MfArray{
         }
         else{
             return self.withDataUnsafeMRPtr{
+                [unowned self] in
                 unsafeMRBPtr2array_viaForD($0, mftype: self.mftype, size: self.storedSize)
             }
         }
@@ -104,8 +105,10 @@ public class MfArray{
             switch MfType.storedType(mftype){
             case .Float://double to float
                 let newdata = withDummyDataMRPtr(mftype, storedSize: self.storedSize){
+                    [unowned self] in
                     let dstptr = $0.assumingMemoryBound(to: Float.self)
                     self.withDataUnsafeMBPtrT(datatype: Double.self){
+                        [unowned self] in
                         unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vdpsp, self.storedSize)
                     }
                 }
@@ -114,8 +117,10 @@ public class MfArray{
                 
             case .Double://float to double
                 let newdata = withDummyDataMRPtr(mftype, storedSize: self.storedSize){
+                    [unowned self] in
                     let dstptr = $0.assumingMemoryBound(to: Double.self)
                     self.withDataUnsafeMBPtrT(datatype: Float.self){
+                        [unowned self] in
                          unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vspdp, self.storedSize)
                     }
                 }

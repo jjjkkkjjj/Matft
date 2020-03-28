@@ -161,3 +161,9 @@ fileprivate func _optStrides(shape: inout [Int], l_strides: inout [Int], r_strid
     
     return (optaxis, optBlockSize, optiterAxes)
 }
+/* future work?
+ 
+ // optContiguousDims must not be 0, positive value means row contiguous, negative value means column contiguous
+ , optContiguousDims = 1
+ */
+

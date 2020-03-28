@@ -20,9 +20,9 @@ internal func copy_by_cblas<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: Mf
     
     
     dsttmpMfarray.withDataUnsafeMBPtrT(datatype: T.self){
-        dstptr in
+        [unowned dsttmpMfarray] (dstptr) in
         mfarray.withDataUnsafeMBPtrT(datatype: T.self){
-            srcptr in
+            [unowned mfarray] (srcptr) in
             /*
             var b = [5,6,7,2.0]
             var c = [0,0,0,0.0]

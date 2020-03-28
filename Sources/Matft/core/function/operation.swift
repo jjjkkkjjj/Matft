@@ -443,14 +443,14 @@ fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: ino
         let l_mfdata = withDummyDataMRPtr(lmfarray.mftype, storedSize: lmfarray.storedSize){
             dstptr in
             lmfarray.withDataUnsafeMRPtr{
-                srcptr in
+                [unowned lmfarray] (srcptr) in
                 dstptr.copyMemory(from: srcptr, byteCount: lmfarray.storedByteSize)
             }
         }
         let r_mfdata = withDummyDataMRPtr(rmfarray.mftype, storedSize: rmfarray.storedSize){
             dstptr in
             rmfarray.withDataUnsafeMRPtr{
-                srcptr in
+                [unowned rmfarray] (srcptr) in
                 dstptr.copyMemory(from: srcptr, byteCount: rmfarray.storedByteSize)
             }
         }
@@ -472,7 +472,7 @@ fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
     switch diff.storedType {
     case .Float:
         diff.withDataUnsafeMBPtrT(datatype: Float.self){
-            dataptr in
+            [unowned diff] (dataptr) in
             var newptr = dataptr.map{ $0 == Float.zero ? Float(1) : Float.zero }
             newptr.withUnsafeMutableBufferPointer{
                 dataptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: diff.storedSize)
@@ -480,7 +480,7 @@ fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
         }
     case .Double:
         diff.withDataUnsafeMBPtrT(datatype: Double.self){
-            dataptr in
+            [unowned diff] (dataptr) in
             var newptr = dataptr.map{ $0 == Double.zero ? Double(1) : Double.zero }
             newptr.withUnsafeMutableBufferPointer{
                 dataptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: diff.storedSize)
@@ -502,7 +502,7 @@ fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
     return diff.astype(.Bool)
 }
 
-fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> Bool{
+fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, thresholdF: Float = 1e-6, thresholdD: Double = 1e-12) -> Bool{
     let diff = l_mfarray - r_mfarray
     
     if l_mfarray.shape != r_mfarray.shape{
@@ -510,9 +510,19 @@ fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray)
     }
     
     // diff must be 0 if all of elements are same
-    guard let data = diff.astype(.Float).data as? [Float] else{
-        return false
+    switch diff.storedType {
+    case .Float:
+        guard let data = diff.astype(.Float).data as? [Float] else{
+            return false
+        }
+        
+        return data.allSatisfy{ abs($0) <= thresholdF }
+    case .Double:
+        guard let data = diff.astype(.Double).data as? [Double] else{
+            return false
+        }
+        
+        return data.allSatisfy{ abs($0) <= thresholdD }
     }
     
-    return data.allSatisfy{ $0 == Float.zero }
 }

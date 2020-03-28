@@ -172,7 +172,7 @@ extension MfArray{
         
         var offset = 0
         self.withShapeStridesUnsafeMBPtr{
-        orig_shapeptr, orig_stridesptr in
+        [unowned self] (orig_shapeptr, orig_stridesptr) in
             //Indexing ref: https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
             while orig_axis < self.ndim {
                 if var index = indices[orig_axis] as? Int { // normal indexing
@@ -282,7 +282,7 @@ extension MfArray{
             
             //move strides
             newstrides.withUnsafeMutableBufferPointer{
-                newstridesptr.baseAddress!.assign(from: $0.baseAddress!, count: newndim)
+                newstridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: newndim)
             }
         }
         //newarray.mfdata._storedSize = get_storedSize(newarray.shapeptr, newarray.stridesptr)

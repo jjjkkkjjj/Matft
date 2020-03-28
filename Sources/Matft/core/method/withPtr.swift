@@ -20,6 +20,7 @@ extension MfArray{
     }
     public func withDataUnsafeMBPtrT<T, R>(datatype: T.Type, _ body: (UnsafeMutableBufferPointer<T>) throws -> R) rethrows -> R{
         let dataptr = self.withDataUnsafeMRPtr{
+            [unowned self] in
             $0.bindMemory(to: T.self, capacity: self.storedSize)
         }
         
@@ -42,7 +43,7 @@ extension MfArray{
     
     public func withShapeStridesUnsafeMBPtr<R>(_ body: (UnsafeMutableBufferPointer<Int>, UnsafeMutableBufferPointer<Int>) throws -> R) rethrows -> R{
         let ret = try self.withShapeUnsafeMBPtr{
-            shapeptr in
+            [unowned self](shapeptr) in
             try self.withStridesUnsafeMBPtr{
                 stridesptr in
                 try body(shapeptr, stridesptr)

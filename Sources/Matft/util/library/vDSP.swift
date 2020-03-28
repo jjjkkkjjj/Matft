@@ -21,6 +21,7 @@ internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP
         dstptr in
         let dstptrT = dstptr.bindMemory(to: T.self, capacity: mfarray.storedSize)
         mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            [unowned mfarray] in
             vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
         }
     }
@@ -57,9 +58,9 @@ internal func biop_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfA
         let dstptrT = dstptr.bindMemory(to: T.self, capacity: l_mfarray.storedSize)
         
         l_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
-            lptr in
+            [unowned l_mfarray] (lptr) in
             r_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
-                rptr in
+                [unowned r_mfarray] (rptr) in
                 //print(l_mfarray, r_mfarray)
                 //print(l_mfarray.storedSize, r_mfarray.storedSize)
                 if biggerL{// l is bigger
@@ -139,6 +140,7 @@ internal func stats_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int, v
 internal func stats_all_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_func: vDSP_stats_func<T>) -> MfArray{
     var dst = T.zero
     mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        [unowned mfarray] in
         _stats_run($0.baseAddress!, &dst, vDSP_func: vDSP_func, stride: 1, mfarray.size)
     }
     
@@ -212,6 +214,7 @@ internal func stats_index_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: 
 internal func stats_index_all_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_func: vDSP_stats_index_func<T>) -> MfArray{
 
     let dst = mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        [unowned mfarray] in
         Int(_stats_index_run($0.baseAddress!, vDSP_func: vDSP_func, stride: 1, mfarray.size))
     }
     

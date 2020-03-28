@@ -172,15 +172,18 @@ internal func copyAll(_ mfarray: MfArray) -> MfArray{
     let newmfdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.storedSize){
         dstptr in
         mfarray.withDataUnsafeMRPtr{
+            [unowned mfarray] in
             dstptr.copyMemory(from: $0, byteCount: mfarray.storedByteSize)
         }
     }
     let newmfstructure = withDummyShapeStridesMPtr(mfarray.ndim){
         (dstshapeptr, dststridesptr) in
         mfarray.withShapeUnsafeMPtr{
+            [unowned mfarray] in
             dstshapeptr.assign(from: $0, count: mfarray.ndim)
         }
         mfarray.withStridesUnsafeMPtr{
+            [unowned mfarray] in
             dststridesptr.assign(from: $0, count: mfarray.ndim)
         }
     }
@@ -196,7 +199,7 @@ internal func to_row_major(_ mfarray: MfArray) -> MfArray{
     let newstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
             shapeptr, stridesptr in
             mfarray.withShapeUnsafeMBPtr{
-            orig_shapeptr in
+            [unowned mfarray] (orig_shapeptr) in
                 let newstridesptr = shape2strides(orig_shapeptr, mforder: .Row)
                 
                 //copy
@@ -229,7 +232,7 @@ internal func to_column_major(_ mfarray: MfArray) -> MfArray{
     let newstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
         shapeptr, stridesptr in
         mfarray.withShapeUnsafeMBPtr{
-        orig_shapeptr in
+        [unowned mfarray] (orig_shapeptr) in
             let newstridesptr = shape2strides(orig_shapeptr, mforder: .Column)
             
             //copy

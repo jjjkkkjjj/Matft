@@ -14,9 +14,12 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        let a = MfArray([1,2,3])
-        let b = MfArray([[1,2,3],[4,5,6]])
-        print(a+b)
+        let a = MfArray([[2, 1, -3, 0],
+                         [3, 1, 4, -5]], mftype: .Double, mforder: .Column)
+        let b = MfArray([[-0.87, 1.2, 5.5134, -8.78],
+                         [-0.0002, 2, 3.4, -5]], mftype: .Double, mforder: .Column)
+        let c = a*b
+        print(c)
     }
 
 

@@ -19,9 +19,11 @@ extension Matft.mfarray{
         let newstructure = withDummyShapeStridesMPtr(mfarray.ndim){
             shapeptr, stridesptr in
             mfarray.withShapeUnsafeMPtr{
+                [unowned mfarray] in
                 shapeptr.assign(from: $0, count: mfarray.ndim)
             }
             mfarray.withStridesUnsafeMPtr{
+                [unowned mfarray] in
                 stridesptr.assign(from: $0, count: mfarray.ndim)
             }
         }
@@ -134,6 +136,7 @@ extension Matft.mfarray{
                 var offset = 0
                 for array in rmajorArrays{
                     array.withDataUnsafeMBPtrT(datatype: Float.self){
+                        [unowned array] in
                         copy_unsafeptrT(array.storedSize, $0.baseAddress!, 1, dstptrF + offset, 1, cblas_scopy)
                     }
                     offset += array.storedSize
@@ -144,6 +147,7 @@ extension Matft.mfarray{
                 var offset = 0
                 for array in rmajorArrays{
                     array.withDataUnsafeMBPtrT(datatype: Double.self){
+                        [unowned array] in
                         copy_unsafeptrT(array.storedSize, $0.baseAddress!, 1, dstptrD + offset, 1, cblas_dcopy)
                     }
                     offset += array.storedSize
@@ -201,6 +205,7 @@ extension Matft.mfarray{
                 var offset = 0
                 for array in cmajorArrays{
                     array.withDataUnsafeMBPtrT(datatype: Float.self){
+                        [unowned array] in
                         copy_unsafeptrT(array.storedSize, $0.baseAddress!, 1, dstptrF + offset, 1, cblas_scopy)
                     }
                     offset += array.storedSize
@@ -211,6 +216,7 @@ extension Matft.mfarray{
                 var offset = 0
                 for array in cmajorArrays{
                     array.withDataUnsafeMBPtrT(datatype: Double.self){
+                        [unowned array] in
                         copy_unsafeptrT(array.storedSize, $0.baseAddress!, 1, dstptrD + offset, 1, cblas_dcopy)
                     }
                     offset += array.storedSize

@@ -17,6 +17,7 @@ internal func math_vv_by_vecLib<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: 
         dstptr in
         let dstptrT = dstptr.bindMemory(to: T.self, capacity: mfarray.storedSize)
         mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            [unowned mfarray] in
             var storedSize = Int32(mfarray.storedSize)
             vDSP_func(dstptrT, $0.baseAddress!, &storedSize)
         }
@@ -34,6 +35,7 @@ internal func math_1arg_vv_by_vecLib<T: MfStorable>(_ mfarray: MfArray, _ arg: U
         dstptr in
         let dstptrT = dstptr.bindMemory(to: T.self, capacity: mfarray.storedSize)
         mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            [unowned mfarray] in
             var storedSize = Int32(mfarray.storedSize)
             vDSP_func(dstptrT, $0.baseAddress!, arg, &storedSize)
         }

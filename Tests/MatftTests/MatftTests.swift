@@ -17,6 +17,13 @@ final class MatftTests: XCTestCase {
         //view8()
         //view9()
         /*
+        let a = MfArray([[2, 1, -3, 0],
+                         [3, 1, 4, -5]], mftype: .Double, mforder: .Column)
+        let b = MfArray([[-0.87, 1.2, 5.5134, -8.78],
+                         [-0.0002, 2, 3.4, -5]], mftype: .Double, mforder: .Column)
+        let c = a/b
+        */
+        /*
         let a = Matft.mfarray.arange(start: 0, stop: 8, step: 1, shape: [2,2,2])
         print(a[0~,0~,~~-1])
         print(Matft.mfarray.arange(start: 7, stop: -1, step: -1, shape: [2,2,2]))
