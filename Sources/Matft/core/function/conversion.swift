@@ -27,7 +27,12 @@ extension Matft.mfarray{
         }
         
         //copy shape and strides
-        let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+        let newmfstructure: MfStructure
+        var mfarray = mfarray
+        if !(mfarray.mfflags.column_contiguous || mfarray.mfflags.row_contiguous){// close to row major
+            mfarray = to_row_major(mfarray)
+        }
+        newmfstructure = copy_mfstructure(mfarray.mfstructure)
         
         switch newStoredType{
         case .Float://double to float

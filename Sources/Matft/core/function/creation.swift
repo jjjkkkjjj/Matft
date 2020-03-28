@@ -45,12 +45,16 @@ extension Matft.mfarray{
             }
         }
         else{
-            if (mfarray.withStridesUnsafeMBPtr{ isReverse($0) }){// contain reverse, close to row major
-                return to_row_major(mfarray)
-            }
-            else{// all including strides will be copied
+            if mfarray.mfflags.column_contiguous || mfarray.mfflags.row_contiguous{// all including strides will be copied
                 return copyAll(mfarray)
             }
+            if !(mfarray.withStridesUnsafeMBPtr{ isReverse($0) }) && !mfarray.mfdata._isView{// not contain reverse and is not view, copy all
+                return copyAll(mfarray)
+            }
+            else{//close to row major
+                return to_row_major(mfarray)
+            }
+
         }
         
         /*

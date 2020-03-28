@@ -123,38 +123,46 @@ fileprivate func _binary_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _
         else if r_mfarray.size > l_mfarray.size{
             l_mfarray = try l_mfarray.broadcast_to(shape: r_mfarray.shape)
         }
+        // below condition has same size implicitly
+        // below condition cannot be deprecated into above condition because l.size > r.size & l.ndim < r.ndim is possible
+        else if l_mfarray.ndim > r_mfarray.ndim{
+            r_mfarray = try r_mfarray.broadcast_to(shape: l_mfarray.shape)
+        }
+        else if r_mfarray.ndim > l_mfarray.ndim{
+            l_mfarray = try l_mfarray.broadcast_to(shape: r_mfarray.shape)
+        }
     }catch {//conversion error
         fatalError("cannot calculate binary operation due to broadcasting error")
     }
     //print(l_mfarray)
+    //print(r_mfarray)
     
-    let calctype = l_mfarray.mftype
     switch biop {
     case .add:
-        switch MfType.storedType(calctype){
+        switch MfType.storedType(rettype){
         case .Float:
             return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
         case .Double:
             return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
         }
     case .sub:
-        switch MfType.storedType(calctype){
+        switch MfType.storedType(rettype){
         case .Float:
             return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
         case .Double:
             return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD)
         }
     case .mul:
-        switch MfType.storedType(calctype){
+        switch MfType.storedType(rettype){
         case .Float:
             return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul)
         case .Double:
             return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmulD)
         }
     case .div:
-        switch MfType.storedType(calctype){
+        switch MfType.storedType(rettype){
         case .Float:
-            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv)
+            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv).astype(.Float)
         case .Double:
             return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
         }
@@ -465,7 +473,7 @@ fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: ino
 }
 
 
-fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray{
     let diff = l_mfarray - r_mfarray
     //print(diff)
     
@@ -473,7 +481,7 @@ fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
     case .Float:
         diff.withDataUnsafeMBPtrT(datatype: Float.self){
             [unowned diff] (dataptr) in
-            var newptr = dataptr.map{ $0 == Float.zero ? Float(1) : Float.zero }
+            var newptr = dataptr.map{ abs($0) <= thresholdF ? Float(1) : Float.zero }
             newptr.withUnsafeMutableBufferPointer{
                 dataptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: diff.storedSize)
             }
@@ -481,7 +489,7 @@ fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
     case .Double:
         diff.withDataUnsafeMBPtrT(datatype: Double.self){
             [unowned diff] (dataptr) in
-            var newptr = dataptr.map{ $0 == Double.zero ? Double(1) : Double.zero }
+            var newptr = dataptr.map{ abs($0) <= thresholdD ? Double(1) : Double.zero }
             newptr.withUnsafeMutableBufferPointer{
                 dataptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: diff.storedSize)
             }
@@ -502,12 +510,12 @@ fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
     return diff.astype(.Bool)
 }
 
-fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, thresholdF: Float = 1e-6, thresholdD: Double = 1e-12) -> Bool{
+fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> Bool{
+   //print(diff)
+   if l_mfarray.shape != r_mfarray.shape{
+       return false
+   }
     let diff = l_mfarray - r_mfarray
-    //print(diff)
-    if l_mfarray.shape != r_mfarray.shape{
-        return false
-    }
     
     // diff must be 0 if all of elements are same
     switch diff.storedType {
