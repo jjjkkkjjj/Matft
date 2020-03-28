@@ -83,79 +83,37 @@ final class ArithmeticTests: XCTestCase {
 
     func testBroadcast(){
         do{
-            let a = Matft.mfarray.arange(start: 0, stop: 27*2, step: 2, shape: [3,3,3], mftype: .Double, mforder: .Column)
-            XCTAssertEqual(a[~1], MfArray([[[ 0, 18, 36],
-                                            [ 6, 24, 42],
-                                            [12, 30, 48]]], mftype: .Double))
-            XCTAssertEqual(a[1~2], MfArray([[[ 2, 20, 38],
-                                             [ 8, 26, 44],
-                                             [14, 32, 50]]], mftype: .Double))
-            XCTAssertEqual(a[~-1], MfArray([[[ 0, 18, 36],
-                                             [ 6, 24, 42],
-                                             [12, 30, 48]],
-
-                                            [[ 2, 20, 38],
-                                             [ 8, 26, 44],
-                                             [14, 32, 50]]], mftype: .Double))
-            XCTAssertNotEqual(a[~-1], MfArray([[[ 0, 18, 36],
-                                             [ 6, 24, 42],
-                                             [12, 30, 48]],
-
-                                            [[ 2, 20, 38],
-                                             [ 8, 2, 44],
-                                             [14, 32, 50]]], mftype: .Double))
+            let a = MfArray([[1, 3, 5],
+                            [2, -4, -1]])
+            let b = Matft.mfarray.arange(start: 0, stop: 2*3*3, step: 1, shape: [3, 2, 3])
             
-            XCTAssertEqual(a[0~,0~,~-1], MfArray([[[ 0, 18],
-                                                   [ 6, 24],
-                                                   [12, 30]],
+            XCTAssertEqual(a+b, MfArray([[[ 1,  4,  7],
+                                          [ 5,  0,  4]],
 
-                                                  [[ 2, 20],
-                                                   [ 8, 26],
-                                                   [14, 32]],
+                                         [[ 7, 10, 13],
+                                          [11,  6, 10]],
 
-                                                  [[ 4, 22],
-                                                   [10, 28],
-                                                   [16, 34]]], mftype: .Double))
-            XCTAssertEqual(a[0~,-1~-3~-1,-2], MfArray([[30, 24],
-                                                       [32, 26],
-                                                       [34, 28]], mftype: .Double))
+                                         [[13, 16, 19],
+                                          [17, 12, 16]]]))
+            XCTAssertEqual(a-b, MfArray([[[  1,   2,   3],
+                                          [ -1,  -8,  -6]],
+
+                                         [[ -5,  -4,  -3],
+                                          [ -7, -14, -12]],
+
+                                         [[-11, -10,  -9],
+                                          [-13, -20, -18]]]))
+            XCTAssertEqual(a*b, MfArray([[[  0,   3,  10],
+                                          [  6, -16,  -5]],
+
+                                         [[  6,  21,  40],
+                                          [ 18, -40, -11]],
+
+                                         [[ 12,  39,  70],
+                                          [ 30, -64, -17]]]))
         }
-        
         do{
-            let a = try! Matft.mfarray.broadcast_to(MfArray([[2, 5, -1],
-                                                        [3, 1, 0]]), shape: [2,2,2,3])
-
-            XCTAssertEqual(a[-1~~-1, (-2)~], MfArray([[[[ 2,  5, -1],
-                                                      [ 3,  1,  0]],
-
-                                                     [[ 2,  5, -1],
-                                                      [ 3,  1,  0]]],
-
-
-                                                    [[[ 2,  5, -1],
-                                                      [ 3,  1,  0]],
-
-                                                     [[ 2,  5, -1],
-                                                      [ 3,  1,  0]]]]))
             
-            XCTAssertEqual(a[0~,0~,~1~-1,~~3], MfArray([[[[2]],
-
-                                                         [[2]]],
-
-
-                                                        [[[2]],
-
-                                                         [[2]]]]))
-            XCTAssertNotEqual(a[0~,0~,~1~-1,~~3], MfArray([[[2],
-
-                                                            [2]],
-
-
-                                                           [[2],
-
-                                                            [2]]]))
-            XCTAssertEqual(a[~1, ~~-2], MfArray([[[[ 2,  5, -1],
-                                                   [ 3,  1,  0]]]]))
         }
     }
     

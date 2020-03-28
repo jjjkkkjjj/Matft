@@ -120,7 +120,7 @@ fileprivate func _binary_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _
         if l_mfarray.size > r_mfarray.size{
             r_mfarray = try r_mfarray.broadcast_to(shape: l_mfarray.shape)
         }
-        else if r_mfarray.size < l_mfarray.size{
+        else if r_mfarray.size > l_mfarray.size{
             l_mfarray = try l_mfarray.broadcast_to(shape: r_mfarray.shape)
         }
     }catch {//conversion error
