@@ -504,7 +504,7 @@ fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
 
 fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, thresholdF: Float = 1e-6, thresholdD: Double = 1e-12) -> Bool{
     let diff = l_mfarray - r_mfarray
-    
+    //print(diff)
     if l_mfarray.shape != r_mfarray.shape{
         return false
     }
@@ -512,17 +512,54 @@ fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray,
     // diff must be 0 if all of elements are same
     switch diff.storedType {
     case .Float:
-        guard let data = diff.astype(.Float).data as? [Float] else{
-            return false
+        if let data = diff.data as? [UInt8]{
+            return data.allSatisfy{ $0 == UInt8.zero }
         }
-        
-        return data.allSatisfy{ abs($0) <= thresholdF }
+        else if let data = diff.data as? [UInt16]{
+            return data.allSatisfy{ $0 == UInt8.zero }
+        }
+        else if let data = diff.data as? [UInt32]{
+            return data.allSatisfy{ $0 == UInt32.zero }
+        }
+        else if let data = diff.data as? [UInt64]{
+            return data.allSatisfy{ $0 == UInt64.zero }
+        }
+        else if let data = diff.data as? [UInt]{
+            return data.allSatisfy{ $0 == UInt.zero }
+        }
+        else if let data = diff.data as? [Int8]{
+            return data.allSatisfy{ $0 == Int8.zero }
+        }
+        else if let data = diff.data as? [Int16]{
+            return data.allSatisfy{ $0 == Int16.zero }
+        }
+        else if let data = diff.data as? [Int32]{
+            return data.allSatisfy{ $0 == Int32.zero }
+        }
+        else if let data = diff.data as? [Int64]{
+            return data.allSatisfy{ $0 == Int64.zero }
+        }
+        else if let data = diff.data as? [Int]{
+            return data.allSatisfy{ $0 == Int.zero }
+        }
+        else if let data = diff.data as? [Float]{
+            return data.allSatisfy{ abs($0) <= thresholdF }
+        }
+        else{
+            // bool
+            guard let data = diff.astype(.Float).data as? [Float] else{
+                return false
+            }
+            
+            return data.allSatisfy{ $0 == Float.zero }
+        }
     case .Double:
-        guard let data = diff.astype(.Double).data as? [Double] else{
+        if let data = diff.data as? [Double]{
+            return data.allSatisfy{ abs($0) <= thresholdD }
+        }
+        else{
             return false
         }
-        
-        return data.allSatisfy{ abs($0) <= thresholdD }
     }
     
 }

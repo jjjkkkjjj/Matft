@@ -51,7 +51,8 @@ final class ArithmeticTests: XCTestCase {
 
             XCTAssertEqual(a*b, MfArray([[-1.74000e+00,  1.20000e+00, -1.65402e+01, -0.00000e+00],
                                          [-6.00000e-04,  2.00000e+00,  1.36000e+01,  2.50000e+01]]))
-            /*rounding error will be occurred
+            /*
+            //rounding error will be occurred
             XCTAssertEqual(a/b, MfArray([[-2.29885057e+00,  8.33333333e-01, -5.44128850e-01,
                                           -0.00000000e+00],
                                          [-1.50000000e+04,  5.00000000e-01,  1.17647059e+00,
@@ -59,13 +60,23 @@ final class ArithmeticTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, stop: 4*4*4, step: 1, shape: [4,4,4], mftype: .UInt).T
-            
-            XCTAssertEqual(a[3,2,0] as! UInt, UInt(11))
-            XCTAssertEqual(a[0,0,2] as! UInt, UInt(32))
-            XCTAssertEqual(a[1,0,2] as! UInt, UInt(33))
-            XCTAssertEqual(a[1,3,1] as! UInt, UInt(29))
-            XCTAssertEqual(a[0,2,0] as! UInt, UInt(8))
+            let a = Matft.mfarray.arange(start: 0, stop: 4*4, step: 1, shape: [4,4], mftype: .UInt8).T
+            let b = MfArray([[-5, 3, 2, 4],
+                             [-9, 3, 1, 1],
+                             [22, 17, 0, -2],
+                             [1, -7, 3, 3]], mftype: .UInt8, mforder: .Column)
+            XCTAssertEqual(a+b, MfArray([[251,   7,  10,  16],
+                                         [248,   8,  10,  14],
+                                         [ 24,  23,  10,  12],
+                                         [  4,   0,  14,  18]], mftype: .UInt8))
+            XCTAssertEqual(a-b, MfArray([[  5,   1,   6,   8],
+                                         [ 10,   2,   8,  12],
+                                         [236, 245,  10,  16],
+                                         [  2,  14,   8,  12]], mftype: .UInt8))
+            XCTAssertEqual(a*b, MfArray([[  0,  12,  16,  48],
+                                         [247,  15,   9,  13],
+                                         [ 44, 102,   0, 228],
+                                         [  3, 207,  33,  45]], mftype: .UInt8))
         }
     }
     
