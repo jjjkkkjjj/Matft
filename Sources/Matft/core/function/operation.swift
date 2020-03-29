@@ -264,6 +264,13 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
     
     //broadcast
     _matmul_broadcast_to(&lmfarray, &rmfarray)
+    /*
+    print(lmfarray.shape, lmfarray.strides)
+    print(lmfarray.data)
+    print(rmfarray.shape, rmfarray.strides)
+    print(rmfarray.data)
+    print(lmfarray)
+    print(rmfarray)*/
     
     let lshape = lmfarray.shape
     let rshape = rmfarray.shape
@@ -400,16 +407,20 @@ fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: ino
     precondition(lshape[lmfarray.ndim - 1] == rshape[rmfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
     
     // broadcast
-    var retndim = lmfarray.ndim
+    let retndim: Int
     
-    if lmfarray.ndim > rmfarray.ndim{ // r has smaller dim
-        lshape = Array<Int>(repeating: 1, count: lmfarray.ndim - rmfarray.ndim) + lshape // the 1 concatenated elements means broadcastable
-        lstrides = Array<Int>(repeating: 0, count: lmfarray.ndim - rmfarray.ndim) + lstrides// the 0 concatenated elements means broadcastable
-    }
-    else if lmfarray.ndim < rmfarray.ndim{// r has smaller dim
+    if lmfarray.ndim < rmfarray.ndim{ // l has smaller dim
         retndim = rmfarray.ndim
+        lshape = Array<Int>(repeating: 1, count: rmfarray.ndim - lmfarray.ndim) + lshape // the 1 concatenated elements means broadcastable
+        lstrides = Array<Int>(repeating: 0, count: rmfarray.ndim - lmfarray.ndim) + lstrides// the 0 concatenated elements means broadcastable
+    }
+    else if lmfarray.ndim > rmfarray.ndim{// r has smaller dim
+        retndim = lmfarray.ndim
         rshape = Array<Int>(repeating: 1, count: lmfarray.ndim - rmfarray.ndim) + rshape // the 1 concatenated elements means broadcastable
         rstrides = Array<Int>(repeating: 0, count: lmfarray.ndim - rmfarray.ndim) + rstrides// the 0 concatenated elements means broadcastable
+    }
+    else{
+        retndim = lmfarray.ndim
     }
 
     do{
@@ -448,6 +459,8 @@ fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: ino
                 }
             }
         }
+        //print(Array<Int>(UnsafeBufferPointer<Int>(start: l_mfstructure._shape, count: l_mfstructure._ndim)))
+        //print(Array<Int>(UnsafeBufferPointer<Int>(start: r_mfstructure._shape, count: r_mfstructure._ndim)))
         let l_mfdata = withDummyDataMRPtr(lmfarray.mftype, storedSize: lmfarray.storedSize){
             dstptr in
             lmfarray.withDataUnsafeMRPtr{
@@ -463,8 +476,8 @@ fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: ino
             }
         }
         
-        lmfarray = MfArray(mfdata: l_mfdata, mfstructure: l_mfstructure)
-        rmfarray = MfArray(mfdata: r_mfdata, mfstructure: r_mfstructure)
+        lmfarray = MfArray(base: lmfarray, mfstructure: l_mfstructure, offset: lmfarray.offsetIndex)
+        rmfarray = MfArray(base: rmfarray, mfstructure: r_mfstructure, offset: rmfarray.offsetIndex)
     }
     catch{
         //conversion error
