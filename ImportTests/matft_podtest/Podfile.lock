@@ -1,5 +1,5 @@
 PODS:
-  - Matft (0.1.1)
+  - Matft (0.1.2)
 
 DEPENDENCIES:
   - Matft
@@ -9,7 +9,7 @@ SPEC REPOS:
     - Matft
 
 SPEC CHECKSUMS:
-  Matft: dc6419f7dbf36f4d0c998698f6a83a8a45a775fc
+  Matft: b6d5fe1388641cd822ab5ad43d28dbe1d7a7f39c
 
 PODFILE CHECKSUM: 9e1a24f166f285522e1a3aa3cdc8f845d5afc295
 
