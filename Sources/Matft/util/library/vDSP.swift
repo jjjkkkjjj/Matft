@@ -164,7 +164,7 @@ fileprivate func _stats_index_run<T: MfStorable>(_ srcptr: UnsafePointer<T>, vDS
 }
 
 //for along given axis
-internal func stats_index_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int, vDSP_func: vDSP_stats_index_func<T>, vDSP_conv_func: vDSP_convert_func<Int32, T>) -> MfArray{
+internal func stats_index_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int, vDSP_func: vDSP_stats_index_func<T>) -> MfArray{
     var retShape = mfarray.shape
     let count = retShape.remove(at: axis)
     var retStrides = mfarray.strides
@@ -195,10 +195,10 @@ internal func stats_index_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: 
                 //print(flat.flattenIndex, flat.indices)
             }
             
-            let dstptr = dataptr.bindMemory(to: T.self, capacity: retsize)
+            let dstptr = dataptr.bindMemory(to: Float.self, capacity: retsize)
             //convert dataptr(int) to float
             i32array.withUnsafeBufferPointer{
-                unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_conv_func, retsize)
+                unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vflt32, retsize)
             }
             
         }

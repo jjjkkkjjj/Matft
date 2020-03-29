@@ -20,9 +20,9 @@ extension Matft.mfarray.stats{
     public static func mean(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv)
+            return _stats_calc(mfarray.astype(.Float), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv)
         case .Double:
-            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanvD)
+            return _stats_calc(mfarray.astype(.Double), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanvD)
         }
     }
     /**
@@ -45,14 +45,13 @@ extension Matft.mfarray.stats{
        - parameters:
             - mfarray: mfarray
             - axis: (Optional) axis, if not given, get index of maximum for all elements (flattenarray)
-            - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func argmax(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+    public static func argmax(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc_index(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxvi, vDSP_conv_func: vDSP_vflt32)
+            return _stats_calc_index(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_maxvi)
         case .Double:
-            return _stats_calc_index(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxviD, vDSP_conv_func: vDSP_vflt32D)
+            return _stats_calc_index(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_maxviD)
         }
     }
     /**
@@ -75,14 +74,13 @@ extension Matft.mfarray.stats{
        - parameters:
             - mfarray: mfarray
             - axis: (Optional) axis, if not given, get index of minimum for all elements (flattenarray)
-            - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func argmin(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+    public static func argmin(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc_index(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minvi, vDSP_conv_func: vDSP_vflt32)
+            return _stats_calc_index(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_minvi)
         case .Double:
-            return _stats_calc_index(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minviD, vDSP_conv_func: vDSP_vflt32D)
+            return _stats_calc_index(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_minviD)
         }
     }
     /**
@@ -121,13 +119,13 @@ fileprivate func _stats_calc<T: MfStorable>(_ typedArray: MfArray, axis: Int?, k
     }
 }
 
-fileprivate func _stats_calc_index<T: MfStorable>(_ mfarray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_index_func<T>, vDSP_conv_func: vDSP_convert_func<Int32, T>) -> MfArray{
+fileprivate func _stats_calc_index<T: MfStorable>(_ mfarray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_index_func<T>) -> MfArray{
     
     if axis != nil && mfarray.ndim > 1{// for given axis
         let axis = axis! >= 0 ? axis! : axis! + mfarray.ndim
         precondition(0 <= axis && axis < mfarray.ndim, "Invalid axis")
         
-        let ret = stats_index_axis_by_vDSP(mfarray, axis: axis, vDSP_func: vDSP_func, vDSP_conv_func: vDSP_conv_func)
+        let ret = stats_index_axis_by_vDSP(mfarray, axis: axis, vDSP_func: vDSP_func)
         return keepDims ? Matft.mfarray.expand_dims(ret, axis: axis) : ret
     }
     else{// for all elements
