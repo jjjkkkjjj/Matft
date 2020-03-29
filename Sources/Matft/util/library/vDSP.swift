@@ -227,3 +227,34 @@ internal func stats_index_all_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_fu
 }
 
 
+// generate(arange)
+/*
+internal typealias vDSP_arange_func<T> = (UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+fileprivate func _arange_run<T: MfStorable>(_ startptr: UnsafePointer<T>, _ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ stride: Int, _ count: Int, _ vDSP_func: vDSP_arange_func<T>){
+    vDSP_func(startptr, srcptr, dstptr, vDSP_Stride(stride), vDSP_Length(count))
+}
+
+internal func arange_by_vDSP<T: MfStorable>(_ start: T, _ by: T, _ count: Int, _ mftype: MfType, vDSP_func: vDSP_arange_func<T>) -> MfArray{
+    let newdata = withDummyDataMRPtr(mftype, storedSize: count){
+        dstptr in
+        let dstptrT = dstptr.bindMemory(to: T.self, capacity: count)
+        var start = start
+        var by = by
+        _arange_run(&start, &by, dstptrT, 1, count, vDSP_func)
+    }
+    
+    let newmfstructure = withDummyShapeStridesMBPtr(retShape.count){
+        shapeptr, stridesptr in
+        retShape.withUnsafeMutableBufferPointer{
+            shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: shapeptr.count)
+        }
+        
+        let newstrides = shape2strides(shapeptr, mforder: .Row)
+        stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: shapeptr.count)
+        
+        newstrides.deallocate()
+    }
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+}
+*/

@@ -291,7 +291,7 @@ extension Matft.mfarray{
         let fasterBlockSize = rowSize >= columnSize ? rowSize : columnSize
         let slowerBlockSize = rowSize >= columnSize ? columnSize : rowSize
         
-        let majorArrays = mfarrays.map{ Matft.mfarray.conv_order($0, mforder: fasterOrder) }
+        let majorArrays = mfarrays.map{ Matft.mfarray.conv_order($0, mforder: fasterOrder).astype(retMfType) }
         let retSize = shape2size(&retShape)
         
         let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
