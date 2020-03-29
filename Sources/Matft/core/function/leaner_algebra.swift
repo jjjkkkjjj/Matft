@@ -16,7 +16,7 @@ extension Matft.mfarray.linalg{
             - coef: Coefficients MfArray for N simultaneous equation
             - b: Biases MfArray for N simultaneous equation
         - throws:
-        An error of type `MfError.LinAlg.FactorizationError`
+        An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
      
             /*
             //must be flatten....?
@@ -100,6 +100,13 @@ extension Matft.mfarray.linalg{
         }
     }
     
+    /**
+       Get last 2 dim's NxN mfarray's inverse. Returned mfarray's type will be float but be double in case that mftype of mfarray is double.
+       - parameters:
+           - mfarray: mfarray
+       - throws:
+       An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+    */
     public static func inv(_ mfarray: MfArray) throws -> MfArray{
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
@@ -176,6 +183,122 @@ extension Matft.mfarray.linalg{
                 newstridesptr.deallocate()
             }
             
+            return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+        }
+
+    }
+    
+    /**
+       Get last 2 dim's NxN mfarray's determinant. Returned mfarray's type will be float but be double in case that mftype of mfarray is double.
+       - parameters:
+           - mfarray: mfarray
+       - throws:
+       An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+    */
+    public static func det(_ mfarray: MfArray) throws -> MfArray{
+        let shape = mfarray.shape
+        precondition(mfarray.ndim > 1, "cannot get a determinant from 1-d mfarray")
+        precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        
+        let retSize = mfarray.size / (shape[mfarray.ndim - 1] * shape[mfarray.ndim - 1])
+        switch mfarray.storedType {
+        case .Float:
+            let newmfdata = try withDummyDataMRPtr(.Float, storedSize: retSize){
+                dstptr in
+                let dstptrF = dstptr.bindMemory(to: Float.self, capacity: retSize)
+                
+                var dstoffset = 0
+                try _withNNStackedColumnMajorPtr(mfarray: mfarray, type: Float.self){
+                    srcptr, squaredSize, offset in
+                    //LU decomposition
+                    let IPIV = try LU_by_lapack(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: sgetrf_)
+                    
+                    //calculate L and U's determinant
+                    //Note that L and U's determinant are calculated by product of diagonal elements
+                    // L's determinant is always one
+                    //ref: https://stackoverflow.com/questions/47315471/compute-determinant-from-lu-decomposition-in-lapack
+                    var det = Float(1)
+                    for i in 0..<squaredSize{
+                        det *= IPIV[i] != __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*squaredSize).pointee : -(srcptr.advanced(by: i + i*squaredSize).pointee)
+                    }
+                    
+                    //move
+                    (dstptrF + dstoffset).moveAssign(from: &det, count: 1)
+                    dstoffset += 1
+                }
+            }
+            let retndim = mfarray.ndim - 2 != 0 ? mfarray.ndim - 2 : 1
+            let newmfstructure = withDummyShapeStridesMBPtr(retndim){
+                [unowned mfarray] (shapeptr, stridesptr) in
+                
+                //shape
+                if mfarray.ndim - 2 != 0{
+                    mfarray.withShapeUnsafeMBPtr{
+                        shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: retndim)
+                    }
+                    
+                    //strides
+                    let newstridesptr = shape2strides(shapeptr, mforder: .Row)
+                    stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+                    
+                    newstridesptr.deallocate()
+                }
+                else{
+                    shapeptr[0] = 1
+                    stridesptr[0] = 1
+                }
+                
+            }
+            
+            return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+            
+        case .Double:
+            let newmfdata = try withDummyDataMRPtr(.Double, storedSize: retSize){
+                dstptr in
+                let dstptrF = dstptr.bindMemory(to: Double.self, capacity: retSize)
+                
+                var dstoffset = 0
+                try _withNNStackedColumnMajorPtr(mfarray: mfarray, type: Double.self){
+                    srcptr, squaredSize, offset in
+                    //LU decomposition
+                    let IPIV = try LU_by_lapack(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: dgetrf_)
+                    
+                    //calculate L and U's determinant
+                    //Note that L and U's determinant are calculated by product of diagonal elements
+                    // L's determinant is always one
+                    //ref: https://stackoverflow.com/questions/47315471/compute-determinant-from-lu-decomposition-in-lapack
+                    var det = Double(1)
+                    for i in 0..<squaredSize{
+                        det *= IPIV[i] != __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*squaredSize).pointee : -(srcptr.advanced(by: i + i*squaredSize).pointee)
+                    }
+                    
+                    //move
+                    (dstptrF + dstoffset).moveAssign(from: &det, count: 1)
+                    dstoffset += 1
+                }
+            }
+            let retndim = mfarray.ndim - 2 != 0 ? mfarray.ndim - 2 : 1
+            let newmfstructure = withDummyShapeStridesMBPtr(retndim){
+                [unowned mfarray] (shapeptr, stridesptr) in
+                
+                //shape
+                if mfarray.ndim - 2 != 0{
+                    mfarray.withShapeUnsafeMBPtr{
+                        shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: retndim)
+                    }
+                    
+                    //strides
+                    let newstridesptr = shape2strides(shapeptr, mforder: .Row)
+                    stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+                    
+                    newstridesptr.deallocate()
+                }
+                else{
+                    shapeptr[0] = 1
+                    stridesptr[0] = 1
+                }
+                
+            }
             return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
         }
 

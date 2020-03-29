@@ -7,6 +7,7 @@ final class LinAlgTests: XCTestCase {
     static var allTests = [
         ("testSolve", testSolve),
         ("testInv", testInv),
+        ("testDet", testDet)
     ]
     
     func testSolve() {
@@ -56,6 +57,23 @@ final class LinAlgTests: XCTestCase {
                                                 [ 1.5 , -0.5 ]],
                                                                      [[-1.25,  0.75],
                                                                       [ 0.75, -0.25]]], mftype: .Double))
+        }
+    }
+    
+    func testDet(){
+        
+        do{
+            let a = MfArray([[1, 2], [3, 4]])
+            XCTAssertEqual(try Matft.mfarray.linalg.det(a), MfArray([-2.0], mftype: .Float))
+        }
+        
+        do{
+            let a = MfArray([[[1.0, 2.0],
+                              [3.0, 4.0]],
+                             
+                             [[1.0, 3.0],
+                              [3.0, 5.0]]], mftype: .Double)
+            XCTAssertEqual(try Matft.mfarray.linalg.det(a), MfArray([-2.0, -4.0], mftype: .Double))
         }
     }
 }
