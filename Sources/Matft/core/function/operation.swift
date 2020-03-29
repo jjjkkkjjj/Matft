@@ -279,7 +279,7 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
     retshape[retndim - 1] = rshape[retndim - 1]
     
     // order
-    // must be row column major
+    // must be row major
     let retorder = _matmul_convorder(&lmfarray, &rmfarray)
     
     let newmfstructure = withDummyShapeStridesMBPtr(retndim){
@@ -386,6 +386,7 @@ fileprivate func _matmul_convorder(_ lmfarray: inout MfArray, _ rmfarray: inout 
     else{
         retorder = lmfarray.mfflags.row_contiguous ? .Row : .Column
     }*/
+    //must be row major
     let retorder = MfOrder.Row
     if !(lmfarray.mfflags.row_contiguous && rmfarray.mfflags.row_contiguous){//convert row major
         if !rmfarray.mfflags.row_contiguous{
@@ -461,20 +462,6 @@ fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: ino
         }
         //print(Array<Int>(UnsafeBufferPointer<Int>(start: l_mfstructure._shape, count: l_mfstructure._ndim)))
         //print(Array<Int>(UnsafeBufferPointer<Int>(start: r_mfstructure._shape, count: r_mfstructure._ndim)))
-        let l_mfdata = withDummyDataMRPtr(lmfarray.mftype, storedSize: lmfarray.storedSize){
-            dstptr in
-            lmfarray.withDataUnsafeMRPtr{
-                [unowned lmfarray] (srcptr) in
-                dstptr.copyMemory(from: srcptr, byteCount: lmfarray.storedByteSize)
-            }
-        }
-        let r_mfdata = withDummyDataMRPtr(rmfarray.mftype, storedSize: rmfarray.storedSize){
-            dstptr in
-            rmfarray.withDataUnsafeMRPtr{
-                [unowned rmfarray] (srcptr) in
-                dstptr.copyMemory(from: srcptr, byteCount: rmfarray.storedByteSize)
-            }
-        }
         
         lmfarray = MfArray(base: lmfarray, mfstructure: l_mfstructure, offset: lmfarray.offsetIndex)
         rmfarray = MfArray(base: rmfarray, mfstructure: r_mfstructure, offset: rmfarray.offsetIndex)

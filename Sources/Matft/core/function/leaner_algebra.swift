@@ -105,35 +105,22 @@ extension Matft.mfarray.linalg{
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
         
-        let squaredSize = shape[mfarray.ndim - 1]
-        let matricesNum = mfarray.size / (squaredSize * squaredSize)
-        
-        
-        
         switch mfarray.storedType {
         case .Float:
-            let mfarray = to_column_major(mfarray.astype(.Float))
-            
             let newmfdata = try withDummyDataMRPtr(.Float, storedSize: mfarray.size){
                 dstptr in
                 let dstptrF = dstptr.bindMemory(to: Float.self, capacity: mfarray.size)
-                try mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
-                    srcptr in
-                    var offset = 0
-                    for _ in 0..<matricesNum{
-                        //create eye matrix, fortunately, eye matrix can be any order
-                        var eye = Array(repeating: Float(0), count: squaredSize * squaredSize)
-                        for i in 0..<squaredSize{
-                            eye[i + i*squaredSize] = Float(1)
-                        }
-
-                        try solve_by_lapack(copiedCoefPtr: srcptr.baseAddress! + offset, squaredSize, &eye, squaredSize, sgesv_)
-
-                        //move
-                        (dstptrF + offset).moveAssign(from: &eye, count: squaredSize*squaredSize)
-                        
-                        offset += squaredSize * squaredSize
-                    }
+                
+                try _withNNStackedColumnMajorPtr(mfarray: mfarray, type: Float.self){
+                    srcptr, squaredSize, offset in
+                    //LU decomposition
+                    var IPIV = try LU_by_lapack(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: sgetrf_)
+                    
+                    //calculate inv
+                    try inv_by_lapack(squaredSize, srcdstptr: srcptr, &IPIV, lapack_func: sgetri_)
+                    
+                    //move
+                    (dstptrF + offset).moveAssign(from: srcptr, count: squaredSize*squaredSize)
                 }
             }
             
@@ -147,7 +134,7 @@ extension Matft.mfarray.linalg{
                 }
                 
                 //strides
-                let newstridesptr = shape2strides(shapeptr, mforder: .Column)
+                let newstridesptr = shape2strides(shapeptr, mforder: .Row)
                 stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
                 
                 newstridesptr.deallocate()
@@ -156,32 +143,25 @@ extension Matft.mfarray.linalg{
             return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
             
         case .Double:
-            let mfarray = to_column_major(mfarray.astype(.Double))
-            
             let newmfdata = try withDummyDataMRPtr(.Double, storedSize: mfarray.size){
                 dstptr in
                 let dstptrD = dstptr.bindMemory(to: Double.self, capacity: mfarray.size)
-                try mfarray.withDataUnsafeMBPtrT(datatype: Double.self){
-                    srcptr in
-                    var offset = 0
-                    for _ in 0..<matricesNum{
-                        //create eye matrix, fortunately, eye matrix can be any order
-                        var eye = Array(repeating: Double(0), count: squaredSize * squaredSize)
-                        for i in 0..<squaredSize{
-                            eye[i*i] = Double(1)
-                        }
-
-                        try solve_by_lapack(copiedCoefPtr: srcptr.baseAddress! + offset, squaredSize, &eye, squaredSize, dgesv_)
-                        //move
-                        (dstptrD + offset).moveAssign(from: &eye, count: squaredSize*squaredSize)
-                        
-                        offset += squaredSize * squaredSize
-                    }
+                
+                try _withNNStackedColumnMajorPtr(mfarray: mfarray, type: Double.self){
+                    srcptr, squaredSize, offset in
+                    //LU decomposition
+                    var IPIV = try LU_by_lapack(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: dgetrf_)
+                    
+                    //calculate inv
+                    try inv_by_lapack(squaredSize, srcdstptr: srcptr, &IPIV, lapack_func: dgetri_)
+                    
+                    //move
+                    (dstptrD + offset).moveAssign(from: srcptr, count: squaredSize*squaredSize)
                 }
             }
             
             let newmfstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
-                shapeptr, stridesptr in
+                [unowned mfarray] (shapeptr, stridesptr) in
                 
                 //shape
                 mfarray.withShapeUnsafeMBPtr{
@@ -190,7 +170,7 @@ extension Matft.mfarray.linalg{
                 }
                 
                 //strides
-                let newstridesptr = shape2strides(shapeptr, mforder: .Column)
+                let newstridesptr = shape2strides(shapeptr, mforder: .Row)
                 stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
                 
                 newstridesptr.deallocate()
@@ -202,3 +182,22 @@ extension Matft.mfarray.linalg{
     }
 }
 
+/**
+    - Important: This function for last shape is NxN
+ */
+fileprivate func _withNNStackedColumnMajorPtr<T: MfStorable>(mfarray: MfArray, type: T.Type, _ body: (UnsafeMutablePointer<T>, Int, Int) throws -> Void) rethrows -> Void{
+    let shape = mfarray.shape
+    let squaredSize = shape[mfarray.ndim - 1]
+    let matricesNum = mfarray.size / (squaredSize * squaredSize)
+    
+    // get stacked row major and copy
+    let rowmajorMfarray = to_row_major(mfarray)
+    var offset = 0
+    try rowmajorMfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        for _ in 0..<matricesNum{
+            try body($0.baseAddress! + offset, squaredSize, offset)
+            
+            offset += squaredSize * squaredSize
+        }
+    }
+}
