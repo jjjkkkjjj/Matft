@@ -600,18 +600,53 @@ You can set **MfSlice** (see below's list) to subscript.
 I use ``Accelerate``, so all of MfArray operation may keep high performance.
 
 ```swift
-let c = Matft.mfarray.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
-let d = c.transpose(axes: [0,3,4,2,1,5])
-let e = c.T
+func testPefAdd1() {
+        do{
+            let a = Matft.mfarray.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
+            let b = Matft.mfarray.arange(start: 0, to: -10*10*10*10*10*10, by: -1, shape: [10,10,10,10,10,10])
+            
+            self.measure {
+                let _ = a+b
+            }
+            /*
+             '-[MatftTests.ArithmeticPefTests testPefAdd1]' measured [Time, seconds] average: 0.001, relative standard deviation: 23.418%, values: [0.001707, 0.001141, 0.000999, 0.000969, 0.001029, 0.000979, 0.001031, 0.000986, 0.000963, 0.001631]
+            1.14ms
+             */
+        }
+    }
+    
+    func testPefAdd2(){
+        do{
+            let a = Matft.mfarray.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
+            let b = a.transpose(axes: [0,3,4,2,1,5])
+            let c = a.T
+            
+            self.measure {
+                let _ = b+c
+            }
+            /*
+             '-[MatftTests.ArithmeticPefTests testPefAdd2]' measured [Time, seconds] average: 0.004, relative standard deviation: 5.842%, values: [0.004680, 0.003993, 0.004159, 0.004564, 0.003955, 0.004200, 0.003998, 0.004317, 0.003919, 0.004248]
+            4.20ms
+             */
+        }
+    }
 
-self.measure {
-  let _ = d+e
-}
-/*
-Case '-[MatftTests.MatftTests testExample]' measured [Time, seconds] average: 0.005, relative standard deviation: 15.116%, values: [0.005595, 0.003951, 0.004055, 0.004021, 0.005191, 0.004023, 0.004660, 0.003965, 0.005272, 0.005776]
-*/
+    func testPefAdd3(){
+        do{
+            let a = Matft.mfarray.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
+            let b = a.transpose(axes: [1,2,3,4,5,0])
+            let c = a.T
+            
+            self.measure {
+                let _ = b+c
+            }
+            /*
+             '-[MatftTests.ArithmeticPefTests testPefAdd3]' measured [Time, seconds] average: 0.004, relative standard deviation: 16.815%, values: [0.004906, 0.003785, 0.003702, 0.005981, 0.004261, 0.003665, 0.004083, 0.003654, 0.003836, 0.003874]
+            4.17ms
+             */
+        }
 ```
-Numpy was 1.15 tmes faster than matft...
+Matft is almost same performance as Numpy!!!
 
 ※Swift's performance test was conducted in release mode
 
@@ -622,11 +657,31 @@ import numpy as np
 #import timeit
 
 a = np.arange(10**6).reshape((10,10,10,10,10,10))
+b = np.arange(0, -10**6, -1).reshape((10,10,10,10,10,10))
+
+#timeit.timeit("b+c", repeat=10, globals=globals())
+%timeit -n 10 a+b
+"""
+962 µs ± 273 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+"""
+
+a = np.arange(10**6).reshape((10,10,10,10,10,10))
 b = a.transpose((0,3,4,2,1,5))
 c = a.T
 #timeit.timeit("b+c", repeat=10, globals=globals())
 %timeit -n 10 b+c
-###4.32 ms ± 988 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+"""
+5.68 ms ± 1.45 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+"""
+
+a = np.arange(10**6).reshape((10,10,10,10,10,10))
+b = a.transpose((1,2,3,4,5,0))
+c = a.T
+#timeit.timeit("b+c", repeat=10, globals=globals())
+%timeit -n 10 b+c
+"""
+3.92 ms ± 897 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+"""
 ```
 
 
