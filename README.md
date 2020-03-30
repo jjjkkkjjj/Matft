@@ -646,11 +646,11 @@ func testPefAdd1() {
              */
         }
 ```
-Matft is almost same performance as Numpy!!!
+Matft achieved almost same performance as Numpy!!!
 
 ※Swift's performance test was conducted in release mode
 
-However, my codes have several overhead and redundant part so this performance could be better than now.
+My codes have several overhead and redundant part so this performance could be better than now.
 
 ```python
 import numpy as np
