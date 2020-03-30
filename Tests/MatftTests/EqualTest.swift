@@ -26,14 +26,14 @@ final class EqualTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, stop: 8, step: 1, shape: [2,2,2])
+            let a = Matft.mfarray.arange(start: 0, to: 8, by: 1, shape: [2,2,2])
             let b = MfArray([[[0,1],
                              [2,3]],
             
                              [[4,5],
                               [6,7]]])
             XCTAssertTrue(a == b)
-            XCTAssertFalse(a[0~,0~,~~-1] == Matft.mfarray.arange(start: 7, stop: -1, step: -1, shape: [2,2,2]))
+            XCTAssertFalse(a[0~,0~,~~-1] == Matft.mfarray.arange(start: 7, to: -1, by: -1, shape: [2,2,2]))
             
         }
     }
@@ -56,7 +56,7 @@ final class EqualTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, stop: 8, step: 1, shape: [2,2,2])
+            let a = Matft.mfarray.arange(start: 0, to: 8, by: 1, shape: [2,2,2])
             let b = MfArray([[[0,1],
                              [2,3]],
             
@@ -68,7 +68,7 @@ final class EqualTests: XCTestCase {
                                              [[true,true],
                                               [true,true]]]))
             
-            XCTAssertEqual(a[0~,0~,~~-1] === Matft.mfarray.arange(start: 7, stop: -1, step: -1, shape: [2,2,2]),
+            XCTAssertEqual(a[0~,0~,~~-1] === Matft.mfarray.arange(start: 7, to: -1, by: -1, shape: [2,2,2]),
                                     MfArray([[[false,false],
                                               [false,false]],
             

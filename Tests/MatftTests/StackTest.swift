@@ -34,7 +34,7 @@ final class StackTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, stop: 4*4, step: 1, shape: [4,4], mftype: .UInt8).T
+            let a = Matft.mfarray.arange(start: 0, to: 4*4, by: 1, shape: [4,4], mftype: .UInt8).T
             let b = MfArray([[-5, 3, 2, 4],
                              [-9, 3, 1, 1]], mftype: .UInt8, mforder: .Column)
             XCTAssertEqual(Matft.mfarray.hstack([a, b.T]), MfArray([[  0,   4,   8,  12, 251, 247],
@@ -72,7 +72,7 @@ final class StackTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, stop: 4*4, step: 1, shape: [4,4], mftype: .UInt8).T
+            let a = Matft.mfarray.arange(start: 0, to: 4*4, by: 1, shape: [4,4], mftype: .UInt8).T
             let b = MfArray([[-5, 3, 2, 4],
                              [-9, 3, 1, 1]], mftype: .UInt8, mforder: .Column)
             XCTAssertEqual(Matft.mfarray.vstack([a, b]), MfArray([[  0,   4,   8,  12],
@@ -111,7 +111,7 @@ final class StackTests: XCTestCase {
                                                                                 [-0.87, 1.2, 5.5134, -8.78],
                                                                                 [-0.0002, 2, 3.4, -5]]))
             
-            let e = Matft.mfarray.arange(start: 0, stop: 4*4, step: 1, shape: [4,4], mftype: .UInt8).T
+            let e = Matft.mfarray.arange(start: 0, to: 4*4, by: 1, shape: [4,4], mftype: .UInt8).T
             let f = MfArray([[-5, 3, 2, 4],
                              [-9, 3, 1, 1]], mftype: .UInt8, mforder: .Column)
             XCTAssertEqual(Matft.mfarray.concatenate([e, f.T], axis: -1), MfArray([[  0,   4,   8,  12, 251, 247],
@@ -128,8 +128,8 @@ final class StackTests: XCTestCase {
         }
 
         do{
-            let a = Matft.mfarray.arange(start: 0, stop: 6, step: 0.2, shape: [2,5,3])
-            let b = Matft.mfarray.arange(start: 1, stop: 13, step: 1, shape: [2,2,3], mforder: .Column)
+            let a = Matft.mfarray.arange(start: 0, to: 6, by: 0.2, shape: [2,5,3])
+            let b = Matft.mfarray.arange(start: 1, to: 13, by: 1, shape: [2,2,3], mforder: .Column)
             
             XCTAssertEqual(Matft.mfarray.concatenate([a, b], axis: 1), MfArray([[[ 0.0 ,  0.2,  0.4],
                                                                                  [ 0.6,  0.8,  1.0 ],

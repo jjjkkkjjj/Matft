@@ -11,7 +11,7 @@ final class SubscriptTests: XCTestCase {
     
     func testScalar() {
         do{
-            let a = Matft.mfarray.arange(start: 0, stop: 27, step: 1, shape: [3,3,3])
+            let a = Matft.mfarray.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
             XCTAssertEqual(a[2,1,0] as! Int, 21)
             XCTAssertEqual(a[0,0,0] as! Int, 0)
             XCTAssertEqual(a[2,0,2] as! Int, 20)
@@ -29,7 +29,7 @@ final class SubscriptTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, stop: 4*4*4, step: 1, shape: [4,4,4], mftype: .UInt).T
+            let a = Matft.mfarray.arange(start: 0, to: 4*4*4, by: 1, shape: [4,4,4], mftype: .UInt).T
             
             XCTAssertEqual(a[3,2,0] as! UInt, UInt(11))
             XCTAssertEqual(a[0,0,2] as! UInt, UInt(32))
@@ -43,7 +43,7 @@ final class SubscriptTests: XCTestCase {
     func testSlicing(){
         
         do{
-            let a = Matft.mfarray.arange(start: 0, stop: 27*2, step: 2, shape: [3,3,3], mftype: .Double, mforder: .Column)
+            let a = Matft.mfarray.arange(start: 0, to: 27*2, by: 2, shape: [3,3,3], mftype: .Double, mforder: .Column)
             XCTAssertEqual(a[~1], MfArray([[[ 0, 18, 36],
                                             [ 6, 24, 42],
                                             [12, 30, 48]]], mftype: .Double))

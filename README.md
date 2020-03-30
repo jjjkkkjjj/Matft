@@ -16,7 +16,7 @@
           
                    [[ 0,  1,  2,  3],
                     [ 4,  5,  6,  7]]])
-  let aa = Matft.mfarray.arange(start: -8, stop: 8, step: 1, shape: [2,2,4])
+  let aa = Matft.mfarray.arange(start: -8, to: 8, by: 1, shape: [2,2,4])
   print(a)
   print(aa)
   /*
@@ -147,7 +147,7 @@ You can set **MfSlice** (see below's list) to subscript.
 
 - Normal indexing
   ```swift  
-  let a = Matft.mfarray.arange(start: 0, stop: 27, step: 1, shape: [3,3,3])
+  let a = Matft.mfarray.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
   print(a)
   /*
   mfarray = 
@@ -248,7 +248,7 @@ You can set **MfSlice** (see below's list) to subscript.
 - Note that returned subscripted mfarray will have ``View`` property. See [numpy doc](https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.view.html) in detail.
 
   ```swift
-  let a = Matft.mfarray.arange(start: 0, stop: 27, step: 1, shape: [3,3,3])
+  let a = Matft.mfarray.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
   print(a)
   /*
   mfarray = 
@@ -299,7 +299,7 @@ You can set **MfSlice** (see below's list) to subscript.
 - You can get transposed mfarray by using method ``T``, ``transpose(axes: [Int]? = nil)`` or ``Matft.mfarray.transpose(axes: [Int]? = nil)``
 
   ```swift
-  let a = Matft.mfarray.arange(start: 0, stop: 27, step: 1, shape: [3,3,3])
+  let a = Matft.mfarray.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
   print(a.T)
   print(a.transpose(axes: [0,2,1]))
   /*
@@ -335,7 +335,7 @@ You can set **MfSlice** (see below's list) to subscript.
 - Reshape is also available. Use method ``reshape(_ axis: [Int])`` or ``Matft.mfarray.reshape(_ axis: [Int])``
 
   ```swift
-  let b = Matft.mfarray.arange(start: 0, stop: 16, step: 1, shape: [2,4,2])
+  let b = Matft.mfarray.arange(start: 0, to: 16, by: 1, shape: [2,4,2])
   print(b.reshape([4,4]))
   print(b.reshape([1,2,1,8]))
   /*
@@ -358,8 +358,8 @@ You can set **MfSlice** (see below's list) to subscript.
 - Element-wise arithmetic operation is available.
 
   ```swift
-  let a = Matft.mfarray.arange(start: 1, stop: 9, step: 2, shape: [2,2])
-  let b = Matft.mfarray.arange(start: 1, stop: 5, step: 1, shape: [2,2])
+  let a = Matft.mfarray.arange(start: 1, to: 9, by: 2, shape: [2,2])
+  let b = Matft.mfarray.arange(start: 1, to: 5, by: 1, shape: [2,2])
   print(a)
   /*
   mfarray = 
@@ -398,7 +398,7 @@ You can set **MfSlice** (see below's list) to subscript.
 - When either mfarray is insufficient data for element-wise operation, the one will be broadcasted automatically and calculated.
 
   ```swift
-  let a = Matft.mfarray.arange(start: 1, stop: 9, step: 2, shape: [2,2])
+  let a = Matft.mfarray.arange(start: 1, to: 9, by: 2, shape: [2,2])
   let c = MfArray([-100,100])
   print(a+c)
   /*
@@ -415,7 +415,7 @@ You can set **MfSlice** (see below's list) to subscript.
 - You can create mfarray with basic math function such like ``sin, cos, tan, log, exp,...etc.``
 
   ```swift
-  let a = Matft.mfarray.arange(start: 0, stop: 4, step: 1)
+  let a = Matft.mfarray.arange(start: 0, to: 4, by: 1)
   print(a)
   print(Matft.mfarray.math.sin(a))
   print(Matft.mfarray.math.cos(a))
@@ -521,8 +521,8 @@ You can set **MfSlice** (see below's list) to subscript.
   ※Note that if you input mfarray's dimension is more than 3, it is treated as a stack of matrices residing in the last two indexes and broadcast accordingly. (See [numpy doc](https://docs.scipy.org/doc/numpy/reference/generated/numpy.matmul.html) in detail)
 
   ```swift
-  let a = Matft.mfarray.arange(start: 1, stop: 5, step: 1, shape: [2,2])
-  let b = Matft.mfarray.arange(start: 5, stop: 9, step: 1, shape: [2,2])
+  let a = Matft.mfarray.arange(start: 1, to: 5, by: 1, shape: [2,2])
+  let b = Matft.mfarray.arange(start: 5, to: 9, by: 1, shape: [2,2])
   print(a)
   print(b)
   /*
@@ -600,7 +600,7 @@ You can set **MfSlice** (see below's list) to subscript.
 I use ``Accelerate``, so all of MfArray operation may keep high performance.
 
 ```swift
-let c = Matft.mfarray.arange(start: 0, stop: 10*10*10*10*10*10, step: 1, shape: [10,10,10,10,10,10])
+let c = Matft.mfarray.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
 let d = c.transpose(axes: [0,3,4,2,1,5])
 let e = c.T
 

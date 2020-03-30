@@ -33,7 +33,7 @@ final class ArithmeticTests: XCTestCase {
             XCTAssertEqual(a * b, MfArray([[     6, -22363],
                                            [  -110,   -172]]))
             XCTAssertEqual(a / b, MfArray([[ 1.5       , -0.01614274],
-                                           [-4.4       , -0.09302326]], mftype: .Int))
+                                           [-4.4       , -0.09302326]], mftype: .Float))
         }
 
         do{
@@ -60,7 +60,7 @@ final class ArithmeticTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, stop: 4*4, step: 1, shape: [4,4], mftype: .UInt8).T
+            let a = Matft.mfarray.arange(start: 0, to: 4*4, by: 1, shape: [4,4], mftype: .UInt8).T
             let b = MfArray([[-5, 3, 2, 4],
                              [-9, 3, 1, 1],
                              [22, 17, 0, -2],
@@ -91,7 +91,7 @@ final class ArithmeticTests: XCTestCase {
         do{
             let a = MfArray([[1, 3, 5],
                             [2, -4, -1]])
-            let b = Matft.mfarray.arange(start: 0, stop: 2*3*3, step: 1, shape: [3, 2, 3])
+            let b = Matft.mfarray.arange(start: 0, to: 2*3*3, by: 1, shape: [3, 2, 3])
             
             XCTAssertEqual(a+b, MfArray([[[ 1,  4,  7],
                                           [ 5,  0,  4]],
@@ -134,8 +134,8 @@ final class ArithmeticTests: XCTestCase {
     func testNegativeIndexing(){
         
         do{
-            let a = Matft.mfarray.arange(start: 0, stop: 3*3*3*2, step: 2, shape: [3, 3, 3])
-            let b = Matft.mfarray.arange(start: 0, stop: 3*3*3, step: 1, shape: [3, 3, 3])
+            let a = Matft.mfarray.arange(start: 0, to: 3*3*3*2, by: 2, shape: [3, 3, 3])
+            let b = Matft.mfarray.arange(start: 0, to: 3*3*3, by: 1, shape: [3, 3, 3])
             let c = a[~~-1]
             let d = b[2, 1, ~~-1]
             

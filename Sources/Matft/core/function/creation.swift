@@ -86,8 +86,8 @@ extension Matft.mfarray{
             - mftype: (Optional) the type of mfarray
             - order: (Optional) order, default is nil, which means close to row major
     */
-    static public func arange<T: Strideable>(start: T, stop: T, step: T.Stride, shape: [Int]? = nil, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
-        return MfArray(Array(stride(from: start, to: stop, by: step)), mftype: mftype, shape: shape, mforder: mforder)
+    static public func arange<T: Strideable>(start: T, to: T, by: T.Stride, shape: [Int]? = nil, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
+        return MfArray(Array(stride(from: start, to: to, by: by)), mftype: mftype, shape: shape, mforder: mforder)
     }
     /**
        Create identity matrix. The size is (dim, dim)

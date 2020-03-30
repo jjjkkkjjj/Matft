@@ -42,7 +42,7 @@ final class MatMulTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, stop: 4*4, step: 1, shape: [4,4], mftype: .UInt8).T
+            let a = Matft.mfarray.arange(start: 0, to: 4*4, by: 1, shape: [4,4], mftype: .UInt8).T
             let b = MfArray([[-5, 3, 2, 4],
                              [-9, 3, 1, 1],
                              [22, 17, 0, -2],
@@ -62,8 +62,8 @@ final class MatMulTests: XCTestCase {
     //element-wise
     func testBroadCast(){
         do{
-            let a =  Matft.mfarray.arange(start: 0, stop: 2*2*4, step: 1, shape: [2, 2, 4])
-            let b = Matft.mfarray.arange(start: 0, stop: 2*2*4, step: 1, shape: [2, 4, 2])
+            let a =  Matft.mfarray.arange(start: 0, to: 2*2*4, by: 1, shape: [2, 2, 4])
+            let b = Matft.mfarray.arange(start: 0, to: 2*2*4, by: 1, shape: [2, 4, 2])
             
             XCTAssertEqual(a*&b, MfArray([[[ 28,  34],
                                            [ 76,  98]],
@@ -88,8 +88,8 @@ final class MatMulTests: XCTestCase {
     }
     
     func testNegativeIndexing(){
-        let a = Matft.mfarray.arange(start: 0, stop: 3*3*3*2, step: 2, shape: [3, 3, 3])
-        let b = Matft.mfarray.arange(start: 0, stop: 3*3*3, step: 1, shape: [3, 3, 3])
+        let a = Matft.mfarray.arange(start: 0, to: 3*3*3*2, by: 2, shape: [3, 3, 3])
+        let b = Matft.mfarray.arange(start: 0, to: 3*3*3, by: 1, shape: [3, 3, 3])
         let c = a[~~-1]
         let d = b[2, 0~, ~~-1]
 
