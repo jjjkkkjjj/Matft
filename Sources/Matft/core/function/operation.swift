@@ -141,30 +141,30 @@ fileprivate func _binary_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _
     case .add:
         switch MfType.storedType(rettype){
         case .Float:
-            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
         case .Double:
-            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
         }
     case .sub:
         switch MfType.storedType(rettype){
         case .Float:
-            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
         case .Double:
-            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD)
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD)
         }
     case .mul:
         switch MfType.storedType(rettype){
         case .Float:
-            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul)
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul)
         case .Double:
-            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmulD)
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmulD)
         }
     case .div:
         switch MfType.storedType(rettype){
         case .Float:
-            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv).astype(.Float)
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv).astype(.Float)
         case .Double:
-            return biop_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
         }
     default:
         fatalError()

@@ -23,11 +23,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func sin(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvsinf)
+            let ret = math_vv_by_vForce(mfarray, vvsinf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvsin)
+            let ret = math_vv_by_vForce(mfarray, vvsin)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -40,11 +40,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func asin(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvasinf)
+            let ret = math_vv_by_vForce(mfarray, vvasinf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvasin)
+            let ret = math_vv_by_vForce(mfarray, vvasin)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -57,11 +57,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func sinh(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvsinhf)
+            let ret = math_vv_by_vForce(mfarray, vvsinhf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvsinh)
+            let ret = math_vv_by_vForce(mfarray, vvsinh)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -74,11 +74,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func asinh(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvasinhf)
+            let ret = math_vv_by_vForce(mfarray, vvasinhf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvasinh)
+            let ret = math_vv_by_vForce(mfarray, vvasinh)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -91,11 +91,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func cos(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvcosf)
+            let ret = math_vv_by_vForce(mfarray, vvcosf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvcos)
+            let ret = math_vv_by_vForce(mfarray, vvcos)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -108,11 +108,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func acos(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvacosf)
+            let ret = math_vv_by_vForce(mfarray, vvacosf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvacos)
+            let ret = math_vv_by_vForce(mfarray, vvacos)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -125,11 +125,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func cosh(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvcoshf)
+            let ret = math_vv_by_vForce(mfarray, vvcoshf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvcosh)
+            let ret = math_vv_by_vForce(mfarray, vvcosh)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -142,11 +142,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func acosh(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvacoshf)
+            let ret = math_vv_by_vForce(mfarray, vvacoshf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvacosh)
+            let ret = math_vv_by_vForce(mfarray, vvacosh)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -159,11 +159,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func tan(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvtanf)
+            let ret = math_vv_by_vForce(mfarray, vvtanf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvtan)
+            let ret = math_vv_by_vForce(mfarray, vvtan)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -176,11 +176,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func atan(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvatanf)
+            let ret = math_vv_by_vForce(mfarray, vvatanf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvatan)
+            let ret = math_vv_by_vForce(mfarray, vvatan)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -193,11 +193,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func tanh(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvtanhf)
+            let ret = math_vv_by_vForce(mfarray, vvtanhf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvtanh)
+            let ret = math_vv_by_vForce(mfarray, vvtanh)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -210,11 +210,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func atanh(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvatanhf)
+            let ret = math_vv_by_vForce(mfarray, vvatanhf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvatanh)
+            let ret = math_vv_by_vForce(mfarray, vvatanh)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -232,11 +232,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func sqrt(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvsqrtf)
+            let ret = math_vv_by_vForce(mfarray, vvsqrtf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvsqrt)
+            let ret = math_vv_by_vForce(mfarray, vvsqrt)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -249,11 +249,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func rsqrt(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvrsqrtf)
+            let ret = math_vv_by_vForce(mfarray, vvrsqrtf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvrsqrt)
+            let ret = math_vv_by_vForce(mfarray, vvrsqrt)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -266,11 +266,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func exp(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvexpf)
+            let ret = math_vv_by_vForce(mfarray, vvexpf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvexp)
+            let ret = math_vv_by_vForce(mfarray, vvexp)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -283,11 +283,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func log(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvlogf)
+            let ret = math_vv_by_vForce(mfarray, vvlogf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvlog)
+            let ret = math_vv_by_vForce(mfarray, vvlog)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -300,11 +300,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func log2(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvlog2f)
+            let ret = math_vv_by_vForce(mfarray, vvlog2f)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvlog2)
+            let ret = math_vv_by_vForce(mfarray, vvlog2)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -317,11 +317,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func log10(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvlog10f)
+            let ret = math_vv_by_vForce(mfarray, vvlog10f)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvlog10)
+            let ret = math_vv_by_vForce(mfarray, vvlog10)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -339,11 +339,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func ceil(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvceilf)
+            let ret = math_vv_by_vForce(mfarray, vvceilf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvceil)
+            let ret = math_vv_by_vForce(mfarray, vvceil)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -356,11 +356,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func floor(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvfloorf)
+            let ret = math_vv_by_vForce(mfarray, vvfloorf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvfloor)
+            let ret = math_vv_by_vForce(mfarray, vvfloor)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -373,11 +373,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func trunc(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvintf)
+            let ret = math_vv_by_vForce(mfarray, vvintf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvint)
+            let ret = math_vv_by_vForce(mfarray, vvint)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -390,11 +390,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func nearest(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvnintf)
+            let ret = math_vv_by_vForce(mfarray, vvnintf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvnint)
+            let ret = math_vv_by_vForce(mfarray, vvnint)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -412,11 +412,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func abs(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvfabsf)
+            let ret = math_vv_by_vForce(mfarray, vvfabsf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvfabs)
+            let ret = math_vv_by_vForce(mfarray, vvfabs)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -429,11 +429,11 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     public static func reciprocal(_ mfarray: MfArray) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            let ret = math_vv_by_vecLib(mfarray, vvrecf)
+            let ret = math_vv_by_vForce(mfarray, vvrecf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = math_vv_by_vecLib(mfarray, vvrec)
+            let ret = math_vv_by_vForce(mfarray, vvrec)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -450,12 +450,12 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
         switch mfarray.storedType {
         case .Float:
             var exp = Array<Float>(repeating: exponents, count: mfarray.storedSize)
-            let ret = math_1arg_vv_by_vecLib(mfarray, &exp, vvpowf)
+            let ret = math_1arg_vv_by_vForce(mfarray, &exp, vvpowf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
             var exp = Array<Double>(repeating: Double(exponents), count: mfarray.storedSize)
-            let ret = math_1arg_vv_by_vecLib(mfarray, &exp, vvpow)
+            let ret = math_1arg_vv_by_vForce(mfarray, &exp, vvpow)
             ret.mfdata._mftype = .Double
             return ret
         }
@@ -479,13 +479,13 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
         switch mfarray.storedType {
         case .Float:
             let ret = exponents.withDataUnsafeMBPtrT(datatype: Float.self){
-                math_1arg_vv_by_vecLib(mfarray, $0.baseAddress!, vvpowf)
+                math_1arg_vv_by_vForce(mfarray, $0.baseAddress!, vvpowf)
             }
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
             let ret = exponents.withDataUnsafeMBPtrT(datatype: Double.self){
-                math_1arg_vv_by_vecLib(mfarray, $0.baseAddress!, vvpow)
+                math_1arg_vv_by_vForce(mfarray, $0.baseAddress!, vvpow)
             }
             ret.mfdata._mftype = .Double
             return ret

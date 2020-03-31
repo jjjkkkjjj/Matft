@@ -7,12 +7,12 @@ import Matft
 final class ArithmeticPefTests: XCTestCase {
     
     static var allTests = [
-        ("testPefAdd1", testPefAdd1),
-        ("testPefAdd2", testPefAdd2),
-        ("testPefAdd3", testPefAdd3),
+        ("testPeformanceAdd1", testPeformanceAdd1),
+        ("testPeformanceAdd2", testPeformanceAdd2),
+        ("testPeformanceAdd3", testPeformanceAdd3),
     ]
     
-    func testPefAdd1() {
+    func testPeformanceAdd1() {
         do{
             let a = Matft.mfarray.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
             let b = Matft.mfarray.arange(start: 0, to: -10*10*10*10*10*10, by: -1, shape: [10,10,10,10,10,10])
@@ -27,7 +27,7 @@ final class ArithmeticPefTests: XCTestCase {
         }
     }
     
-    func testPefAdd2(){
+    func testPeformanceAdd2(){
         do{
             let a = Matft.mfarray.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
             let b = a.transpose(axes: [0,3,4,2,1,5])
@@ -43,7 +43,7 @@ final class ArithmeticPefTests: XCTestCase {
         }
     }
 
-    func testPefAdd3(){
+    func testPeformanceAdd3(){
         do{
             let a = Matft.mfarray.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
             let b = a.transpose(axes: [1,2,3,4,5,0])
