@@ -5,10 +5,63 @@ import Matft
 final class ArithmeticTests: XCTestCase {
     
     static var allTests = [
+        ("test_ms_sm", test_ms_sm),
         ("testSameShape", testSameShape),
         ("testBroadcast", testBroadcast),
         ("testNegativeIndexing", testNegativeIndexing),
     ]
+    
+    func test_ms_sm() {
+        do{
+
+            let a = MfArray([[3, -19],
+                             [-22, 4]])
+            let b = MfArray([[2, 1177],
+                             [5, -43]])
+            
+            XCTAssertEqual(a + 5, MfArray([[  8, -14],
+                                           [-17,   9]]))
+            
+            XCTAssertEqual(a - 6, MfArray([[ -3, -25],
+                                           [-28,  -2]]))
+            XCTAssertEqual(a * 2, MfArray([[  6, -38],
+                                           [-44,   8]]))
+            XCTAssertEqual(a / 3, MfArray([[ 1.0        , -6.33333333],
+                                           [-7.33333333,  1.33333333]], mftype: .Float))
+            
+            XCTAssertEqual(5 + b, MfArray([[   7, 1182],
+                                           [  10,  -38]]))
+            
+            XCTAssertEqual(6 + b, MfArray([[   8, 1183],
+                                           [  11,  -37]]))
+            XCTAssertEqual(2 * b, MfArray([[   4, 2354],
+                                           [  10,  -86]]))
+            XCTAssertEqual(3 / b, MfArray([[ 1.5       ,  0.00254885],
+                                           [ 0.6       , -0.06976744]], mftype: .Float))
+        }
+
+        do{
+            
+            let a = MfArray([[2, 1, -3, 0],
+                             [3, 1, 4, -5]], mforder: .Column)
+
+
+            XCTAssertEqual(a+2, MfArray([[ 4.0,  3.0, -1.0,  2.0],
+                                         [ 5.0,  3.0,  6.0, -3.0]]))
+            XCTAssertEqual(a-3.2, MfArray([[-1.2, -2.2, -6.2, -3.2],
+                                           [-0.2, -2.2,  0.8, -8.2]]))
+
+
+            XCTAssertEqual(a*UInt8(1.3), MfArray([[ 2.0,  1.0, -3.0,  0.0],
+                                                  [ 3.0,  1.0,  4.0, -5.0]]))
+            
+            /*
+            XCTAssertEqual(a/1.3, MfArray([[ 1.53846154,  0.76923077, -2.30769231,  0.0        ],
+                                           [ 2.30769231,  0.76923077,  3.07692308, -3.84615385]]))
+            */
+        }
+        
+    }
     
     func testSameShape() {
         do{

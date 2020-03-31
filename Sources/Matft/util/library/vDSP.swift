@@ -15,6 +15,10 @@ internal typealias vDSP_convert_func<T, U> = (UnsafePointer<T>, vDSP_Stride, Uns
 internal func unsafePtrT2UnsafeMPtrU<T: MfTypable, U: MfTypable>(_ srcptr: UnsafePointer<T>,  _ dstptr: UnsafeMutablePointer<U>, _ vDSP_func: vDSP_convert_func<T, U>, _ count: Int){
     vDSP_func(srcptr, vDSP_Stride(1), dstptr, vDSP_Stride(1), vDSP_Length(count))
 }
+// same above
+fileprivate func _run_preop<T: MfTypable, U: MfTypable>(_ srcptr: UnsafePointer<T>,  _ dstptr: UnsafeMutablePointer<U>, _ count: Int, _ vDSP_func: vDSP_convert_func<T, U>){
+    vDSP_func(srcptr, vDSP_Stride(1), dstptr, vDSP_Stride(1), vDSP_Length(count))
+}
 internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP_convert_func<T, T>) -> MfArray{
     //return mfarray must be either row or column major
     var mfarray = mfarray
@@ -30,7 +34,8 @@ internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP
         let dstptrT = dstptr.bindMemory(to: T.self, capacity: mfarray.storedSize)
         mfarray.withDataUnsafeMBPtrT(datatype: T.self){
             [unowned mfarray] in
-            vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
+            _run_preop($0.baseAddress!, dstptrT, mfarray.storedSize, vDSP_func)
+            //vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
         }
     }
     
@@ -44,16 +49,52 @@ fileprivate func _run_biop_vs<T: MfStorable>(_ srcptr: UnsafePointer<T>, _ scala
     var scalar = scalar
     vDSP_func(srcptr, vDSP_Stride(1), &scalar, dstptr, vDSP_Stride(1), vDSP_Length(count))
 }
-/*
-internal func biop_vs_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T, vDSP_func: vDSP_biop_vs_func<T>) -> MfArray{
+
+internal func biop_vs_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T, _ vDSP_func: vDSP_biop_vs_func<T>) -> MfArray{
+    var mfarray = l_mfarray
+
+    if !(mfarray.mfflags.column_contiguous || mfarray.mfflags.row_contiguous){//neither row nor column contiguous, close to row major
+        mfarray = to_row_major(mfarray)
+    }
     
+    let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.storedSize){
+        dstptr in
+        let dstptrT = dstptr.bindMemory(to: T.self, capacity: mfarray.storedSize)
+        mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            [unowned mfarray] in
+            _run_biop_vs($0.baseAddress!, r_scalar, dstptrT, mfarray.storedSize, vDSP_func)
+        }
+    }
     
-}*/
+    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+}
+
 //binary scalar to vector operation
 internal typealias vDSP_biop_sv_func<T: MfStorable> = (UnsafePointer<T>, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 fileprivate func _run_biop_sv<T: MfStorable>(_ scalar: T, _ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ count: Int, _ vDSP_func: vDSP_biop_sv_func<T>){
     var scalar = scalar
     vDSP_func(&scalar, srcptr, vDSP_Stride(1), dstptr, vDSP_Stride(1), vDSP_Length(count))
+}
+
+internal func biop_sv_by_vDSP<T: MfStorable>(_ l_scalar: T, _ r_mfarray: MfArray, _ vDSP_func: vDSP_biop_sv_func<T>) -> MfArray{
+    var mfarray = r_mfarray
+
+    if !(mfarray.mfflags.column_contiguous || mfarray.mfflags.row_contiguous){//neither row nor column contiguous, close to row major
+        mfarray = to_row_major(mfarray)
+    }
+    
+    let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.storedSize){
+        dstptr in
+        let dstptrT = dstptr.bindMemory(to: T.self, capacity: mfarray.storedSize)
+        mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            [unowned mfarray] in
+            _run_biop_sv(l_scalar, $0.baseAddress!, dstptrT, mfarray.storedSize, vDSP_func)
+        }
+    }
+    
+    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 
 //binary vector to vector operation

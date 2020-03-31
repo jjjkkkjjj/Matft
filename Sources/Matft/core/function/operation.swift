@@ -18,7 +18,51 @@ extension Matft.mfarray{
            - r_mfarray: right mfarray
     */
     public static func add(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        return _binary_operation(l_mfarray, r_mfarray, .add)
+        return _binary_vv_operation(l_mfarray, r_mfarray, .add)
+    }
+    /**
+       Element-wise addition of  mfarray and scalar
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_scalar: right scalar conformed to MfTypable
+    */
+    public static func add<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
+        let r_mfype = MfType.mftype(value: r_scalar as Any)
+        let retmftype = MfType.priority(l_mfarray.mftype, r_mfype)
+        
+        var l_mfarray = l_mfarray
+        if retmftype != l_mfarray.mftype{
+            l_mfarray = l_mfarray.astype(retmftype)
+        }
+        
+        switch MfType.storedType(retmftype) {
+        case .Float:
+            return biop_vs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsadd)
+        case .Double:
+            return biop_vs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsaddD)
+        }
+    }
+    /**
+       Element-wise addition of  mfarray and scalar
+       - parameters:
+           - l_scalar: left scalar conformed to MfTypable
+           - r_mfarray: right mfarray
+    */
+    public static func add<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
+        let l_mfype = MfType.mftype(value: l_scalar as Any)
+        let retmftype = MfType.priority(l_mfype, r_mfarray.mftype)
+        
+        var r_mfarray = r_mfarray
+        if retmftype != r_mfarray.mftype{
+            r_mfarray = r_mfarray.astype(retmftype)
+        }
+        
+        switch MfType.storedType(retmftype) {
+        case .Float:
+            return biop_vs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsadd)
+        case .Double:
+            return biop_vs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_vsaddD)
+        }
     }
     /**
        Element-wise subtraction right mfarray from left mfarray
@@ -27,7 +71,51 @@ extension Matft.mfarray{
            - r_mfarray: right mfarray
     */
     public static func sub(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        return _binary_operation(l_mfarray, r_mfarray, .sub)
+        return _binary_vv_operation(l_mfarray, r_mfarray, .sub)
+    }
+    /**
+       Element-wise subtraction of  mfarray and scalar
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_scalar: right scalar conformed to MfTypable
+    */
+    public static func sub<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
+        let r_mfype = MfType.mftype(value: r_scalar as Any)
+        let retmftype = MfType.priority(l_mfarray.mftype, r_mfype)
+        
+        var l_mfarray = l_mfarray
+        if retmftype != l_mfarray.mftype{
+            l_mfarray = l_mfarray.astype(retmftype)
+        }
+        
+        switch MfType.storedType(retmftype) {
+        case .Float:
+            return biop_vs_by_vDSP(l_mfarray, -Float.from(r_scalar), vDSP_vsadd)
+        case .Double:
+            return biop_vs_by_vDSP(l_mfarray, -Double.from(r_scalar), vDSP_vsaddD)
+        }
+    }
+    /**
+       Element-wise subtraction of  mfarray and scalar
+       - parameters:
+           - l_scalar: left scalar conformed to MfTypable
+           - r_mfarray: right mfarray
+    */
+    public static func sub<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
+        let l_mfype = MfType.mftype(value: l_scalar as Any)
+        let retmftype = MfType.priority(l_mfype, r_mfarray.mftype)
+        
+        var r_mfarray = r_mfarray
+        if retmftype != r_mfarray.mftype{
+            r_mfarray = r_mfarray.astype(retmftype)
+        }
+        
+        switch MfType.storedType(retmftype) {
+        case .Float:
+            return biop_vs_by_vDSP(-r_mfarray, Float.from(l_scalar), vDSP_vsadd)
+        case .Double:
+            return biop_vs_by_vDSP(-r_mfarray, Double.from(l_scalar), vDSP_vsaddD)
+        }
     }
     /**
        Element-wise multiplication of two mfarray
@@ -36,7 +124,51 @@ extension Matft.mfarray{
            - r_mfarray: right mfarray
     */
     public static func mul(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        return _binary_operation(l_mfarray, r_mfarray, .mul)
+        return _binary_vv_operation(l_mfarray, r_mfarray, .mul)
+    }
+    /**
+       Element-wise multiplication of  mfarray and scalar
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_scalar: right scalar conformed to MfTypable
+    */
+    public static func mul<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
+        let r_mfype = MfType.mftype(value: r_scalar as Any)
+        let retmftype = MfType.priority(l_mfarray.mftype, r_mfype)
+        
+        var l_mfarray = l_mfarray
+        if retmftype != l_mfarray.mftype{
+            l_mfarray = l_mfarray.astype(retmftype)
+        }
+        
+        switch MfType.storedType(retmftype) {
+        case .Float:
+            return biop_vs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsmul)
+        case .Double:
+            return biop_vs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsmulD)
+        }
+    }
+    /**
+       Element-wise multiplication of  mfarray and scalar
+       - parameters:
+           - l_scalar: left scalar conformed to MfTypable
+           - r_mfarray: right mfarray
+    */
+    public static func mul<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
+        let l_mfype = MfType.mftype(value: l_scalar as Any)
+        let retmftype = MfType.priority(l_mfype, r_mfarray.mftype)
+        
+        var r_mfarray = r_mfarray
+        if retmftype != r_mfarray.mftype{
+            r_mfarray = r_mfarray.astype(retmftype)
+        }
+        
+        switch MfType.storedType(retmftype) {
+        case .Float:
+            return biop_vs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsmul)
+        case .Double:
+            return biop_vs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_vsmulD)
+        }
     }
     /**
        Element-wise division left mfarray by right mfarray
@@ -45,8 +177,53 @@ extension Matft.mfarray{
            - r_mfarray: right mfarray
     */
     public static func div(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        return _binary_operation(l_mfarray, r_mfarray, .div)
+        return _binary_vv_operation(l_mfarray, r_mfarray, .div)
     }
+    /**
+       Element-wise division of  mfarray and scalar
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_scalar: right scalar conformed to MfTypable
+    */
+    public static func div<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
+        let r_mfype = MfType.mftype(value: r_scalar as Any)
+        let retmftype = MfType.priority(l_mfarray.mftype, r_mfype)
+        
+        var l_mfarray = l_mfarray
+        if retmftype != l_mfarray.mftype{
+            l_mfarray = l_mfarray.astype(retmftype)
+        }
+        
+        switch MfType.storedType(retmftype) {
+        case .Float:
+            return biop_vs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsdiv)
+        case .Double:
+            return biop_vs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsdivD)
+        }
+    }
+    /**
+       Element-wise division of  mfarray and scalar
+       - parameters:
+           - l_scalar: left scalar conformed to MfTypable
+           - r_mfarray: right mfarray
+    */
+    public static func div<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
+        let l_mfype = MfType.mftype(value: l_scalar as Any)
+        let retmftype = MfType.priority(l_mfype, r_mfarray.mftype)
+        
+        var r_mfarray = r_mfarray
+        if retmftype != r_mfarray.mftype{
+            r_mfarray = r_mfarray.astype(retmftype)
+        }
+        
+        switch MfType.storedType(retmftype) {
+        case .Float:
+            return biop_sv_by_vDSP(Float.from(l_scalar), r_mfarray, vDSP_svdiv)
+        case .Double:
+            return biop_sv_by_vDSP(Double.from(l_scalar), r_mfarray, vDSP_svdivD)
+        }
+    }
+    
     /**
        Matrix multiplication
        - parameters:
@@ -96,7 +273,7 @@ fileprivate enum BiOp{
     case outdot
 }
 
-fileprivate func _binary_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ biop: BiOp) -> MfArray{
+fileprivate func _binary_vv_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ biop: BiOp) -> MfArray{
     //precondition(l_mfarray.mftype == r_mfarray.mftype, "Two mfarray must be same mftype. but two mfarray having unsame mftype will be able to be calclulated in the future")
     
     

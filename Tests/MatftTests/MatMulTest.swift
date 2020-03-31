@@ -47,7 +47,7 @@ final class MatMulTests: XCTestCase {
                              [-9, 3, 1, 1],
                              [22, 17, 0, -2],
                              [1, -7, 3, 3]], mftype: .UInt8, mforder: .Column)
-            print(a)
+            
             XCTAssertEqual(a*&b, MfArray([[152,  64,  40,  24],
                                           [161,  80,  46,  30],
                                           [170,  96,  52,  36],
