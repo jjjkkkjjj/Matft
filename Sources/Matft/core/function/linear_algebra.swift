@@ -239,7 +239,7 @@ extension Matft.mfarray.linalg{
                     
                     //strides
                     let newstridesptr = shape2strides(shapeptr, mforder: .Row)
-                    stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+                    stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: retndim)
                     
                     newstridesptr.deallocate()
                 }
@@ -289,7 +289,7 @@ extension Matft.mfarray.linalg{
                     
                     //strides
                     let newstridesptr = shape2strides(shapeptr, mforder: .Row)
-                    stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+                    stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: retndim)
                     
                     newstridesptr.deallocate()
                 }
