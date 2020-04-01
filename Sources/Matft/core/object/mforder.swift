@@ -38,6 +38,11 @@ public struct MfFlags{
     }
 }
 
+public enum MfSortOrder: Int32{
+    case Ascending = 1
+    case Descending = -1
+}
+
 fileprivate func _check_contiguous(shapeptr: UnsafeMutablePointer<Int>, stridesptr: UnsafeMutablePointer<Int>, ndim: Int) -> (row_contiguous: Bool, column_contiguous: Bool){
     var sd = 1
     let shapeptr = UnsafeMutableBufferPointer(start: shapeptr, count: ndim)

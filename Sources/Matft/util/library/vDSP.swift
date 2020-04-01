@@ -293,7 +293,29 @@ internal func stats_index_all_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_fu
     return MfArray([dst])
 }
 
+/*
+// sort
+internal typealias vDSP_sort_func<T> = (UnsafeMutablePointer<T>, vDSP_Length, Int32) -> Void
+fileprivate func _run_sort<T: MfStorable>(_ srcdstptr: UnsafeMutablePointer<T>, count: Int, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_func<T>){
+    let order = Int32(order.rawValue)
+    vDSP_func(srcdstptr, vDSP_Length(count), order)
+}
 
+internal func sort_by_vDSP<T: MfTypable>(_ mfarray: MfArray, _ axis: Int, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_func<T>){
+    mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        [unowned mfarray](srcptr) in
+        
+    }
+}
+
+internal typealias vDSP_sort_index_func<T> = (UnsafePointer<T>, UnsafeMutablePointer<vDSP_Length>, UnsafeMutablePointer<vDSP_Length>, vDSP_Length, Int32) -> Void
+fileprivate func _run_sort_index<T: MfStorable>(_ srcptr: UnsafeMutablePointer<T>, count: Int, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_index_func<T>){
+    let order = Int32(order.rawValue)
+    var dst = Array<vDSP_Length>(repeating: 0, count: count)
+    var tmp = Array<vDSP_Length>(repeating: 0, count: count)
+    vDSP_func(srcptr, &dst, &tmp, vDSP_Length(count), order)
+}
+*/
 // generate(arange)
 /*
 internal typealias vDSP_arange_func<T> = (UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void

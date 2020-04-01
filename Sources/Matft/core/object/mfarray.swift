@@ -145,6 +145,7 @@ public class MfArray{
     }
 
     deinit {
+        self.base = nil
         //self.mfdata.free()
         //self.mfstructure.free()
     }

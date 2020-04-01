@@ -405,6 +405,23 @@ extension Matft.mfarray{
         }
         return mfarray[slices]
     }
+    
+    /**
+       Get sorted value along axis
+       - parameters:
+            - mfarray: mfarray
+            - axis: (Optional) axis, if not given, get summation for all elements
+            - order: (Optional) ascending or descending. default is ascending
+    */
+    /*
+    public static func sort(_ mfarray: MfArray, axis: Int? = nil, order: MfSortOrder = .Ascending) -> MfArray{
+        switch mfarray.storedType {
+        case .Float:
+            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sve)
+        case .Double:
+            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sveD)
+        }
+    }*/
 }
 
 /*
