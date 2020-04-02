@@ -78,7 +78,7 @@ extension Matft.mfarray.linalg{
             try coefF.withDataUnsafeMBPtrT(datatype: Float.self){
                 coefptr in
                 try ret.withDataUnsafeMBPtrT(datatype: Float.self){
-                    try solve_by_lapack(copiedCoefPtr: coefptr.baseAddress!, coef.shape[0], $0.baseAddress!, dstColNum, sgesv_)
+                    try solve_by_lapack(copiedCoefPtr: coefptr.baseAddress!, coefShape[0], $0.baseAddress!, dstColNum, sgesv_)
                 }
             }
             
@@ -87,12 +87,12 @@ extension Matft.mfarray.linalg{
             
         case .Double:
             let coefD = coef_column_major.astype(.Double) //even if original one is float, create copy
-            let ret = b.astype(.Double) //even if original one is float, create copy
+            let ret = b_column_major.astype(.Double) //even if original one is float, create copy
             
             try coefD.withDataUnsafeMBPtrT(datatype: Double.self){
                 coefptr in
                 try ret.withDataUnsafeMBPtrT(datatype: Double.self){
-                    try solve_by_lapack(copiedCoefPtr: coefptr.baseAddress!, coef.shape[0], $0.baseAddress!, dstColNum, dgesv_)
+                    try solve_by_lapack(copiedCoefPtr: coefptr.baseAddress!, coefShape[0], $0.baseAddress!, dstColNum, dgesv_)
                 }
             }
             

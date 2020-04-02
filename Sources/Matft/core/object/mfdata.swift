@@ -9,12 +9,14 @@
 import Foundation
 
 public class MfData{
+    private var __refdata: MfData? // must be referenced because refdata could be freed automatically?
     public internal(set) var _data: UnsafeMutableRawPointer
+    
     public internal(set) var _mftype: MfType
     internal var _storedType: StoredType{
         return MfType.storedType(self._mftype)
     }
-    public internal(set) var _storedSize: Int
+    public let _storedSize: Int
     public var _storedByteSize: Int{
         switch self._storedType {
         case .Float:
@@ -25,27 +27,17 @@ public class MfData{
     }
 
     public var _isView: Bool{
-        return self.__offset != nil
+        return self.__refdata != nil
     }
-    private var __offset: Int?
-    public var _offset: Int{
-        get{
-            return self.__offset ?? 0
-        }
-        set{
-            self.__offset = newValue
-        }
-    }
+    
+    public let _offset: Int
     public var _byteOffset: Int{
         get{
-            guard let offset = self.__offset else{
-                return 0
-            }
             switch self._storedType {
             case .Float:
-                return offset * MemoryLayout<Float>.size
+                return self._offset * MemoryLayout<Float>.size
             case .Double:
-                return offset * MemoryLayout<Double>.size
+                return self._offset * MemoryLayout<Double>.size
             }
         }
     }
@@ -57,20 +49,23 @@ public class MfData{
         self._data = dataptr
         self._storedSize = storedSize
         self._mftype = mftype
+        self._offset = 0
     }
     public init(mfdata: MfData){
         self._data = mfdata._data
         self._storedSize = mfdata._storedSize
         self._mftype = mfdata._mftype
+        self._offset = 0
     }
     
     
     // create view
     public init(refdata: MfData, offset: Int){
+        self.__refdata = refdata
         self._data = refdata._data
         self._storedSize = refdata._storedSize
         self._mftype = refdata._mftype
-        self.__offset = offset
+        self._offset = offset
     }
     
     deinit {
@@ -86,6 +81,9 @@ public class MfData{
                 dataptr.deallocate()
             }
             //self._data.deallocate()
+        }
+        else{
+            self.__refdata = nil
         }
     }
 }

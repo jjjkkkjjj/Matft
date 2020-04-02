@@ -159,14 +159,15 @@ extension Matft.mfarray{
             }
         }
         
-        let newmfstructure = withDummyShapeStridesMBPtr(retShape.count){
+        let retndim = retShape.count
+        let newmfstructure = withDummyShapeStridesMBPtr(retndim){
             shapeptr, stridesptr in
             retShape.withUnsafeMutableBufferPointer{
-                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: shapeptr.count)
+                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
             }
             
             let newstrides = shape2strides(shapeptr, mforder: .Row)
-            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: shapeptr.count)
+            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: retndim)
             
             newstrides.deallocate()
         }
@@ -228,14 +229,15 @@ extension Matft.mfarray{
             }
         }
         
-        let newmfstructure = withDummyShapeStridesMBPtr(retShape.count){
+        let retndim = retShape.count
+        let newmfstructure = withDummyShapeStridesMBPtr(retndim){
             shapeptr, stridesptr in
             retShape.withUnsafeMutableBufferPointer{
-                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: shapeptr.count)
+                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
             }
             
             let newstrides = shape2strides(shapeptr, mforder: .Column)
-            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: shapeptr.count)
+            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: retndim)
             
             newstrides.deallocate()
         }
@@ -328,14 +330,14 @@ extension Matft.mfarray{
             }
         }
         
-        let newmfstructure = withDummyShapeStridesMBPtr(retShape.count){
+        let newmfstructure = withDummyShapeStridesMBPtr(retndim){
             shapeptr, stridesptr in
             retShape.withUnsafeMutableBufferPointer{
-                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: shapeptr.count)
+                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
             }
             
             let newstrides = shape2strides(shapeptr, mforder: fasterOrder)
-            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: shapeptr.count)
+            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: retndim)
             
             newstrides.deallocate()
         }

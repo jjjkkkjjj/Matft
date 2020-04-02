@@ -80,3 +80,7 @@ internal func copy_mfstructure(_ mfstructure: MfStructure) -> MfStructure{
         stridesptr.baseAddress!.assign(from: mfstructure._strides, count: mfstructure._ndim)
     }
 }
+
+internal func copy_mfdata(_ mfdata: MfData){
+    
+}

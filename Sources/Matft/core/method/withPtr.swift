@@ -19,12 +19,13 @@ extension MfArray{
         return try body(self.mfdata._data + self.mfdata._byteOffset)
     }
     public func withDataUnsafeMBPtrT<T, R>(datatype: T.Type, _ body: (UnsafeMutableBufferPointer<T>) throws -> R) rethrows -> R{
-        let dataptr = self.withDataUnsafeMRPtr{
-            [unowned self] in
-            $0.bindMemory(to: T.self, capacity: self.storedSize)
+        let ret = try self.withDataUnsafeMRPtr{
+            [unowned self](ptr) -> R in
+            let dataptr = ptr.bindMemory(to: T.self, capacity: self.storedSize)
+            return try body(UnsafeMutableBufferPointer(start: dataptr, count: self.storedSize))
         }
         
-        return try body(UnsafeMutableBufferPointer(start: dataptr, count: self.storedSize))
+        return ret
     }
     
     public func withShapeUnsafeMBPtr<R>(_ body: (UnsafeMutableBufferPointer<Int>) throws -> R) rethrows -> R{

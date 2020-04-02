@@ -36,6 +36,7 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
         var shape = optParams.bigger_mfarray.shape
         var b_strides = optParams.bigger_mfarray.strides
         var s_strides = optParams.smaller_mfarray.strides
+        
         let (axis, blocksize, iterAxes) =
         
             _optStrides(shape: &shape, l_strides: &b_strides, r_strides: &s_strides)

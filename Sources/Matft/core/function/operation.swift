@@ -477,6 +477,7 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
     let l_matNum = lshape[retndim - 2] * lshape[retndim - 1]
     let r_matNum = rshape[retndim - 2] * rshape[retndim - 1]
     let iterNum = newmfstructure._size / matNum
+    
     //run
     switch MfType.storedType(lmfarray.mftype) {
     case .Float:
