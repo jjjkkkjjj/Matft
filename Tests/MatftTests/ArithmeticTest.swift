@@ -4,13 +4,6 @@ import Matft
 
 final class ArithmeticTests: XCTestCase {
     
-    static var allTests = [
-        ("test_ms_sm", test_ms_sm),
-        ("testSameShape", testSameShape),
-        ("testBroadcast", testBroadcast),
-        ("testNegativeIndexing", testNegativeIndexing),
-    ]
-    
     func test_ms_sm() {
         do{
 

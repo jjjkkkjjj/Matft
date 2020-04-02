@@ -4,11 +4,6 @@ import Matft
 
 final class EqualTests: XCTestCase {
     
-    static var allTests = [
-        ("testAllEqual", testAllEqual),
-        ("testEqual", testEqual),
-    ]
-    
     func testAllEqual() {
         do{
             let a = MfArray([true, false])

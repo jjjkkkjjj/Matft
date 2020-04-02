@@ -2,15 +2,7 @@ import XCTest
 //@testable import Matft
 import Matft
 
-
-//Note that sometimes when performance test is conducted with other tests simultaneously, that will be caused to crash...
 final class ArithmeticPefTests: XCTestCase {
-    
-    static var allTests = [
-        ("testPeformanceAdd1", testPeformanceAdd1),
-        ("testPeformanceAdd2", testPeformanceAdd2),
-        ("testPeformanceAdd3", testPeformanceAdd3),
-    ]
     
     func testPeformanceAdd1() {
         do{
@@ -59,5 +51,4 @@ final class ArithmeticPefTests: XCTestCase {
         }
     }
 }
-
 

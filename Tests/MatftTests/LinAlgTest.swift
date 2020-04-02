@@ -4,12 +4,6 @@ import Matft
 
 final class LinAlgTests: XCTestCase {
     
-    static var allTests = [
-        ("testSolve", testSolve),
-        ("testInv", testInv),
-        ("testDet", testDet)
-    ]
-    
     func testSolve() {
         do{
             let coef = MfArray([[3,2],[1,2]])

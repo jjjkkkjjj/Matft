@@ -4,11 +4,6 @@ import Matft
 
 final class SubscriptTests: XCTestCase {
     
-    static var allTests = [
-        ("testScalar", testScalar),
-        ("testSlicing", testSlicing),
-    ]
-    
     func testScalar() {
         do{
             let a = Matft.mfarray.arange(start: 0, to: 27, by: 1, shape: [3,3,3])

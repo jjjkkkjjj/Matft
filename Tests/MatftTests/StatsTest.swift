@@ -4,12 +4,6 @@ import Matft
 
 final class StatsTests: XCTestCase {
     
-    static var allTests = [
-        ("test_minmax", test_minmax),
-        ("test_argminmax", test_argminmax),
-        ("test_statsval", test_statsval),
-    ]
-    
     func test_minmax() {
         do{
             let a = MfArray([[3, -19],

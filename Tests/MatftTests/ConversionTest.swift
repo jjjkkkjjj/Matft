@@ -4,11 +4,6 @@ import Matft
 
 final class ConversionTests: XCTestCase {
     
-    static var allTests = [
-        ("testTranspose", testTranspose),
-        ("testBroadcast", testBroadcast),
-        ("testAsType", testAsType),
-    ]
     
     func testTranspose() {
         do{

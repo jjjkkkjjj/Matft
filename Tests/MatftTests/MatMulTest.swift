@@ -4,12 +4,6 @@ import Matft
 
 final class MatMulTests: XCTestCase {
     
-    static var allTests = [
-        ("testSameShape", testSameShape),
-        ("testBroadCast", testBroadCast),
-        ("testNegativeIndexing", testNegativeIndexing)
-    ]
-    
     func testSameShape() {
         do{
             let a = MfArray([[3, -19],

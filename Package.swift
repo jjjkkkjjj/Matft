@@ -10,6 +10,7 @@ let package = Package(
         .library(
             name: "Matft",
             targets: ["Matft"]),
+        //.library(name: "ReleaseTest", targets: ["Matft "])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -24,5 +25,9 @@ let package = Package(
         .testTarget(
             name: "MatftTests",
             dependencies: ["Matft"]),
+        /*
+        .testTarget(
+            name: "PerformanceTests",
+            dependencies: ["Matft"]),*/
     ]
 )

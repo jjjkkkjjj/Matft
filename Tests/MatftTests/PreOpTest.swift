@@ -4,11 +4,6 @@ import Matft
 
 final class PreOpTests: XCTestCase {
     
-    static var allTests = [
-        ("testNormal", testNormal),
-        ("testBroadcast", testBroadcast),
-        ("testNegativeIndexing", testNegativeIndexing),
-    ]
     
     func testNormal() {
         do{

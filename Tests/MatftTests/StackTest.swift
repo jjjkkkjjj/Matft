@@ -3,13 +3,7 @@ import XCTest
 import Matft
 
 final class StackTests: XCTestCase {
-    
-    static var allTests = [
-        ("test_hstack", test_hstack),
-        ("test_vstack", test_vstack),
-        ("test_concatenate", test_concatenate),
-    ]
-    
+
     func test_hstack() {
         do{
             let a = MfArray([[3, -19],
