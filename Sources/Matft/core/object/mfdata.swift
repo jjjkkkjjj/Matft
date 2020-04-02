@@ -82,9 +82,7 @@ public class MfData{
             }
             //self._data.deallocate()
         }
-        else{
-            self.__refdata = nil
-        }
+        self.__refdata = nil
     }
 }
 

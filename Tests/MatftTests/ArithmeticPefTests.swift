@@ -2,7 +2,7 @@ import XCTest
 //@testable import Matft
 import Matft
 
-/*
+
 //Note that sometimes when performance test is conducted with other tests simultaneously, that will be caused to crash...
 final class ArithmeticPefTests: XCTestCase {
     
@@ -60,4 +60,4 @@ final class ArithmeticPefTests: XCTestCase {
     }
 }
 
-*/
+

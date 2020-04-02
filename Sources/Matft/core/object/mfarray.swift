@@ -106,7 +106,7 @@ public class MfArray{
             case .Float://double to float
                 let newdata = withDummyDataMRPtr(mftype, storedSize: self.storedSize){
                     [unowned self] in
-                    let dstptr = $0.assumingMemoryBound(to: Float.self)
+                    let dstptr = $0.bindMemory(to:  Float.self, capacity: self.storedSize)
                     self.withDataUnsafeMBPtrT(datatype: Double.self){
                         [unowned self] in
                         unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vdpsp, self.storedSize)
@@ -118,7 +118,7 @@ public class MfArray{
             case .Double://float to double
                 let newdata = withDummyDataMRPtr(mftype, storedSize: self.storedSize){
                     [unowned self] in
-                    let dstptr = $0.assumingMemoryBound(to: Double.self)
+                    let dstptr = $0.bindMemory(to:  Double.self, capacity: self.storedSize)
                     self.withDataUnsafeMBPtrT(datatype: Float.self){
                         [unowned self] in
                          unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vspdp, self.storedSize)

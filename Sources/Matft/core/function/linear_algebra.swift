@@ -56,12 +56,12 @@ extension Matft.mfarray.linalg{
         if b.ndim == 1{
             //(m,m)(m)=(m)
             precondition((coefShape[0] == coefShape[1] && bShape[0] == coefShape[0]), "cannot solve (\(coefShape[0]),\(coefShape[1]))(\(bShape[0]))=(\(bShape[0])) problem")
-            dstColNum = coef.shape[0]
+            dstColNum = 1
         }
         else{//ndim == 2
             //(m,m)(m,n)=(m,n)
             precondition((coefShape[0] == coefShape[1] && bShape[0] == coefShape[0]), "cannot solve (\(coefShape[0]),\(coefShape[1]))(\(bShape[0]),\(bShape[1]))=(\(bShape[0]),\(bShape[1])) problem")
-            dstColNum = bShape[1] == 1 ? bShape[0] : bShape[1]
+            dstColNum = bShape[1]
         }
                 
         let returnedType = StoredType.priority(coef.storedType, b.storedType)

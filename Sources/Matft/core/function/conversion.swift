@@ -37,7 +37,7 @@ extension Matft.mfarray{
         switch newStoredType{
         case .Float://double to float
             let newdata = withDummyDataMRPtr(mftype, storedSize: mfarray.storedSize){
-                let dstptr = $0.assumingMemoryBound(to: Float.self)
+                let dstptr = $0.bindMemory(to:  Float.self, capacity: mfarray.storedSize)
                 mfarray.withDataUnsafeMBPtrT(datatype: Double.self){
                     [unowned mfarray] in
                     unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vdpsp, mfarray.storedSize)
@@ -48,7 +48,7 @@ extension Matft.mfarray{
             
         case .Double://float to double
             let newdata = withDummyDataMRPtr(mftype, storedSize: mfarray.storedSize){
-                let dstptr = $0.assumingMemoryBound(to: Double.self)
+                let dstptr = $0.bindMemory(to:  Double.self, capacity: mfarray.storedSize)
                 mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
                     [unowned mfarray] in
                      unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vspdp, mfarray.storedSize)

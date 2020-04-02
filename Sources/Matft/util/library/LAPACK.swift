@@ -19,7 +19,7 @@ internal func solve_by_lapack<T: MfStorable>(copiedCoefPtr: UnsafeMutablePointer
     
     // column number of b
     var NRHS = __CLPK_integer(dstColNum)
-    var LDB = __CLPK_integer(dstColNum)// leading dimension >= max(1, N)
+    var LDB = __CLPK_integer(eqNum)// leading dimension >= max(1, N)
     
     //pivot indices
     var IPIV = Array<__CLPK_integer>(repeating: 0, count: eqNum)
