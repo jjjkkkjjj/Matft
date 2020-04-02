@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name           = "Matft"
-  spec.version        = "0.1.0"
+  spec.version        = "0.1.1"
   spec.summary        = "Numpy-like matrix operation library in swift"
   spec.homepage       = "https://github.com/jjjkkkjjj/Matft"
   spec.license        = { :type => 'BSD-3-Clause', :file => 'LICENSE' }
