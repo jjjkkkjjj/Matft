@@ -366,6 +366,12 @@ You can set **MfSlice** (see below's list) to subscript.
   [[	1,		3],
   [	5,		7]], type=Int, shape=[2, 2]
   */
+  print(b)
+  /*
+  mfarray = 
+  [[	1,		2],
+  [	3,		4]], type=Int, shape=[2, 2]
+  */
   print(a+b)
   /*
   mfarray = 
