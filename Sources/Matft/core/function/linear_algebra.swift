@@ -100,76 +100,9 @@ extension Matft.mfarray.linalg{
         
         switch mfarray.storedType {
         case .Float:
-            let newmfdata = try withDummyDataMRPtr(.Float, storedSize: mfarray.size){
-                dstptr in
-                let dstptrF = dstptr.bindMemory(to: Float.self, capacity: mfarray.size)
-                
-                try _withNNStackedColumnMajorPtr(mfarray: mfarray, type: Float.self){
-                    srcptr, squaredSize, offset in
-                    //LU decomposition
-                    var IPIV = try LU_by_lapack(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: sgetrf_)
-                    
-                    //calculate inv
-                    try inv_by_lapack(squaredSize, srcdstptr: srcptr, &IPIV, lapack_func: sgetri_)
-                    
-                    //move
-                    (dstptrF + offset).moveAssign(from: srcptr, count: squaredSize*squaredSize)
-                }
-            }
-            
-            let newmfstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
-                [unowned mfarray] (shapeptr, stridesptr) in
-                
-                //shape
-                mfarray.withShapeUnsafeMBPtr{
-                    [unowned mfarray] in
-                    shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: mfarray.ndim)
-                }
-                
-                //strides
-                let newstridesptr = shape2strides(shapeptr, mforder: .Row)
-                stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
-                
-                newstridesptr.deallocate()
-            }
-            
-            return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
-            
+            return try inv_by_lapack(mfarray, sgetrf_, sgetri_, .Float)
         case .Double:
-            let newmfdata = try withDummyDataMRPtr(.Double, storedSize: mfarray.size){
-                dstptr in
-                let dstptrD = dstptr.bindMemory(to: Double.self, capacity: mfarray.size)
-                
-                try _withNNStackedColumnMajorPtr(mfarray: mfarray, type: Double.self){
-                    srcptr, squaredSize, offset in
-                    //LU decomposition
-                    var IPIV = try LU_by_lapack(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: dgetrf_)
-                    
-                    //calculate inv
-                    try inv_by_lapack(squaredSize, srcdstptr: srcptr, &IPIV, lapack_func: dgetri_)
-                    
-                    //move
-                    (dstptrD + offset).moveAssign(from: srcptr, count: squaredSize*squaredSize)
-                }
-            }
-            
-            let newmfstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
-                [unowned mfarray] (shapeptr, stridesptr) in
-                
-                //shape
-                mfarray.withShapeUnsafeMBPtr{
-                    [unowned mfarray] in
-                    shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: mfarray.ndim)
-                }
-                
-                //strides
-                let newstridesptr = shape2strides(shapeptr, mforder: .Row)
-                stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
-                
-                newstridesptr.deallocate()
-            }
-            
-            return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+            return try inv_by_lapack(mfarray, dgetrf_, dgetri_, .Double)
         }
 
     }
@@ -189,103 +122,10 @@ extension Matft.mfarray.linalg{
         let retSize = mfarray.size / (shape[mfarray.ndim - 1] * shape[mfarray.ndim - 1])
         switch mfarray.storedType {
         case .Float:
-            let newmfdata = try withDummyDataMRPtr(.Float, storedSize: retSize){
-                dstptr in
-                let dstptrF = dstptr.bindMemory(to: Float.self, capacity: retSize)
-                
-                var dstoffset = 0
-                try _withNNStackedColumnMajorPtr(mfarray: mfarray, type: Float.self){
-                    srcptr, squaredSize, offset in
-                    //LU decomposition
-                    let IPIV = try LU_by_lapack(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: sgetrf_)
-                    
-                    //calculate L and U's determinant
-                    //Note that L and U's determinant are calculated by product of diagonal elements
-                    // L's determinant is always one
-                    //ref: https://stackoverflow.com/questions/47315471/compute-determinant-from-lu-decomposition-in-lapack
-                    var det = Float(1)
-                    for i in 0..<squaredSize{
-                        det *= IPIV[i] != __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*squaredSize).pointee : -(srcptr.advanced(by: i + i*squaredSize).pointee)
-                    }
-                    
-                    //move
-                    (dstptrF + dstoffset).moveAssign(from: &det, count: 1)
-                    dstoffset += 1
-                }
-            }
-            let retndim = mfarray.ndim - 2 != 0 ? mfarray.ndim - 2 : 1
-            let newmfstructure = withDummyShapeStridesMBPtr(retndim){
-                [unowned mfarray] (shapeptr, stridesptr) in
-                
-                //shape
-                if mfarray.ndim - 2 != 0{
-                    mfarray.withShapeUnsafeMBPtr{
-                        shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: retndim)
-                    }
-                    
-                    //strides
-                    let newstridesptr = shape2strides(shapeptr, mforder: .Row)
-                    stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: retndim)
-                    
-                    newstridesptr.deallocate()
-                }
-                else{
-                    shapeptr[0] = 1
-                    stridesptr[0] = 1
-                }
-                
-            }
-            
-            return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+            return try det_by_lapack(mfarray, sgetrf_, .Float, retSize)
             
         case .Double:
-            let newmfdata = try withDummyDataMRPtr(.Double, storedSize: retSize){
-                dstptr in
-                let dstptrF = dstptr.bindMemory(to: Double.self, capacity: retSize)
-                
-                var dstoffset = 0
-                try _withNNStackedColumnMajorPtr(mfarray: mfarray, type: Double.self){
-                    srcptr, squaredSize, offset in
-                    //LU decomposition
-                    let IPIV = try LU_by_lapack(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: dgetrf_)
-                    
-                    //calculate L and U's determinant
-                    //Note that L and U's determinant are calculated by product of diagonal elements
-                    // L's determinant is always one
-                    //ref: https://stackoverflow.com/questions/47315471/compute-determinant-from-lu-decomposition-in-lapack
-                    var det = Double(1)
-                    for i in 0..<squaredSize{
-                        det *= IPIV[i] != __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*squaredSize).pointee : -(srcptr.advanced(by: i + i*squaredSize).pointee)
-                    }
-                    
-                    //move
-                    (dstptrF + dstoffset).moveAssign(from: &det, count: 1)
-                    dstoffset += 1
-                }
-            }
-            let retndim = mfarray.ndim - 2 != 0 ? mfarray.ndim - 2 : 1
-            let newmfstructure = withDummyShapeStridesMBPtr(retndim){
-                [unowned mfarray] (shapeptr, stridesptr) in
-                
-                //shape
-                if mfarray.ndim - 2 != 0{
-                    mfarray.withShapeUnsafeMBPtr{
-                        shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: retndim)
-                    }
-                    
-                    //strides
-                    let newstridesptr = shape2strides(shapeptr, mforder: .Row)
-                    stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: retndim)
-                    
-                    newstridesptr.deallocate()
-                }
-                else{
-                    shapeptr[0] = 1
-                    stridesptr[0] = 1
-                }
-                
-            }
-            return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+            return try det_by_lapack(mfarray, dgetrf_, .Double, retSize)
         }
 
     }
@@ -380,22 +220,3 @@ extension Matft.mfarray.linalg{
     }*/
 }
 
-/**
-    - Important: This function for last shape is NxN
- */
-fileprivate func _withNNStackedColumnMajorPtr<T: MfStorable>(mfarray: MfArray, type: T.Type, _ body: (UnsafeMutablePointer<T>, Int, Int) throws -> Void) rethrows -> Void{
-    let shape = mfarray.shape
-    let squaredSize = shape[mfarray.ndim - 1]
-    let matricesNum = mfarray.size / (squaredSize * squaredSize)
-    
-    // get stacked row major and copy
-    let rowmajorMfarray = to_row_major(mfarray)
-    var offset = 0
-    try rowmajorMfarray.withDataUnsafeMBPtrT(datatype: T.self){
-        for _ in 0..<matricesNum{
-            try body($0.baseAddress! + offset, squaredSize, offset)
-            
-            offset += squaredSize * squaredSize
-        }
-    }
-}
