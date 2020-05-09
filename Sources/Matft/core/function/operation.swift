@@ -449,133 +449,18 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
     print(lmfarray)
     print(rmfarray)*/
     
-    let lshape = lmfarray.shape
-    let rshape = rmfarray.shape
-    var retshape = lmfarray.shape
-    let retndim = retshape.count
-    retshape[retndim - 1] = rshape[retndim - 1]
-    
-    // order
-    // must be row major
-    let retorder = _matmul_convorder(&lmfarray, &rmfarray)
-    
-    let newmfstructure = withDummyShapeStridesMBPtr(retndim){
-        shapeptr, stridesptr in
-        //move
-        retshape.withUnsafeMutableBufferPointer{
-            shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-        }
-        //move
-        let newstrides = shape2strides(shapeptr, mforder: retorder)
-        stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: retndim)
-        //free
-        newstrides.deallocate()
-    }
-    
-
-    let matNum = lshape[retndim - 2] * rshape[retndim - 1]
-    let l_matNum = lshape[retndim - 2] * lshape[retndim - 1]
-    let r_matNum = rshape[retndim - 2] * rshape[retndim - 1]
-    let iterNum = newmfstructure._size / matNum
     
     //run
     switch MfType.storedType(lmfarray.mftype) {
     case .Float:
-        let newmfdata = withDummyDataMRPtr(lmfarray.mftype, storedSize: newmfstructure._size){
-            dstptr in
-            var dstptrF = dstptr.bindMemory(to: Float.self, capacity: newmfstructure._size)
-            lmfarray.withDataUnsafeMBPtrT(datatype: Float.self){
-                lptr in
-                var lptr = lptr.baseAddress!
-                rmfarray.withDataUnsafeMBPtrT(datatype: Float.self){
-                    rptr in
-                    var rptr = rptr.baseAddress!
-                    
-                    for _ in 0..<iterNum{
-                        matmul_by_cblas(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr, rshape[retndim - 2], rshape[retndim - 1], rptr, dstptrF, cblas_sgemm)
-                        
-                        lptr += l_matNum
-                        rptr += r_matNum
-                        dstptrF += matNum
-                    }
-                }
-            }
-        }
-        
-        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+        return matmul_by_cblas(&lmfarray, &rmfarray, cblas_func: cblas_sgemm)
         
     case .Double:
-        let newmfdata = withDummyDataMRPtr(lmfarray.mftype, storedSize: newmfstructure._size){
-            dstptr in
-            var dstptrD = dstptr.bindMemory(to: Double.self, capacity: newmfstructure._size)
-            lmfarray.withDataUnsafeMBPtrT(datatype: Double.self){
-                lptr in
-                var lptr = lptr.baseAddress!
-                
-                rmfarray.withDataUnsafeMBPtrT(datatype: Double.self){
-                    rptr in
-                    var rptr = rptr.baseAddress!
-                    
-                    for _ in 0..<iterNum{
-                        matmul_by_cblas(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr, rshape[retndim - 2], rshape[retndim - 1], rptr, dstptrD, cblas_dgemm)
-                        
-                        lptr += l_matNum
-                        rptr += r_matNum
-                        dstptrD += matNum
-                    }
-                }
-            }
-        }
-        
-        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+        return matmul_by_cblas(&lmfarray, &rmfarray, cblas_func: cblas_dgemm)
     }
     
 }
 
-
-fileprivate func _matmul_convorder(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray) -> MfOrder{
-    // order
-    /*
-    // must be close to either row or column major
-    var retorder = MfOrder.Row
-    if !(lmfarray.mfflags.column_contiguous && rmfarray.mfflags.column_contiguous) || lmfarray.mfflags.row_contiguous && rmfarray.mfflags.row_contiguous{//convert either row or column major
-        if lmfarray.mfflags.column_contiguous{
-            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Column)
-            retorder = .Column
-        }
-        else if lmfarray.mfflags.row_contiguous{
-            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Row)
-            retorder = .Row
-        }
-        else if rmfarray.mfflags.column_contiguous{
-            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Column)
-            retorder = .Column
-        }
-        else if rmfarray.mfflags.row_contiguous{
-            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Row)
-            retorder = .Row
-        }
-        else{
-            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Row)
-            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Row)
-            retorder = .Row
-        }
-    }
-    else{
-        retorder = lmfarray.mfflags.row_contiguous ? .Row : .Column
-    }*/
-    //must be row major
-    let retorder = MfOrder.Row
-    if !(lmfarray.mfflags.row_contiguous && rmfarray.mfflags.row_contiguous){//convert row major
-        if !rmfarray.mfflags.row_contiguous{
-            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Row)
-        }
-        if !lmfarray.mfflags.row_contiguous{
-            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Row)
-        }
-    }
-    return retorder
-}
 
 fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray){
     var lshape = lmfarray.shape
