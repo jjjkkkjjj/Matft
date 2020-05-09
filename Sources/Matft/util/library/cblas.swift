@@ -86,7 +86,7 @@ internal func copy_by_cblas<T: MfStorable>(_ mfarray: MfArray, mforder: MfOrder,
 //matrix multiplication
 internal typealias cblas_matmul_func<T> = (CBLAS_ORDER, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, Int32, Int32, Int32, T, UnsafePointer<T>, Int32, UnsafePointer<T>, Int32, T, UnsafeMutablePointer<T>, Int32) -> Void
 
-internal func matmul_by_cblas<T: MfStorable>(_ mforder: MfOrder, _ lrow: Int, _ lcol: Int, _ lptr: UnsafePointer<T>, _ rrow: Int, _ rcol: Int, _ rptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ cblas_func: cblas_matmul_func<T>){
+fileprivate func _run_matmul<T: MfStorable>(_ mforder: MfOrder, _ lrow: Int, _ lcol: Int, _ lptr: UnsafePointer<T>, _ rrow: Int, _ rcol: Int, _ rptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ cblas_func: cblas_matmul_func<T>){
     let M = Int32(lrow)
     let N = Int32(rcol)
     let K = Int32(lcol)
@@ -107,3 +107,100 @@ internal func matmul_by_cblas<T: MfStorable>(_ mforder: MfOrder, _ lrow: Int, _ 
     }
 }
 
+internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray, cblas_func: cblas_matmul_func<T>) -> MfArray{
+    let lshape = lmfarray.shape
+    let rshape = rmfarray.shape
+    var retshape = lmfarray.shape
+    let retndim = retshape.count
+    retshape[retndim - 1] = rshape[retndim - 1]
+    
+    // order
+    // must be row major
+    let retorder = _matmul_convorder(&lmfarray, &rmfarray)
+    
+    let newmfstructure = withDummyShapeStridesMBPtr(retndim){
+        shapeptr, stridesptr in
+        //move
+        retshape.withUnsafeMutableBufferPointer{
+            shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
+        //move
+        let newstrides = shape2strides(shapeptr, mforder: retorder)
+        stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: retndim)
+        //free
+        newstrides.deallocate()
+    }
+    
+
+    let matNum = lshape[retndim - 2] * rshape[retndim - 1]
+    let l_matNum = lshape[retndim - 2] * lshape[retndim - 1]
+    let r_matNum = rshape[retndim - 2] * rshape[retndim - 1]
+    let iterNum = newmfstructure._size / matNum
+    
+    let newmfdata = withDummyDataMRPtr(lmfarray.mftype, storedSize: newmfstructure._size){
+        dstptr in
+        var dstptrT = dstptr.bindMemory(to: T.self, capacity: newmfstructure._size)
+        lmfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            lptr in
+            var lptr = lptr.baseAddress!
+            rmfarray.withDataUnsafeMBPtrT(datatype: T.self){
+                rptr in
+                var rptr = rptr.baseAddress!
+                
+                for _ in 0..<iterNum{
+                    _run_matmul(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr, rshape[retndim - 2], rshape[retndim - 1], rptr, dstptrT, cblas_func)
+                    
+                    lptr += l_matNum
+                    rptr += r_matNum
+                    dstptrT += matNum
+                }
+            }
+        }
+    }
+    
+    return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+}
+
+fileprivate func _matmul_convorder(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray) -> MfOrder{
+    // order
+    /*
+    // must be close to either row or column major
+    var retorder = MfOrder.Row
+    if !(lmfarray.mfflags.column_contiguous && rmfarray.mfflags.column_contiguous) || lmfarray.mfflags.row_contiguous && rmfarray.mfflags.row_contiguous{//convert either row or column major
+        if lmfarray.mfflags.column_contiguous{
+            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Column)
+            retorder = .Column
+        }
+        else if lmfarray.mfflags.row_contiguous{
+            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Row)
+            retorder = .Row
+        }
+        else if rmfarray.mfflags.column_contiguous{
+            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Column)
+            retorder = .Column
+        }
+        else if rmfarray.mfflags.row_contiguous{
+            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Row)
+            retorder = .Row
+        }
+        else{
+            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Row)
+            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Row)
+            retorder = .Row
+        }
+    }
+    else{
+        retorder = lmfarray.mfflags.row_contiguous ? .Row : .Column
+    }*/
+    //must be row major
+    let retorder = MfOrder.Row
+    if !(lmfarray.mfflags.row_contiguous && rmfarray.mfflags.row_contiguous){//convert row major
+        if !rmfarray.mfflags.row_contiguous{
+            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Row)
+        }
+        if !lmfarray.mfflags.row_contiguous{
+            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Row)
+        }
+    }
+    return retorder
+}
