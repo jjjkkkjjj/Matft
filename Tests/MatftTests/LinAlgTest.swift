@@ -70,4 +70,68 @@ final class LinAlgTests: XCTestCase {
             XCTAssertEqual(try Matft.mfarray.linalg.det(a), MfArray([-2.0, -4.0], mftype: .Double))
         }
     }
+    
+    func testEigen(){
+        do{
+            let a = MfArray([[1, -1], [1, 1]])
+            let ret = try! Matft.mfarray.linalg.eigen(a)
+            // value
+            XCTAssertEqual(ret.valRe, MfArray([1, 1], mftype: .Float))
+            XCTAssertEqual(ret.valIm, MfArray([1, -1], mftype: .Float))
+            // vector-left
+            XCTAssertEqual(ret.lvecRe, MfArray([[-0.70710677, -0.70710677],
+                                                [0.0, 0.0]], mftype: .Float))
+            XCTAssertEqual(ret.lvecIm, MfArray([[0.0, 0.0],
+                                                [0.70710677, -0.70710677]], mftype: .Float))
+            // vector-right
+            XCTAssertEqual(ret.rvecRe, MfArray([[0.70710677, 0.70710677],
+                                                [0.0, 0.0]], mftype: .Float))
+            XCTAssertEqual(ret.rvecIm, MfArray([[0.0, 0.0],
+                                                [-0.70710677, 0.70710677]], mftype: .Float))
+            
+        }
+        do{
+            let a = MfArray([[[1,0,0],
+                              [0,2,0],
+                              [0,0,3]]], mftype: .Double)
+            let ret = try! Matft.mfarray.linalg.eigen(a)
+            // value
+            XCTAssertEqual(ret.valRe, MfArray([[1, 2, 3]], mftype: .Double))
+            XCTAssertEqual(ret.valIm, MfArray([[0, 0, 0]], mftype: .Double))
+            // vector-left
+            XCTAssertEqual(ret.lvecRe, MfArray([[[1.0, 0.0, 0.0],
+                                                [0.0, 1.0, 0.0],
+                                                [0.0, 0.0, 1.0]]], mftype: .Double))
+            XCTAssertEqual(ret.lvecIm, MfArray([[[0.0, 0.0, 0.0],
+                                                 [0.0, 0.0, 0.0],
+                                                 [0.0, 0.0, 0.0]]], mftype: .Double))
+            // vector-right
+            XCTAssertEqual(ret.rvecRe, MfArray([[[1.0, 0.0, 0.0],
+                                                [0.0, 1.0, 0.0],
+                                                [0.0, 0.0, 1.0]]], mftype: .Double))
+            XCTAssertEqual(ret.rvecIm, MfArray([[[0.0, 0.0, 0.0],
+                                                 [0.0, 0.0, 0.0],
+                                                 [0.0, 0.0, 0.0]]], mftype: .Double))
+            
+        }
+        do{
+            let a = MfArray([[0, -1],
+                             [1, 0]], mftype: .Double)
+            let ret = try! Matft.mfarray.linalg.eigen(a)
+            // value
+            XCTAssertEqual(ret.valRe, MfArray([0, 0], mftype: .Double))
+            XCTAssertEqual(ret.valIm, MfArray([1, -1], mftype: .Double))
+            // vector-left
+            XCTAssertEqual(ret.lvecRe, MfArray([[-0.707106781186547, -0.707106781186547],
+                                                [0.0, 0.0]], mftype: .Double))
+            XCTAssertEqual(ret.lvecIm, MfArray([[0.0, 0.0],
+                                                [0.707106781186547, -0.707106781186547]], mftype: .Double))
+            // vector-right
+            XCTAssertEqual(ret.rvecRe, MfArray([[0.707106781186547, 0.707106781186547],
+                                                [0.0, 0.0]], mftype: .Double))
+            XCTAssertEqual(ret.rvecIm, MfArray([[0.0, 0.0],
+                                                [-0.707106781186547, 0.707106781186547]], mftype: .Double))
+            
+        }
+    }
 }

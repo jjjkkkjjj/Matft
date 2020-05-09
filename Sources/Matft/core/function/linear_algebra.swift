@@ -131,92 +131,40 @@ extension Matft.mfarray.linalg{
     }
     
     /**
-        Get eigenvelues. Returned mfarray's type will be converted properly.
+        Get eigenvelues with real only. if eigenvalues contain imaginary part, raise `MfError.LinAlgError.foundComplex`. Returned mfarray's type will be converted properly.
         - parameters:
             - mfarray: mfarray
         - throws:
-        An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+        An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge` and `MfError.LinAlgError.foundComplex`
      */
     /*
-    public static func eigen(_ mfarray: MfArray) throws -> MfArray{
+    public static func eigen_real(_ mfarray: MfArray) throws -> MfArray{
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
         
         switch mfarray.storedType {
         case .Float:
-            let newmfdata = try withDummyDataMRPtr(.Float, storedSize: mfarray.size){
-                dstptr in
-                let dstptrF = dstptr.bindMemory(to: Float.self, capacity: mfarray.size)
-                
-                try _withNNStackedColumnMajorPtr(mfarray: mfarray, type: Float.self){
-                    srcptr, squaredSize, offset in
-                    //LU decomposition
-                    var IPIV = try LU_by_lapack(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: sgetrf_)
-                    
-                    //calculate inv
-                    try inv_by_lapack(squaredSize, srcdstptr: srcptr, &IPIV, lapack_func: sgetri_)
-                    
-                    //move
-                    (dstptrF + offset).moveAssign(from: srcptr, count: squaredSize*squaredSize)
-                }
-            }
-            
-            let newmfstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
-                [unowned mfarray] (shapeptr, stridesptr) in
-                
-                //shape
-                mfarray.withShapeUnsafeMBPtr{
-                    [unowned mfarray] in
-                    shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: mfarray.ndim)
-                }
-                
-                //strides
-                let newstridesptr = shape2strides(shapeptr, mforder: .Row)
-                stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
-                
-                newstridesptr.deallocate()
-            }
-            
-            return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+            return eigen_by_lapack(mfarray, .Float, sgeev_)
             
         case .Double:
-            let newmfdata = try withDummyDataMRPtr(.Double, storedSize: mfarray.size){
-                dstptr in
-                let dstptrD = dstptr.bindMemory(to: Double.self, capacity: mfarray.size)
-                
-                try _withNNStackedColumnMajorPtr(mfarray: mfarray, type: Double.self){
-                    srcptr, squaredSize, offset in
-                    //LU decomposition
-                    var IPIV = try LU_by_lapack(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: dgetrf_)
-                    
-                    //calculate inv
-                    try inv_by_lapack(squaredSize, srcdstptr: srcptr, &IPIV, lapack_func: dgetri_)
-                    
-                    //move
-                    (dstptrD + offset).moveAssign(from: srcptr, count: squaredSize*squaredSize)
-                }
-            }
-            
-            let newmfstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
-                [unowned mfarray] (shapeptr, stridesptr) in
-                
-                //shape
-                mfarray.withShapeUnsafeMBPtr{
-                    [unowned mfarray] in
-                    shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: mfarray.ndim)
-                }
-                
-                //strides
-                let newstridesptr = shape2strides(shapeptr, mforder: .Row)
-                stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
-                
-                newstridesptr.deallocate()
-            }
-            
-            return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+            return eigen_by_lapack(mfarray, .Double, dgeev_)
         }
 
     }*/
+    public static func eigen(_ mfarray: MfArray) throws -> (valRe: MfArray, valIm: MfArray, lvecRe: MfArray, lvecIm: MfArray, rvecRe: MfArray, rvecIm: MfArray){
+        let shape = mfarray.shape
+        precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        
+        switch mfarray.storedType {
+        case .Float:
+            return try eigen_by_lapack(mfarray, .Float, sgeev_)
+            
+        case .Double:
+            return try eigen_by_lapack(mfarray, .Double, dgeev_)
+        }
+
+    }
 }
 
