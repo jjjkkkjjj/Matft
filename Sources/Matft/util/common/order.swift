@@ -195,30 +195,11 @@ internal func to_row_major(_ mfarray: MfArray) -> MfArray{
         return copyAll(mfarray)
     }
     
-    let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.size){_ in}//dummy
-    let newstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
-            shapeptr, stridesptr in
-            mfarray.withShapeUnsafeMBPtr{
-            [unowned mfarray] (orig_shapeptr) in
-                let newstridesptr = shape2strides(orig_shapeptr, mforder: .Row)
-                
-                //copy
-                shapeptr.baseAddress!.assign(from: orig_shapeptr.baseAddress!, count: mfarray.ndim)
-                
-                //move
-                stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
-                //free
-                newstridesptr.deallocate()
-            }
-        }
-
-    let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
-    
     switch mfarray.storedType {
     case .Float:
-        return copy_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_scopy)
+        return copy_by_cblas(mfarray, mforder: .Row, cblas_func: cblas_scopy)
     case .Double:
-        return copy_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_dcopy)
+        return copy_by_cblas(mfarray, mforder: .Row, cblas_func: cblas_dcopy)
     }
     
 }
@@ -228,29 +209,11 @@ internal func to_column_major(_ mfarray: MfArray) -> MfArray{
         return copyAll(mfarray)
     }
     
-    let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.size){_ in}//dummy
-    let newstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
-        shapeptr, stridesptr in
-        mfarray.withShapeUnsafeMBPtr{
-        [unowned mfarray] (orig_shapeptr) in
-            let newstridesptr = shape2strides(orig_shapeptr, mforder: .Column)
-            
-            //copy
-            shapeptr.baseAddress!.assign(from: orig_shapeptr.baseAddress!, count: mfarray.ndim)
-            
-            //move
-            stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
-            //free
-            newstridesptr.deallocate()
-        }
-    }
-    
-    let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
     switch mfarray.storedType {
     case .Float:
-        return copy_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_scopy)
+        return copy_by_cblas(mfarray, mforder: .Column, cblas_func: cblas_scopy)
     case .Double:
-        return copy_by_cblas(mfarray, dsttmpMfarray: ret, cblas_func: cblas_dcopy)
+        return copy_by_cblas(mfarray, mforder: .Column, cblas_func: cblas_dcopy)
     }
 }
 

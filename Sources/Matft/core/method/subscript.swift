@@ -315,9 +315,9 @@ extension MfArray{
         
         switch array.storedType {
         case .Float:
-            _ = copy_by_cblas(newValue, dsttmpMfarray: array, cblas_func: cblas_scopy)
+            _ = copy_mfarray(newValue, dsttmpMfarray: array, cblas_func: cblas_scopy)
         case .Double:
-            _ = copy_by_cblas(newValue, dsttmpMfarray: array, cblas_func: cblas_dcopy)
+            _ = copy_mfarray(newValue, dsttmpMfarray: array, cblas_func: cblas_dcopy)
         }
     }
     
