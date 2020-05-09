@@ -138,6 +138,73 @@ extension Matft.mfarray{
         return MfArray(eye, mftype: mftype, mforder: mforder)
     }
     /**
+       Create diagonal matrix. The size is (dim, dim)
+       - parameters:
+            - v: the diagonal values, returned mfarray's shape is (dim, dim), whose dim is length of v
+            - mftype: (Optional) the type of mfarray
+            - order: (Optional) order, default is nil, which means close to row major
+    */
+    static public func diag<T: MfTypable>(v: [T], mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
+        let dim = v.count
+        var d = Array(repeating: Array(repeating: T.zero, count: dim), count: dim)
+        for i in 0..<dim{
+            d[i][i] = v[i]
+        }
+        return MfArray(d, mftype: mftype, mforder: mforder)
+    }
+    static public func diag(v: MfArray, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
+        precondition(v.ndim == 1, "must be 1d")
+        let dim = v.size
+        let size = dim*dim
+        let retmftype = mftype ?? v.mftype
+        var shape = [dim, dim]
+        
+        let newmfdata = withDummyDataMRPtr(retmftype, storedSize: size){
+            ptr in
+            switch MfType.storedType(retmftype){
+            case .Float:
+                let ptrF = ptr.bindMemory(to: Float.self, capacity: size)
+                var d = Array(repeating: Float.zero, count: size)
+                v.withDataUnsafeMBPtrT(datatype: Float.self){
+                    for i in 0..<dim{
+                        d[i*dim+i] = $0[i]
+                    }
+                }
+                d.withUnsafeMutableBufferPointer{
+                    ptrF.moveAssign(from: $0.baseAddress!, count: size)
+                }
+            case .Double:
+                let ptrD = ptr.bindMemory(to: Double.self, capacity: size)
+                var d = Array(repeating: Double.zero, count: size)
+                v.withDataUnsafeMBPtrT(datatype: Double.self){
+                    for i in 0..<dim{
+                        d[i*dim+i] = $0[i]
+                    }
+                }
+                d.withUnsafeMutableBufferPointer{
+                    ptrD.moveAssign(from: $0.baseAddress!, count: size)
+                }
+            }
+
+        }
+        
+        let ndim = shape.count
+        let newmfstructure = withDummyShapeStridesMBPtr(ndim){
+            shapeptr, stridesptr in
+            shape.withUnsafeMutableBufferPointer{
+                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: ndim)
+            }
+            
+            let newstrides = shape2strides(shapeptr, mforder: .Row)
+            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: ndim)
+            
+            newstrides.deallocate()
+        }
+        
+        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+        
+    }
+    /**
        Concatenate given arrays vertically(for row)
        - parameters:
             - mfarrays: the array of MfArray.
