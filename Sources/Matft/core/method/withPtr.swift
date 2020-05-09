@@ -119,3 +119,13 @@ internal func withDummy2ShapeStridesMBPtr(_ ndim: Int, _ body: (UnsafeMutableBuf
     
     return (MfStructure(shapeptr: l_dummyShapePtr.baseAddress!, stridesptr: l_dummyStridesPtr.baseAddress!, ndim: ndim), MfStructure(shapeptr: r_dummyShapePtr.baseAddress!, stridesptr: r_dummyStridesPtr.baseAddress!, ndim: ndim))
 }
+
+internal func withDataMBPtr_multi<T, R>(datatype: T.Type, _ a: MfArray, _ b: MfArray, _ body: ((UnsafeMutableBufferPointer<T>, UnsafeMutableBufferPointer<T>) throws -> R)) rethrows -> R{
+    return try a.withDataUnsafeMBPtrT(datatype: T.self){
+        aptr in
+        try b.withDataUnsafeMBPtrT(datatype: T.self){
+            bptr in
+            return try body(aptr, bptr)
+        }
+    }
+}
