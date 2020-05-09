@@ -66,35 +66,21 @@ extension Matft.mfarray.linalg{
                 
         let returnedType = StoredType.priority(coef.storedType, b.storedType)
         
-        //get column flatten
-        let coef_column_major = to_column_major(coef)
-        let b_column_major = to_column_major(b)
 
         switch returnedType{
         case .Float:
-            let coefF = coef_column_major.astype(.Float) //even if original one is float, create copy
-            let ret = b_column_major.astype(.Float) //even if original one is float, create copy for lapack calculation
-
-            try coefF.withDataUnsafeMBPtrT(datatype: Float.self){
-                coefptr in
-                try ret.withDataUnsafeMBPtrT(datatype: Float.self){
-                    try solve_by_lapack(copiedCoefPtr: coefptr.baseAddress!, coefShape[0], $0.baseAddress!, dstColNum, sgesv_)
-                }
-            }
+            let coefF = coef.astype(.Float) //even if original one is float, create copy
+            let bF = b.astype(.Float)
             
+            let ret = try solve_by_lapack(coefF, bF, coefShape[0], dstColNum, sgesv_)
             
             return ret
             
         case .Double:
-            let coefD = coef_column_major.astype(.Double) //even if original one is float, create copy
-            let ret = b_column_major.astype(.Double) //even if original one is float, create copy
+            let coefD = coef.astype(.Double) //even if original one is float, create copy
+            let bD = b.astype(.Double) //even if original one is float, create copy
             
-            try coefD.withDataUnsafeMBPtrT(datatype: Double.self){
-                coefptr in
-                try ret.withDataUnsafeMBPtrT(datatype: Double.self){
-                    try solve_by_lapack(copiedCoefPtr: coefptr.baseAddress!, coefShape[0], $0.baseAddress!, dstColNum, dgesv_)
-                }
-            }
+            let ret = try solve_by_lapack(coefD, bD, coefShape[0], dstColNum, dgesv_)
             
             return ret
         }
@@ -303,6 +289,95 @@ extension Matft.mfarray.linalg{
         }
 
     }
+    
+    /**
+        Get eigenvelues. Returned mfarray's type will be converted properly.
+        - parameters:
+            - mfarray: mfarray
+        - throws:
+        An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+     */
+    /*
+    public static func eigen(_ mfarray: MfArray) throws -> MfArray{
+        let shape = mfarray.shape
+        precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        
+        switch mfarray.storedType {
+        case .Float:
+            let newmfdata = try withDummyDataMRPtr(.Float, storedSize: mfarray.size){
+                dstptr in
+                let dstptrF = dstptr.bindMemory(to: Float.self, capacity: mfarray.size)
+                
+                try _withNNStackedColumnMajorPtr(mfarray: mfarray, type: Float.self){
+                    srcptr, squaredSize, offset in
+                    //LU decomposition
+                    var IPIV = try LU_by_lapack(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: sgetrf_)
+                    
+                    //calculate inv
+                    try inv_by_lapack(squaredSize, srcdstptr: srcptr, &IPIV, lapack_func: sgetri_)
+                    
+                    //move
+                    (dstptrF + offset).moveAssign(from: srcptr, count: squaredSize*squaredSize)
+                }
+            }
+            
+            let newmfstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
+                [unowned mfarray] (shapeptr, stridesptr) in
+                
+                //shape
+                mfarray.withShapeUnsafeMBPtr{
+                    [unowned mfarray] in
+                    shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: mfarray.ndim)
+                }
+                
+                //strides
+                let newstridesptr = shape2strides(shapeptr, mforder: .Row)
+                stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+                
+                newstridesptr.deallocate()
+            }
+            
+            return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+            
+        case .Double:
+            let newmfdata = try withDummyDataMRPtr(.Double, storedSize: mfarray.size){
+                dstptr in
+                let dstptrD = dstptr.bindMemory(to: Double.self, capacity: mfarray.size)
+                
+                try _withNNStackedColumnMajorPtr(mfarray: mfarray, type: Double.self){
+                    srcptr, squaredSize, offset in
+                    //LU decomposition
+                    var IPIV = try LU_by_lapack(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: dgetrf_)
+                    
+                    //calculate inv
+                    try inv_by_lapack(squaredSize, srcdstptr: srcptr, &IPIV, lapack_func: dgetri_)
+                    
+                    //move
+                    (dstptrD + offset).moveAssign(from: srcptr, count: squaredSize*squaredSize)
+                }
+            }
+            
+            let newmfstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
+                [unowned mfarray] (shapeptr, stridesptr) in
+                
+                //shape
+                mfarray.withShapeUnsafeMBPtr{
+                    [unowned mfarray] in
+                    shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: mfarray.ndim)
+                }
+                
+                //strides
+                let newstridesptr = shape2strides(shapeptr, mforder: .Row)
+                stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+                
+                newstridesptr.deallocate()
+            }
+            
+            return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+        }
+
+    }*/
 }
 
 /**

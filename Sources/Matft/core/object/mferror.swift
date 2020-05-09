@@ -16,5 +16,7 @@ public enum MfError: Error{
     public enum LinAlgError: Error{
         case factorizationError(_ message: String)
         case singularMatrix(_ message: String)
+        case notConverge(_ message: String)
+        case foundComplex(_ message: String)
     }
 }
