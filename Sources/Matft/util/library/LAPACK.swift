@@ -61,7 +61,7 @@ internal func solve_by_lapack<T: MfStorable>(_ coef: MfArray, _ b: MfArray, _ eq
 internal typealias lapack_LU<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
 //ref: http://www.netlib.org/lapack/explore-html/d8/ddc/group__real_g_ecomputational_ga8d99c11b94db3d5eac75cac46a0f2e17.html
-internal func LU_by_lapack<T: MfStorable>(_ rowNum: Int, _ colNum: Int, srcdstptr: UnsafeMutablePointer<T>, lapack_func: lapack_LU<T>) throws -> [__CLPK_integer] {
+fileprivate func _run_lu<T: MfStorable>(_ rowNum: Int, _ colNum: Int, srcdstptr: UnsafeMutablePointer<T>, lapack_func: lapack_LU<T>) throws -> [__CLPK_integer] {
     var M = __CLPK_integer(rowNum)
     var N = __CLPK_integer(colNum)
     var LDA = __CLPK_integer(rowNum)
@@ -92,7 +92,7 @@ internal typealias lapack_inv<T> = (UnsafeMutablePointer<__CLPK_integer>, Unsafe
 //Note that
 //The pivot indices from SGETRF; for 1<=i<=N, row i of the
 //matrix was interchanged with row IPIV(i)
-internal func inv_by_lapack<T: MfStorable>(_ squaredSize: Int, srcdstptr: UnsafeMutablePointer<T>, _ IPIV: UnsafeMutablePointer<__CLPK_integer>, lapack_func: lapack_inv<T>) throws {
+fileprivate func _run_inv<T: MfStorable>(_ squaredSize: Int, srcdstptr: UnsafeMutablePointer<T>, _ IPIV: UnsafeMutablePointer<__CLPK_integer>, lapack_func: lapack_inv<T>) throws {
     var N = __CLPK_integer(squaredSize)
     var LDA = __CLPK_integer(squaredSize)
     
@@ -115,6 +115,97 @@ internal func inv_by_lapack<T: MfStorable>(_ squaredSize: Int, srcdstptr: Unsafe
         throw MfError.LinAlgError.singularMatrix("The factorization has been completed, but the factor U(of A=PLU) is exactly singular, so the solution could not be computed.")
     }
 }
+
+internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func: lapack_LU<T>, _ inv_lapack_func: lapack_inv<T>, _ retMfType: MfType) throws -> MfArray{
+    
+    let newmfdata = try withDummyDataMRPtr(retMfType, storedSize: mfarray.size){
+        dstptr in
+        let dstptrF = dstptr.bindMemory(to: T.self, capacity: mfarray.size)
+        
+        try _withNNStackedColumnMajorPtr(mfarray: mfarray, type: T.self){
+            srcptr, squaredSize, offset in
+            //LU decomposition
+            var IPIV = try _run_lu(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: lu_lapack_func)
+            
+            //calculate inv
+            try _run_inv(squaredSize, srcdstptr: srcptr, &IPIV, lapack_func: inv_lapack_func)
+            
+            //move
+            (dstptrF + offset).moveAssign(from: srcptr, count: squaredSize*squaredSize)
+        }
+    }
+    
+    let newmfstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
+        [unowned mfarray] (shapeptr, stridesptr) in
+        
+        //shape
+        mfarray.withShapeUnsafeMBPtr{
+            [unowned mfarray] in
+            shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: mfarray.ndim)
+        }
+        
+        //strides
+        let newstridesptr = shape2strides(shapeptr, mforder: .Row)
+        stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+        
+        newstridesptr.deallocate()
+    }
+    
+    return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+}
+
+
+internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func: lapack_LU<T>, _ retMfType: MfType, _ retSize: Int) throws -> MfArray{
+    let newmfdata = try withDummyDataMRPtr(retMfType, storedSize: retSize){
+        dstptr in
+        let dstptrF = dstptr.bindMemory(to: T.self, capacity: retSize)
+        
+        var dstoffset = 0
+        try _withNNStackedColumnMajorPtr(mfarray: mfarray, type: T.self){
+            srcptr, squaredSize, offset in
+            //LU decomposition
+            let IPIV = try _run_lu(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: lu_lapack_func)
+            
+            //calculate L and U's determinant
+            //Note that L and U's determinant are calculated by product of diagonal elements
+            // L's determinant is always one
+            //ref: https://stackoverflow.com/questions/47315471/compute-determinant-from-lu-decomposition-in-lapack
+            var det = T.num(1)
+            for i in 0..<squaredSize{
+                det *= IPIV[i] != __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*squaredSize).pointee : -(srcptr.advanced(by: i + i*squaredSize).pointee)
+            }
+            
+            //assign
+            (dstptrF + dstoffset).assign(from: &det, count: 1)
+            dstoffset += 1
+        }
+    }
+    let retndim = mfarray.ndim - 2 != 0 ? mfarray.ndim - 2 : 1
+    let newmfstructure = withDummyShapeStridesMBPtr(retndim){
+        [unowned mfarray] (shapeptr, stridesptr) in
+        
+        //shape
+        if mfarray.ndim - 2 != 0{
+            mfarray.withShapeUnsafeMBPtr{
+                shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: retndim)
+            }
+            
+            //strides
+            let newstridesptr = shape2strides(shapeptr, mforder: .Row)
+            stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: retndim)
+            
+            newstridesptr.deallocate()
+        }
+        else{
+            shapeptr[0] = 1
+            stridesptr[0] = 1
+        }
+        
+    }
+    
+    return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+}
+
 /*
 sgeev_(<#T##__jobvl: UnsafeMutablePointer<Int8>!##UnsafeMutablePointer<Int8>!#>, <#T##__jobvr: UnsafeMutablePointer<Int8>!##UnsafeMutablePointer<Int8>!#>, <#T##__n: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>, <#T##__a: UnsafeMutablePointer<__CLPK_real>!##UnsafeMutablePointer<__CLPK_real>!#>, <#T##__lda: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>, <#T##__wr: UnsafeMutablePointer<__CLPK_real>!##UnsafeMutablePointer<__CLPK_real>!#>, <#T##__wi: UnsafeMutablePointer<__CLPK_real>!##UnsafeMutablePointer<__CLPK_real>!#>, <#T##__vl: UnsafeMutablePointer<__CLPK_real>!##UnsafeMutablePointer<__CLPK_real>!#>, <#T##__ldvl: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>, <#T##__vr: UnsafeMutablePointer<__CLPK_real>!##UnsafeMutablePointer<__CLPK_real>!#>, <#T##__ldvr: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>, <#T##__work: UnsafeMutablePointer<__CLPK_real>!##UnsafeMutablePointer<__CLPK_real>!#>, <#T##__lwork: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>, <#T##__info: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>)
 
@@ -165,3 +256,24 @@ internal func eigen_by_lapack<T: MfStorable>(_ squaredSize: Int, copiedSrcPtr: U
         throw MfError.LinAlgError.notConverge("the QR algorithm failed to compute all the eigenvalues, and no eigenvectors have been computed; elements \(INFO)+1:N of WR and WI contain eigenvalues which have converged.")
 }
 */
+
+
+/**
+    - Important: This function for last shape is NxN
+ */
+fileprivate func _withNNStackedColumnMajorPtr<T: MfStorable>(mfarray: MfArray, type: T.Type, _ body: (UnsafeMutablePointer<T>, Int, Int) throws -> Void) rethrows -> Void{
+    let shape = mfarray.shape
+    let squaredSize = shape[mfarray.ndim - 1]
+    let matricesNum = mfarray.size / (squaredSize * squaredSize)
+    
+    // get stacked row major and copy
+    let rowmajorMfarray = to_row_major(mfarray)
+    var offset = 0
+    try rowmajorMfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        for _ in 0..<matricesNum{
+            try body($0.baseAddress! + offset, squaredSize, offset)
+            
+            offset += squaredSize * squaredSize
+        }
+    }
+}
