@@ -122,7 +122,7 @@ internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func:
         dstptr in
         let dstptrF = dstptr.bindMemory(to: T.self, capacity: mfarray.size)
         
-        try _withNNStackedRowMajorPtr(mfarray: mfarray, type: T.self, mforder: .Row){
+        try _withNNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Row){
             srcptr, squaredSize, offset in
             //LU decomposition
             var IPIV = try _run_lu(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: lu_lapack_func)
@@ -161,7 +161,7 @@ internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func:
         let dstptrF = dstptr.bindMemory(to: T.self, capacity: retSize)
         
         var dstoffset = 0
-        try _withNNStackedRowMajorPtr(mfarray: mfarray, type: T.self, mforder: .Row){
+        try _withNNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Row){
             srcptr, squaredSize, offset in
             //LU decomposition
             let IPIV = try _run_lu(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: lu_lapack_func)
@@ -235,7 +235,7 @@ fileprivate func _run_eigen<T: MfStorable>(_ squaredSize: Int, copiedSrcPtr: Uns
     //error indicator
     var INFO: __CLPK_integer = 0
     
-    //run (calculate workspace query)
+    //run (calculate optimal workspace)
     let _ = lapack_func(JOBVL, JOBVR, &N, copiedSrcPtr, &LDA, &WR, &WI, &VL, &LDVL, &VR, &LDVR, &WORKQ, &LWORK, &INFO)
     
     var WORK = Array<T>(repeating: T.zero, count: T.toInt(WORKQ))
@@ -404,7 +404,7 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: Mf
             rvecRePtr, rvecImPtr in
             try withDataMBPtr_multi(datatype: T.self, valRe, valIm){
                 valRePtr, valImPtr in
-                try _withNNStackedRowMajorPtr(mfarray: mfarray, type: T.self, mforder: .Column){
+                try _withNNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Column){
                 srcptr, _, offset in
                     
                     try _run_eigen(squaredSize, copiedSrcPtr: srcptr, lvecRePtr.baseAddress! + vec_offset, lvecImPtr.baseAddress! + vec_offset, rvecRePtr.baseAddress! + vec_offset, rvecImPtr.baseAddress! + vec_offset, valRePtr.baseAddress! + val_offset, valImPtr.baseAddress! + val_offset, lapack_func: lapack_func)
@@ -425,7 +425,7 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: Mf
                 valReptr in
                 try valIm.withDataUnsafeMBPtrT(datatype: T.self){
                     valImptr in
-                    try _withNNStackedRowMajorPtr(mfarray: mfarray, type: T.self, mforder: .Column){
+                    try _withNNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Column){
                     srcptr, _, offset in
                         
                         try _run_eigen(squaredSize, copiedSrcPtr: srcptr, lvecptr.baseAddress! + vec_offset, rvecptr.baseAddress! + vec_offset, valReptr.baseAddress! + val_offset, valImptr.baseAddress! + val_offset, lapack_func: lapack_func)
@@ -444,10 +444,104 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: Mf
 }
 
 
+internal typealias lapack_svd<T> = (UnsafeMutablePointer<Int8>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>,UnsafeMutablePointer<__CLPK_integer>) -> Int32
+// ref: http://www.netlibhttps://www.netlib.org/lapack/explore-html/d4/dca/group__real_g_esing_gac2cd4f1079370ac908186d77efcd5ea8.html
+fileprivate func _run_svd<T: MfStorable>(_ rowNum: Int, _ colNum: Int, _ srcptr: UnsafeMutablePointer<T>, _ vptr: UnsafeMutablePointer<T>, _ sptr: UnsafeMutablePointer<T>, _ rtptr: UnsafeMutablePointer<T>, lapack_func: lapack_svd<T>) throws{
+    let JOBZ = UnsafeMutablePointer(mutating: ("A" as NSString).utf8String)!
+    
+    var M = __CLPK_integer(rowNum)
+    var N = __CLPK_integer(colNum)
+    
+    var LDA = __CLPK_integer(rowNum)
+    
+    let snum = min(rowNum, colNum)
+    var S = Array<T>(repeating: T.zero, count: snum)
+    
+    var U = Array<T>(repeating: T.zero, count: rowNum*rowNum)
+    var LDU = __CLPK_integer(rowNum)
+    
+    var VT = Array<T>(repeating: T.zero, count: colNum*colNum)
+    var LDVT = __CLPK_integer(colNum)
+    
+    //work space
+    var WORKQ = T.zero //workspace query
+    var LWORK = __CLPK_integer(-1)
+    var IWORK = __CLPK_integer(8*snum)
+    
+    //error indicator
+    var INFO: __CLPK_integer = 0
+    
+    //run (calculate optimal workspace)
+    let _ = lapack_func(JOBZ, &M, &N, srcptr, &LDA, &S, &U, &LDU, &VT, &LDVT, &WORKQ, &LWORK, &IWORK, &INFO)
+    
+    var WORK = Array<T>(repeating: T.zero, count: T.toInt(WORKQ))
+    LWORK = __CLPK_integer(T.toInt(WORKQ))
+    //run
+    let _ = lapack_func(JOBZ, &M, &N, srcptr, &LDA, &S, &U, &LDU, &VT, &LDVT, &WORK, &LWORK, &IWORK, &INFO)
+    
+    //check error
+    if INFO < 0{
+        throw MfError.LinAlgError.factorizationError("Illegal value found: \(-INFO)th argument")
+    }
+    else if INFO > 0{
+        throw MfError.LinAlgError.notConverge("the QR algorithm failed to compute all the eigenvalues, and no eigenvectors have been computed; elements \(INFO)+1:N of WR and WI contain eigenvalues which have converged.")
+    }
+    else{
+        U.withUnsafeMutableBufferPointer{
+            vptr.moveAssign(from: $0.baseAddress!, count: rowNum*rowNum)
+        }
+        S.withUnsafeMutableBufferPointer{
+            sptr.moveAssign(from: $0.baseAddress!, count: snum)
+        }
+        VT.withUnsafeMutableBufferPointer{
+            rtptr.moveAssign(from: $0.baseAddress!, count: colNum*colNum)
+        }
+    }
+}
+
+internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfType, _ lapack_func: lapack_svd<T>) throws -> (v: MfArray, s: MfArray, rt: MfArray){
+    let shape = mfarray.shape
+    let M = shape[mfarray.ndim - 2]
+    let N = shape[mfarray.ndim - 1]
+    let ssize = min(M, N)
+    let stackedShape = Array(shape.prefix(mfarray.ndim - 2))
+    
+    let v = Matft.mfarray.nums(T.zero, shape: stackedShape + [M, M], mftype: retMfType, mforder: .Row)
+    let s = Matft.mfarray.nums(T.zero, shape: stackedShape + [ssize], mftype: retMfType, mforder: .Row)
+    let rt = Matft.mfarray.nums(T.zero, shape: stackedShape + [N, N], mftype: retMfType, mforder: .Row)
+    
+    //offset
+    var v_offset = 0
+    var s_offset = 0
+    var rt_offset = 0
+    
+    try v.withDataUnsafeMBPtrT(datatype: T.self){
+        vptr in
+        try s.withDataUnsafeMBPtrT(datatype: T.self){
+            sptr in
+            try rt.withDataUnsafeMBPtrT(datatype: T.self){
+                rtptr in
+                try _withMNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Column){
+                    srcptr, _, _, _ in
+                    
+                    try _run_svd(M, N, srcptr, vptr.baseAddress! + v_offset, sptr.baseAddress! + s_offset, rtptr.baseAddress! + rt_offset, lapack_func: lapack_func)
+                    
+                    v_offset += M*M
+                    s_offset += ssize
+                    rt_offset += N*N
+                }
+                
+            }
+        }
+    }
+    
+    return (v.T, s, rt.T)
+}
+
 /**
     - Important: This function for last shape is NxN
  */
-fileprivate func _withNNStackedRowMajorPtr<T: MfStorable>(mfarray: MfArray, type: T.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<T>, Int, Int) throws -> Void) rethrows -> Void{
+fileprivate func _withNNStackedMajorPtr<T: MfStorable>(mfarray: MfArray, type: T.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<T>, Int, Int) throws -> Void) rethrows -> Void{
     let shape = mfarray.shape
     let squaredSize = shape[mfarray.ndim - 1]
     let matricesNum = mfarray.size / (squaredSize * squaredSize)
@@ -460,6 +554,27 @@ fileprivate func _withNNStackedRowMajorPtr<T: MfStorable>(mfarray: MfArray, type
             try body($0.baseAddress! + offset, squaredSize, offset)
             
             offset += squaredSize * squaredSize
+        }
+    }
+}
+
+/**
+    - Important: This function for last shape is MxN
+ */
+fileprivate func _withMNStackedMajorPtr<T: MfStorable>(mfarray: MfArray, type: T.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<T>, Int, Int, Int) throws -> Void) rethrows -> Void{
+    let shape = mfarray.shape
+    let M = shape[mfarray.ndim - 2]
+    let N = shape[mfarray.ndim - 1]
+    let matricesNum = mfarray.size / (M * N)
+    
+    // get stacked row major and copy
+    let rowmajorMfarray = mforder == .Row ? to_row_major(mfarray) : to_column_major(mfarray)
+    var offset = 0
+    try rowmajorMfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        for _ in 0..<matricesNum{
+            try body($0.baseAddress! + offset, M, N, offset)
+            
+            offset += M * N
         }
     }
 }
