@@ -75,7 +75,41 @@ extension Matft.mfarray{
         let size = shape.withUnsafeMutableBufferPointer{
             shape2size($0)
         }
-        return MfArray(Array(repeating: value, count: size), mftype: mftype, shape: shape, mforder: mforder)
+        
+        let retmftype = mftype ?? MfType.mftype(value: T.zero)
+        let newmfdata = withDummyDataMRPtr(retmftype, storedSize: size){
+            ptr in
+            switch MfType.storedType(retmftype){
+            case .Float:
+                var arr = Array(repeating: Float.from(value), count: size)
+                let ptrF = ptr.bindMemory(to: Float.self, capacity: size)
+                arr.withUnsafeMutableBufferPointer{
+                    ptrF.moveAssign(from: $0.baseAddress!, count: size)
+                }
+            case .Double:
+                var arr = Array(repeating: Double.from(value), count: size)
+                let ptrD = ptr.bindMemory(to: Double.self, capacity: size)
+                arr.withUnsafeMutableBufferPointer{
+                    ptrD.moveAssign(from: $0.baseAddress!, count: size)
+                }
+            }
+
+        }
+        
+        let retndim = shape.count
+        let newmfstructure = withDummyShapeStridesMBPtr(retndim){
+            shapeptr, stridesptr in
+            shape.withUnsafeMutableBufferPointer{
+                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+            }
+            
+            let newstrides = shape2strides(shapeptr, mforder: .Row)
+            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: retndim)
+            
+            newstrides.deallocate()
+        }
+        
+        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
     /**
        Create arithmetic sequence mfarray
