@@ -181,10 +181,14 @@ internal func stats_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int, v
         dataptr, shapeptr, stridesptr in
 
         //move
-        shapeptr.baseAddress!.moveAssign(from: &retShape, count: retndim)
+        retShape.withUnsafeMutableBufferPointer{
+            shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
         
         //move
-        stridesptr.baseAddress!.moveAssign(from: &retStrides, count: retndim)
+        retStrides.withUnsafeMutableBufferPointer{
+            stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
         
         
         mfarray.withDataUnsafeMBPtrT(datatype: T.self){
@@ -245,11 +249,13 @@ internal func stats_index_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: 
         dataptr, shapeptr, stridesptr in
 
         //move
-        shapeptr.baseAddress!.moveAssign(from: &retShape, count: retndim)
-        
+        retShape.withUnsafeMutableBufferPointer{
+            shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
         //move
-        stridesptr.baseAddress!.moveAssign(from: &retStrides, count: retndim)
-        
+        retStrides.withUnsafeMutableBufferPointer{
+            stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
         let retsize = shape2size(shapeptr)
         mfarray.withDataUnsafeMBPtrT(datatype: T.self){
             srcptr in
