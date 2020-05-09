@@ -166,5 +166,45 @@ extension Matft.mfarray.linalg{
         }
 
     }
+    
+    public static func svd(_ mfarray: MfArray) throws -> (v: MfArray, s: MfArray, rt: MfArray){
+        switch mfarray.storedType {
+        case .Float:
+            return try svd_by_lapack(mfarray, .Float, sgesdd_)
+            
+        case .Double:
+            return try svd_by_lapack(mfarray, .Double, dgesdd_)
+        }
+    }
+    
+    public static func polar_left(_ mfarray: MfArray) throws -> (p: MfArray, l: MfArray){
+        let shape = mfarray.shape
+        precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        
+        let svd = try Matft.mfarray.linalg.svd(mfarray)
+        // M(=mfarray) = USV
+        let s = Matft.mfarray.diag(v: svd.s)
+        
+        // M = PL = VSRt => P=VSVt, L=VRt
+        let p = svd.v *& s *& svd.v.T
+        let l = svd.v *& svd.rt
+        
+        return (p, l)
+    }
+    public static func polar_right(_ mfarray: MfArray) throws -> (u: MfArray, p: MfArray){
+        let shape = mfarray.shape
+        precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        
+        let svd = try Matft.mfarray.linalg.svd(mfarray)
+        // M(=mfarray) = USV
+        let s = Matft.mfarray.diag(v: svd.s)
+        
+        // M = UP = VSRt => U=VRt P=RSRt
+        let u = svd.v *& svd.rt
+        let p = svd.rt.T *& s *& svd.rt
+        return (u, p)
+    }
 }
 
