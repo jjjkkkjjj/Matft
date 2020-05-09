@@ -330,7 +330,9 @@ extension Matft.mfarray{
                 stridesptr[idim] = 0
             }
             
-            shapteptr.baseAddress!.moveAssign(from: &new_shape, count: new_ndim)
+            new_shape.withUnsafeMutableBufferPointer{
+                shapteptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: new_ndim)
+            }
         }
         
         //newarray.mfstructure = newstructure
