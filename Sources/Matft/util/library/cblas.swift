@@ -16,7 +16,7 @@ internal func copy_unsafeptrT<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcS
     cblas_func(Int32(size), srcptr, Int32(srcStride), dstptr, Int32(dstStride))
 }
 
-internal func copy_by_cblas<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfArray, cblas_func: cblas_convorder_func<T>) -> MfArray{
+internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfArray, cblas_func: cblas_convorder_func<T>) -> MfArray{
     
     
     dsttmpMfarray.withDataUnsafeMBPtrT(datatype: T.self){
@@ -61,7 +61,27 @@ internal func copy_by_cblas<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: Mf
     return dsttmpMfarray
 }
 
+internal func copy_by_cblas<T: MfStorable>(_ mfarray: MfArray, mforder: MfOrder, cblas_func: cblas_convorder_func<T>) -> MfArray{
+    let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.size){_ in}//dummy
+    let newstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
+            shapeptr, stridesptr in
+            mfarray.withShapeUnsafeMBPtr{
+            [unowned mfarray] (orig_shapeptr) in
+                let newstridesptr = shape2strides(orig_shapeptr, mforder: mforder)
+                
+                //copy
+                shapeptr.baseAddress!.assign(from: orig_shapeptr.baseAddress!, count: mfarray.ndim)
+                
+                //move
+                stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
+                //free
+                newstridesptr.deallocate()
+            }
+        }
 
+    let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
+    return copy_mfarray(mfarray, dsttmpMfarray: ret, cblas_func: cblas_func)
+}
 
 //matrix multiplication
 internal typealias cblas_matmul_func<T> = (CBLAS_ORDER, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, Int32, Int32, Int32, T, UnsafePointer<T>, Int32, UnsafePointer<T>, Int32, T, UnsafeMutablePointer<T>, Int32) -> Void
