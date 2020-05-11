@@ -113,4 +113,13 @@ extension MfArray{
     public func flip(_ mfarray: MfArray, axes: [Int]? = nil) -> MfArray{
         return Matft.mfarray.flip(self, axes: axes)
     }
+    
+    /**
+       Swap given axis1 and axis2
+       - parameters:
+            - axes: (optional) the reversed axis of list
+    */
+    public func swapaxes(axis1: Int, axis2: Int) -> MfArray{
+        return Matft.mfarray.swapaxes(self, axis1: axis1, axis2: axis2)
+    }
 }

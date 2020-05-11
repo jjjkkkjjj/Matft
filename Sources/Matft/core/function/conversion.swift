@@ -415,21 +415,21 @@ extension Matft.mfarray{
     }
     
     /**
-       Reverse the mfarray order along given axes
+       Swap given axis1 and axis2
        - parameters:
             - mfarray: mfarray
             - axes: (optional) the reversed axis of list
     */
-    /*
     public static func swapaxes(_ mfarray: MfArray, axis1: Int, axis2: Int) -> MfArray{
-        let axes = axes ?? Array(stride(from: 0, to: mfarray.ndim, by: 1))
+        let axis1 = get_axis(axis1, ndim: mfarray.ndim)
+        let axis2 = get_axis(axis2, ndim: mfarray.ndim)
         
-        var slices = Array<MfSlice>(repeating: MfSlice(start: 0, to: nil, by: 1), count: mfarray.ndim)
-        for axis in axes{
-            slices[axis] = MfSlice(start: 0, to: nil, by: -1)
-        }
-        return mfarray[slices]
-    }*/
+        var axes = Array(stride(from: 0, to: mfarray.ndim, by: 1))
+        //swap
+        axes.swapAt(axis1, axis2)
+        
+        return mfarray.transpose(axes: axes)
+    }
     
     
     /**
