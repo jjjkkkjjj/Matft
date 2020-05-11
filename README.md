@@ -601,6 +601,104 @@ You can set **MfSlice** (see below's list) to subscript.
   */
   ```
 
+#### Eigen
+
+- Matft can calculate Eigen values and vectors.
+  
+Use `Matft.mfarray.linalg.eigen`
+  
+Note that returned value is tuple which consists of `(valRe, valIm, lvecRe, lvecIm, rvecRe, rvecIm)`. In `(valRe, valIm, lvecRe, lvecIm, rvecRe, rvecIm)`, `val` is eigenvalues, `lvec` is **left** eigenvecors, `rvec` is **right** eigenvectors, `Re` is real part, `Im` is imaginary part respectively.
+  
+  ```swift
+  let a = MfArray([[1, -1], [1, 1]])
+  let ret = try! Matft.mfarray.linalg.eigen(a)
+  
+  print(ret.valRe)
+  print(ret.valIm)
+  print(ret.lvecRe)
+  print(ret.lvecIm)
+  print(ret.rvecRe)
+  print(ret.rvecIm)
+  /*
+  mfarray = 
+  [	1.0,		1.0], type=Float, shape=[2]
+  mfarray = 
+  [	1.0,		-1.0], type=Float, shape=[2]
+  mfarray = 
+  [[	-0.70710677,		-0.70710677],
+  [	0.0,		0.0]], type=Float, shape=[2, 2]
+  mfarray = 
+  [[	0.0,		-0.0],
+  [	0.70710677,		-0.70710677]], type=Float, shape=[2, 2]
+  mfarray = 
+  [[	0.70710677,		0.70710677],
+  [	0.0,		0.0]], type=Float, shape=[2, 2]
+  mfarray = 
+  [[	0.0,		-0.0],
+  [	-0.70710677,		0.70710677]], type=Float, shape=[2, 2]
+  */
+  ```
+
+#### Singular value decomposition
+
+- Matft can calculate singular value decomposition.
+
+  Use `Matft.mfarray.linalg.svd`
+
+  Note that returned value is tuple which consists of `(v, s, rt)`. See [numpy doc](https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.svd.html)
+  
+  ```swift
+  let a = MfArray([[1, 2],
+                   [3, 4]])
+  let ret = try! Matft.mfarray.linalg.svd(a)
+  
+  print(ret.v)
+  print(ret.s)
+  print(ret.rt)
+  print((ret.v *& Matft.mfarray.diag(v: ret.s) *& ret.rt).nearest())
+  /*
+  mfarray = 
+  [[	-0.40455368,		-0.91451436],
+  [	-0.9145144,		0.4045536]], type=Float, shape=[2, 2]
+  mfarray = 
+  [	5.4649854,		0.36596614], type=Float, shape=[2]
+  mfarray = 
+  [[	-0.5760485,		-0.81741554],
+  [	0.81741554,		-0.5760485]], type=Float, shape=[2, 2]
+  mfarray = 
+  [[	1.0,		2.0],
+  [	3.0,		4.0]], type=Float, shape=[2, 2]
+  */
+  ```
+
+#### Polar decomposition
+
+- Polar decomposition is also available.
+  
+Use `Matft.mfarray.linalg.polar_right` or `Matft.mfarray.linalg.polar_left`.
+  
+  Note that returned value by `polar_right` is tuple which consists of `(u, p)`. In `(u, p)`, `u` is orthonormal matrix, `p` is positive definite respectively. Returned value by `polar_left` is tuple which consists of `(p, ;)`. In `(p, l)`, `l` is orthonormal matrix, `p` is positive definite respectively.
+  
+  ```swift
+  let a = MfArray([[0.5, 1, 2],
+                   [1.5, 3, 4],
+                   [2, 3.5, 1]])
+  let retR = try! Matft.mfarray.linalg.polar_right(a)
+  
+  print(retR.u)
+  print(retR.p)
+  /*
+  mfarray = 
+  [[	0.7279401870626365,		-0.4224602202449294,		0.5400281903473372],
+  [	-0.28527166525638326,		0.5295999931932289,		0.7988391103417398],
+  [	0.6234766724273363,		0.7355618325608919,		-0.26500118757960145]], type=Double, shape=[3, 3]
+  mfarray = 
+  [[	1.1830159405014156,		2.0542935447891617,		0.9382703855270744],
+  [	2.0542935447891617,		3.7408061732978766,		2.0090413648439474],
+  [	0.9382703855270742,		2.0090413648439465,		4.010411634482028]], type=Double, shape=[3, 3]
+  */
+  ```
+
 ## Performance
 
 I use ``Accelerate``, so all of MfArray operation may keep high performance.
