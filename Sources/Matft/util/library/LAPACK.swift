@@ -446,22 +446,42 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: Mf
 
 internal typealias lapack_svd<T> = (UnsafeMutablePointer<Int8>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>,UnsafeMutablePointer<__CLPK_integer>) -> Int32
 // ref: https://www.netlib.org/lapack/explore-html/d4/dca/group__real_g_esing_gac2cd4f1079370ac908186d77efcd5ea8.html
-fileprivate func _run_svd<T: MfStorable>(_ rowNum: Int, _ colNum: Int, _ srcptr: UnsafeMutablePointer<T>, _ vptr: UnsafeMutablePointer<T>, _ sptr: UnsafeMutablePointer<T>, _ rtptr: UnsafeMutablePointer<T>, lapack_func: lapack_svd<T>) throws{
-    let JOBZ = UnsafeMutablePointer(mutating: ("A" as NSString).utf8String)!
+fileprivate func _run_svd<T: MfStorable>(_ rowNum: Int, _ colNum: Int, _ srcptr: UnsafeMutablePointer<T>, _ vptr: UnsafeMutablePointer<T>, _ sptr: UnsafeMutablePointer<T>, _ rtptr: UnsafeMutablePointer<T>, _ full_matrices: Bool, lapack_func: lapack_svd<T>) throws{
+    let JOBZ: UnsafeMutablePointer<Int8>
     
     var M = __CLPK_integer(rowNum)
     var N = __CLPK_integer(colNum)
+    
+    let ucol: Int, vtrow: Int
     
     var LDA = __CLPK_integer(rowNum)
     
     let snum = min(rowNum, colNum)
     var S = Array<T>(repeating: T.zero, count: snum)
     
-    var U = Array<T>(repeating: T.zero, count: rowNum*rowNum)
+    var U: Array<T>
     var LDU = __CLPK_integer(rowNum)
     
-    var VT = Array<T>(repeating: T.zero, count: colNum*colNum)
-    var LDVT = __CLPK_integer(colNum)
+    var VT: Array<T>
+    var LDVT: __CLPK_integer
+    
+    
+    if full_matrices{
+        JOBZ = UnsafeMutablePointer(mutating: ("A" as NSString).utf8String)!
+        LDVT = __CLPK_integer(colNum)
+        
+        ucol = rowNum
+        vtrow = colNum
+    }
+    else{
+        JOBZ = UnsafeMutablePointer(mutating: ("S" as NSString).utf8String)!
+        LDVT = __CLPK_integer(snum)
+        
+        ucol = snum
+        vtrow = snum
+    }
+    U = Array<T>(repeating: T.zero, count: rowNum*ucol)
+    VT = Array<T>(repeating: T.zero, count: colNum*vtrow)
     
     //work space
     var WORKQ = T.zero //workspace query
@@ -488,27 +508,42 @@ fileprivate func _run_svd<T: MfStorable>(_ rowNum: Int, _ colNum: Int, _ srcptr:
     }
     else{
         U.withUnsafeMutableBufferPointer{
-            vptr.moveAssign(from: $0.baseAddress!, count: rowNum*rowNum)
+            vptr.moveAssign(from: $0.baseAddress!, count: rowNum*ucol)
         }
         S.withUnsafeMutableBufferPointer{
             sptr.moveAssign(from: $0.baseAddress!, count: snum)
         }
         VT.withUnsafeMutableBufferPointer{
-            rtptr.moveAssign(from: $0.baseAddress!, count: colNum*colNum)
+            rtptr.moveAssign(from: $0.baseAddress!, count: colNum*vtrow)
         }
     }
 }
 
-internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfType, _ lapack_func: lapack_svd<T>) throws -> (v: MfArray, s: MfArray, rt: MfArray){
+internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfType, _ full_matrices: Bool, _ lapack_func: lapack_svd<T>) throws -> (v: MfArray, s: MfArray, rt: MfArray){
     let shape = mfarray.shape
     let M = shape[mfarray.ndim - 2]
     let N = shape[mfarray.ndim - 1]
     let ssize = min(M, N)
     let stackedShape = Array(shape.prefix(mfarray.ndim - 2))
     
-    let v = Matft.mfarray.nums(T.zero, shape: stackedShape + [M, M], mftype: retMfType, mforder: .Row)
-    let s = Matft.mfarray.nums(T.zero, shape: stackedShape + [ssize], mftype: retMfType, mforder: .Row)
-    let rt = Matft.mfarray.nums(T.zero, shape: stackedShape + [N, N], mftype: retMfType, mforder: .Row)
+    let v: MfArray, s: MfArray, rt: MfArray
+    let vcol: Int, rtrow: Int
+    if full_matrices{
+        v = Matft.mfarray.nums(T.zero, shape: stackedShape + [M, M], mftype: retMfType, mforder: .Row)
+        s = Matft.mfarray.nums(T.zero, shape: stackedShape + [ssize], mftype: retMfType, mforder: .Row)
+        rt = Matft.mfarray.nums(T.zero, shape: stackedShape + [N, N], mftype: retMfType, mforder: .Row)
+        
+        vcol = M
+        rtrow = N
+    }
+    else{
+        v = Matft.mfarray.nums(T.zero, shape: stackedShape + [ssize, M], mftype: retMfType, mforder: .Row) // returned shape = (..., M, ssize)
+        s = Matft.mfarray.nums(T.zero, shape: stackedShape + [ssize], mftype: retMfType, mforder: .Row)
+        rt = Matft.mfarray.nums(T.zero, shape: stackedShape + [N, ssize], mftype: retMfType, mforder: .Row) // returned shape = (..., ssize, N)
+        
+        vcol = ssize
+        rtrow = ssize
+    }
     
     //offset
     var v_offset = 0
@@ -524,11 +559,11 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfTy
                 try _withMNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Column){
                     srcptr, _, _, _ in
                     
-                    try _run_svd(M, N, srcptr, vptr.baseAddress! + v_offset, sptr.baseAddress! + s_offset, rtptr.baseAddress! + rt_offset, lapack_func: lapack_func)
+                    try _run_svd(M, N, srcptr, vptr.baseAddress! + v_offset, sptr.baseAddress! + s_offset, rtptr.baseAddress! + rt_offset, full_matrices, lapack_func: lapack_func)
                     
-                    v_offset += M*M
+                    v_offset += M*vcol
                     s_offset += ssize
-                    rt_offset += N*N
+                    rt_offset += N*rtrow
                 }
                 
             }
