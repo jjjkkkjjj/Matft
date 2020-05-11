@@ -175,11 +175,9 @@ extension MfArray{
         [unowned self] (orig_shapeptr, orig_stridesptr) in
             //Indexing ref: https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
             while orig_axis < self.ndim {
-                if var index = indices[orig_axis] as? Int { // normal indexing
-                    let orig_dim = orig_shapeptr[orig_axis]
-                    index = index >= 0 ? index : index + orig_dim
-                    precondition(0 <= index && index < orig_dim, "\(index) is out of bounds for axis \(orig_axis) with \(orig_dim)")
-                    
+                if let _index = indices[orig_axis] as? Int { // normal indexing
+                    let index = get_index(_index, dim: orig_shapeptr[orig_axis], axis: orig_axis)
+
                     offset += index * orig_stridesptr[orig_axis]
                     orig_axis += 1 // not move
                     new_axis += 0

@@ -104,8 +104,7 @@ extension Matft.mfarray.stats{
 fileprivate func _stats_calc<T: MfStorable>(_ typedArray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_func<T>) -> MfArray{
     
     if axis != nil && typedArray.ndim > 1{// for given axis
-        let axis = axis! >= 0 ? axis! : axis! + typedArray.ndim
-        precondition(0 <= axis && axis < typedArray.ndim, "Invalid axis")
+        let axis = get_axis(axis!, ndim: typedArray.ndim)
         let ret = stats_axis_by_vDSP(typedArray, axis: axis, vDSP_func: vDSP_func)
         return keepDims ? Matft.mfarray.expand_dims(ret, axis: axis) : ret
     }
@@ -122,8 +121,7 @@ fileprivate func _stats_calc<T: MfStorable>(_ typedArray: MfArray, axis: Int?, k
 fileprivate func _stats_calc_index<T: MfStorable>(_ mfarray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_index_func<T>) -> MfArray{
     
     if axis != nil && mfarray.ndim > 1{// for given axis
-        let axis = axis! >= 0 ? axis! : axis! + mfarray.ndim
-        precondition(0 <= axis && axis < mfarray.ndim, "Invalid axis")
+        let axis = get_axis(axis!, ndim: mfarray.ndim)
         
         let ret = stats_index_axis_by_vDSP(mfarray, axis: axis, vDSP_func: vDSP_func)
         return keepDims ? Matft.mfarray.expand_dims(ret, axis: axis) : ret

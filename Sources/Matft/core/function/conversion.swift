@@ -76,8 +76,8 @@ extension Matft.mfarray{
                 reverse_permutation.append(-1)
             }
             for i in 0..<ndim{
-                let axis = axes[i]
-                precondition(axis < ndim, "invalid axes")
+                let axis = get_axis(axes[i], ndim: ndim)
+
                 precondition(reverse_permutation[axis] == -1, "repeated axis in transpose")
                 reverse_permutation[axis] = i
                 permutation.append(axis)
@@ -151,6 +151,8 @@ extension Matft.mfarray{
         let newarray = mfarray.shallowcopy()
         
         var newshape = mfarray.shape
+        let axis = get_axis(axis, ndim: mfarray.ndim)
+        
         newshape.insert(1, at: axis)
         var newstrides = mfarray.strides
         newstrides.insert(0, at: axis)
@@ -181,6 +183,7 @@ extension Matft.mfarray{
         var newshape = mfarray.shape
         var newstrides = mfarray.strides
         for axis in axes{
+            let axis = get_axis(axis, ndim: mfarray.ndim)
             newshape.insert(1, at: axis)
             newstrides.insert(0, at: axis)
         }
@@ -211,6 +214,7 @@ extension Matft.mfarray{
         var newstrides = mfarray.strides
         
         if let axis = axis{
+            let axis = get_axis(axis, ndim: mfarray.ndim)
             precondition(newshape.remove(at: axis) == 1, "cannot select an axis to squeeze out which has size not equal to one")
             newstrides.remove(at: axis)
         }
@@ -266,6 +270,7 @@ extension Matft.mfarray{
         var newshape = mfarray.shape
         var newstrides = mfarray.strides
         for axis in axes{
+            let axis = get_axis(axis, ndim: mfarray.ndim)
             precondition(newshape.remove(at: axis) == 1, "cannot select an axis to squeeze out which has size not equal to one")
             newstrides.remove(at: axis)
         }
@@ -383,7 +388,7 @@ extension Matft.mfarray{
     */
     public static func flip(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         if let axis = axis{
-            precondition(axis < mfarray.ndim, "Invalid axis, must be < \(mfarray.ndim)")
+            let axis = get_axis(axis, ndim: mfarray.ndim)
             var slices = Array<MfSlice>(repeating: MfSlice(start: 0, to: nil, by: 1), count: mfarray.ndim)
             slices[axis] = MfSlice(start: 0, to: nil, by: -1)
             return mfarray[slices]
@@ -403,10 +408,29 @@ extension Matft.mfarray{
         
         var slices = Array<MfSlice>(repeating: MfSlice(start: 0, to: nil, by: 1), count: mfarray.ndim)
         for axis in axes{
+            let axis = get_axis(axis, ndim: mfarray.ndim)
             slices[axis] = MfSlice(start: 0, to: nil, by: -1)
         }
         return mfarray[slices]
     }
+    
+    /**
+       Reverse the mfarray order along given axes
+       - parameters:
+            - mfarray: mfarray
+            - axes: (optional) the reversed axis of list
+    */
+    /*
+    public static func swapaxes(_ mfarray: MfArray, axis1: Int, axis2: Int) -> MfArray{
+        let axes = axes ?? Array(stride(from: 0, to: mfarray.ndim, by: 1))
+        
+        var slices = Array<MfSlice>(repeating: MfSlice(start: 0, to: nil, by: 1), count: mfarray.ndim)
+        for axis in axes{
+            slices[axis] = MfSlice(start: 0, to: nil, by: -1)
+        }
+        return mfarray[slices]
+    }*/
+    
     
     /**
        Get sorted value along axis
