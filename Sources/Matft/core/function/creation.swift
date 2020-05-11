@@ -195,7 +195,7 @@ extension Matft.mfarray{
                 shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: ndim)
             }
             
-            let newstrides = shape2strides(shapeptr, mforder: .Row)
+            let newstrides = shape2strides(shapeptr, mforder: mforder)
             stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: ndim)
             
             newstrides.deallocate()

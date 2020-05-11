@@ -167,13 +167,13 @@ extension Matft.mfarray.linalg{
 
     }
     
-    public static func svd(_ mfarray: MfArray) throws -> (v: MfArray, s: MfArray, rt: MfArray){
+    public static func svd(_ mfarray: MfArray, full_mtrices: Bool = true) throws -> (v: MfArray, s: MfArray, rt: MfArray){
         switch mfarray.storedType {
         case .Float:
-            return try svd_by_lapack(mfarray, .Float, sgesdd_)
+            return try svd_by_lapack(mfarray, .Float, full_mtrices, sgesdd_)
             
         case .Double:
-            return try svd_by_lapack(mfarray, .Double, dgesdd_)
+            return try svd_by_lapack(mfarray, .Double, full_mtrices, dgesdd_)
         }
     }
     
