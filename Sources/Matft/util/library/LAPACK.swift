@@ -445,7 +445,7 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: Mf
 
 
 internal typealias lapack_svd<T> = (UnsafeMutablePointer<Int8>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>,UnsafeMutablePointer<__CLPK_integer>) -> Int32
-// ref: http://www.netlibhttps://www.netlib.org/lapack/explore-html/d4/dca/group__real_g_esing_gac2cd4f1079370ac908186d77efcd5ea8.html
+// ref: https://www.netlib.org/lapack/explore-html/d4/dca/group__real_g_esing_gac2cd4f1079370ac908186d77efcd5ea8.html
 fileprivate func _run_svd<T: MfStorable>(_ rowNum: Int, _ colNum: Int, _ srcptr: UnsafeMutablePointer<T>, _ vptr: UnsafeMutablePointer<T>, _ sptr: UnsafeMutablePointer<T>, _ rtptr: UnsafeMutablePointer<T>, lapack_func: lapack_svd<T>) throws{
     let JOBZ = UnsafeMutablePointer(mutating: ("A" as NSString).utf8String)!
     
@@ -466,7 +466,7 @@ fileprivate func _run_svd<T: MfStorable>(_ rowNum: Int, _ colNum: Int, _ srcptr:
     //work space
     var WORKQ = T.zero //workspace query
     var LWORK = __CLPK_integer(-1)
-    var IWORK = __CLPK_integer(8*snum)
+    var IWORK = Array<__CLPK_integer>(repeating: 0, count: 8*snum)
     
     //error indicator
     var INFO: __CLPK_integer = 0
@@ -535,7 +535,7 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfTy
         }
     }
     
-    return (v.T, s, rt.T)
+    return (v.swapaxes(axis1: -1, axis2: -2), s, rt.swapaxes(axis1: -1, axis2: -2))
 }
 
 /**

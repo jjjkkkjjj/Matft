@@ -136,7 +136,7 @@ final class LinAlgTests: XCTestCase {
     }
     
     func testSVD(){
-        do{/*
+        do{
             let a = MfArray([[2, 4, 1, 3],
                              [1, 5, 3, 2],
                              [5, 7, 0, 7]], mftype: .Double)
@@ -148,9 +148,10 @@ final class LinAlgTests: XCTestCase {
             XCTAssertEqual(ret.s.astype(.Float), MfArray([1.33853840e+01, 3.58210781e+00, 5.07054122e-16], mftype: .Float))
             XCTAssertEqual(ret.rt.astype(.Float), MfArray([[-0.39682822, -0.70114979, -0.12132523, -0.57982456],
                                                            [ 0.37306578, -0.38670052, -0.75749385,  0.37079333],
-                                                           [-0.82742746,  0.06343221, -0.18163613,  0.5275874 ],
-                                                           [ 0.13679576, -0.59567443,  0.61521668,  0.49796317]], mftype: .Float))
- */
+                                                           [-0.67701194,  0.46970832, -0.56642431,  0.01387163],
+                                                           [-0.49497891, -0.37178726,  0.30107599,  0.72534362]], mftype: .Float))
+            //print(ret.v *& Matft.mfarray.diag(v: ret.s) *& ret.rt)
+            print(ret.rt *& ret.rt.T)
         }
     }
     
