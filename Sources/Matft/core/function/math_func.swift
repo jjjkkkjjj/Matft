@@ -399,7 +399,16 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
             return ret
         }
     }
-    
+    /**
+          Return the round give by number of decimals of each element
+          - parameters:
+            - decimals: (Optional) Int, default is 0, which is equivelent to nearest
+    */
+    public static func round(_ mfarray: MfArray, decimals: Int = 0) -> MfArray{
+        let pow = powf(10, Float(decimals))
+        let n =  Matft.mfarray.math.nearest(mfarray * pow)
+        return n / pow
+    }
     
     //
     // basic function

@@ -25,7 +25,7 @@ extension MfArray{
     }
     
     /**
-       Return the interfer truncation of each element
+       Return the interger truncation of each element
        - parameters:
     */
     public func trunc() -> MfArray{
@@ -33,11 +33,18 @@ extension MfArray{
     }
     
     /**
-          Return the nearest interfer of each element
+          Return the nearest interger of each element
           - parameters:
     */
     public func nearest() -> MfArray{
         return Matft.mfarray.math.nearest(self)
     }
     
+    /**
+          Return the round give by number of decimals of each element
+          - parameters:
+    */
+    public func round(decimals: Int = 0) -> MfArray{
+        return Matft.mfarray.math.round(self, decimals: decimals)
+    }
 }
