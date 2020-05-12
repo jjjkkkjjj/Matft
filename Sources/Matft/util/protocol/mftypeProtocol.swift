@@ -29,6 +29,8 @@ public protocol MfStorable: MfTypable, FloatingPoint{
 
     static func num(_ number: Int) -> Self
     static func from<T: MfTypable>(_ value: T) -> Self
+    static func from(_ str: String) -> Self?
+    static func from(_ str: String.SubSequence) -> Self?
     static func toInt(_ number: Self) -> Int
 }
 
@@ -66,6 +68,12 @@ extension Float: MfStorable{
         default:
             fatalError("cannot convert value to Float")
         }
+    }
+    public static func from(_ str: String) -> Float?{
+        return Float(str)
+    }
+    public static func from(_ str: String.SubSequence) -> Float?{
+        return Float(str)
     }
     public static func toInt(_ number: Float) -> Int {
         return Int(number)
@@ -105,6 +113,12 @@ extension Double: MfStorable{
         default:
             fatalError("cannot convert value to Double")
         }
+    }
+    public static func from(_ str: String) -> Double?{
+        return Double(str)
+    }
+    public static func from(_ str: String.SubSequence) -> Double?{
+        return Double(str)
     }
     public static func toInt(_ number: Double) -> Int {
         return Int(number)

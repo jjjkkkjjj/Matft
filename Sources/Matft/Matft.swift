@@ -25,6 +25,12 @@ public class Matft{
            MfArray Infomation
         */
         public class stats{}
+        
+        /**
+           File Manager
+         */
+        public class file{}
+        
         /**
            The kernel of mfarray.
         */
