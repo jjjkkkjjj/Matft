@@ -23,7 +23,7 @@ extension MfArray{
             - axis: (Optional) axis, if not given, get maximum for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public func max(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+    public func max(axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         return Matft.mfarray.stats.max(self, axis: axis, keepDims: keepDims)
     }
     /**
@@ -31,7 +31,7 @@ extension MfArray{
        - parameters:
             - axis: (Optional) axis, if not given, get index of maximum for all elements (flattenarray)
     */
-    public func argmax(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
+    public func argmax(axis: Int? = nil) -> MfArray{
         return Matft.mfarray.stats.argmax(self, axis: axis)
     }
     /**
@@ -40,7 +40,7 @@ extension MfArray{
             - axis: (Optional) axis, if not given, get minimum for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public func min(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+    public func min(axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         return Matft.mfarray.stats.min(self, axis: axis, keepDims: keepDims)
     }
     /**
@@ -48,7 +48,7 @@ extension MfArray{
        - parameters:
             - axis: (Optional) axis, if not given, get index of minimum for all elements (flattenarray)
     */
-    public func argmin(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
+    public func argmin(axis: Int? = nil) -> MfArray{
         return Matft.mfarray.stats.argmin(self, axis: axis)
     }
     /**
@@ -57,7 +57,7 @@ extension MfArray{
             - axis: (Optional) axis, if not given, get summation for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public func sum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+    public func sum(axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         return Matft.mfarray.stats.sum(self, axis: axis, keepDims: keepDims)
     }
 }
