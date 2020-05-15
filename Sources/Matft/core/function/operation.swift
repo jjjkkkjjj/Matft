@@ -244,13 +244,13 @@ extension Matft.mfarray{
         return _matmul_operation(l_mfarray, r_mfarray)
     }
     /**
-       Inner product
+       Cross product
        - parameters:
            - l_mfarray: left mfarray
            - r_mfarray: right mfarray
     */
     public static func cross(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        return _equal_operation(l_mfarray, r_mfarray)
+        return _cross_operation(l_mfarray, r_mfarray)
     }
     
     /**
@@ -552,6 +552,35 @@ fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: ino
     catch{
         //conversion error
         fatalError("cannot calculate matrix multiplication due to broadcasting error. hint: For all dim < ndim-2, left.shape[dim] or right.shape[dim] is one, or left.shape[dim] == right.shape[dim]")
+    }
+}
+
+//Uncompleted
+fileprivate func _cross_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+    var (l_mfarray, r_mfarray, _) = _biop_broadcast_to(l_mfarray, r_mfarray)
+    
+    let orig_shape_for3d = l_mfarray.shape
+    let lastdim = orig_shape_for3d[l_mfarray.ndim - 1]
+    
+    //convert shape to calculate
+    l_mfarray = l_mfarray.reshape([-1, lastdim])
+    r_mfarray = r_mfarray.reshape([-1, lastdim])
+    print(l_mfarray.shape)
+    if lastdim == 2{
+        let ret = l_mfarray[0~,0] * r_mfarray[0~,1] - l_mfarray[0~,1]*r_mfarray[0~,0]
+        return ret
+    }
+    else if lastdim == 3{
+        let ret = Matft.mfarray.nums(0, shape: [l_mfarray.shape[0], lastdim])
+        
+        ret[0~,0] = l_mfarray[0~,1] * r_mfarray[0~,2] - l_mfarray[0~,2]*r_mfarray[0~,1]
+        ret[0~,1] = l_mfarray[0~,2] * r_mfarray[0~,0] - l_mfarray[0~,0]*r_mfarray[0~,2]
+        ret[0~,2] = l_mfarray[0~,0] * r_mfarray[0~,1] - l_mfarray[0~,1]*r_mfarray[0~,0]
+        
+        return ret.reshape(orig_shape_for3d)
+    }
+    else{
+        preconditionFailure("dimension must be 2 or 3")
     }
 }
 

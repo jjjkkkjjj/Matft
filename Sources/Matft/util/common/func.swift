@@ -20,3 +20,15 @@ internal func get_index(_ index: Int, dim: Int, axis: Int) -> Int{
     
     return ret_index
 }
+
+internal func get_shape(_ shape: [Int], _ size: Int) -> [Int]{
+    let restsize = shape.filter{ $0 != -1 }.reduce(1, *)
+    return shape.map{
+        if $0 != -1{
+            return $0
+        }
+        else{
+            return size / restsize
+        }
+    }
+}

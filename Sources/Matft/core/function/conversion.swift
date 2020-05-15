@@ -110,7 +110,7 @@ extension Matft.mfarray{
        - Important: this function will create copy not view
     */
     public static func reshape(_ mfarray: MfArray, newshape: [Int], order: MfOrder? = nil) -> MfArray{
-        var newshape = newshape
+        var newshape = get_shape(newshape, mfarray.size)
         precondition(mfarray.size == shape2size(&newshape), "new shape's size:\(shape2size(&newshape)) must be same as mfarray's size:\(mfarray.size)")
         
         var order = order ?? .Row
