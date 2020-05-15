@@ -129,6 +129,68 @@ final class ConversionTests: XCTestCase {
         }
     }
     
+    func testMoveaxis() {
+        do{
+
+            let a = MfArray([[3, -19],
+                             [-22, 4]])
+            let b = MfArray([[2, 1177],
+                             [5, -43]])
+            
+            XCTAssertEqual(a.moveaxis(src: 0, dst: 1), MfArray([[3, -22],
+                                                                [-19, 4]]))
+            XCTAssertEqual(a.moveaxis(src: -1, dst: -2), MfArray([[3, -22],
+                                                                  [-19, 4]]))
+            
+            XCTAssertEqual(b.moveaxis(src: 0, dst: 1), MfArray([[2, 5],
+                                                                [1177, -43]]))
+            XCTAssertEqual(b.moveaxis(src: -1, dst: -2), MfArray([[2, 5],
+                                                                  [1177, -43]]))
+        }
+
+        
+        do{
+            let a = Matft.mfarray.arange(start: 0, to: 2*2*2*2, by: 1, shape: [2,2,2,2])
+            XCTAssertEqual(a.moveaxis(src: 0, dst: 2), MfArray([[[[ 0,  1],
+                                                                  [ 8,  9]],
+
+                                                                 [[ 2,  3],
+                                                                  [10, 11]]],
+
+
+                                                                [[[ 4,  5],
+                                                                  [12, 13]],
+
+                                                                 [[ 6,  7],
+                                                                  [14, 15]]]]))
+            XCTAssertEqual(a.moveaxis(src: 0, dst: -2), MfArray([[[[ 0,  1],
+                                                                   [ 8,  9]],
+
+                                                                  [[ 2,  3],
+                                                                   [10, 11]]],
+
+
+                                                                 [[[ 4,  5],
+                                                                   [12, 13]],
+
+                                                                  [[ 6,  7],
+                                                                   [14, 15]]]]))
+            
+            XCTAssertEqual(a.moveaxis(src: -1, dst: 0), MfArray([[[[ 0,  2],
+                                                                   [ 4,  6]],
+
+                                                                  [[ 8, 10],
+                                                                   [12, 14]]],
+
+
+                                                                 [[[ 1,  3],
+                                                                   [ 5,  7]],
+
+                                                                  [[ 9, 11],
+                                                                   [13, 15]]]]))
+        }
+    }
+    
 
     func testBroadcast(){
         do{
@@ -164,6 +226,20 @@ final class ConversionTests: XCTestCase {
                                                                            [[ 1,  5, -2],
                                                                             [ 1,  5, -2]]]]))
         }
+    }
+    
+    func testSort(){
+        let a = MfArray([[2, -7, 0],
+                         [1, 5, -2]])
+        XCTAssertEqual(a.sort(), MfArray([-7, -2,  0,  1,  2,  5]))
+        XCTAssertEqual(a.sort(axis: -1), MfArray([[-7,  0,  2],
+                                                  [-2,  1,  5]]))
+        XCTAssertEqual(a.sort(axis: 0), MfArray([[ 1, -7, -2],
+                                                 [ 2,  5,  0]]))
+    }
+    
+    func testArgSort(){
+        
     }
     
     func testAsType(){

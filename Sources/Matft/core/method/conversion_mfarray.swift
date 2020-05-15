@@ -122,4 +122,25 @@ extension MfArray{
     public func swapaxes(axis1: Int, axis2: Int) -> MfArray{
         return Matft.mfarray.swapaxes(self, axis1: axis1, axis2: axis2)
     }
+    
+    /**
+       move from given axis to dstination axis
+       - parameters:
+            - mfarray: mfarray
+            - src: Int
+            - dst: Int
+    */
+    public func moveaxis(src: Int, dst: Int) -> MfArray{
+        return Matft.mfarray.moveaxis(self, src: src, dst: dst)
+    }
+    
+    /**
+       Get sorted mfarray along given  axis
+       - parameters:
+            - axis: (Optional) axis, if not given, get summation for all elements
+            - order: (Optional) ascending or descending. default is ascending
+    */
+    public func sort(axis: Int? = nil, order: MfSortOrder = .Ascending) -> MfArray{
+        Matft.mfarray.sort(self, axis: axis, order: order)
+    }
 }

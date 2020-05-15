@@ -418,7 +418,8 @@ extension Matft.mfarray{
        Swap given axis1 and axis2
        - parameters:
             - mfarray: mfarray
-            - axes: (optional) the reversed axis of list
+            - axis1: Int
+            - axis2: Int
     */
     public static func swapaxes(_ mfarray: MfArray, axis1: Int, axis2: Int) -> MfArray{
         let axis1 = get_axis(axis1, ndim: mfarray.ndim)
@@ -430,24 +431,48 @@ extension Matft.mfarray{
         
         return mfarray.transpose(axes: axes)
     }
-    
+   
+    /**
+       move from given axis to dstination axis
+       - parameters:
+            - mfarray: mfarray
+            - src: Int
+            - dst: Int
+    */
+    public static func moveaxis(_ mfarray: MfArray, src: Int, dst: Int) -> MfArray{
+        let src = get_axis(src, ndim: mfarray.ndim)
+        let dst = get_axis(dst, ndim: mfarray.ndim)
+        
+        var axes = Array(stride(from: 0, to: mfarray.ndim, by: 1))
+        //move
+        axes.remove(at: src)
+        axes.insert(src, at: dst)
+        
+        return mfarray.transpose(axes: axes)
+    }
     
     /**
-       Get sorted value along axis
+       Get sorted mfarray along given  axis
        - parameters:
             - mfarray: mfarray
             - axis: (Optional) axis, if not given, get summation for all elements
             - order: (Optional) ascending or descending. default is ascending
     */
-    /*
     public static func sort(_ mfarray: MfArray, axis: Int? = nil, order: MfSortOrder = .Ascending) -> MfArray{
-        switch mfarray.storedType {
-        case .Float:
-            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sve)
-        case .Double:
-            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sveD)
+        
+        let _axis: Int
+        let _dst: MfArray
+        if axis != nil && mfarray.ndim > 1{// for given axis
+            _axis = get_axis(axis!, ndim: mfarray.ndim)
+            _dst = mfarray.deepcopy()
         }
-    }*/
+        else{// for all elements
+            _axis = 0
+            _dst = mfarray.flatten()
+        }
+        
+        return sort_by_vDSP(_dst, _axis, order, vDSP_vsort)
+    }
 }
 
 /*
