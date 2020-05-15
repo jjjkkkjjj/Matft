@@ -62,3 +62,13 @@ infix operator *&: MultiplicationPrecedence //matmul
 public func *&(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
     return Matft.mfarray.matmul(l_mfarray, r_mfarray)
 }
+
+infix operator *+: MultiplicationPrecedence //inner
+public func *+(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
+    return Matft.mfarray.inner(l_mfarray, r_mfarray)
+}
+
+infix operator *^: MultiplicationPrecedence //cross
+public func *^(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
+    return Matft.mfarray.cross(l_mfarray, r_mfarray)
+}

@@ -235,6 +235,25 @@ extension Matft.mfarray{
     }
     
     /**
+       Inner product
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_mfarray: right mfarray
+    */
+    public static func inner(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+        return _matmul_operation(l_mfarray, r_mfarray)
+    }
+    /**
+       Inner product
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_mfarray: right mfarray
+    */
+    public static func cross(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+        return _equal_operation(l_mfarray, r_mfarray)
+    }
+    
+    /**
         Check equality in element-wise. Returned mfarray's type will be bool.
        - parameters:
            - l_mfarray: left mfarray
@@ -269,14 +288,59 @@ fileprivate enum BiOp{
     case sub
     case mul
     case div
-    case indot
-    case outdot
 }
 
 fileprivate func _binary_vv_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ biop: BiOp) -> MfArray{
     //precondition(l_mfarray.mftype == r_mfarray.mftype, "Two mfarray must be same mftype. but two mfarray having unsame mftype will be able to be calclulated in the future")
     
+    let (l_mfarray, r_mfarray, rettype) = _biop_broadcast_to(l_mfarray, r_mfarray)
     
+    //print(l_mfarray)
+    //print(r_mfarray)
+    
+    switch biop {
+    case .add:
+        switch MfType.storedType(rettype){
+        case .Float:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
+        case .Double:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
+        }
+    case .sub:
+        switch MfType.storedType(rettype){
+        case .Float:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
+        case .Double:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD)
+        }
+    case .mul:
+        switch MfType.storedType(rettype){
+        case .Float:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul)
+        case .Double:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmulD)
+        }
+    case .div:
+        switch MfType.storedType(rettype){
+        case .Float:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv).astype(.Float)
+        case .Double:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
+        }
+        /*
+    case .sub:
+        
+    case .mul:
+        
+    case .div:
+        
+    case .indot:
+        
+    case .outdot:*/
+    }
+}
+
+fileprivate func _biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (l: MfArray, r: MfArray, t: MfType){
     var l_mfarray = l_mfarray
     var r_mfarray = r_mfarray
     /*
@@ -311,51 +375,7 @@ fileprivate func _binary_vv_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray
     }catch {//conversion error
         fatalError("cannot calculate binary operation due to broadcasting error")
     }
-    //print(l_mfarray)
-    //print(r_mfarray)
-    
-    switch biop {
-    case .add:
-        switch MfType.storedType(rettype){
-        case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
-        case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
-        }
-    case .sub:
-        switch MfType.storedType(rettype){
-        case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
-        case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD)
-        }
-    case .mul:
-        switch MfType.storedType(rettype){
-        case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul)
-        case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmulD)
-        }
-    case .div:
-        switch MfType.storedType(rettype){
-        case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv).astype(.Float)
-        case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
-        }
-    default:
-        fatalError()
-        /*
-    case .sub:
-        
-    case .mul:
-        
-    case .div:
-        
-    case .indot:
-        
-    case .outdot:*/
-    }
+    return (l_mfarray, r_mfarray, rettype)
 }
 
 fileprivate enum PreOp{

@@ -116,6 +116,7 @@
     
     ```bash
     pod trunk delete Matft x.x.x(version number)
+    pod cache clean --all
     ```
 
 - 使用者
