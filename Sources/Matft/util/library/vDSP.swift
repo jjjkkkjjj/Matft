@@ -161,7 +161,7 @@ internal func biop_vv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: 
 
 //get stats for mfarray
 internal typealias vDSP_stats_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Length) -> Void
-fileprivate func _stats_run<T: MfStorable>(_ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, vDSP_func: vDSP_stats_func<T>, stride: Int, _ count: Int){
+fileprivate func _run_stats<T: MfStorable>(_ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, vDSP_func: vDSP_stats_func<T>, stride: Int, _ count: Int){
     
     vDSP_func(srcptr, vDSP_Stride(stride), dstptr, vDSP_Length(count))
 }
@@ -195,7 +195,7 @@ internal func stats_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int, v
             srcptr in
             var dstptr = dataptr.bindMemory(to: T.self, capacity: shape2size(shapeptr))
             for flat in FlattenIndSequence(shapeptr: shapeptr, stridesptr: stridesptr){
-                _stats_run(srcptr.baseAddress! + flat.flattenIndex, dstptr, vDSP_func: vDSP_func, stride: stride, count)
+                _run_stats(srcptr.baseAddress! + flat.flattenIndex, dstptr, vDSP_func: vDSP_func, stride: stride, count)
                 dstptr += 1
                 //print(flat.flattenIndex, flat.indices)
             }
@@ -217,7 +217,7 @@ internal func stats_all_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_func: vD
     var dst = T.zero
     mfarray.withDataUnsafeMBPtrT(datatype: T.self){
         [unowned mfarray] in
-        _stats_run($0.baseAddress!, &dst, vDSP_func: vDSP_func, stride: 1, mfarray.size)
+        _run_stats($0.baseAddress!, &dst, vDSP_func: vDSP_func, stride: 1, mfarray.size)
     }
     
     return MfArray([dst], mftype: mfarray.mftype)
@@ -226,7 +226,7 @@ internal func stats_all_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_func: vD
 
 internal typealias vDSP_stats_index_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, UnsafeMutablePointer<vDSP_Length>, vDSP_Length) -> Void
 
-fileprivate func _stats_index_run<T: MfStorable>(_ srcptr: UnsafePointer<T>, vDSP_func: vDSP_stats_index_func<T>, stride: Int32, _ count: Int) -> Int32{
+fileprivate func _run_stats_index<T: MfStorable>(_ srcptr: UnsafePointer<T>, vDSP_func: vDSP_stats_index_func<T>, stride: Int32, _ count: Int) -> Int32{
     var ret = vDSP_Length(0)
     var tmpdst = T.zero
     vDSP_func(srcptr, vDSP_Stride(stride), &tmpdst, &ret, vDSP_Length(count))
@@ -264,7 +264,7 @@ internal func stats_index_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: 
             //let srcptr = stride >= 0 ? srcptr.baseAddress! : srcptr.baseAddress! - mfarray.offsetIndex
             let srcptr = srcptr.baseAddress!
             for (i, flat) in FlattenIndSequence(shapeptr: shapeptr, stridesptr: stridesptr).enumerated(){
-                i32array[i] = _stats_index_run(srcptr + flat.flattenIndex, vDSP_func: vDSP_func, stride: stride, count) / stride
+                i32array[i] = _run_stats_index(srcptr + flat.flattenIndex, vDSP_func: vDSP_func, stride: stride, count) / stride
                 //print(flat.flattenIndex, flat.indices)
             }
             
@@ -293,13 +293,13 @@ internal func stats_index_all_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_fu
 
     let dst = mfarray.withDataUnsafeMBPtrT(datatype: T.self){
         [unowned mfarray] in
-        Int(_stats_index_run($0.baseAddress!, vDSP_func: vDSP_func, stride: 1, mfarray.size))
+        Int(_run_stats_index($0.baseAddress!, vDSP_func: vDSP_func, stride: 1, mfarray.size))
     }
     
     return MfArray([dst])
 }
 
-/*
+
 // sort
 internal typealias vDSP_sort_func<T> = (UnsafeMutablePointer<T>, vDSP_Length, Int32) -> Void
 fileprivate func _run_sort<T: MfStorable>(_ srcdstptr: UnsafeMutablePointer<T>, count: Int, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_func<T>){
@@ -307,21 +307,98 @@ fileprivate func _run_sort<T: MfStorable>(_ srcdstptr: UnsafeMutablePointer<T>, 
     vDSP_func(srcdstptr, vDSP_Length(count), order)
 }
 
-internal func sort_by_vDSP<T: MfTypable>(_ mfarray: MfArray, _ axis: Int, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_func<T>){
-    mfarray.withDataUnsafeMBPtrT(datatype: T.self){
-        [unowned mfarray](srcptr) in
-        
+internal func sort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_func<T>) -> MfArray{
+    let retndim = mfarray.ndim
+    let count = mfarray.shape[axis]
+    
+    let lastaxis = retndim - 1
+    // move lastaxis and given axis and align order
+    let srcdst_mfarray = mfarray.moveaxis(src: axis, dst: lastaxis).conv_order(mforder: .Row)
+
+    var offset = 0
+    
+    srcdst_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        srcdstptr in
+        for _ in 0..<mfarray.storedSize / count{
+            _run_sort(srcdstptr.baseAddress! + offset, count: count, order, vDSP_func)
+            offset += count
+        }
     }
+    
+    // re-move axis and lastaxis
+    return srcdst_mfarray.moveaxis(src: lastaxis, dst: axis)
 }
 
 internal typealias vDSP_sort_index_func<T> = (UnsafePointer<T>, UnsafeMutablePointer<vDSP_Length>, UnsafeMutablePointer<vDSP_Length>, vDSP_Length, Int32) -> Void
-fileprivate func _run_sort_index<T: MfStorable>(_ srcptr: UnsafeMutablePointer<T>, count: Int, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_index_func<T>){
+fileprivate func _run_sort_index<T: MfStorable>(_ srcptr: UnsafeMutablePointer<T>, dstptr: UnsafeMutablePointer<UInt>, count: Int, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_index_func<T>){
     let order = Int32(order.rawValue)
-    var dst = Array<vDSP_Length>(repeating: 0, count: count)
     var tmp = Array<vDSP_Length>(repeating: 0, count: count)
-    vDSP_func(srcptr, &dst, &tmp, vDSP_Length(count), order)
+    vDSP_func(srcptr, dstptr, &tmp, vDSP_Length(count), order)
 }
-*/
+
+internal func sort_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_index_func<T>) -> MfArray{
+
+    let count = mfarray.shape[axis]
+    
+    let lastaxis = mfarray.ndim - 1
+    // move lastaxis and given axis and align order
+    let srcmfarray = mfarray.moveaxis(src: axis, dst: lastaxis).conv_order(mforder: .Row)
+    let retndim = srcmfarray.ndim
+    var retShape = srcmfarray.shape
+    var retStrides = srcmfarray.strides
+    
+    var offset = 0
+
+    
+    let ret = withDummy(mftype: MfType.Int, storedSize: mfarray.storedSize, ndim: retndim){
+        dataptr, shapeptr, stridesptr in
+
+        //move
+        retShape.withUnsafeMutableBufferPointer{
+            shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
+        //move
+        retStrides.withUnsafeMutableBufferPointer{
+            stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
+        let retsize = shape2size(shapeptr)
+        srcmfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            srcptr in
+            
+            let dstptr = dataptr.bindMemory(to: Float.self, capacity: retsize)
+            for _ in 0..<mfarray.storedSize / count{
+                var uiarray = Array<UInt>(stride(from: 0, to: UInt(count), by: 1))
+                //let srcptr = stride >= 0 ? srcptr.baseAddress! : srcptr.baseAddress! - mfarray.offsetIndex
+                
+                _run_sort_index(srcptr.baseAddress! + offset, dstptr: &uiarray, count: count, order, vDSP_func)
+                
+                // TODO: refactor
+                //convert dataptr(int) to float
+                var flarray = uiarray.map{ Float($0) }
+                flarray.withUnsafeMutableBufferPointer{
+                    (dstptr + offset).moveAssign(from: $0.baseAddress!, count: count)
+                }
+                
+                offset += count
+            }
+            
+        }
+        
+        
+        //row major order because FlattenIndSequence count up for row major
+        let newstridesptr = shape2strides(shapeptr, mforder: .Row)
+        //move
+        stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: retndim)
+        //free
+        newstridesptr.deallocate()
+    }
+    
+    
+    // re-move axis and lastaxis
+    return ret.moveaxis(src: lastaxis, dst: axis)
+    
+}
+
 // generate(arange)
 /*
 internal typealias vDSP_arange_func<T> = (UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void

@@ -458,7 +458,7 @@ extension Matft.mfarray{
             - axis: (Optional) axis, if not given, get summation for all elements
             - order: (Optional) ascending or descending. default is ascending
     */
-    public static func sort(_ mfarray: MfArray, axis: Int? = nil, order: MfSortOrder = .Ascending) -> MfArray{
+    public static func sort(_ mfarray: MfArray, axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray{
         
         let _axis: Int
         let _dst: MfArray
@@ -470,8 +470,38 @@ extension Matft.mfarray{
             _axis = 0
             _dst = mfarray.flatten()
         }
+        switch mfarray.storedType {
+        case .Float:
+            return sort_by_vDSP(_dst, _axis, order, vDSP_vsort)
+        case .Double:
+            return sort_by_vDSP(_dst, _axis, order, vDSP_vsortD)
+        }
+    }
+    /**
+       Get sorted mfarray's indices along given  axis
+       - parameters:
+            - mfarray: mfarray
+            - axis: (Optional) axis, if not given, get summation for all elements
+            - order: (Optional) ascending or descending. default is ascending
+    */
+    public static func argsort(_ mfarray: MfArray, axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray{
         
-        return sort_by_vDSP(_dst, _axis, order, vDSP_vsort)
+        let _axis: Int
+        let _dst: MfArray
+        if axis != nil && mfarray.ndim > 1{// for given axis
+            _axis = get_axis(axis!, ndim: mfarray.ndim)
+            _dst = mfarray.deepcopy()
+        }
+        else{// for all elements
+            _axis = 0
+            _dst = mfarray.flatten()
+        }
+        switch mfarray.storedType {
+        case .Float:
+            return sort_index_by_vDSP(_dst, _axis, order, vDSP_vsorti)
+        case .Double:
+            return sort_index_by_vDSP(_dst, _axis, order, vDSP_vsortiD)
+        }
     }
 }
 

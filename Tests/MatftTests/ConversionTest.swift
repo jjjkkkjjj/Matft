@@ -229,17 +229,48 @@ final class ConversionTests: XCTestCase {
     }
     
     func testSort(){
-        let a = MfArray([[2, -7, 0],
-                         [1, 5, -2]])
-        XCTAssertEqual(a.sort(), MfArray([-7, -2,  0,  1,  2,  5]))
-        XCTAssertEqual(a.sort(axis: -1), MfArray([[-7,  0,  2],
-                                                  [-2,  1,  5]]))
-        XCTAssertEqual(a.sort(axis: 0), MfArray([[ 1, -7, -2],
-                                                 [ 2,  5,  0]]))
+        do{
+            let a = MfArray([[2, -7, 0],
+                             [1, 5, -2]])
+            XCTAssertEqual(a.sort(axis: nil), MfArray([-7, -2,  0,  1,  2,  5]))
+            XCTAssertEqual(a.sort(axis: -1), MfArray([[-7,  0,  2],
+                                                      [-2,  1,  5]]))
+            XCTAssertEqual(a.sort(axis: 0), MfArray([[ 1, -7, -2],
+                                                     [ 2,  5,  0]]))
+        }
+        
+        do{
+            let a = MfArray([[-0.87, 1.2, 5.5134, -8.78],
+                             [-0.0002, 2, 3.4, -5]], mftype: .Double, mforder: .Column)
+            XCTAssertEqual(a.sort(axis: nil, order: .Descending), MfArray([ 5.5134e+00,  3.4000e+00,  2.0000e+00,  1.2000e+00, -2.0000e-04,
+            -8.7000e-01, -5.0000e+00, -8.7800e+00], mftype: .Double))
+            XCTAssertEqual(a.sort(axis: -1, order: .Descending), MfArray([[ 5.5134e+00,  1.2000e+00, -8.7000e-01, -8.7800e+00],
+                                                                          [ 3.4000e+00,  2.0000e+00, -2.0000e-04, -5.0000e+00]], mftype: .Double))
+            XCTAssertEqual(a.sort(), MfArray([[-8.7800e+00, -8.7000e-01,  1.2000e+00,  5.5134e+00],
+                                              [-5.0000e+00, -2.0000e-04,  2.0000e+00,  3.4000e+00]], mftype: .Double))
+        }
     }
     
     func testArgSort(){
+        do{
+            let a = MfArray([[2, -7, 0],
+                             [1, 5, -2]])
+            XCTAssertEqual(a.argsort(axis: nil), MfArray([1, 5, 2, 3, 0, 4]))
+            XCTAssertEqual(a.argsort(axis: -1), MfArray([[1, 2, 0],
+                                                         [2, 0, 1]]))
+            XCTAssertEqual(a.argsort(axis: 0), MfArray([[1, 0, 1],
+                                                        [0, 1, 0]]))
+        }
         
+        do{
+            let a = MfArray([[-0.87, 1.2, 5.5134, -8.78],
+                             [-0.0002, 2, 3.4, -5]], mftype: .Double, mforder: .Column)
+            XCTAssertEqual(a.argsort(axis: nil, order: .Descending), MfArray([2, 6, 5, 1, 4, 0, 7, 3]))
+            XCTAssertEqual(a.argsort(axis: -1, order: .Descending), MfArray([[2, 1, 0, 3],
+                                                                             [2, 1, 0, 3]]))
+            XCTAssertEqual(a.argsort(), MfArray([[3, 0, 1, 2],
+                                                 [3, 0, 1, 2]]))
+        }
     }
     
     func testAsType(){
