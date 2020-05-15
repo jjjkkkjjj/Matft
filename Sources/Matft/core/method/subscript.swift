@@ -243,7 +243,7 @@ extension MfArray{
                         startIndex = 0
                     }
                      
-                    newshape.append(min(nsteps, orig_dim))
+                    newshape.append(Swift.min(nsteps, orig_dim))
                     newstrides.append(orig_stridesptr[orig_axis] * by)
                     newsize *= newshape.last!
                     offset += startIndex * orig_stridesptr[orig_axis]
