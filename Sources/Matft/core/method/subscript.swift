@@ -302,7 +302,26 @@ extension MfArray{
         if array.mftype != newValue.mftype{
             newValue = newValue.astype(array.mftype)
         }
-        
+        //TODO: refactor
+        if (array.size == newValue.size && array.size == 1){
+            switch array.storedType {
+            case .Float:
+                array.withDataUnsafeMBPtrT(datatype: Float.self){
+                    dstptr in
+                    newValue.withDataUnsafeMBPtrT(datatype: Float.self){
+                        dstptr.baseAddress!.pointee = $0.baseAddress!.pointee
+                    }
+                }
+            case .Double:
+                array.withDataUnsafeMBPtrT(datatype: Double.self){
+                    dstptr in
+                    newValue.withDataUnsafeMBPtrT(datatype: Double.self){
+                        dstptr.baseAddress!.pointee = $0.baseAddress!.pointee
+                    }
+                }
+            }
+            return
+        }
         if array.shape != newValue.shape{
             do{
                 newValue = try newValue.broadcast_to(shape: array.shape)

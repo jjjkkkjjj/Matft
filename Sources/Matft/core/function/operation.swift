@@ -241,7 +241,7 @@ extension Matft.mfarray{
            - r_mfarray: right mfarray
     */
     public static func inner(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        return _matmul_operation(l_mfarray, r_mfarray)
+        return _inner_operation(l_mfarray, r_mfarray)
     }
     /**
        Cross product
@@ -555,9 +555,9 @@ fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: ino
     }
 }
 
-//Uncompleted
+
 fileprivate func _cross_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-    var (l_mfarray, r_mfarray, _) = _biop_broadcast_to(l_mfarray, r_mfarray)
+    var (l_mfarray, r_mfarray, rettype) = _biop_broadcast_to(l_mfarray, r_mfarray)
     
     let orig_shape_for3d = l_mfarray.shape
     let lastdim = orig_shape_for3d[l_mfarray.ndim - 1]
@@ -565,13 +565,13 @@ fileprivate func _cross_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
     //convert shape to calculate
     l_mfarray = l_mfarray.reshape([-1, lastdim])
     r_mfarray = r_mfarray.reshape([-1, lastdim])
-    print(l_mfarray.shape)
+
     if lastdim == 2{
         let ret = l_mfarray[0~,0] * r_mfarray[0~,1] - l_mfarray[0~,1]*r_mfarray[0~,0]
         return ret
     }
     else if lastdim == 3{
-        let ret = Matft.mfarray.nums(0, shape: [l_mfarray.shape[0], lastdim])
+        let ret = Matft.mfarray.nums(0, shape: [l_mfarray.shape[0], lastdim], mftype: rettype)
         
         ret[0~,0] = l_mfarray[0~,1] * r_mfarray[0~,2] - l_mfarray[0~,2]*r_mfarray[0~,1]
         ret[0~,1] = l_mfarray[0~,2] * r_mfarray[0~,0] - l_mfarray[0~,0]*r_mfarray[0~,2]
@@ -583,6 +583,30 @@ fileprivate func _cross_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
         preconditionFailure("dimension must be 2 or 3")
     }
 }
+
+//uncompleted
+fileprivate func _inner_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+    let lastdim = l_mfarray.shape[l_mfarray.ndim - 1]
+    precondition(lastdim == r_mfarray.shape[r_mfarray.ndim - 1], "last dimension must be same")
+    let retShape = Array(l_mfarray.shape.prefix(l_mfarray.ndim - 1) + r_mfarray.shape.prefix(r_mfarray.ndim - 1))
+    let rettype = l_mfarray.mftype
+    
+    //convert shape to calculate
+    let l_mfarray = l_mfarray.reshape([-1, lastdim])
+    let l_calcsize = l_mfarray.shape[0]
+    let r_mfarray = r_mfarray.reshape([-1, lastdim])
+    let r_calcsize = r_mfarray.shape[0]
+    
+    let ret = Matft.mfarray.nums(0, shape: [l_calcsize*r_calcsize], mftype: rettype)
+    for lind in 0..<l_calcsize{
+        for rind in 0..<r_calcsize{
+            ret[lind*r_calcsize + rind] = (l_mfarray[lind] * r_mfarray[rind]).sum()
+        }
+    }
+    
+    return ret.reshape(retShape.count != 0 ? retShape : [1])
+}
+
 
 
 fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray{

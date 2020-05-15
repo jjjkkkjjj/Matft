@@ -41,6 +41,38 @@ final class ProductTests: XCTestCase {
         }
     }
     
+    func testInner(){
+        do{
 
+            let a = MfArray([1,2,3])
+            let b = MfArray([0,1,0])
+            
+            XCTAssertEqual(a *+ b, MfArray([2]))
+        }
+        
+        do{
+
+            let a = Matft.mfarray.arange(start: 0, to: 24, by: 1).reshape([2, 3, 4])
+            let b = Matft.mfarray.arange(start: 0, to: 4, by: 1)
+            
+            XCTAssertEqual(a *+ b, MfArray([[ 14,  38,  62],
+                                            [ 86, 110, 134]]))
+        }
+        
+        do{
+
+            let a = Matft.mfarray.arange(start: 0, to: 18, by: 1).reshape([3, 2, 3])
+            let b = Matft.mfarray.arange(start: 0, to: 9, by: 1).reshape([3, 3])
+            
+            XCTAssertEqual(a *+ b, MfArray([[[  5,  14,  23],
+                                             [ 14,  50,  86]],
+
+                                            [[ 23,  86, 149],
+                                             [ 32, 122, 212]],
+
+                                            [[ 41, 158, 275],
+                                             [ 50, 194, 338]]]))
+        }
+    }
     
 }
