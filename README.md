@@ -1,6 +1,6 @@
 # Matft
 
-**Matft** is Numpy-like library in Swift
+**Matft** is Numpy-like library in Swift. Function name and usage is similar to Numpy.
 
 ## Feature & Usage
 
@@ -37,7 +37,7 @@
 
 #### MfType
 
-- You can pass **MfType** as MfArray's argument ``mftype: .Hoge ``.
+- You can pass **MfType** as MfArray's argument ``mftype: .Hoge ``. It is similar to  `dtype`.
   
   ※Note that stored data type will be Float or Double only even if you set MfType.Int.
 So, if you input big number to MfArray, it may be cause to overflow or strange results in any calculation (+, -, *, /,...  etc.). But I believe this is not problem in practical use.
@@ -61,6 +61,7 @@ So, if you input big number to MfArray, it may be cause to overflow or strange r
       case Float
       case Double
       case Object // Unsupported
+  }
   ```
   
 - Also, you can convert MfType easily using ``astype``
@@ -170,7 +171,8 @@ You can set **MfSlice** (see below's list) to subscript.
   #### Slicing
 
 - If you replace ``:`` with ``~``, you can get sliced mfarray.
-
+Note that use `a[0~]` instead of `a[:]` to get all elements along axis.
+  
   ```swift
   print(a[~1])  //same as a[:1] for numpy
   /*
@@ -291,6 +293,114 @@ You can set **MfSlice** (see below's list) to subscript.
   [	24,		25,		26]]], type=Int, shape=[3, 3, 3]*/
   ```
 -->
+
+## Function List
+
+Below is Matft's function list. As I mentioned above, almost functions are similar to Numpy. Also, these function use Accelerate framework inside, the perfomance may keep high.
+
+\* means method function exists too. Shortly, you can use `a.shallowcopy()` when `a` is `MfArray`.
+
+- Creation
+
+| Matft                      | Numpy             |
+| -------------------------- | ---------------- |
+| *Matft.mfarray.shallowcopy | *numpy.copy       |
+| *Matft.mfarray.deepcopy    | copy.deepcopy     |
+| Matft.mfarray.nums         | numpy.ones * N    |
+| Matft.mfarray.arange       | numpy.arange      |
+| Matft.mfarray.eye          | numpy.eye         |
+| Matft.mfarray.diag         | numpy.diag        |
+| Matft.mfarray.vstack       | numpy.vstack      |
+| Matft.mfarray.hstack       | numpy.hstack      |
+| Matft.mfarray.concatenate  | numpy.concatenate |
+
+
+- Conversion
+
+| Matft                       | Numpy                    |
+| --------------------------- | ----------------------- |
+| *Matft.mfarray.astype       | *numpy.astype            |
+| *Matft.mfarray.transpose    | *numpy.transpose         |
+| *Matft.mfarray.expand_dims  | *numpy.expand_dims       |
+| *Matft.mfarray.squeeze      | *numpy.squeeze           |
+| *Matft.mfarray.broadcast_to | *numpy.broadcast_to      |
+| *Matft.mfarray.conv_order   | *numpy.ascontiguousarray |
+| *Matft.mfarray.flatten      | *numpy.flatten           |
+| *Matft.mfarray.flip         | *numpy.flip              |
+| *Matft.mfarray.swapaxes     | *numpy.swapaxes          |
+| *Matft.mfarray.moveaxis     | *numpy.moveaxis          |
+| *Matft.mfarray.sort         | *numpy.sort              |
+| *Matft.mfarray.argsort      | *numpy.argsort           |
+
+- File
+save function has not developed yet.
+
+| Matft                         | Numpy            |
+| ----------------------------- | :--------------- |
+| Matft.mfarray.file.loadtxt    | numpy.loadtxt    |
+| Matft.mfarray.file.genfromtxt | numpy.genfromtxt |
+
+- Operation
+
+  Line 2 is infix (prefix) operator.
+
+| Matft                          | Numpy                      |
+| ------------------------------ | ------------------------- |
+| Matft.mfarray.add<br />+       | numpy.add<br />+           |
+| Matft.mfarray.sub<br />-       | numpy.sub<br />-           |
+| Matft.mfarray.div<br />/       | numpy.div<br />.           |
+| Matft.mfarray.mul<br />*       | numpy.multiply<br />*      |
+| Matft.mfarray.inner<br />*+    | numpy.inner<br />n/a       |
+| Matft.mfarray.cross<br />*^    | numpy.cross<br />n/a       |
+|Matft.mfarray.matmul<br />*&　　　|numpy.matmul<br />@　|
+| Matft.mfarray.equal<br />===   | numpy.equal<br />==        |
+| Matft.mfarray.allEqual<br />== | numpy.array_equal<br />n/a |
+| Matft.mfarray.neg<br />-       | numpy.negative<br />-      |
+
+- Math function
+
+| Matft                    | Numpy       |
+| ------------------------ | ---------- |
+| Matft.mfarray.math.sin   | numpy.sin   |
+| Matft.mfarray.math.asin  | numpy.asin  |
+| Matft.mfarray.math.sinh  | numpy.sinh  |
+| Matft.mfarray.math.asinh | numpy.asinh |
+| Matft.mfarray.math.sin   | numpy.cos   |
+| Matft.mfarray.math.acos  | numpy.acos  |
+| Matft.mfarray.math.cosh  | numpy.cosh  |
+| Matft.mfarray.math.acosh | numpy.acosh |
+| Matft.mfarray.math.tan   | numpy.tan   |
+| Matft.mfarray.math.atan  | numpy.atan  |
+| Matft.mfarray.math.tanh  | numpy.tanh  |
+| Matft.mfarray.math.atanh | numpy.atanh |
+
+Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/blob/master/Sources/Matft/core/function/math_func.swift).
+
+- Reduce
+
+| Matft                       | Numpy         |
+| --------------------------- | ------------ |
+| *Matft.mfarray.stats.mean   | *numpy.mean   |
+| *Matft.mfarray.stats.max    | *numpy.max    |
+| *Matft.mfarray.stats.argmax | *numpy.argmax |
+| *Matft.mfarray.stats.min    | *numpy.min    |
+| *Matft.mfarray.stats.argmin | *numpy.argmin |
+| *Matft.mfarray.stats.sum    | *numpy.sum    |
+
+
+- Linear algebra
+
+| Matft                            | Numpy              |
+| -------------------------------- | ----------------- |
+| Matft.mfarray.linalg.solve       | numpy.linalg.solve |
+| Matft.mfarray.linalg.inv         | numpy.linalg.inv   |
+| Matft.mfarray.linalg.det         | numpy.linalg.det   |
+| Matft.mfarray.linalg.eigen       | numpy.linalg.eig   |
+| Matft.mfarray.linalg.svd         | numpy.linalg.svd   |
+| Matft.mfarray.linalg.polar_left  | scipy.linalg.polar |
+| Matft.mfarray.linalg.polar_right | scipy.linalg.polar |
+
+<!--
 
 ### Conversion
 
@@ -605,10 +715,11 @@ You can set **MfSlice** (see below's list) to subscript.
 
 - Matft can calculate Eigen values and vectors.
   
+
 Use `Matft.mfarray.linalg.eigen`
-  
+
 Note that returned value is tuple which consists of `(valRe, valIm, lvecRe, lvecIm, rvecRe, rvecIm)`. In `(valRe, valIm, lvecRe, lvecIm, rvecRe, rvecIm)`, `val` is eigenvalues, `lvec` is **left** eigenvecors, `rvec` is **right** eigenvectors, `Re` is real part, `Im` is imaginary part respectively.
-  
+
   ```swift
   let a = MfArray([[1, -1], [1, 1]])
   let ret = try! Matft.mfarray.linalg.eigen(a)
@@ -675,10 +786,11 @@ Note that returned value is tuple which consists of `(valRe, valIm, lvecRe, lvec
 
 - Polar decomposition is also available.
   
+
 Use `Matft.mfarray.linalg.polar_right` or `Matft.mfarray.linalg.polar_left`.
-  
+
   Note that returned value by `polar_right` is tuple which consists of `(u, p)`. In `(u, p)`, `u` is orthonormal matrix, `p` is positive definite respectively. Returned value by `polar_left` is tuple which consists of `(p, ;)`. In `(p, l)`, `l` is orthonormal matrix, `p` is positive definite respectively.
-  
+
   ```swift
   let a = MfArray([[0.5, 1, 2],
                    [1.5, 3, 4],
@@ -698,6 +810,8 @@ Use `Matft.mfarray.linalg.polar_right` or `Matft.mfarray.linalg.polar_left`.
   [	0.9382703855270742,		2.0090413648439465,		4.010411634482028]], type=Double, shape=[3, 3]
   */
   ```
+
+-->
 
 ## Performance
 
