@@ -243,56 +243,40 @@ Note that use `a[0~]` instead of `a[:]` to get all elements along axis.
   [	6,		7,		8]]], type=Int, shape=[3, 3, 3]*/
   ```
 
-<!-- 
-
 #### View
 
-- Note that returned subscripted mfarray will have ``View`` property. See [numpy doc](https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.view.html) in detail.
+- Note that returned subscripted mfarray will have `base` property (is similar to `view` in Numpy). See [numpy doc](https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.view.html) in detail.
 
   ```swift
-  let a = Matft.mfarray.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
+  let a = Matft.mfarray.arange(start: 0, to: 4*4*2, by: 1, shape: [4,4,2])
+              
+  let b = a[0~, 1]
+  b[~~-1] = MfArray([9999]) // cannot pass Int directly such like 9999
+  
   print(a)
   /*
   mfarray = 
-  [[[	0,		1,		2],
-  [	3,		4,		5],
-  [	6,		7,		8]],
+  [[[	0,		1],
+  [	9999,		9999],
+  [	4,		5],
+  [	6,		7]],
   
-  [[	9,		10,		11],
-  [	12,		13,		14],
-  [	15,		16,		17]],
+  [[	8,		9],
+  [	9999,		9999],
+  [	12,		13],
+  [	14,		15]],
   
-  [[	18,		19,		20],
-  [	21,		22,		23],
-  [	24,		25,		26]]], type=Int, shape=[3, 3, 3]
+  [[	16,		17],
+  [	9999,		9999],
+  [	20,		21],
+  [	22,		23]],
+  
+  [[	24,		25],
+  [	9999,		9999],
+  [	28,		29],
+  [	30,		31]]], type=Int, shape=[4, 4, 2]
   */
-  let b = a[0~, 1~2]
-  b[0~] = MfArray([999999])
-      print(b)
-      print(a)
-  /*
-  mfarray = 
-  [[[	3,		4,		5]],
-  
-  [[	12,		13,		14]],
-  
-  [[	21,		22,		23]]], type=Int, shape=[3, 1, 3]
-  */
-  /*
-  mfarray = 
-  [[[	999999,		999999,		999999],
-  [	3,		4,		5],
-  [	6,		7,		8]],
-  
-  [[	999999,		999999,		999999],
-  [	12,		13,		14],
-  [	15,		16,		17]],
-  
-  [[	999999,		999999,		999999],
-  [	21,		22,		23],
-  [	24,		25,		26]]], type=Int, shape=[3, 3, 3]*/
   ```
--->
 
 ## Function List
 
@@ -376,7 +360,7 @@ save function has not developed yet.
 
 Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/blob/master/Sources/Matft/core/function/math_func.swift).
 
-- Reduce
+- Statistics function
 
 | Matft                       | Numpy         |
 | --------------------------- | ------------ |
@@ -386,6 +370,8 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
 | *Matft.mfarray.stats.min    | *numpy.min    |
 | *Matft.mfarray.stats.argmin | *numpy.argmin |
 | *Matft.mfarray.stats.sum    | *numpy.sum    |
+| Matft.mfarray.stats.maximum | numpy.maximum |
+| Matft.mfarray.stats.minimum | numpy.minimum |
 
 
 - Linear algebra
