@@ -281,6 +281,9 @@ extension Matft.mfarray{
     public static func neg(_ mfarray: MfArray) -> MfArray{
         return _prefix_operation(mfarray, .neg)
     }
+}
+
+extension Matft.mfarray.stats{
     
     /**
        Element-wise  maximum of mfarray and mfarray
@@ -317,6 +320,7 @@ extension Matft.mfarray{
     }
 
 }
+
 
 fileprivate enum BiOp{
     case add
