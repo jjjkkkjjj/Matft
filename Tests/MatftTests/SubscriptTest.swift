@@ -156,13 +156,19 @@ final class SubscriptTests: XCTestCase {
             let b = a[~-1]
             
 
-            
-            XCTAssertEqual(b[~1, ~2], MfArray([[[18, 19, 20],
-                                                [21, 22, 23]]], mftype: .Double))
-            
-            XCTAssertEqual(b[0], MfArray([[18, 19, 20],
-                                          [21, 22, 23],
-                                          [24, 25, 26]], mftype: .Double))
+            XCTAssertEqual(b[~1, ~2], MfArray([[[ 0, 18, 36],
+                                                [ 6, 24, 42]]], mftype: .Double))
+
+            XCTAssertEqual(b[0], MfArray([[ 0, 18, 36],
+                                          [ 6, 24, 42],
+                                          [12, 30, 48]], mftype: .Double))
+            XCTAssertEqual(b[0~, ~~-1], MfArray([[[12, 30, 48],
+                                                  [ 6, 24, 42],
+                                                  [ 0, 18, 36]],
+
+                                                 [[14, 32, 50],
+                                                  [ 8, 26, 44],
+                                                  [ 2, 20, 38]]], mftype: .Double))
         }
         
         do{
@@ -220,5 +226,23 @@ final class SubscriptTests: XCTestCase {
             XCTAssertEqual(b[0, ~1], MfArray([[[ 2,  5, -1]]]))
             
         }
+        
+        do{
+            let a = Matft.mfarray.arange(start: 0, to: 4*4*2, by: 1, shape: [4,4,2])
+            
+            let b = a[0~, 1]
+            XCTAssertEqual(b[~~-1], MfArray([[26, 27],
+                                             [18, 19],
+                                             [10, 11],
+                                             [ 2,  3]]))
+            
+            XCTAssertEqual(b[0~,1], MfArray([ 3, 11, 19, 27]))
+            
+            XCTAssertEqual(b[-1,1~~-1], MfArray([27, 26]))
+            
+            XCTAssertEqual(b.T[0~,1], MfArray([10, 11]))
+        }
+        
+        
     }
 }

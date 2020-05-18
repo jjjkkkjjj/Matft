@@ -170,7 +170,7 @@ extension MfArray{
         var newstrides: [Int] = []
         var newsize = 1
         
-        var offset = 0
+        var offset = self.offsetIndex
         self.withShapeStridesUnsafeMBPtr{
         [unowned self] (orig_shapeptr, orig_stridesptr) in
             //Indexing ref: https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
