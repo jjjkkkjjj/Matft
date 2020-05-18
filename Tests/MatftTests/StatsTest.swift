@@ -317,6 +317,4 @@ final class StatsTests: XCTestCase {
                                                                                            [ 17,  22]]]], mftype: .UInt8))
         }
     }
-    
-    
 }
