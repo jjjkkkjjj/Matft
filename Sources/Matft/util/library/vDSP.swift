@@ -42,6 +42,10 @@ internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP
     let newmfstructure = copy_mfstructure(mfarray.mfstructure)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
+// same above
+internal func math_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP_convert_func<T, T>) -> MfArray{
+    return preop_by_vDSP(mfarray, vDSP_func)
+}
 
 //binary vector to scalar operation
 internal typealias vDSP_biop_vs_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void

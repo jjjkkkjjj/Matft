@@ -47,4 +47,12 @@ extension MfArray{
     public func round(decimals: Int = 0) -> MfArray{
         return Matft.mfarray.math.round(self, decimals: decimals)
     }
+    
+    /**
+       Calculate signed MfArray
+       - parameters:
+    */
+    public func sign() -> MfArray{
+        Matft.mfarray.math.sign(self)
+    }
 }

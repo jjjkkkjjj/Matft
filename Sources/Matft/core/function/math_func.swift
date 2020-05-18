@@ -502,3 +502,35 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     }
 }
 
+extension Matft.mfarray.math{//use vDSP
+    /**
+       Calculate squared MfArray
+       - parameters:
+            - mfarray: mfarray
+    */
+    public static func square(_ mfarray: MfArray) -> MfArray{
+        switch mfarray.storedType {
+        case .Float:
+            return math_by_vDSP(mfarray, vDSP_vsq)
+        case .Double:
+            return math_by_vDSP(mfarray, vDSP_vsqD)
+        }
+    }
+    
+    /**
+       Calculate signed MfArray
+       - parameters:
+            - mfarray: mfarray
+    */
+    public static func sign(_ mfarray: MfArray) -> MfArray{
+        var ssq: MfArray // signed squared values
+        switch mfarray.storedType {
+        case .Float:
+            ssq = math_by_vDSP(mfarray, vDSP_vssq)
+        case .Double:
+            ssq = math_by_vDSP(mfarray, vDSP_vssqD)
+        }
+
+        return ssq / Matft.mfarray.math.square(mfarray)
+    }
+}
