@@ -311,6 +311,7 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.mfarray.conv_order   | *numpy.ascontiguousarray |
 | *Matft.mfarray.flatten      | *numpy.flatten           |
 | *Matft.mfarray.flip         | *numpy.flip              |
+| *Matft.mfarray.clip         | *numpy.clip              |
 | *Matft.mfarray.swapaxes     | *numpy.swapaxes          |
 | *Matft.mfarray.moveaxis     | *numpy.moveaxis          |
 | *Matft.mfarray.sort         | *numpy.sort              |

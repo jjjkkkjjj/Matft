@@ -415,6 +415,26 @@ extension Matft.mfarray{
     }
     
     /**
+       Clip the mfarray
+       - parameters:
+            - mfarray: mfarray
+            - min: (optional) Minimum value. If nil is passed, handled as -inf
+            - max: (optional) Maximum value. If nil is passed, handled as inf
+    */
+    public static func clip<T: MfTypable>(_ mfarray: MfArray, min: T? = nil, max: T? = nil) -> MfArray{
+        switch mfarray.storedType {
+        case .Float:
+            let min = min == nil ? -Float.infinity : Float.from(min!)
+            let max = max == nil ? Float.infinity : Float.from(max!)
+            return clip_by_vDSP(mfarray, min, max, vDSP_vclipc)
+        case .Double:
+            let min = min == nil ? -Double.infinity : Double.from(min!)
+            let max = max == nil ? Double.infinity : Double.from(max!)
+            return clip_by_vDSP(mfarray, min, max, vDSP_vclipcD)
+        }
+    }
+    
+    /**
        Swap given axis1 and axis2
        - parameters:
             - mfarray: mfarray

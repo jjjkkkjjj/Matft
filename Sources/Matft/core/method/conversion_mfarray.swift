@@ -115,6 +115,16 @@ extension MfArray{
     }
     
     /**
+       Clip the mfarray
+       - parameters:
+            - min: (optional) Minimum value. If nil is passed, handled as -inf
+            - max: (optional) Maximum value. If nil is passed, handled as inf
+    */
+    public func clip<T: MfTypable>(min: T? = nil, max: T? = nil) -> MfArray{
+        return Matft.mfarray.clip(self, min: min, max: max)
+    }
+    
+    /**
        Swap given axis1 and axis2
        - parameters:
             - axes: (optional) the reversed axis of list

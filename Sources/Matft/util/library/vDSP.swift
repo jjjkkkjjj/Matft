@@ -403,6 +403,38 @@ internal func sort_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int,
     
 }
 
+internal typealias vDSP_clip_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length, UnsafeMutablePointer<vDSP_Length>, UnsafeMutablePointer<vDSP_Length>) -> Void
+fileprivate func _run_clip<T: MfStorable>(_ srcptr: UnsafePointer<T>, dstptr: UnsafeMutablePointer<T>, count: Int, _ min: T, _ max: T, _ vDSP_func: vDSP_clip_func<T>){
+    var min = min
+    var max = max
+    
+    var mincount = vDSP_Length(0)
+    var maxcount = vDSP_Length(0)
+    
+    vDSP_func(srcptr, vDSP_Stride(1), &min, &max, dstptr, vDSP_Stride(1), vDSP_Length(count), &mincount, &maxcount)
+}
+internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ min: T, _ max: T, _ vDSP_func: vDSP_clip_func<T>) -> MfArray{
+    //return mfarray must be either row or column major
+    var mfarray = mfarray
+    //print(mfarray)
+    if !(mfarray.mfflags.column_contiguous || mfarray.mfflags.row_contiguous){//neither row nor column contiguous, close to row major
+        mfarray = to_row_major(mfarray)
+    }
+    //print(mfarray)
+    //print(mfarray.strides)
+    
+    let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.storedSize){
+        dstptr in
+        let dstptrT = dstptr.bindMemory(to: T.self, capacity: mfarray.storedSize)
+        mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            [unowned mfarray] in
+            _run_clip($0.baseAddress!, dstptr: dstptrT, count: mfarray.storedSize, min, max, vDSP_func)
+        }
+    }
+    
+    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+}
 // generate(arange)
 /*
 internal typealias vDSP_arange_func<T> = (UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
