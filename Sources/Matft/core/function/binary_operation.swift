@@ -272,15 +272,6 @@ extension Matft.mfarray{
         return _equalAll_operation(l_mfarray, r_mfarray)
     }
     
-    //prefix
-    /**
-       Element-wise negativity
-       - parameters:
-           - mfarray: mfarray
-    */
-    public static func neg(_ mfarray: MfArray) -> MfArray{
-        return _prefix_operation(mfarray, .neg)
-    }
 }
 
 extension Matft.mfarray.stats{
@@ -417,21 +408,6 @@ fileprivate func _biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) 
     return (l_mfarray, r_mfarray, rettype)
 }
 
-fileprivate enum PreOp{
-    case neg
-}
-
-fileprivate func _prefix_operation(_ mfarray: MfArray, _ preop: PreOp) -> MfArray{
-    switch preop {
-    case .neg:
-        switch mfarray.storedType{
-        case .Float:
-            return preop_by_vDSP(mfarray, vDSP_vneg)
-        case .Double:
-            return preop_by_vDSP(mfarray, vDSP_vnegD)
-        }
-    }
-}
 
 /*
  >>> a = np.arange(100).reshape(10,2,5)
@@ -652,25 +628,6 @@ fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, th
     let diff = l_mfarray - r_mfarray
     //print(diff)
     
-    switch diff.storedType {
-    case .Float:
-        diff.withDataUnsafeMBPtrT(datatype: Float.self){
-            [unowned diff] (dataptr) in
-            var newptr = dataptr.map{ abs($0) <= thresholdF ? Float(1) : Float.zero }
-            newptr.withUnsafeMutableBufferPointer{
-                dataptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: diff.storedSize)
-            }
-        }
-    case .Double:
-        diff.withDataUnsafeMBPtrT(datatype: Double.self){
-            [unowned diff] (dataptr) in
-            var newptr = dataptr.map{ abs($0) <= thresholdD ? Double(1) : Double.zero }
-            newptr.withUnsafeMutableBufferPointer{
-                dataptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: diff.storedSize)
-            }
-        }
-    }
-    
     /*
     let diff = l_mfarray - r_mfarray
     print(diff)
@@ -682,7 +639,7 @@ fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, th
         }
     }
     print(diff)*/
-    return diff.astype(.Bool)
+    return !to_Bool(diff, thresholdF: thresholdF, thresholdD: thresholdD)
 }
 
 fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> Bool{

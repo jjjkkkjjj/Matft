@@ -19,6 +19,10 @@ extension Matft.mfarray{
     public static func astype(_ mfarray: MfArray, mftype: MfType) -> MfArray{
         //let newarray = Matft.mfarray.shallowcopy(mfarray)
         //newarray.mfdata._mftype = mftype
+        if mftype == .Bool{
+            return to_Bool(mfarray)
+        }
+        
         let newStoredType = MfType.storedType(mftype)
         if mfarray.storedType == newStoredType{
             let ret = mfarray.deepcopy()
