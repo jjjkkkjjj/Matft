@@ -382,6 +382,40 @@ extension MfArray: MfSubscriptable{
         }
     }
     
+    // fancy indexing
+    // note that if not assignment, returned copy value not view.
+    /*
+     >>> a = np.arange(9).reshape(3,3)
+     >>> a
+     array([[0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8]])
+     >>> a[[1,2],[2,2]].base
+     None
+     */
+    /*
+    private func _get_mfarray(indices: MfArray) -> MfArray{
+        precondition(indices.mftype == .Int, "indices must be int, but got \(indices.mftype)")
+        // same as get_index function
+        let ind = (-indices.sign()).clip(min: 0) * MfArray(Array(self.shape.prefix(indices.ndim))) // get_index
+        let offset = (ind * MfArray(Array(self.strides.prefix(indices.ndim)))).sum(axis: -1, keepDims: true) // index * orig_stridesptr[orig_axis]
+        
+
+        
+        var orig_axis = 0
+        let orig_shape = self.shape
+        let orig_strides = self.strides
+        
+        for _ in 0..<indices.ndim{
+            
+        }
+        
+        let index = get_index(_index, dim: orig_shapeptr[orig_axis], axis: orig_axis)
+
+        offset += index * orig_stridesptr[orig_axis]
+        orig_axis += 1 // not move
+        new_axis += 0
+    }*/
 }
 
 fileprivate func _inner_product(_ left: UnsafeMutableBufferPointer<Int>, _ right: UnsafeMutableBufferPointer<Int>) -> Int{

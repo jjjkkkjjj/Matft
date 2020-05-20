@@ -18,7 +18,13 @@ extension Matft.mfarray{
            - r_mfarray: right mfarray
     */
     public static func add(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        return _binary_vv_operation(l_mfarray, r_mfarray, .add)
+        let (l_mfarray, r_mfarray, rettype) = _biop_broadcast_to(l_mfarray, r_mfarray)
+        switch MfType.storedType(rettype){
+        case .Float:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
+        case .Double:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
+        }
     }
     /**
        Element-wise addition of  mfarray and scalar
@@ -71,7 +77,13 @@ extension Matft.mfarray{
            - r_mfarray: right mfarray
     */
     public static func sub(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        return _binary_vv_operation(l_mfarray, r_mfarray, .sub)
+        let (l_mfarray, r_mfarray, rettype) = _biop_broadcast_to(l_mfarray, r_mfarray)
+        switch MfType.storedType(rettype){
+        case .Float:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
+        case .Double:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD)
+        }
     }
     /**
        Element-wise subtraction of  mfarray and scalar
@@ -124,7 +136,13 @@ extension Matft.mfarray{
            - r_mfarray: right mfarray
     */
     public static func mul(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        return _binary_vv_operation(l_mfarray, r_mfarray, .mul)
+        let (l_mfarray, r_mfarray, rettype) = _biop_broadcast_to(l_mfarray, r_mfarray)
+        switch MfType.storedType(rettype){
+        case .Float:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul)
+        case .Double:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmulD)
+        }
     }
     /**
        Element-wise multiplication of  mfarray and scalar
@@ -177,7 +195,15 @@ extension Matft.mfarray{
            - r_mfarray: right mfarray
     */
     public static func div(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        return _binary_vv_operation(l_mfarray, r_mfarray, .div)
+        let (l_mfarray, r_mfarray, rettype) = _biop_broadcast_to(l_mfarray, r_mfarray)
+        switch MfType.storedType(rettype){
+        case .Float:
+            let ret = biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv)
+            ret.mfdata._mftype = .Float
+            return ret
+        case .Double:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
+        }
     }
     /**
        Element-wise division of  mfarray and scalar
@@ -312,63 +338,6 @@ extension Matft.mfarray.stats{
 
 }
 
-
-fileprivate enum BiOp{
-    case add
-    case sub
-    case mul
-    case div
-}
-
-fileprivate func _binary_vv_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ biop: BiOp) -> MfArray{
-    //precondition(l_mfarray.mftype == r_mfarray.mftype, "Two mfarray must be same mftype. but two mfarray having unsame mftype will be able to be calclulated in the future")
-    
-    let (l_mfarray, r_mfarray, rettype) = _biop_broadcast_to(l_mfarray, r_mfarray)
-    
-    //print(l_mfarray)
-    //print(r_mfarray)
-    
-    switch biop {
-    case .add:
-        switch MfType.storedType(rettype){
-        case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
-        case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
-        }
-    case .sub:
-        switch MfType.storedType(rettype){
-        case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
-        case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD)
-        }
-    case .mul:
-        switch MfType.storedType(rettype){
-        case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul)
-        case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmulD)
-        }
-    case .div:
-        switch MfType.storedType(rettype){
-        case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv).astype(.Float)
-        case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
-        }
-        /*
-    case .sub:
-        
-    case .mul:
-        
-    case .div:
-        
-    case .indot:
-        
-    case .outdot:*/
-    }
-}
 
 fileprivate func _biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (l: MfArray, r: MfArray, t: MfType){
     var l_mfarray = l_mfarray
