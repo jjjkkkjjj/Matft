@@ -39,7 +39,8 @@ extension MfArray{
     public var scalar: AnyObject?{
         return self.size == 1 ? self.first! : nil
     }
-    public func scalar<T>(_ type: T.Type) -> T?{
+    public func scalar<T: MfTypable>(_ type: T.Type) -> T?{
+        precondition(MfType.mftype(value: T.zero) == self.mftype, "could not cast \(T.self) from \(self.mftype)")
         return self.size == 1 ? self.first! as? T : nil
     }
     
