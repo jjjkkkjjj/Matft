@@ -8,7 +8,7 @@
 import Foundation
 import Accelerate
 
-extension Matft.mfarray{
+extension Matft{
     /**
        Element-wise negativity
        - parameters:
@@ -25,7 +25,7 @@ extension Matft.mfarray{
     */
     public static func logical_not(_ mfarray: MfArray) -> MfArray{
         var ret = to_Bool(mfarray)// copy and convert to bool
-        ret = Matft.mfarray.math.abs(ret - 1) // force cast to Float
+        ret = Matft.math.abs(ret - 1) // force cast to Float
         ret.mfdata._mftype = .Bool
         return ret
     }

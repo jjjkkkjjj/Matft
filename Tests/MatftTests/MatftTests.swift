@@ -24,13 +24,13 @@ final class MatftTests: XCTestCase {
         let c = a/b
         */
         /*
-        let a = Matft.mfarray.arange(start: 0, to: 8, by: 1, shape: [2,2,2])
+        let a = Matft.arange(start: 0, to: 8, by: 1, shape: [2,2,2])
         print(a[0~,0~,~~-1])
-        print(Matft.mfarray.arange(start: 7, to: -1, by: -1, shape: [2,2,2]))
-        let k = a[0~,0~,~~-1] - Matft.mfarray.arange(start: 7, to: -1, by: -1, shape: [2,2,2])
-        print(a[0~,0~,~~-1] == Matft.mfarray.arange(start: 7, to: -1, by: -1, shape: [2,2,2]))*/
+        print(Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2]))
+        let k = a[0~,0~,~~-1] - Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2])
+        print(a[0~,0~,~~-1] == Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2]))*/
         /*
-        let c = Matft.mfarray.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
+        let c = Matft.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
         let d = c.transpose(axes: [0,3,4,2,1,5])
         let e = c.T
         
@@ -63,7 +63,7 @@ func view1(){
 }
 
 func view2(){
-    let a = Matft.mfarray.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
+    let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
     print(a)
     let b = a[0~, 1~2]
     b[0~] = MfArray([999999])
@@ -73,18 +73,18 @@ func view2(){
 }
 
 func view3(){
-    let a = Matft.mfarray.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
+    let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
     print(a.T)
     print(a.transpose(axes: [0,2,1]))
     
-    let b = Matft.mfarray.arange(start: 0, to: 16, by: 1, shape: [2,4,2])
+    let b = Matft.arange(start: 0, to: 16, by: 1, shape: [2,4,2])
     print(b.reshape([4,4]))
     print(b.reshape([1,2,1,8]))
 }
 
 func view4(){
-    let a = Matft.mfarray.arange(start: 1, to: 9, by: 2, shape: [2,2])
-    let b = Matft.mfarray.arange(start: 1, to: 5, by: 1, shape: [2,2])
+    let a = Matft.arange(start: 1, to: 9, by: 2, shape: [2,2])
+    let b = Matft.arange(start: 1, to: 5, by: 1, shape: [2,2])
     print(a)
     print(a+b)
     print(a-b)
@@ -96,19 +96,19 @@ func view4(){
 }
 
 func view5(){
-    let a = Matft.mfarray.arange(start: 0, to: 4, by: 1)
+    let a = Matft.arange(start: 0, to: 4, by: 1)
     print(a)
-    print(Matft.mfarray.math.sin(a))
-    print(Matft.mfarray.math.cos(a))
-    print(Matft.mfarray.math.tan(a))
-    print(Matft.mfarray.math.log(a))
-    print(Matft.mfarray.math.exp(a))
+    print(Matft.math.sin(a))
+    print(Matft.math.cos(a))
+    print(Matft.math.tan(a))
+    print(Matft.math.log(a))
+    print(Matft.math.exp(a))
     let b = MfArray([0.23, -0.7, 1.7, 2.1])
-    print(Matft.mfarray.math.floor(b))
-    print(Matft.mfarray.math.ceil(b))
-    print(Matft.mfarray.math.nearest(b))
+    print(Matft.math.floor(b))
+    print(Matft.math.ceil(b))
+    print(Matft.math.nearest(b))
     
-    print(Matft.mfarray.math.power(a, exponents: b))
+    print(Matft.math.power(a, exponents: b))
 }
 
 func view6(){
@@ -117,23 +117,23 @@ func view6(){
         
                      [[7, 10, -9, 5],
                       [1, 1, 7, 0]]])
-    print(Matft.mfarray.stats.max(a))
-    print(Matft.mfarray.stats.min(a))
-    print(Matft.mfarray.stats.argmax(a))
-    print(Matft.mfarray.stats.argmin(a))
+    print(Matft.stats.max(a))
+    print(Matft.stats.min(a))
+    print(Matft.stats.argmax(a))
+    print(Matft.stats.argmin(a))
     
-    print(Matft.mfarray.stats.max(a, axis: -1))
-    print(Matft.mfarray.stats.min(a, axis: 0))
-    print(Matft.mfarray.stats.argmax(a, axis: -1))
-    print(Matft.mfarray.stats.argmin(a, axis: 0))
+    print(Matft.stats.max(a, axis: -1))
+    print(Matft.stats.min(a, axis: 0))
+    print(Matft.stats.argmax(a, axis: -1))
+    print(Matft.stats.argmin(a, axis: 0))
 }
 
 func view7(){
-    let a = Matft.mfarray.arange(start: 1, to: 5, by: 1, shape: [2,2])
-    let b = Matft.mfarray.arange(start: 5, to: 9, by: 1, shape: [2,2])
+    let a = Matft.arange(start: 1, to: 5, by: 1, shape: [2,2])
+    let b = Matft.arange(start: 5, to: 9, by: 1, shape: [2,2])
     print(a)
     print(b)
-    print(Matft.mfarray.matmul(a, b))
+    print(Matft.matmul(a, b))
     print(a*&b)
     
 }
@@ -141,12 +141,12 @@ func view7(){
 func view8(){
     let coef = MfArray([[3,2],[1,2]])
     let b = MfArray([7,1])
-    let ans = try! Matft.mfarray.linalg.solve(coef, b: b)
+    let ans = try! Matft.linalg.solve(coef, b: b)
     print(ans)
 
     
     let a = MfArray([[1,3,2],[-1,0,1],[2,3,0]])
-    let ainv = try! Matft.mfarray.linalg.inv(a)
+    let ainv = try! Matft.linalg.inv(a)
     print(ainv)
     print(a*&ainv)
 }

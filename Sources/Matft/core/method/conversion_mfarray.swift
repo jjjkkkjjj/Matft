@@ -15,7 +15,7 @@ extension MfArray{
             - mftype: the type of mfarray
     */
     public func astype(_ mftype: MfType) -> MfArray{
-        return Matft.mfarray.astype(self, mftype: mftype)
+        return Matft.astype(self, mftype: mftype)
     }
     
     /**
@@ -24,14 +24,14 @@ extension MfArray{
             - axes: (Optional) the indices of shape. In case this is left out, get transposed mfarray
     */
     public func transpose(axes: [Int]? = nil) -> MfArray{
-        return Matft.mfarray.transpose(self, axes: axes)
+        return Matft.transpose(self, axes: axes)
     }
     /**
        Create transposed mfarray. Created mfarray will be sharing data with original one
        - parameters:
     */
     public var T: MfArray{
-        return Matft.mfarray.transpose(self)
+        return Matft.transpose(self)
     }
     
     /**
@@ -40,7 +40,7 @@ extension MfArray{
             - newshape: the new shape
     */
     public func reshape(_ newshape: [Int]) -> MfArray{
-        return Matft.mfarray.reshape(self, newshape: newshape)
+        return Matft.reshape(self, newshape: newshape)
     }
     
     /**
@@ -49,7 +49,7 @@ extension MfArray{
             - shape: shape
     */
     public func broadcast_to(shape: [Int]) -> MfArray{
-        return Matft.mfarray.broadcast_to(self, shape: shape)
+        return Matft.broadcast_to(self, shape: shape)
     }
     
     /**
@@ -58,7 +58,7 @@ extension MfArray{
             - axis: the expanded axis
     */
     public func expand_dims(axis: Int) -> MfArray{
-        return Matft.mfarray.expand_dims(self, axis: axis)
+        return Matft.expand_dims(self, axis: axis)
     }
     /**
        Create mfarray expanded dimension for given axis
@@ -66,7 +66,7 @@ extension MfArray{
             - axes: the list of expanded axes
     */
     public func expand_dims(axes: [Int]) -> MfArray{
-        return Matft.mfarray.expand_dims(self, axes: axes)
+        return Matft.expand_dims(self, axes: axes)
     }
     
     /**
@@ -75,7 +75,7 @@ extension MfArray{
             - axis: (Optional) the removed axis
     */
     public func squeeze(axis: Int? = nil) -> MfArray{
-        return Matft.mfarray.squeeze(self, axis: axis)
+        return Matft.squeeze(self, axis: axis)
     }
     /**
        Create mfarray removed for 1-dimension
@@ -84,7 +84,7 @@ extension MfArray{
             - axes: the list of  removed axes
     */
     public func squeeze(axes: [Int]) -> MfArray{
-        return Matft.mfarray.squeeze(self, axes: axes)
+        return Matft.squeeze(self, axes: axes)
     }
     /**
        Convert order of stored data.
@@ -92,7 +92,7 @@ extension MfArray{
             - mforder: mforder
     */
     public func conv_order(mforder: MfOrder) -> MfArray{
-        return Matft.mfarray.conv_order(self, mforder: mforder)
+        return Matft.conv_order(self, mforder: mforder)
     }
     
     /**
@@ -101,7 +101,7 @@ extension MfArray{
             - axis: (optional) the reversed axis
     */
     public func flip(axis: Int? = nil) -> MfArray{
-        return Matft.mfarray.flip(self, axis: axis)
+        return Matft.flip(self, axis: axis)
     }
     /**
        Reverse the mfarray order along given axes
@@ -109,7 +109,7 @@ extension MfArray{
             - axes: (optional) the reversed axis of list
     */
     public func flip(_ mfarray: MfArray, axes: [Int]? = nil) -> MfArray{
-        return Matft.mfarray.flip(self, axes: axes)
+        return Matft.flip(self, axes: axes)
     }
     
     /**
@@ -119,7 +119,7 @@ extension MfArray{
             - max: (optional) Maximum value. If nil is passed, handled as inf
     */
     public func clip<T: MfTypable>(min: T? = nil, max: T? = nil) -> MfArray{
-        return Matft.mfarray.clip(self, min: min, max: max)
+        return Matft.clip(self, min: min, max: max)
     }
     
     /**
@@ -128,7 +128,7 @@ extension MfArray{
             - axes: (optional) the reversed axis of list
     */
     public func swapaxes(axis1: Int, axis2: Int) -> MfArray{
-        return Matft.mfarray.swapaxes(self, axis1: axis1, axis2: axis2)
+        return Matft.swapaxes(self, axis1: axis1, axis2: axis2)
     }
     
     /**
@@ -139,7 +139,7 @@ extension MfArray{
             - dst: Int
     */
     public func moveaxis(src: Int, dst: Int) -> MfArray{
-        return Matft.mfarray.moveaxis(self, src: src, dst: dst)
+        return Matft.moveaxis(self, src: src, dst: dst)
     }
     
     /**
@@ -149,7 +149,7 @@ extension MfArray{
             - order: (Optional) ascending or descending. default is ascending
     */
     public func sort(axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray{
-        Matft.mfarray.sort(self, axis: axis, order: order)
+        Matft.sort(self, axis: axis, order: order)
     }
     /**
        Get sorted mfarray's indices along given  axis
@@ -158,6 +158,6 @@ extension MfArray{
             - order: (Optional) ascending or descending. default is ascending
     */
     public func argsort(axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray{
-        Matft.mfarray.argsort(self, axis: axis, order: order)
+        Matft.argsort(self, axis: axis, order: order)
     }
 }

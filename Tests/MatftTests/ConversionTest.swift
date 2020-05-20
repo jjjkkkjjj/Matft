@@ -39,7 +39,7 @@ final class ConversionTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 2*2*2*2, by: 1, shape: [2,2,2,2])
+            let a = Matft.arange(start: 0, to: 2*2*2*2, by: 1, shape: [2,2,2,2])
             XCTAssertEqual(a.transpose(axes: [0, 2, 3, 1]), MfArray([[[[ 0,  4],
                                                                        [ 1,  5]],
 
@@ -88,7 +88,7 @@ final class ConversionTests: XCTestCase {
 
         
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 2*2*2*2, by: 1, shape: [2,2,2,2])
+            let a = Matft.arange(start: 0, to: 2*2*2*2, by: 1, shape: [2,2,2,2])
             XCTAssertEqual(a.swapaxes(axis1: 0, axis2: 2), MfArray([[[[ 0,  1],
                                                                       [ 8,  9]],
 
@@ -150,7 +150,7 @@ final class ConversionTests: XCTestCase {
 
         
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 2*2*2*2, by: 1, shape: [2,2,2,2])
+            let a = Matft.arange(start: 0, to: 2*2*2*2, by: 1, shape: [2,2,2,2])
             XCTAssertEqual(a.moveaxis(src: 0, dst: 2), MfArray([[[[ 0,  1],
                                                                   [ 8,  9]],
 
@@ -301,9 +301,9 @@ final class ConversionTests: XCTestCase {
         do{
             let a = MfArray([[2, -7, 0],
                              [1, 5, -2]])
-            XCTAssertEqual(Matft.mfarray.expand_dims(a, axis: 0), MfArray([[[ 2, -7,  0],
+            XCTAssertEqual(Matft.expand_dims(a, axis: 0), MfArray([[[ 2, -7,  0],
                                                                           [ 1,  5, -2]]]))
-            XCTAssertEqual(Matft.mfarray.expand_dims(a, axis: 2), MfArray([[[ 2],
+            XCTAssertEqual(Matft.expand_dims(a, axis: 2), MfArray([[[ 2],
                                                                           [-7],
                                                                           [ 0]],
 
@@ -314,8 +314,8 @@ final class ConversionTests: XCTestCase {
         
         do{
             let a = MfArray([1,2])
-            XCTAssertEqual(Matft.mfarray.expand_dims(a, axes: [0, 1]), MfArray([[[1, 2]]]))
-            XCTAssertEqual(Matft.mfarray.expand_dims(a, axes: [2, 0]), MfArray([[[1],
+            XCTAssertEqual(Matft.expand_dims(a, axes: [0, 1]), MfArray([[[1, 2]]]))
+            XCTAssertEqual(Matft.expand_dims(a, axes: [2, 0]), MfArray([[[1],
                                                                                  [2]]]))
         }
     }

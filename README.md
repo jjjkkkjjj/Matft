@@ -16,7 +16,7 @@
           
                    [[ 0,  1,  2,  3],
                     [ 4,  5,  6,  7]]])
-  let aa = Matft.mfarray.arange(start: -8, to: 8, by: 1, shape: [2,2,4])
+  let aa = Matft.arange(start: -8, to: 8, by: 1, shape: [2,2,4])
   print(a)
   print(aa)
   /*
@@ -137,7 +137,7 @@ You can set **MfSlice** (see below's list) to subscript.
     ```
   
   - ```swift
-    Matft.mfarray.newaxis
+    Matft.newaxis
     ```
 
   - ```swift
@@ -148,7 +148,7 @@ You can set **MfSlice** (see below's list) to subscript.
 
 - Normal indexing
   ```swift  
-  let a = Matft.mfarray.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
+  let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
   print(a)
   /*
   mfarray = 
@@ -248,7 +248,7 @@ Note that use `a[0~]` instead of `a[:]` to get all elements along axis.
 - Note that returned subscripted mfarray will have `base` property (is similar to `view` in Numpy). See [numpy doc](https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.view.html) in detail.
 
   ```swift
-  let a = Matft.mfarray.arange(start: 0, to: 4*4*2, by: 1, shape: [4,4,2])
+  let a = Matft.arange(start: 0, to: 4*4*2, by: 1, shape: [4,4,2])
               
   let b = a[0~, 1]
   b[~~-1] = MfArray([9999]) // cannot pass Int directly such like 9999
@@ -288,42 +288,42 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 
 | Matft                      | Numpy             |
 | -------------------------- | ---------------- |
-| *Matft.mfarray.shallowcopy | *numpy.copy       |
-| *Matft.mfarray.deepcopy    | copy.deepcopy     |
-| Matft.mfarray.nums         | numpy.ones * N    |
-| Matft.mfarray.arange       | numpy.arange      |
-| Matft.mfarray.eye          | numpy.eye         |
-| Matft.mfarray.diag         | numpy.diag        |
-| Matft.mfarray.vstack       | numpy.vstack      |
-| Matft.mfarray.hstack       | numpy.hstack      |
-| Matft.mfarray.concatenate  | numpy.concatenate |
+| *Matft.shallowcopy | *numpy.copy       |
+| *Matft.deepcopy    | copy.deepcopy     |
+| Matft.nums         | numpy.ones * N    |
+| Matft.arange       | numpy.arange      |
+| Matft.eye          | numpy.eye         |
+| Matft.diag         | numpy.diag        |
+| Matft.vstack       | numpy.vstack      |
+| Matft.hstack       | numpy.hstack      |
+| Matft.concatenate  | numpy.concatenate |
 
 
 - Conversion
 
 | Matft                       | Numpy                    |
 | --------------------------- | ----------------------- |
-| *Matft.mfarray.astype       | *numpy.astype            |
-| *Matft.mfarray.transpose    | *numpy.transpose         |
-| *Matft.mfarray.expand_dims  | *numpy.expand_dims       |
-| *Matft.mfarray.squeeze      | *numpy.squeeze           |
-| *Matft.mfarray.broadcast_to | *numpy.broadcast_to      |
-| *Matft.mfarray.conv_order   | *numpy.ascontiguousarray |
-| *Matft.mfarray.flatten      | *numpy.flatten           |
-| *Matft.mfarray.flip         | *numpy.flip              |
-| *Matft.mfarray.clip         | *numpy.clip              |
-| *Matft.mfarray.swapaxes     | *numpy.swapaxes          |
-| *Matft.mfarray.moveaxis     | *numpy.moveaxis          |
-| *Matft.mfarray.sort         | *numpy.sort              |
-| *Matft.mfarray.argsort      | *numpy.argsort           |
+| *Matft.astype       | *numpy.astype            |
+| *Matft.transpose    | *numpy.transpose         |
+| *Matft.expand_dims  | *numpy.expand_dims       |
+| *Matft.squeeze      | *numpy.squeeze           |
+| *Matft.broadcast_to | *numpy.broadcast_to      |
+| *Matft.conv_order   | *numpy.ascontiguousarray |
+| *Matft.flatten      | *numpy.flatten           |
+| *Matft.flip         | *numpy.flip              |
+| *Matft.clip         | *numpy.clip              |
+| *Matft.swapaxes     | *numpy.swapaxes          |
+| *Matft.moveaxis     | *numpy.moveaxis          |
+| *Matft.sort         | *numpy.sort              |
+| *Matft.argsort      | *numpy.argsort           |
 
 - File
 save function has not developed yet.
 
 | Matft                         | Numpy            |
 | ----------------------------- | :--------------- |
-| Matft.mfarray.file.loadtxt    | numpy.loadtxt    |
-| Matft.mfarray.file.genfromtxt | numpy.genfromtxt |
+| Matft.file.loadtxt    | numpy.loadtxt    |
+| Matft.file.genfromtxt | numpy.genfromtxt |
 
 - Operation
 
@@ -331,33 +331,33 @@ save function has not developed yet.
 
 | Matft                          | Numpy                      |
 | ------------------------------ | ------------------------- |
-| Matft.mfarray.add<br />+       | numpy.add<br />+           |
-| Matft.mfarray.sub<br />-       | numpy.sub<br />-           |
-| Matft.mfarray.div<br />/       | numpy.div<br />.           |
-| Matft.mfarray.mul<br />*       | numpy.multiply<br />*      |
-| Matft.mfarray.inner<br />*+    | numpy.inner<br />n/a       |
-| Matft.mfarray.cross<br />*^    | numpy.cross<br />n/a       |
-|Matft.mfarray.matmul<br />*&　　　|numpy.matmul<br />@　|
-| Matft.mfarray.equal<br />===   | numpy.equal<br />==        |
-| Matft.mfarray.allEqual<br />== | numpy.array_equal<br />n/a |
-| Matft.mfarray.neg<br />-       | numpy.negative<br />-      |
+| Matft.add<br />+       | numpy.add<br />+           |
+| Matft.sub<br />-       | numpy.sub<br />-           |
+| Matft.div<br />/       | numpy.div<br />.           |
+| Matft.mul<br />*       | numpy.multiply<br />*      |
+| Matft.inner<br />*+    | numpy.inner<br />n/a       |
+| Matft.cross<br />*^    | numpy.cross<br />n/a       |
+|Matft.matmul<br />*&　　　|numpy.matmul<br />@　|
+| Matft.equal<br />===   | numpy.equal<br />==        |
+| Matft.allEqual<br />== | numpy.array_equal<br />n/a |
+| Matft.neg<br />-       | numpy.negative<br />-      |
 
 - Math function
 
 | Matft                    | Numpy       |
 | ------------------------ | ---------- |
-| Matft.mfarray.math.sin   | numpy.sin   |
-| Matft.mfarray.math.asin  | numpy.asin  |
-| Matft.mfarray.math.sinh  | numpy.sinh  |
-| Matft.mfarray.math.asinh | numpy.asinh |
-| Matft.mfarray.math.sin   | numpy.cos   |
-| Matft.mfarray.math.acos  | numpy.acos  |
-| Matft.mfarray.math.cosh  | numpy.cosh  |
-| Matft.mfarray.math.acosh | numpy.acosh |
-| Matft.mfarray.math.tan   | numpy.tan   |
-| Matft.mfarray.math.atan  | numpy.atan  |
-| Matft.mfarray.math.tanh  | numpy.tanh  |
-| Matft.mfarray.math.atanh | numpy.atanh |
+| Matft.math.sin   | numpy.sin   |
+| Matft.math.asin  | numpy.asin  |
+| Matft.math.sinh  | numpy.sinh  |
+| Matft.math.asinh | numpy.asinh |
+| Matft.math.sin   | numpy.cos   |
+| Matft.math.acos  | numpy.acos  |
+| Matft.math.cosh  | numpy.cosh  |
+| Matft.math.acosh | numpy.acosh |
+| Matft.math.tan   | numpy.tan   |
+| Matft.math.atan  | numpy.atan  |
+| Matft.math.tanh  | numpy.tanh  |
+| Matft.math.atanh | numpy.atanh |
 
 Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/blob/master/Sources/Matft/core/function/math_func.swift).
 
@@ -365,27 +365,27 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
 
 | Matft                       | Numpy         |
 | --------------------------- | ------------ |
-| *Matft.mfarray.stats.mean   | *numpy.mean   |
-| *Matft.mfarray.stats.max    | *numpy.max    |
-| *Matft.mfarray.stats.argmax | *numpy.argmax |
-| *Matft.mfarray.stats.min    | *numpy.min    |
-| *Matft.mfarray.stats.argmin | *numpy.argmin |
-| *Matft.mfarray.stats.sum    | *numpy.sum    |
-| Matft.mfarray.stats.maximum | numpy.maximum |
-| Matft.mfarray.stats.minimum | numpy.minimum |
+| *Matft.stats.mean   | *numpy.mean   |
+| *Matft.stats.max    | *numpy.max    |
+| *Matft.stats.argmax | *numpy.argmax |
+| *Matft.stats.min    | *numpy.min    |
+| *Matft.stats.argmin | *numpy.argmin |
+| *Matft.stats.sum    | *numpy.sum    |
+| Matft.stats.maximum | numpy.maximum |
+| Matft.stats.minimum | numpy.minimum |
 
 
 - Linear algebra
 
 | Matft                            | Numpy              |
 | -------------------------------- | ----------------- |
-| Matft.mfarray.linalg.solve       | numpy.linalg.solve |
-| Matft.mfarray.linalg.inv         | numpy.linalg.inv   |
-| Matft.mfarray.linalg.det         | numpy.linalg.det   |
-| Matft.mfarray.linalg.eigen       | numpy.linalg.eig   |
-| Matft.mfarray.linalg.svd         | numpy.linalg.svd   |
-| Matft.mfarray.linalg.polar_left  | scipy.linalg.polar |
-| Matft.mfarray.linalg.polar_right | scipy.linalg.polar |
+| Matft.linalg.solve       | numpy.linalg.solve |
+| Matft.linalg.inv         | numpy.linalg.inv   |
+| Matft.linalg.det         | numpy.linalg.det   |
+| Matft.linalg.eigen       | numpy.linalg.eig   |
+| Matft.linalg.svd         | numpy.linalg.svd   |
+| Matft.linalg.polar_left  | scipy.linalg.polar |
+| Matft.linalg.polar_right | scipy.linalg.polar |
 
 <!--
 
@@ -393,10 +393,10 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
 
 #### Transpose
 
-- You can get transposed mfarray by using method ``T``, ``transpose(axes: [Int]? = nil)`` or ``Matft.mfarray.transpose(axes: [Int]? = nil)``
+- You can get transposed mfarray by using method ``T``, ``transpose(axes: [Int]? = nil)`` or ``Matft.transpose(axes: [Int]? = nil)``
 
   ```swift
-  let a = Matft.mfarray.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
+  let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
   print(a.T)
   print(a.transpose(axes: [0,2,1]))
   /*
@@ -429,10 +429,10 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
 
 #### Reshape
 
-- Reshape is also available. Use method ``reshape(_ axis: [Int])`` or ``Matft.mfarray.reshape(_ axis: [Int])``
+- Reshape is also available. Use method ``reshape(_ axis: [Int])`` or ``Matft.reshape(_ axis: [Int])``
 
   ```swift
-  let b = Matft.mfarray.arange(start: 0, to: 16, by: 1, shape: [2,4,2])
+  let b = Matft.arange(start: 0, to: 16, by: 1, shape: [2,4,2])
   print(b.reshape([4,4]))
   print(b.reshape([1,2,1,8]))
   /*
@@ -455,8 +455,8 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
 - Element-wise arithmetic operation is available.
 
   ```swift
-  let a = Matft.mfarray.arange(start: 1, to: 9, by: 2, shape: [2,2])
-  let b = Matft.mfarray.arange(start: 1, to: 5, by: 1, shape: [2,2])
+  let a = Matft.arange(start: 1, to: 9, by: 2, shape: [2,2])
+  let b = Matft.arange(start: 1, to: 5, by: 1, shape: [2,2])
   print(a)
   /*
   mfarray = 
@@ -501,7 +501,7 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
 - When either mfarray is insufficient data for element-wise operation, the one will be broadcasted automatically and calculated.
 
   ```swift
-  let a = Matft.mfarray.arange(start: 1, to: 9, by: 2, shape: [2,2])
+  let a = Matft.arange(start: 1, to: 9, by: 2, shape: [2,2])
   let c = MfArray([-100,100])
   print(a+c)
   /*
@@ -518,13 +518,13 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
 - You can create mfarray with basic math function such like ``sin, cos, tan, log, exp,...etc.``
 
   ```swift
-  let a = Matft.mfarray.arange(start: 0, to: 4, by: 1)
+  let a = Matft.arange(start: 0, to: 4, by: 1)
   print(a)
-  print(Matft.mfarray.math.sin(a))
-  print(Matft.mfarray.math.cos(a))
-  print(Matft.mfarray.math.tan(a))
-  print(Matft.mfarray.math.log(a))
-  print(Matft.mfarray.math.exp(a))
+  print(Matft.math.sin(a))
+  print(Matft.math.cos(a))
+  print(Matft.math.tan(a))
+  print(Matft.math.log(a))
+  print(Matft.math.exp(a))
   /*
   mfarray = 
   [	0,		1,		2,		3], type=Int, shape=[4]
@@ -540,7 +540,7 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
   [	1.0,		2.7182817,		7.389056,		20.085537], type=Float, shape=[4]
   */
   let b = MfArray([0.23, -0.7, 1.7, 2.1])
-  print(Matft.mfarray.math.power(a, exponents: b))
+  print(Matft.math.power(a, exponents: b))
   /*
   mfarray = 
   [	1.0,		-0.7,		2.89,		9.261000000000003], type=Double, shape=[4]
@@ -553,9 +553,9 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
 - Basic approximation is also available.
   ```swift
   let b = MfArray([0.23, -0.7, 1.7, 2.1])
-  print(Matft.mfarray.math.floor(b))
-  print(Matft.mfarray.math.ceil(b))
-  print(Matft.mfarray.math.nearest(b))
+  print(Matft.math.floor(b))
+  print(Matft.math.ceil(b))
+  print(Matft.math.nearest(b))
   /*
   mfarray = 
   [	0.0,		-1.0,		1.0,		2.0], type=Double, shape=[4]
@@ -578,10 +578,10 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
           
                    [[7, 10, -9, 5],
                     [1, 1, 7, 0]]])
-  print(Matft.mfarray.stats.max(a))
-  print(Matft.mfarray.stats.min(a))
-  print(Matft.mfarray.stats.argmax(a))
-  print(Matft.mfarray.stats.argmin(a))
+  print(Matft.stats.max(a))
+  print(Matft.stats.min(a))
+  print(Matft.stats.argmax(a))
+  print(Matft.stats.argmin(a))
   /*
   mfarray = 
   [	10], type=Int, shape=[1]
@@ -593,10 +593,10 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
   [	10], type=Int, shape=[1]
   */
   
-  print(Matft.mfarray.stats.max(a, axis: -1)) // negative axis is OK!
-  print(Matft.mfarray.stats.min(a, axis: 0))
-  print(Matft.mfarray.stats.argmax(a, axis: -1))
-  print(Matft.mfarray.stats.argmin(a, axis: 0))
+  print(Matft.stats.max(a, axis: -1)) // negative axis is OK!
+  print(Matft.stats.min(a, axis: 0))
+  print(Matft.stats.argmax(a, axis: -1))
+  print(Matft.stats.argmin(a, axis: 0))
   /*
   mfarray = 
   [[	6,		7],
@@ -619,13 +619,13 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
 
 #### Matrix multiplication
 
-- You can calculate matrix multiplication using ``Matft.mfarray.matmul`` or operator ``*&``
+- You can calculate matrix multiplication using ``Matft.matmul`` or operator ``*&``
 
   ※Note that if you input mfarray's dimension is more than 3, it is treated as a stack of matrices residing in the last two indexes and broadcast accordingly. (See [numpy doc](https://docs.scipy.org/doc/numpy/reference/generated/numpy.matmul.html) in detail)
 
   ```swift
-  let a = Matft.mfarray.arange(start: 1, to: 5, by: 1, shape: [2,2])
-  let b = Matft.mfarray.arange(start: 5, to: 9, by: 1, shape: [2,2])
+  let a = Matft.arange(start: 1, to: 5, by: 1, shape: [2,2])
+  let b = Matft.arange(start: 5, to: 9, by: 1, shape: [2,2])
   print(a)
   print(b)
   /*
@@ -636,7 +636,7 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
   [[	5,		6],
   [	7,		8]], type=Int, shape=[2, 2]
   */
-  print(Matft.mfarray.matmul(a, b))
+  print(Matft.matmul(a, b))
   print(a*&b)
   /*
   mfarray = 
@@ -650,14 +650,14 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
 
 #### Simultaneous Equation
 
-- You can solve Simultaneous Equation Problem by ``Matft.mfarray.linalg.solve``.
+- You can solve Simultaneous Equation Problem by ``Matft.linalg.solve``.
 
   ※Result's mftype will be converted to Float or Double properly
 
   ```swift
   let coef = MfArray([[3,2],[1,2]])
   let b = MfArray([[7,1]]).T
-  let ans = try! Matft.mfarray.linalg.solve(coef, b: b)
+  let ans = try! Matft.linalg.solve(coef, b: b)
   /*
   mfarray = 
   [[	3.0],
@@ -669,7 +669,7 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
   //As you can see below, return's shape will be aligned to input's one
   let coef = MfArray([[3,2],[1,2]])
   let b = MfArray([7,1])
-  let ans = try! Matft.mfarray.linalg.solve(coef, b: b)
+  let ans = try! Matft.linalg.solve(coef, b: b)
   print(ans)
   /*
   mfarray = 
@@ -677,13 +677,13 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
   */
   ```
 
-- Or use ``Matft.mfarray.linalg.inv``
+- Or use ``Matft.linalg.inv``
 
   ※Result's mftype will be converted to Float or Double properly
 
   ```swift
   let a = MfArray([[1,3,2],[-1,0,1],[2,3,0]])
-  let ainv = try! Matft.mfarray.linalg.inv(a) // if input mfarray's inverse matrix does not exist, raise MfError.LinAlgError.factorizationError or MfError.LinAlgError.singularMatrix
+  let ainv = try! Matft.linalg.inv(a) // if input mfarray's inverse matrix does not exist, raise MfError.LinAlgError.factorizationError or MfError.LinAlgError.singularMatrix
   print(ainv)
   print(a*&ainv)
   /*
@@ -703,13 +703,13 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
 - Matft can calculate Eigen values and vectors.
   
 
-Use `Matft.mfarray.linalg.eigen`
+Use `Matft.linalg.eigen`
 
 Note that returned value is tuple which consists of `(valRe, valIm, lvecRe, lvecIm, rvecRe, rvecIm)`. In `(valRe, valIm, lvecRe, lvecIm, rvecRe, rvecIm)`, `val` is eigenvalues, `lvec` is **left** eigenvecors, `rvec` is **right** eigenvectors, `Re` is real part, `Im` is imaginary part respectively.
 
   ```swift
   let a = MfArray([[1, -1], [1, 1]])
-  let ret = try! Matft.mfarray.linalg.eigen(a)
+  let ret = try! Matft.linalg.eigen(a)
   
   print(ret.valRe)
   print(ret.valIm)
@@ -741,19 +741,19 @@ Note that returned value is tuple which consists of `(valRe, valIm, lvecRe, lvec
 
 - Matft can calculate singular value decomposition.
 
-  Use `Matft.mfarray.linalg.svd`
+  Use `Matft.linalg.svd`
 
   Note that returned value is tuple which consists of `(v, s, rt)`. See [numpy doc](https://docs.scipy.org/doc/numpy/reference/generated/numpy.linalg.svd.html)
   
   ```swift
   let a = MfArray([[1, 2],
                    [3, 4]])
-  let ret = try! Matft.mfarray.linalg.svd(a)
+  let ret = try! Matft.linalg.svd(a)
   
   print(ret.v)
   print(ret.s)
   print(ret.rt)
-  print((ret.v *& Matft.mfarray.diag(v: ret.s) *& ret.rt).nearest())
+  print((ret.v *& Matft.diag(v: ret.s) *& ret.rt).nearest())
   /*
   mfarray = 
   [[	-0.40455368,		-0.91451436],
@@ -774,7 +774,7 @@ Note that returned value is tuple which consists of `(valRe, valIm, lvecRe, lvec
 - Polar decomposition is also available.
   
 
-Use `Matft.mfarray.linalg.polar_right` or `Matft.mfarray.linalg.polar_left`.
+Use `Matft.linalg.polar_right` or `Matft.linalg.polar_left`.
 
   Note that returned value by `polar_right` is tuple which consists of `(u, p)`. In `(u, p)`, `u` is orthonormal matrix, `p` is positive definite respectively. Returned value by `polar_left` is tuple which consists of `(p, ;)`. In `(p, l)`, `l` is orthonormal matrix, `p` is positive definite respectively.
 
@@ -782,7 +782,7 @@ Use `Matft.mfarray.linalg.polar_right` or `Matft.mfarray.linalg.polar_left`.
   let a = MfArray([[0.5, 1, 2],
                    [1.5, 3, 4],
                    [2, 3.5, 1]])
-  let retR = try! Matft.mfarray.linalg.polar_right(a)
+  let retR = try! Matft.linalg.polar_right(a)
   
   print(retR.u)
   print(retR.p)
@@ -807,8 +807,8 @@ I use ``Accelerate``, so all of MfArray operation may keep high performance.
 ```swift
 func testPefAdd1() {
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
-            let b = Matft.mfarray.arange(start: 0, to: -10*10*10*10*10*10, by: -1, shape: [10,10,10,10,10,10])
+            let a = Matft.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
+            let b = Matft.arange(start: 0, to: -10*10*10*10*10*10, by: -1, shape: [10,10,10,10,10,10])
             
             self.measure {
                 let _ = a+b
@@ -822,7 +822,7 @@ func testPefAdd1() {
     
     func testPefAdd2(){
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
+            let a = Matft.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
             let b = a.transpose(axes: [0,3,4,2,1,5])
             let c = a.T
             
@@ -838,7 +838,7 @@ func testPefAdd1() {
 
     func testPefAdd3(){
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
+            let a = Matft.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
             let b = a.transpose(axes: [1,2,3,4,5,0])
             let c = a.T
             

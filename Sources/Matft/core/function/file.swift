@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension Matft.mfarray.file{
+extension Matft.file{
     /**
         Load file from given path and create mfarray. If the file is not loaded, return nil.
        - parameters:

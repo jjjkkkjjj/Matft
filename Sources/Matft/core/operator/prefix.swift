@@ -10,10 +10,10 @@ import Foundation
 
 prefix operator -
 public prefix func -(_ mfarray: MfArray) -> MfArray{
-    return Matft.mfarray.neg(mfarray)
+    return Matft.neg(mfarray)
 }
 
 prefix operator !
 public prefix func !(_ mfarray: MfArray) -> MfArray{
-    return Matft.mfarray.logical_not(mfarray)
+    return Matft.logical_not(mfarray)
 }

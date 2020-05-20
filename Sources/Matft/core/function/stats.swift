@@ -9,7 +9,7 @@
 import Foundation
 import Accelerate
 
-extension Matft.mfarray.stats{
+extension Matft.stats{
     /**
        Get mean value along axis
        - parameters:
@@ -106,13 +106,13 @@ fileprivate func _stats_calc<T: MfStorable>(_ typedArray: MfArray, axis: Int?, k
     if axis != nil && typedArray.ndim > 1{// for given axis
         let axis = get_axis(axis!, ndim: typedArray.ndim)
         let ret = stats_axis_by_vDSP(typedArray, axis: axis, vDSP_func: vDSP_func)
-        return keepDims ? Matft.mfarray.expand_dims(ret, axis: axis) : ret
+        return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
     }
     else{// for all elements
         let ret = stats_all_by_vDSP(typedArray, vDSP_func: vDSP_func)
         if keepDims{
             let shape = Array(repeating: 1, count: typedArray.ndim)
-            return Matft.mfarray.reshape(ret, newshape: shape)
+            return Matft.reshape(ret, newshape: shape)
         }
         return ret
     }
@@ -124,13 +124,13 @@ fileprivate func _stats_calc_index<T: MfStorable>(_ mfarray: MfArray, axis: Int?
         let axis = get_axis(axis!, ndim: mfarray.ndim)
         
         let ret = stats_index_axis_by_vDSP(mfarray, axis: axis, vDSP_func: vDSP_func)
-        return keepDims ? Matft.mfarray.expand_dims(ret, axis: axis) : ret
+        return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
     }
     else{// for all elements
         let ret = stats_index_all_by_vDSP(mfarray.flatten(), vDSP_func: vDSP_func)
         if keepDims{
             let shape = Array(repeating: 1, count: mfarray.ndim)
-            return Matft.mfarray.reshape(ret, newshape: shape)
+            return Matft.reshape(ret, newshape: shape)
         }
         return ret
     }

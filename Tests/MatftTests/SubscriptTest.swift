@@ -6,7 +6,7 @@ final class SubscriptTests: XCTestCase {
     
     func testScalar() {
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
             XCTAssertEqual(a[2,1,0] as! Int, 21)
             XCTAssertEqual(a[0,0,0] as! Int, 0)
             XCTAssertEqual(a[2,0,2] as! Int, 20)
@@ -24,7 +24,7 @@ final class SubscriptTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 4*4*4, by: 1, shape: [4,4,4], mftype: .UInt).T
+            let a = Matft.arange(start: 0, to: 4*4*4, by: 1, shape: [4,4,4], mftype: .UInt).T
             
             XCTAssertEqual(a[3,2,0] as! UInt, UInt(11))
             XCTAssertEqual(a[0,0,2] as! UInt, UInt(32))
@@ -38,7 +38,7 @@ final class SubscriptTests: XCTestCase {
     func testSlicing(){
         
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 27*2, by: 2, shape: [3,3,3], mftype: .Double, mforder: .Column)
+            let a = Matft.arange(start: 0, to: 27*2, by: 2, shape: [3,3,3], mftype: .Double, mforder: .Column)
             XCTAssertEqual(a[~1], MfArray([[[ 0, 18, 36],
                                             [ 6, 24, 42],
                                             [12, 30, 48]]], mftype: .Double))
@@ -77,7 +77,7 @@ final class SubscriptTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.broadcast_to(MfArray([[2, 5, -1],
+            let a = Matft.broadcast_to(MfArray([[2, 5, -1],
                                                              [3, 1, 0]]), shape: [2,2,2,3])
             //print(a) ok
             /*
@@ -144,7 +144,7 @@ final class SubscriptTests: XCTestCase {
     
     func testSubscrpt_Subscript(){
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 27*2, by: 2, shape: [3,3,3], mftype: .Double, mforder: .Column)
+            let a = Matft.arange(start: 0, to: 27*2, by: 2, shape: [3,3,3], mftype: .Double, mforder: .Column)
 
             XCTAssertEqual(a[~-1], MfArray([[[ 0, 18, 36],
                                              [ 6, 24, 42],
@@ -172,7 +172,7 @@ final class SubscriptTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.broadcast_to(MfArray([[2, 5, -1],
+            let a = Matft.broadcast_to(MfArray([[2, 5, -1],
                                                              [3, 1, 0]]), shape: [2,2,2,3])
             //print(a) ok
             /*
@@ -228,7 +228,7 @@ final class SubscriptTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 4*4*2, by: 1, shape: [4,4,2])
+            let a = Matft.arange(start: 0, to: 4*4*2, by: 1, shape: [4,4,2])
             
             let b = a[0~, 1]
             XCTAssertEqual(b[~~-1], MfArray([[26, 27],
@@ -246,7 +246,7 @@ final class SubscriptTests: XCTestCase {
     
     func testAssign(){
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 27*2, by: 2, shape: [3,3,3], mftype: .Double, mforder: .Column)
+            let a = Matft.arange(start: 0, to: 27*2, by: 2, shape: [3,3,3], mftype: .Double, mforder: .Column)
 
             XCTAssertEqual(a[~-1], MfArray([[[ 0, 18, 36],
                                              [ 6, 24, 42],
@@ -270,7 +270,7 @@ final class SubscriptTests: XCTestCase {
                                         [  10,   28,   46],
                                         [  16,   34,   52]]], mftype: .Double))
             
-            b[0] = Matft.mfarray.arange(start: 0, to: 9, by: 1).reshape([3,3])
+            b[0] = Matft.arange(start: 0, to: 9, by: 1).reshape([3,3])
             XCTAssertEqual(a, MfArray([[[ 0,  1,  2],
                                         [ 3,  4,  5],
                                         [ 6,  7,  8]],
@@ -298,7 +298,7 @@ final class SubscriptTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.broadcast_to(MfArray([[2, 5, -1],
+            let a = Matft.broadcast_to(MfArray([[2, 5, -1],
                                                              [3, 1, 0]]), shape: [2,2,2,3])
             //print(a) ok
             /*
@@ -367,7 +367,7 @@ final class SubscriptTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 4*4*2, by: 1, shape: [4,4,2])
+            let a = Matft.arange(start: 0, to: 4*4*2, by: 1, shape: [4,4,2])
             
             let b = a[0~, 1]
             b[~~-1] = MfArray([9999])

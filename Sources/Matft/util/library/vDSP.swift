@@ -117,7 +117,7 @@ internal func biop_vv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: 
         retstoredSize = l_mfarray.storedSize
     }
     else{
-        l_mfarray = Matft.mfarray.conv_order(l_mfarray, mforder: .Row)
+        l_mfarray = Matft.conv_order(l_mfarray, mforder: .Row)
         biggerL = true
         retstoredSize = l_mfarray.storedSize
     }

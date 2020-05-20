@@ -21,14 +21,14 @@ final class BoolTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 8, by: 1, shape: [2,2,2])
+            let a = Matft.arange(start: 0, to: 8, by: 1, shape: [2,2,2])
             let b = MfArray([[[0,1],
                              [2,3]],
             
                              [[4,5],
                               [6,7]]])
             XCTAssertTrue(a == b)
-            XCTAssertFalse(a[0~,0~,~~-1] == Matft.mfarray.arange(start: 7, to: -1, by: -1, shape: [2,2,2]))
+            XCTAssertFalse(a[0~,0~,~~-1] == Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2]))
             
         }
     }
@@ -51,7 +51,7 @@ final class BoolTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 8, by: 1, shape: [2,2,2])
+            let a = Matft.arange(start: 0, to: 8, by: 1, shape: [2,2,2])
             let b = MfArray([[[0,1],
                              [2,3]],
             
@@ -63,7 +63,7 @@ final class BoolTests: XCTestCase {
                                              [[true,true],
                                               [true,true]]]))
             
-            XCTAssertEqual(a[0~,0~,~~-1] === Matft.mfarray.arange(start: 7, to: -1, by: -1, shape: [2,2,2]),
+            XCTAssertEqual(a[0~,0~,~~-1] === Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2]),
                                     MfArray([[[false,false],
                                               [false,false]],
             
@@ -91,7 +91,7 @@ final class BoolTests: XCTestCase {
         }
         
         do{
-            let a = Matft.mfarray.arange(start: 0, to: 8, by: 1, shape: [2,2,2])
+            let a = Matft.arange(start: 0, to: 8, by: 1, shape: [2,2,2])
             let b = MfArray([[[0,1],
                              [2,3]],
             
@@ -103,7 +103,7 @@ final class BoolTests: XCTestCase {
                                              [[false,false],
                                               [false,false]]]))
             
-            XCTAssertEqual(!(a[0~,0~,~~-1] === Matft.mfarray.arange(start: 7, to: -1, by: -1, shape: [2,2,2])),
+            XCTAssertEqual(!(a[0~,0~,~~-1] === Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2])),
                                     MfArray([[[true,true],
                                               [true,true]],
                                     

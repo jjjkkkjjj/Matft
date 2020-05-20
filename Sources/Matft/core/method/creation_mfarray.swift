@@ -16,14 +16,14 @@ extension MfArray{
             - order: (Optional) order, default is nil, which means close to either row or column major if possibe.
     */
     public func deepcopy(_ order: MfOrder? = nil) -> MfArray{
-        return Matft.mfarray.deepcopy(self, order: order)
+        return Matft.deepcopy(self, order: order)
     }
     /**
        Create shallow copy of mfarray. Shallow means copied mfarray will be  sharing data with original one
        - parameters:
     */
     public func shallowcopy() -> MfArray{
-        return Matft.mfarray.shallowcopy(self)
+        return Matft.shallowcopy(self)
     }
     
     /**
@@ -32,7 +32,7 @@ extension MfArray{
              - mforder: (Optional) mforder, default is Row
      */
     public func flatten(_ mforder: MfOrder = .Row) -> MfArray{
-        return Matft.mfarray.flatten(self, mforder: mforder)
+        return Matft.flatten(self, mforder: mforder)
     }
 }
  /*
@@ -42,14 +42,14 @@ extension MfData{
        - parameters:
     */
     public func deepcopy() -> MfData{
-        return Matft.mfarray.mfdata.deepcopy(self)
+        return Matft.mfdata.deepcopy(self)
     }
     /**
        Create shallow copy of mfdata. Shallow means copied mfdata will be  sharing data with original one
        - parameters:
     */
     public func shallowcopy() -> MfData{
-        return Matft.mfarray.mfdata.shallowcopy(self)
+        return Matft.mfdata.shallowcopy(self)
     }
 }
 */

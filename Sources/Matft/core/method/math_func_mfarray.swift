@@ -13,7 +13,7 @@ extension MfArray{
        - parameters:
     */
     public func ceil() -> MfArray{
-        return Matft.mfarray.math.ceil(self)
+        return Matft.math.ceil(self)
     }
     
     /**
@@ -21,7 +21,7 @@ extension MfArray{
        - parameters:
     */
     public func floor() -> MfArray{
-        return Matft.mfarray.math.floor(self)
+        return Matft.math.floor(self)
     }
     
     /**
@@ -29,7 +29,7 @@ extension MfArray{
        - parameters:
     */
     public func trunc() -> MfArray{
-        return Matft.mfarray.math.trunc(self)
+        return Matft.math.trunc(self)
     }
     
     /**
@@ -37,7 +37,7 @@ extension MfArray{
           - parameters:
     */
     public func nearest() -> MfArray{
-        return Matft.mfarray.math.nearest(self)
+        return Matft.math.nearest(self)
     }
     
     /**
@@ -45,7 +45,7 @@ extension MfArray{
           - parameters:
     */
     public func round(decimals: Int = 0) -> MfArray{
-        return Matft.mfarray.math.round(self, decimals: decimals)
+        return Matft.math.round(self, decimals: decimals)
     }
     
     /**
@@ -53,6 +53,6 @@ extension MfArray{
        - parameters:
     */
     public func sign() -> MfArray{
-        Matft.mfarray.math.sign(self)
+        Matft.math.sign(self)
     }
 }

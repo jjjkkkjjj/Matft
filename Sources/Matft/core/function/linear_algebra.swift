@@ -9,7 +9,7 @@
 import Foundation
 import Accelerate
 
-extension Matft.mfarray.linalg{
+extension Matft.linalg{
     /**
         Solve N simultaneous equation. Get x in coef*x = b. Returned mfarray's type will be float but be double in case that  mftype of either coef or b is double.
         - parameters:
@@ -23,7 +23,7 @@ extension Matft.mfarray.linalg{
             let a = MfArray([[4, 2],
                             [4, 5]])
             let b = MfArray([[2, -7]])
-            let x = try! Matft.mfarray.linalg.solve(a, b: b)
+            let x = try! Matft.linalg.solve(a, b: b)
             print(x)
             ==> mfarray =
                 [[    2.0,        -3.0]], type=Float, shape=[1, 2]
@@ -182,9 +182,9 @@ extension Matft.mfarray.linalg{
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
         
-        let svd = try Matft.mfarray.linalg.svd(mfarray)
+        let svd = try Matft.linalg.svd(mfarray)
         // M(=mfarray) = USV
-        let s = Matft.mfarray.diag(v: svd.s)
+        let s = Matft.diag(v: svd.s)
         
         // M = PL = VSRt => P=VSVt, L=VRt
         let p = svd.v *& s *& svd.v.T
@@ -197,9 +197,9 @@ extension Matft.mfarray.linalg{
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
         
-        let svd = try Matft.mfarray.linalg.svd(mfarray)
+        let svd = try Matft.linalg.svd(mfarray)
         // M(=mfarray) = USV
-        let s = Matft.mfarray.diag(v: svd.s)
+        let s = Matft.diag(v: svd.s)
         
         // M = UP = VSRt => U=VRt P=RSRt
         let u = svd.v *& svd.rt

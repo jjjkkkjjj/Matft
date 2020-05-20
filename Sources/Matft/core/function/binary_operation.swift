@@ -9,7 +9,7 @@
 import Foundation
 import Accelerate
 
-extension Matft.mfarray{
+extension Matft{
     //infix
     /**
        Element-wise addition of  two mfarray
@@ -300,7 +300,7 @@ extension Matft.mfarray{
     
 }
 
-extension Matft.mfarray.stats{
+extension Matft.stats{
     
     /**
        Element-wise  maximum of mfarray and mfarray
@@ -546,7 +546,7 @@ fileprivate func _cross_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
         return ret
     }
     else if lastdim == 3{
-        let ret = Matft.mfarray.nums(0, shape: [l_mfarray.shape[0], lastdim], mftype: rettype)
+        let ret = Matft.nums(0, shape: [l_mfarray.shape[0], lastdim], mftype: rettype)
         
         ret[0~,0] = l_mfarray[0~,1] * r_mfarray[0~,2] - l_mfarray[0~,2]*r_mfarray[0~,1]
         ret[0~,1] = l_mfarray[0~,2] * r_mfarray[0~,0] - l_mfarray[0~,0]*r_mfarray[0~,2]
@@ -572,7 +572,7 @@ fileprivate func _inner_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
     let r_mfarray = r_mfarray.reshape([-1, lastdim])
     let r_calcsize = r_mfarray.shape[0]
     
-    let ret = Matft.mfarray.nums(0, shape: [l_calcsize*r_calcsize], mftype: rettype)
+    let ret = Matft.nums(0, shape: [l_calcsize*r_calcsize], mftype: rettype)
     for lind in 0..<l_calcsize{
         for rind in 0..<r_calcsize{
             ret[lind*r_calcsize + rind] = (l_mfarray[lind] * r_mfarray[rind]).sum()

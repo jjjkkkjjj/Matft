@@ -9,7 +9,7 @@
 import Foundation
 import Accelerate
 
-extension Matft.mfarray{
+extension Matft{
     /**
        Create shallow copy of mfarray. Shallow means copied mfarray will be  sharing data with original one
        - parameters:
@@ -49,7 +49,7 @@ extension Matft.mfarray{
         }
         
         /*
-        let newdata = Matft.mfarray.mfdata.deepcopy(mfarray.mfdata)
+        let newdata = Matft.mfdata.deepcopy(mfarray.mfdata)
         let newarray = MfArray(mfdata: newdata)
         return newarray*/
     }
@@ -199,7 +199,7 @@ extension Matft.mfarray{
         
         retShape.insert(concatDim, at: 0)// return shape
         
-        let rmajorArrays = mfarrays.map{ Matft.mfarray.conv_order($0, mforder: .Row) }
+        let rmajorArrays = mfarrays.map{ Matft.conv_order($0, mforder: .Row) }
         let retSize = shape2size(&retShape)
         
         let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
@@ -259,7 +259,7 @@ extension Matft.mfarray{
         
         retShape.insert(concatDim, at: retShape.endIndex)// return shape
         
-        let cmajorArrays = mfarrays.map{ Matft.mfarray.conv_order($0, mforder: .Column) }
+        let cmajorArrays = mfarrays.map{ Matft.conv_order($0, mforder: .Column) }
         let retSize = shape2size(&retShape)
         
         let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
@@ -309,10 +309,10 @@ extension Matft.mfarray{
         let axis = get_axis(axis, ndim: retndim)
         
         if axis == 0{// vstack is faster than this function
-            return Matft.mfarray.vstack(mfarrays)
+            return Matft.vstack(mfarrays)
         }
         else if axis == retndim - 1{// hstack is faster than this function
-            return Matft.mfarray.hstack(mfarrays)
+            return Matft.hstack(mfarrays)
         }
     
         
@@ -343,7 +343,7 @@ extension Matft.mfarray{
         let fasterBlockSize = rowSize >= columnSize ? rowSize : columnSize
         let slowerBlockSize = rowSize >= columnSize ? columnSize : rowSize
         
-        let majorArrays = mfarrays.map{ Matft.mfarray.conv_order($0, mforder: fasterOrder).astype(retMfType) }
+        let majorArrays = mfarrays.map{ Matft.conv_order($0, mforder: fasterOrder).astype(retMfType) }
         let retSize = shape2size(&retShape)
         
         let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
@@ -386,7 +386,7 @@ extension Matft.mfarray{
     }
 }
 /*
-extension Matft.mfarray.mfdata{
+extension Matft.mfdata{
     /**
        Create deep copy of mfdata. Deep means copied mfdata will be different object from original one
        - parameters:

@@ -15,7 +15,7 @@ extension MfArray{
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
     public func mean(axis: Int? = nil, keepDims: Bool = false) -> MfArray{
-        return Matft.mfarray.stats.mean(self, axis: axis, keepDims: keepDims)
+        return Matft.stats.mean(self, axis: axis, keepDims: keepDims)
     }
     /**
        Get maximum value along axis
@@ -24,7 +24,7 @@ extension MfArray{
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
     public func max(axis: Int? = nil, keepDims: Bool = false) -> MfArray{
-        return Matft.mfarray.stats.max(self, axis: axis, keepDims: keepDims)
+        return Matft.stats.max(self, axis: axis, keepDims: keepDims)
     }
     /**
        Get index of maximum value along axis
@@ -32,7 +32,7 @@ extension MfArray{
             - axis: (Optional) axis, if not given, get index of maximum for all elements (flattenarray)
     */
     public func argmax(axis: Int? = nil) -> MfArray{
-        return Matft.mfarray.stats.argmax(self, axis: axis)
+        return Matft.stats.argmax(self, axis: axis)
     }
     /**
        Get minimum value along axis
@@ -41,7 +41,7 @@ extension MfArray{
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
     public func min(axis: Int? = nil, keepDims: Bool = false) -> MfArray{
-        return Matft.mfarray.stats.min(self, axis: axis, keepDims: keepDims)
+        return Matft.stats.min(self, axis: axis, keepDims: keepDims)
     }
     /**
        Get index of minimum value along axis
@@ -49,7 +49,7 @@ extension MfArray{
             - axis: (Optional) axis, if not given, get index of minimum for all elements (flattenarray)
     */
     public func argmin(axis: Int? = nil) -> MfArray{
-        return Matft.mfarray.stats.argmin(self, axis: axis)
+        return Matft.stats.argmin(self, axis: axis)
     }
     /**
        Get summation value along axis
@@ -58,7 +58,7 @@ extension MfArray{
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
     public func sum(axis: Int? = nil, keepDims: Bool = false) -> MfArray{
-        return Matft.mfarray.stats.sum(self, axis: axis, keepDims: keepDims)
+        return Matft.stats.sum(self, axis: axis, keepDims: keepDims)
     }
 }
 
@@ -68,13 +68,13 @@ fileprivate func _stats_calc<T: MfStorable>(_ typedArray: MfArray, axis: Int?, k
     if axis != nil && typedArray.ndim > 1{// for given axis
         let axis = get_axis(axis!, ndim: typedArray.ndim)
         let ret = stats_axis_by_vDSP(typedArray, axis: axis, vDSP_func: vDSP_func)
-        return keepDims ? Matft.mfarray.expand_dims(ret, axis: axis) : ret
+        return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
     }
     else{// for all elements
         let ret = stats_all_by_vDSP(typedArray, vDSP_func: vDSP_func)
         if keepDims{
             let shape = Array(repeating: 1, count: typedArray.ndim)
-            return Matft.mfarray.reshape(ret, newshape: shape)
+            return Matft.reshape(ret, newshape: shape)
         }
         return ret
     }
@@ -86,13 +86,13 @@ fileprivate func _stats_calc_index<T: MfStorable>(_ mfarray: MfArray, axis: Int?
         let axis = get_axis(axis!, ndim: mfarray.ndim)
         
         let ret = stats_index_axis_by_vDSP(mfarray, axis: axis, vDSP_func: vDSP_func)
-        return keepDims ? Matft.mfarray.expand_dims(ret, axis: axis) : ret
+        return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
     }
     else{// for all elements
         let ret = stats_index_all_by_vDSP(mfarray.flatten(), vDSP_func: vDSP_func)
         if keepDims{
             let shape = Array(repeating: 1, count: mfarray.ndim)
-            return Matft.mfarray.reshape(ret, newshape: shape)
+            return Matft.reshape(ret, newshape: shape)
         }
         return ret
     }

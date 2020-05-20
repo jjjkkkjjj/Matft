@@ -9,7 +9,7 @@
 import Foundation
 import Accelerate
 
-extension Matft.mfarray{
+extension Matft{
     /**
        Create another typed mfarray. Created mfarray will be different object from original one
        - parameters:
@@ -17,7 +17,7 @@ extension Matft.mfarray{
             - mftype: the type of mfarray
     */
     public static func astype(_ mfarray: MfArray, mftype: MfType) -> MfArray{
-        //let newarray = Matft.mfarray.shallowcopy(mfarray)
+        //let newarray = Matft.shallowcopy(mfarray)
         //newarray.mfdata._mftype = mftype
         if mftype == .Bool{
             return to_Bool(mfarray)
@@ -72,7 +72,7 @@ extension Matft.mfarray{
         var permutation: [Int] = [], reverse_permutation: [Int] = []
         let ndim =  mfarray.shape.count
         
-        let newarray = Matft.mfarray.shallowcopy(mfarray)
+        let newarray = Matft.shallowcopy(mfarray)
         
         if let axes = axes{
             precondition(axes.count == ndim, "axes(\(axes.count) don't match array's dimension(\(ndim)")
@@ -133,7 +133,7 @@ extension Matft.mfarray{
         
         /* i wanna implement no copy version
         let new_ndim = newshape.count
-        let newarray = Matft.mfarray.shallowcopy(mfarray)
+        let newarray = Matft.shallowcopy(mfarray)
         
         let newstructure = withDummyShapeStridesMBPtr(new_ndim){
             shapeptr, stridesptr in
@@ -268,7 +268,7 @@ extension Matft.mfarray{
     */
     public static func broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
         var new_shape = shape
-        //let newarray = Matft.mfarray.shallowcopy(mfarray)
+        //let newarray = Matft.shallowcopy(mfarray)
         let new_ndim = shape2ndim(&new_shape)
         
         let idim_start = new_ndim  - mfarray.ndim
@@ -330,7 +330,7 @@ extension Matft.mfarray{
             - mforder: (Optional) mforder, default is Row
     */
     public static func flatten(_ mfarray: MfArray, mforder: MfOrder = .Row) -> MfArray{
-        let ret = Matft.mfarray.conv_order(mfarray, mforder: mforder)
+        let ret = Matft.conv_order(mfarray, mforder: mforder)
         
         //shape
         let newstructure = withDummyShapeStridesMBPtr(1){
@@ -358,7 +358,7 @@ extension Matft.mfarray{
             return mfarray[slices]
         }
         else{
-            return Matft.mfarray.flip(mfarray, axes: nil)
+            return Matft.flip(mfarray, axes: nil)
         }
     }
     /**
@@ -490,7 +490,7 @@ extension Matft.mfarray{
 }
 
 /*
-extension Matft.mfarray.mfdata{
+extension Matft.mfdata{
     /**
        Create another typed mfdata. Created mfdata will be different object from original one
        - parameters:

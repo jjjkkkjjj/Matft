@@ -359,15 +359,15 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: Mf
     
     // create mfarraies
     //eigenvectors
-    let lvecRe = Matft.mfarray.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
-    let lvecIm = Matft.mfarray.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
-    let rvecRe = Matft.mfarray.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
-    let rvecIm = Matft.mfarray.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
+    let lvecRe = Matft.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
+    let lvecIm = Matft.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
+    let rvecRe = Matft.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
+    let rvecIm = Matft.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
     
     //eigenvalues
     let valshape = Array(shape.prefix(mfarray.ndim - 1))
-    let valRe = Matft.mfarray.nums(T.zero, shape: valshape, mftype: retMfType, mforder: .Row)
-    let valIm = Matft.mfarray.nums(T.zero, shape: valshape, mftype: retMfType, mforder: .Row)
+    let valRe = Matft.nums(T.zero, shape: valshape, mftype: retMfType, mforder: .Row)
+    let valIm = Matft.nums(T.zero, shape: valshape, mftype: retMfType, mforder: .Row)
     //offset for calculation
     var vec_offset = 0
     var val_offset = 0
@@ -503,17 +503,17 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfTy
     let v: MfArray, s: MfArray, rt: MfArray
     let vcol: Int, rtrow: Int
     if full_matrices{
-        v = Matft.mfarray.nums(T.zero, shape: stackedShape + [M, M], mftype: retMfType, mforder: .Row)
-        s = Matft.mfarray.nums(T.zero, shape: stackedShape + [ssize], mftype: retMfType, mforder: .Row)
-        rt = Matft.mfarray.nums(T.zero, shape: stackedShape + [N, N], mftype: retMfType, mforder: .Row)
+        v = Matft.nums(T.zero, shape: stackedShape + [M, M], mftype: retMfType, mforder: .Row)
+        s = Matft.nums(T.zero, shape: stackedShape + [ssize], mftype: retMfType, mforder: .Row)
+        rt = Matft.nums(T.zero, shape: stackedShape + [N, N], mftype: retMfType, mforder: .Row)
         
         vcol = M
         rtrow = N
     }
     else{
-        v = Matft.mfarray.nums(T.zero, shape: stackedShape + [ssize, M], mftype: retMfType, mforder: .Row) // returned shape = (..., M, ssize)
-        s = Matft.mfarray.nums(T.zero, shape: stackedShape + [ssize], mftype: retMfType, mforder: .Row)
-        rt = Matft.mfarray.nums(T.zero, shape: stackedShape + [N, ssize], mftype: retMfType, mforder: .Row) // returned shape = (..., ssize, N)
+        v = Matft.nums(T.zero, shape: stackedShape + [ssize, M], mftype: retMfType, mforder: .Row) // returned shape = (..., M, ssize)
+        s = Matft.nums(T.zero, shape: stackedShape + [ssize], mftype: retMfType, mforder: .Row)
+        rt = Matft.nums(T.zero, shape: stackedShape + [N, ssize], mftype: retMfType, mforder: .Row) // returned shape = (..., ssize, N)
         
         vcol = ssize
         rtrow = ssize

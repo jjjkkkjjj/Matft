@@ -9,66 +9,66 @@
 import Foundation
 
 public func +(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
-    return Matft.mfarray.add(l_mfarray, r_mfarray)
+    return Matft.add(l_mfarray, r_mfarray)
 }
 public func +<T: MfTypable>(l_mfarray: MfArray, r_scalar: T) -> MfArray{
-    return Matft.mfarray.add(l_mfarray, r_scalar)
+    return Matft.add(l_mfarray, r_scalar)
 }
 public func +<T: MfTypable>(l_scalar: T, r_mfarray: MfArray) -> MfArray{
-    return Matft.mfarray.add(l_scalar, r_mfarray)
+    return Matft.add(l_scalar, r_mfarray)
 }
 
 public func -(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
-    return Matft.mfarray.sub(l_mfarray, r_mfarray)
+    return Matft.sub(l_mfarray, r_mfarray)
 }
 public func -<T: MfTypable>(l_mfarray: MfArray, r_scalar: T) -> MfArray{
-    return Matft.mfarray.sub(l_mfarray, r_scalar)
+    return Matft.sub(l_mfarray, r_scalar)
 }
 public func -<T: MfTypable>(l_scalar: T, r_mfarray: MfArray) -> MfArray{
-    return Matft.mfarray.sub(l_scalar, r_mfarray)
+    return Matft.sub(l_scalar, r_mfarray)
 }
 
 public func *(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
-    return Matft.mfarray.mul(l_mfarray, r_mfarray)
+    return Matft.mul(l_mfarray, r_mfarray)
 }
 public func *<T: MfTypable>(l_mfarray: MfArray, r_scalar: T) -> MfArray{
-    return Matft.mfarray.mul(l_mfarray, r_scalar)
+    return Matft.mul(l_mfarray, r_scalar)
 }
 public func *<T: MfTypable>(l_scalar: T, r_mfarray: MfArray) -> MfArray{
-    return Matft.mfarray.mul(l_scalar, r_mfarray)
+    return Matft.mul(l_scalar, r_mfarray)
 }
 
 public func /(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
-    return Matft.mfarray.div(l_mfarray, r_mfarray)
+    return Matft.div(l_mfarray, r_mfarray)
 }
 public func /<T: MfTypable>(l_mfarray: MfArray, r_scalar: T) -> MfArray{
-    return Matft.mfarray.div(l_mfarray, r_scalar)
+    return Matft.div(l_mfarray, r_scalar)
 }
 public func /<T: MfTypable>(l_scalar: T, r_mfarray: MfArray) -> MfArray{
-    return Matft.mfarray.div(l_scalar, r_mfarray)
+    return Matft.div(l_scalar, r_mfarray)
 }
 
 public func ===(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
-    return Matft.mfarray.equal(l_mfarray, r_mfarray)
+    return Matft.equal(l_mfarray, r_mfarray)
 }
 
 extension MfArray: Equatable{
     public static func == (lhs: MfArray, rhs: MfArray) -> Bool {
-        return Matft.mfarray.allEqual(lhs, rhs)
+        return Matft.allEqual(lhs, rhs)
     }
 }
 
 infix operator *&: MultiplicationPrecedence //matmul
 public func *&(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
-    return Matft.mfarray.matmul(l_mfarray, r_mfarray)
+    return Matft.matmul(l_mfarray, r_mfarray)
 }
 
 infix operator *+: MultiplicationPrecedence //inner
 public func *+(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
-    return Matft.mfarray.inner(l_mfarray, r_mfarray)
+    return Matft.inner(l_mfarray, r_mfarray)
 }
 
 infix operator *^: MultiplicationPrecedence //cross
 public func *^(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
-    return Matft.mfarray.cross(l_mfarray, r_mfarray)
+    return Matft.cross(l_mfarray, r_mfarray)
 }

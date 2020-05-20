@@ -9,28 +9,28 @@ final class LinAlgTests: XCTestCase {
             let coef = MfArray([[3,2],[1,2]])
             let b = MfArray([7,1])
             
-            XCTAssertEqual(try Matft.mfarray.linalg.solve(coef, b: b), MfArray([ 3.0, -1.0], mftype: .Float))
+            XCTAssertEqual(try Matft.linalg.solve(coef, b: b), MfArray([ 3.0, -1.0], mftype: .Float))
         }
 
         do{
             let coef = MfArray([[3,1],[1,2]], mftype: .Double)
             let b = MfArray([9,8])
             
-            XCTAssertEqual(try Matft.mfarray.linalg.solve(coef, b: b), MfArray([ 2.0, 3.0], mftype: .Double))
+            XCTAssertEqual(try Matft.linalg.solve(coef, b: b), MfArray([ 2.0, 3.0], mftype: .Double))
         }
         
         do{
             let coef = MfArray([[1,2],[2,4]])
             let b = MfArray([-1,-2])
             
-            XCTAssertThrowsError(try Matft.mfarray.linalg.solve(coef, b: b))
+            XCTAssertThrowsError(try Matft.linalg.solve(coef, b: b))
         }
         
         do{
             let coef = MfArray([[1,2],[2,4]])
             let b = MfArray([-1,-3])
             
-            XCTAssertThrowsError(try Matft.mfarray.linalg.solve(coef, b: b))
+            XCTAssertThrowsError(try Matft.linalg.solve(coef, b: b))
         }
     }
     
@@ -38,7 +38,7 @@ final class LinAlgTests: XCTestCase {
     func testInv(){
         do{
             let a = MfArray([[1, 2], [3, 4]])
-            XCTAssertEqual(try Matft.mfarray.linalg.inv(a), MfArray([[-2.0 ,  1.0 ],
+            XCTAssertEqual(try Matft.linalg.inv(a), MfArray([[-2.0 ,  1.0 ],
                                                                      [ 1.5, -0.5]], mftype: .Float))
         }
         do{
@@ -47,7 +47,7 @@ final class LinAlgTests: XCTestCase {
                              
                              [[1.0, 3.0],
                               [3.0, 5.0]]], mftype: .Double)
-            XCTAssertEqual(try Matft.mfarray.linalg.inv(a), MfArray([[[-2.0  ,  1.0  ],
+            XCTAssertEqual(try Matft.linalg.inv(a), MfArray([[[-2.0  ,  1.0  ],
                                                 [ 1.5 , -0.5 ]],
                                                                      [[-1.25,  0.75],
                                                                       [ 0.75, -0.25]]], mftype: .Double))
@@ -58,7 +58,7 @@ final class LinAlgTests: XCTestCase {
         
         do{
             let a = MfArray([[1, 2], [3, 4]])
-            XCTAssertEqual(try Matft.mfarray.linalg.det(a), MfArray([-2.0], mftype: .Float))
+            XCTAssertEqual(try Matft.linalg.det(a), MfArray([-2.0], mftype: .Float))
         }
         
         do{
@@ -67,14 +67,14 @@ final class LinAlgTests: XCTestCase {
                              
                              [[1.0, 3.0],
                               [3.0, 5.0]]], mftype: .Double)
-            XCTAssertEqual(try Matft.mfarray.linalg.det(a), MfArray([-2.0, -4.0], mftype: .Double))
+            XCTAssertEqual(try Matft.linalg.det(a), MfArray([-2.0, -4.0], mftype: .Double))
         }
     }
     
     func testEigen(){
         do{
             let a = MfArray([[1, -1], [1, 1]])
-            let ret = try! Matft.mfarray.linalg.eigen(a)
+            let ret = try! Matft.linalg.eigen(a)
             // value
             XCTAssertEqual(ret.valRe, MfArray([1, 1], mftype: .Float))
             XCTAssertEqual(ret.valIm, MfArray([1, -1], mftype: .Float))
@@ -94,7 +94,7 @@ final class LinAlgTests: XCTestCase {
             let a = MfArray([[[1,0,0],
                               [0,2,0],
                               [0,0,3]]], mftype: .Double)
-            let ret = try! Matft.mfarray.linalg.eigen(a)
+            let ret = try! Matft.linalg.eigen(a)
             // value
             XCTAssertEqual(ret.valRe, MfArray([[1, 2, 3]], mftype: .Double))
             XCTAssertEqual(ret.valIm, MfArray([[0, 0, 0]], mftype: .Double))
@@ -117,7 +117,7 @@ final class LinAlgTests: XCTestCase {
         do{
             let a = MfArray([[0, -1],
                              [1, 0]], mftype: .Double)
-            let ret = try! Matft.mfarray.linalg.eigen(a)
+            let ret = try! Matft.linalg.eigen(a)
             // value
             XCTAssertEqual(ret.valRe, MfArray([0, 0], mftype: .Double))
             XCTAssertEqual(ret.valIm, MfArray([1, -1], mftype: .Double))
@@ -140,7 +140,7 @@ final class LinAlgTests: XCTestCase {
             let a = MfArray([[2, 4, 1, 3],
                              [1, 5, 3, 2],
                              [5, 7, 0, 7]], mftype: .Double)
-            let ret = try! Matft.mfarray.linalg.svd(a)
+            let ret = try! Matft.linalg.svd(a)
             //astype is for avoiding minute error
             //XCTAssertEqual(ret.v.astype(.Float), MfArray([[-0.40783698, -0.12444751,  0.90453403],
             //                                              [-0.40538262, -0.86299238, -0.30151134],
@@ -153,25 +153,25 @@ final class LinAlgTests: XCTestCase {
             //                                               [ 0.37306578, -0.38670052, -0.75749385,  0.37079333],
             //                                               [-0.67701194,  0.46970832, -0.56642431,  0.01387163],
             //                                               [-0.49497891, -0.37178726,  0.30107599,  0.72534362]], mftype: .Float))
-            //print(ret.v *& Matft.mfarray.diag(v: ret.s) *& ret.rt)
+            //print(ret.v *& Matft.diag(v: ret.s) *& ret.rt)
             //print(ret.rt *& ret.rt.T)
             
-            let ret_nofull = try! Matft.mfarray.linalg.svd(a, full_mtrices: false)
+            let ret_nofull = try! Matft.linalg.svd(a, full_mtrices: false)
             
-            XCTAssertEqual((ret_nofull.v *& Matft.mfarray.diag(v: ret_nofull.s) *& ret_nofull.rt).nearest(), a)
+            XCTAssertEqual((ret_nofull.v *& Matft.diag(v: ret_nofull.s) *& ret_nofull.rt).nearest(), a)
         }
         
         do{
             let a = MfArray([[1, 2],
                              [3, 4]])
-            let ret = try! Matft.mfarray.linalg.svd(a)
+            let ret = try! Matft.linalg.svd(a)
             XCTAssertEqual(ret.v, MfArray([[-0.40455358, -0.9145143 ],
                                            [-0.9145143 ,  0.40455358]], mftype: .Float))
             XCTAssertEqual(ret.s, MfArray([ 5.4649857 ,  0.36596619], mftype: .Float))
             XCTAssertEqual(ret.rt, MfArray([[-0.57604844, -0.81741556],
                                             [ 0.81741556, -0.57604844]], mftype: .Float))
             
-            XCTAssertEqual((ret.v *& Matft.mfarray.diag(v: ret.s) *& ret.rt).nearest(), a)
+            XCTAssertEqual((ret.v *& Matft.diag(v: ret.s) *& ret.rt).nearest(), a)
         }
         
     }
@@ -180,13 +180,13 @@ final class LinAlgTests: XCTestCase {
         do{
             let a = MfArray([[1, -1],
                              [2, 4]])
-            let retR = try! Matft.mfarray.linalg.polar_right(a)
+            let retR = try! Matft.linalg.polar_right(a)
             XCTAssertEqual(retR.u, MfArray([[ 0.85749293, -0.51449576],
                                            [ 0.51449576,  0.85749293]], mftype: .Float))
             XCTAssertEqual(retR.p, MfArray([[ 1.88648444,  1.2004901 ],
                                            [ 1.2004901 ,  3.94446746]], mftype: .Float))
             
-            let retL = try! Matft.mfarray.linalg.polar_left(a)
+            let retL = try! Matft.linalg.polar_left(a)
             XCTAssertEqual(retL.l, MfArray([[ 0.85749293, -0.51449576],
                                             [ 0.51449576,  0.85749293]], mftype: .Float))
             XCTAssertEqual(retL.p, MfArray([[ 1.37198868, -0.34299717],
@@ -197,14 +197,14 @@ final class LinAlgTests: XCTestCase {
             let a = MfArray([[0.5, 1, 2],
                              [1.5, 3, 4],
                              [2, 3.5, 1]])
-            let retR = try! Matft.mfarray.linalg.polar_right(a)
+            let retR = try! Matft.linalg.polar_right(a)
             XCTAssertEqual(retR.u.astype(.Float), MfArray([[ 0.72794019, -0.42246022,  0.54002819],
                                                           [-0.28527167,  0.52959999,  0.79883911],
                                                           [ 0.62347667,  0.73556183, -0.26500119]], mftype: .Float))
             XCTAssertEqual(retR.p.astype(.Float), MfArray([[1.18301594, 2.05429354, 0.93827039],
                                                            [2.05429354, 3.74080617, 2.00904136],
                                                            [0.93827039, 2.00904136, 4.01041163]], mftype: .Float))
-            let retL = try! Matft.mfarray.linalg.polar_left(a)
+            let retL = try! Matft.linalg.polar_left(a)
             XCTAssertEqual(retL.l.astype(.Float), MfArray([[ 0.72794019, -0.42246022,  0.54002819],
                                                            [-0.28527167,  0.52959999,  0.79883911],
                                                            [ 0.62347667,  0.73556183, -0.26500119]], mftype: .Float))

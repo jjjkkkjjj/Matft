@@ -11,7 +11,7 @@ import Accelerate
 
 //ref https://developer.apple.com/documentation/accelerate/veclib/vforce
 
-extension Matft.mfarray.math{//use math_vv_by_vecLib
+extension Matft.math{//use math_vv_by_vecLib
     //
     // trigonometric
     //
@@ -406,7 +406,7 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     */
     public static func round(_ mfarray: MfArray, decimals: Int = 0) -> MfArray{
         let pow = powf(10, Float(decimals))
-        let n =  Matft.mfarray.math.nearest(mfarray * pow)
+        let n =  Matft.math.nearest(mfarray * pow)
         return n / pow
     }
     
@@ -449,7 +449,7 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     }
 }
 
-extension Matft.mfarray.math{//use math_vv_by_vecLib
+extension Matft.math{//use math_vv_by_vecLib
     /**
        Calculate power of each element
        - parameters:
@@ -500,7 +500,7 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
     }
 }
 
-extension Matft.mfarray.math{//use vDSP
+extension Matft.math{//use vDSP
     /**
        Calculate squared MfArray
        - parameters:
@@ -529,6 +529,6 @@ extension Matft.mfarray.math{//use vDSP
             ssq = math_by_vDSP(mfarray, vDSP_vssqD)
         }
 
-        return (ssq / Matft.mfarray.math.square(mfarray)).nearest()
+        return (ssq / Matft.math.square(mfarray)).nearest()
     }
 }

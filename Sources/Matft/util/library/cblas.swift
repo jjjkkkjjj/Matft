@@ -144,24 +144,24 @@ fileprivate func _matmul_convorder(_ lmfarray: inout MfArray, _ rmfarray: inout 
     var retorder = MfOrder.Row
     if !(lmfarray.mfflags.column_contiguous && rmfarray.mfflags.column_contiguous) || lmfarray.mfflags.row_contiguous && rmfarray.mfflags.row_contiguous{//convert either row or column major
         if lmfarray.mfflags.column_contiguous{
-            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Column)
+            rmfarray = Matft.conv_order(rmfarray, mforder: .Column)
             retorder = .Column
         }
         else if lmfarray.mfflags.row_contiguous{
-            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Row)
+            rmfarray = Matft.conv_order(rmfarray, mforder: .Row)
             retorder = .Row
         }
         else if rmfarray.mfflags.column_contiguous{
-            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Column)
+            lmfarray = Matft.conv_order(lmfarray, mforder: .Column)
             retorder = .Column
         }
         else if rmfarray.mfflags.row_contiguous{
-            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Row)
+            lmfarray = Matft.conv_order(lmfarray, mforder: .Row)
             retorder = .Row
         }
         else{
-            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Row)
-            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Row)
+            lmfarray = Matft.conv_order(lmfarray, mforder: .Row)
+            rmfarray = Matft.conv_order(rmfarray, mforder: .Row)
             retorder = .Row
         }
     }
@@ -172,10 +172,10 @@ fileprivate func _matmul_convorder(_ lmfarray: inout MfArray, _ rmfarray: inout 
     let retorder = MfOrder.Row
     if !(lmfarray.mfflags.row_contiguous && rmfarray.mfflags.row_contiguous){//convert row major
         if !rmfarray.mfflags.row_contiguous{
-            rmfarray = Matft.mfarray.conv_order(rmfarray, mforder: .Row)
+            rmfarray = Matft.conv_order(rmfarray, mforder: .Row)
         }
         if !lmfarray.mfflags.row_contiguous{
-            lmfarray = Matft.mfarray.conv_order(lmfarray, mforder: .Row)
+            lmfarray = Matft.conv_order(lmfarray, mforder: .Row)
         }
     }
     return retorder
