@@ -192,7 +192,7 @@ internal func flattenarray2UnsafeMRPtr_viaForD(_ flattenarray: inout [Any], mfty
         return (UnsafeMutableRawPointer(ptrD), mftype)
     }
     else{
-        fatalError("Cannot cast flattenarray")
+        fatalError("flattenarray couldn't cast MfTypable.")
     }
     
     if mftypeBool{

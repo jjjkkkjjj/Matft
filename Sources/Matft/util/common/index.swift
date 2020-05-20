@@ -105,6 +105,9 @@ internal struct FlattenIndSequence: Sequence{
     let strides: [Int]
     
     public init(shape: inout [Int], strides: inout [Int]){
+        assert(!shape.isEmpty && !strides.isEmpty, "shape and strides must not be empty")
+        assert(shape.count == strides.count, "shape and strides must be samesize")
+        
         self.shape = shape
         self.strides = strides
     }
@@ -171,8 +174,8 @@ internal struct FlattenLOIndSequence: Sequence{
     let storedSize: Int
     
     public init(storedSize: Int, shape: inout [Int], strides: inout [Int]){
-        assert(!shape.isEmpty && !strides.isEmpty, "shapeptr and stridesptr must not be empty")
-        assert(shape.count == strides.count, "shapeptr and stridesptr must be samesize")
+        assert(!shape.isEmpty && !strides.isEmpty, "shape and strides must not be empty")
+        assert(shape.count == strides.count, "shape and strides must be samesize")
         
         self.shape = shape
         self.strides = strides

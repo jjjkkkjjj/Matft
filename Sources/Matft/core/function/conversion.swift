@@ -75,7 +75,7 @@ extension Matft.mfarray{
         let newarray = Matft.mfarray.shallowcopy(mfarray)
         
         if let axes = axes{
-            precondition(axes.count == ndim, "axes don't match array")
+            precondition(axes.count == ndim, "axes(\(axes.count) don't match array's dimension(\(ndim)")
             for _ in 0..<ndim{
                 reverse_permutation.append(-1)
             }
@@ -155,19 +155,7 @@ extension Matft.mfarray{
         let newarray = mfarray.shallowcopy()
         
         var newshape = mfarray.shape
-        var axis = axis
-        if axis < mfarray.ndim && axis > -mfarray.ndim - 1{
-            axis = get_axis(axis, ndim: mfarray.ndim)
-        }
-        else if axis == mfarray.ndim{
-            //axis = axis
-        }
-        else if axis == -mfarray.ndim - 1{
-            axis = 0
-        }
-        else{
-            preconditionFailure("Invalid axis")
-        }
+        let axis = get_axis_for_expand_dims(axis, ndim: mfarray.ndim)
         
         newshape.insert(1, at: axis)
         var newstrides = mfarray.strides
@@ -191,20 +179,7 @@ extension Matft.mfarray{
         var newshape = mfarray.shape
         var newstrides = mfarray.strides
         for axis in axes{
-            let ndim = newshape.count
-            var axis = axis
-            if axis < ndim && axis > -ndim - 1{
-                axis = get_axis(axis, ndim: ndim)
-            }
-            else if axis == ndim{
-                //axis = axis
-            }
-            else if axis == -ndim - 1{
-                axis = 0
-            }
-            else{
-                preconditionFailure("Invalid axis")
-            }
+            let axis = get_axis_for_expand_dims(axis, ndim: newshape.count)
             
             newshape.insert(1, at: axis)
             newstrides.insert(0, at: axis)
@@ -290,24 +265,19 @@ extension Matft.mfarray{
        - parameters:
             - mfarray: mfarray
             - shape: shape
-       - throws:
-        An error of type `MfError.conversionError`
     */
-    public static func broadcast_to(_ mfarray: MfArray, shape: [Int]) throws -> MfArray{
+    public static func broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
         var new_shape = shape
         //let newarray = Matft.mfarray.shallowcopy(mfarray)
         let new_ndim = shape2ndim(&new_shape)
         
         let idim_start = new_ndim  - mfarray.ndim
         
-        
-        if idim_start < 0{
-            throw MfError.conversionError("can't broadcast to fewer dimensions")
-        }
+        precondition(idim_start >= 0, "can't broadcast to fewer dimensions")
         
         let orig_strides = mfarray.strides
         let orig_shape = mfarray.shape
-        let newstructure =  try withDummyShapeStridesMBPtr(new_ndim){
+        let newstructure = withDummyShapeStridesMBPtr(new_ndim){
             shapteptr, stridesptr in
             
             for idim in (idim_start..<new_ndim).reversed(){
@@ -317,7 +287,7 @@ extension Matft.mfarray{
                     stridesptr[idim] = 0
                 }
                 else if strides_shape_value != shape[idim]{
-                    throw MfError.conversionError("could not broadcast from shape \(mfarray.ndim), \(orig_shape) into shape \(new_ndim), \(shape)")
+                    preconditionFailure("could not broadcast from shape \(mfarray.ndim), \(orig_shape) into shape \(new_ndim), \(shape)")
                 }
                 else{
                     stridesptr[idim] = orig_strides[idim - idim_start]

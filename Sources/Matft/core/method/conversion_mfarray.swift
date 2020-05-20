@@ -47,11 +47,9 @@ extension MfArray{
        Create broadcasted mfarray.
        - parameters:
             - shape: shape
-       - throws:
-        An error of type `MfError.conversionError`
     */
-    public func broadcast_to(shape: [Int]) throws -> MfArray{
-        return try Matft.mfarray.broadcast_to(self, shape: shape)
+    public func broadcast_to(shape: [Int]) -> MfArray{
+        return Matft.mfarray.broadcast_to(self, shape: shape)
     }
     
     /**

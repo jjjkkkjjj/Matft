@@ -77,7 +77,7 @@ final class SubscriptTests: XCTestCase {
         }
         
         do{
-            let a = try! Matft.mfarray.broadcast_to(MfArray([[2, 5, -1],
+            let a = Matft.mfarray.broadcast_to(MfArray([[2, 5, -1],
                                                              [3, 1, 0]]), shape: [2,2,2,3])
             //print(a) ok
             /*
@@ -172,7 +172,7 @@ final class SubscriptTests: XCTestCase {
         }
         
         do{
-            let a = try! Matft.mfarray.broadcast_to(MfArray([[2, 5, -1],
+            let a = Matft.mfarray.broadcast_to(MfArray([[2, 5, -1],
                                                              [3, 1, 0]]), shape: [2,2,2,3])
             //print(a) ok
             /*
@@ -298,7 +298,7 @@ final class SubscriptTests: XCTestCase {
         }
         
         do{
-            let a = try! Matft.mfarray.broadcast_to(MfArray([[2, 5, -1],
+            let a = Matft.mfarray.broadcast_to(MfArray([[2, 5, -1],
                                                              [3, 1, 0]]), shape: [2,2,2,3])
             //print(a) ok
             /*

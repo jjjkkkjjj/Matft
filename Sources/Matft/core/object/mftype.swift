@@ -57,6 +57,9 @@ public enum MfType: Int{
             return .Object
         }
     }
+    static internal func mftype<T: MfStorable>(value: T) -> MfType{
+        return MfType.mftype(value: value as Any)
+    }
     
     static public func priority(_ a: MfType, _ b: MfType) -> MfType{
         if a.rawValue < b.rawValue{

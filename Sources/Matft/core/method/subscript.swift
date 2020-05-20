@@ -309,7 +309,7 @@ extension MfArray: MfSubscriptable{
                     new_axis += 1
                 }
                 else{
-                    fatalError("\(indices[orig_axis]) is not subscriptable value")
+                    preconditionFailure("\(indices[orig_axis]) is not subscriptable value")
                 }
             }
         }
@@ -367,11 +367,7 @@ extension MfArray: MfSubscriptable{
             return
         }
         if array.shape != newValue.shape{
-            do{
-                newValue = try newValue.broadcast_to(shape: array.shape)
-            }catch {//conversion error
-                fatalError("Invalid value was passed")
-            }
+            newValue = newValue.broadcast_to(shape: array.shape)
         }
         
         switch array.storedType {

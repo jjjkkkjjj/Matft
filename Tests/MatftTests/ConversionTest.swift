@@ -197,7 +197,7 @@ final class ConversionTests: XCTestCase {
             let a = MfArray([[1, 3, 5],
                              [2, -4, -1]], mforder: .Column)
             
-            XCTAssertEqual(try a.broadcast_to(shape: [3,2,3]), MfArray([[[ 1,  3,  5],
+            XCTAssertEqual(a.broadcast_to(shape: [3,2,3]), MfArray([[[ 1,  3,  5],
                                                                      [ 2, -4, -1]],
 
                                                                     [[ 1,  3,  5],
@@ -206,14 +206,14 @@ final class ConversionTests: XCTestCase {
                                                                     [[ 1,  3,  5],
                                                                      [ 2, -4, -1]]]))
             let b = MfArray([[1, 2]])
-            XCTAssertEqual(try b.broadcast_to(shape: [2,2]), MfArray([[1,2],
+            XCTAssertEqual(b.broadcast_to(shape: [2,2]), MfArray([[1,2],
                                                                       [1,2]]))
         }
         do{
             let a = MfArray([[2, -7, 0],
                              [1, 5, -2]]).reshape([2,1,1,3])
             
-            XCTAssertEqual(try a.broadcast_to(shape: [2,2,2,3]), MfArray([[[[ 2, -7,  0],
+            XCTAssertEqual(a.broadcast_to(shape: [2,2,2,3]), MfArray([[[[ 2, -7,  0],
                                                                             [ 2, -7,  0]],
 
                                                                            [[ 2, -7,  0],

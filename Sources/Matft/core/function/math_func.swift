@@ -470,10 +470,8 @@ extension Matft.mfarray.math{//use math_vv_by_vecLib
         }
     }
     public static func power(_ mfarray: MfArray, exponents: MfArray) -> MfArray{
-        guard var exponents = try? exponents.broadcast_to(shape: mfarray.shape)
-            else{
-                fatalError("cannot align given shape of mfarray and exponents")
-        }
+        var exponents = exponents.broadcast_to(shape: mfarray.shape)
+        
         var mfarray = mfarray
 
         if mfarray.mftype != exponents.mftype{

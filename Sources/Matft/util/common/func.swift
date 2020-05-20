@@ -14,6 +14,24 @@ internal func get_axis(_ axis: Int, ndim: Int) -> Int{
     return ret_axis
 }
 
+internal func get_axis_for_expand_dims(_ axis: Int, ndim: Int) -> Int{
+    let ret_axis: Int
+    if axis < ndim && axis > -ndim - 1{
+        ret_axis = get_axis(axis, ndim: ndim)
+    }
+    else if axis == ndim{
+        ret_axis = axis
+    }
+    else if axis == -ndim - 1{
+        ret_axis = 0
+    }
+    else{
+        preconditionFailure("Invalid axis was passed. must not be -mfarray.ndim - 1 <= axis <= mfarray.ndim")
+    }
+    
+    return ret_axis
+}
+
 internal func get_index(_ index: Int, dim: Int, axis: Int) -> Int{
     let ret_index = index >= 0 ? index : index + dim
     precondition(0 <= ret_index && ret_index < dim, "\(index) is out of bounds for axis \(axis) with \(dim)")

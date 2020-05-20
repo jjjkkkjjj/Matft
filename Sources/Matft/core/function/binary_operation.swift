@@ -234,7 +234,7 @@ extension Matft.mfarray{
            - r_mfarray: right mfarray
     */
     public static func div<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
-        let l_mfype = MfType.mftype(value: l_scalar as Any)
+        let l_mfype = MfType.mftype(value: l_scalar)
         let retmftype = MfType.priority(l_mfype, r_mfarray.mftype)
         
         var r_mfarray = r_mfarray
@@ -356,24 +356,21 @@ fileprivate func _biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) 
         r_mfarray = r_mfarray.astype(rettype)
     }
     
-    do{
-        if l_mfarray.size > r_mfarray.size{
-            r_mfarray = try r_mfarray.broadcast_to(shape: l_mfarray.shape)
-        }
-        else if r_mfarray.size > l_mfarray.size{
-            l_mfarray = try l_mfarray.broadcast_to(shape: r_mfarray.shape)
-        }
-        // below condition has same size implicitly
-        // below condition cannot be deprecated into above condition because l.size > r.size & l.ndim < r.ndim is possible
-        else if l_mfarray.ndim > r_mfarray.ndim{
-            r_mfarray = try r_mfarray.broadcast_to(shape: l_mfarray.shape)
-        }
-        else if r_mfarray.ndim > l_mfarray.ndim{
-            l_mfarray = try l_mfarray.broadcast_to(shape: r_mfarray.shape)
-        }
-    }catch {//conversion error
-        fatalError("cannot calculate binary operation due to broadcasting error")
+    if l_mfarray.size > r_mfarray.size{
+        r_mfarray = r_mfarray.broadcast_to(shape: l_mfarray.shape)
     }
+    else if r_mfarray.size > l_mfarray.size{
+        l_mfarray = l_mfarray.broadcast_to(shape: r_mfarray.shape)
+    }
+    // below condition has same size implicitly
+    // below condition cannot be deprecated into above condition because l.size > r.size & l.ndim < r.ndim is possible
+    else if l_mfarray.ndim > r_mfarray.ndim{
+        r_mfarray = r_mfarray.broadcast_to(shape: l_mfarray.shape)
+    }
+    else if r_mfarray.ndim > l_mfarray.ndim{
+        l_mfarray = l_mfarray.broadcast_to(shape: r_mfarray.shape)
+    }
+    
     return (l_mfarray, r_mfarray, rettype)
 }
 
@@ -491,52 +488,46 @@ fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: ino
         retndim = lmfarray.ndim
     }
 
-    do{
-        let (l_mfstructure, r_mfstructure) = try withDummy2ShapeStridesMBPtr(retndim){
-            
-            l_shapeptr, l_stridesptr, r_shapeptr, r_stridesptr in
-            //move
-            lshape.withUnsafeMutableBufferPointer{
-                l_shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+    let (l_mfstructure, r_mfstructure) = withDummy2ShapeStridesMBPtr(retndim){
+        
+        l_shapeptr, l_stridesptr, r_shapeptr, r_stridesptr in
+        //move
+        lshape.withUnsafeMutableBufferPointer{
+            l_shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
+        lstrides.withUnsafeMutableBufferPointer{
+            l_stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
+        rshape.withUnsafeMutableBufferPointer{
+            r_shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
+        rstrides.withUnsafeMutableBufferPointer{
+            r_stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
+        
+        
+        for axis in (0..<retndim-2).reversed(){
+            if l_shapeptr[axis] == r_shapeptr[axis]{
+                continue
             }
-            lstrides.withUnsafeMutableBufferPointer{
-                l_stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+            else if l_shapeptr[axis] == 1{
+                l_shapeptr[axis] = r_shapeptr[axis] // aligned to r
+                l_stridesptr[axis] = 0 // broad casted 0
             }
-            rshape.withUnsafeMutableBufferPointer{
-                r_shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+            else if r_shapeptr[axis] == 1{
+                r_shapeptr[axis] = l_shapeptr[axis] // aligned to l
+                r_stridesptr[axis] = 0 // broad casted 0
             }
-            rstrides.withUnsafeMutableBufferPointer{
-                r_stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-            }
-            
-            
-            for axis in (0..<retndim-2).reversed(){
-                if l_shapeptr[axis] == r_shapeptr[axis]{
-                    continue
-                }
-                else if l_shapeptr[axis] == 1{
-                    l_shapeptr[axis] = r_shapeptr[axis] // aligned to r
-                    l_stridesptr[axis] = 0 // broad casted 0
-                }
-                else if r_shapeptr[axis] == 1{
-                    r_shapeptr[axis] = l_shapeptr[axis] // aligned to l
-                    r_stridesptr[axis] = 0 // broad casted 0
-                }
-                else{
-                    throw MfError.conversionError("Broadcast error")
-                }
+            else{
+                preconditionFailure("Broadcast error: cannot calculate matrix multiplication due to broadcasting error. hint: For all dim < ndim-2, left.shape[dim] or right.shape[dim] is one, or left.shape[dim] == right.shape[dim]")
             }
         }
-        //print(Array<Int>(UnsafeBufferPointer<Int>(start: l_mfstructure._shape, count: l_mfstructure._ndim)))
-        //print(Array<Int>(UnsafeBufferPointer<Int>(start: r_mfstructure._shape, count: r_mfstructure._ndim)))
-        
-        lmfarray = MfArray(base: lmfarray, mfstructure: l_mfstructure, offset: lmfarray.offsetIndex)
-        rmfarray = MfArray(base: rmfarray, mfstructure: r_mfstructure, offset: rmfarray.offsetIndex)
     }
-    catch{
-        //conversion error
-        fatalError("cannot calculate matrix multiplication due to broadcasting error. hint: For all dim < ndim-2, left.shape[dim] or right.shape[dim] is one, or left.shape[dim] == right.shape[dim]")
-    }
+    //print(Array<Int>(UnsafeBufferPointer<Int>(start: l_mfstructure._shape, count: l_mfstructure._ndim)))
+    //print(Array<Int>(UnsafeBufferPointer<Int>(start: r_mfstructure._shape, count: r_mfstructure._ndim)))
+    
+    lmfarray = MfArray(base: lmfarray, mfstructure: l_mfstructure, offset: lmfarray.offsetIndex)
+    rmfarray = MfArray(base: rmfarray, mfstructure: r_mfstructure, offset: rmfarray.offsetIndex)
 }
 
 
@@ -564,14 +555,14 @@ fileprivate func _cross_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
         return ret.reshape(orig_shape_for3d)
     }
     else{
-        preconditionFailure("dimension must be 2 or 3")
+        preconditionFailure("Last dimension must be 2 or 3")
     }
 }
 
 //uncompleted
 fileprivate func _inner_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
     let lastdim = l_mfarray.shape[l_mfarray.ndim - 1]
-    precondition(lastdim == r_mfarray.shape[r_mfarray.ndim - 1], "last dimension must be same")
+    precondition(lastdim == r_mfarray.shape[r_mfarray.ndim - 1], "Last dimension must be same")
     let retShape = Array(l_mfarray.shape.prefix(l_mfarray.ndim - 1) + r_mfarray.shape.prefix(r_mfarray.ndim - 1))
     let rettype = l_mfarray.mftype
     

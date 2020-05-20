@@ -169,7 +169,7 @@ fileprivate func _recurrsion_flatten(elements: Any, mftype : inout MfType, shape
     - Important: strides must be checked before calling this function
  */
 internal func copyAll(_ mfarray: MfArray) -> MfArray{
-    precondition(mfarray.mfflags.row_contiguous || mfarray.mfflags.column_contiguous, "To call copyAll function, passed mfarray must be contiguous")
+    assert(mfarray.mfflags.row_contiguous || mfarray.mfflags.column_contiguous, "To call copyAll function, passed mfarray must be contiguous")
     let newmfdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.size){
         dstptr in
         mfarray.withDataUnsafeMRPtr{

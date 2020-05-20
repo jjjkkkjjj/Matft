@@ -306,8 +306,8 @@ extension Matft.mfarray{
         
         var retShape = mfarrays.first!.shape // shape except for given axis first, return shape later
         let retndim = mfarrays.first!.ndim
-        let axis = axis >= 0 ? axis : retndim + axis
-        precondition(axis >= 0 && axis < retndim, "Invalid axis")
+        let axis = get_axis(axis, ndim: retndim)
+        
         if axis == 0{// vstack is faster than this function
             return Matft.mfarray.vstack(mfarrays)
         }

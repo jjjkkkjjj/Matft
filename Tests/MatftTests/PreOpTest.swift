@@ -56,7 +56,7 @@ final class PreOpTests: XCTestCase {
         do{
             let a = MfArray([[1, 3, 5],
                              [2, -4, -1]], mforder: .Column)
-            let b = try! a.broadcast_to(shape: [3,2,3])
+            let b = a.broadcast_to(shape: [3,2,3])
             XCTAssertEqual(-b, MfArray([[[ -1,  -3,  -5],
                                          [-2, 4, 1]],
 
@@ -66,14 +66,14 @@ final class PreOpTests: XCTestCase {
                                         [[ -1,  -3,  -5],
                                         [-2, 4, 1]]]))
             let c = MfArray([[1, 2]])
-            let d = try! c.broadcast_to(shape: [2,2])
+            let d = c.broadcast_to(shape: [2,2])
             XCTAssertEqual(-d, MfArray([[-1,-2],
                                         [-1,-2]]))
         }
         do{
             let a = MfArray([[2, -7, 0],
                              [1, 5, -2]]).reshape([2,1,1,3])
-            let b = try! a.broadcast_to(shape: [2,2,2,3])
+            let b = a.broadcast_to(shape: [2,2,2,3])
             XCTAssertEqual(-b, MfArray([[[[ -2, 7,  0],
                                           [ -2, 7,  0]],
 
