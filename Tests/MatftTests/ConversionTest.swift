@@ -297,6 +297,29 @@ final class ConversionTests: XCTestCase {
         }
     }
     
+    func testExpandDims(){
+        do{
+            let a = MfArray([[2, -7, 0],
+                             [1, 5, -2]])
+            XCTAssertEqual(Matft.mfarray.expand_dims(a, axis: 0), MfArray([[[ 2, -7,  0],
+                                                                          [ 1,  5, -2]]]))
+            XCTAssertEqual(Matft.mfarray.expand_dims(a, axis: 2), MfArray([[[ 2],
+                                                                          [-7],
+                                                                          [ 0]],
+
+                                                                         [[ 1],
+                                                                          [ 5],
+                                                                          [-2]]]))
+        }
+        
+        do{
+            let a = MfArray([1,2])
+            XCTAssertEqual(Matft.mfarray.expand_dims(a, axes: [0, 1]), MfArray([[[1, 2]]]))
+            XCTAssertEqual(Matft.mfarray.expand_dims(a, axes: [2, 0]), MfArray([[[1],
+                                                                                 [2]]]))
+        }
+    }
+    
     func testAsType(){
         
     }

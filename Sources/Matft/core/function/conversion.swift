@@ -155,7 +155,19 @@ extension Matft.mfarray{
         let newarray = mfarray.shallowcopy()
         
         var newshape = mfarray.shape
-        let axis = get_axis(axis, ndim: mfarray.ndim)
+        var axis = axis
+        if axis < mfarray.ndim && axis > -mfarray.ndim - 1{
+            axis = get_axis(axis, ndim: mfarray.ndim)
+        }
+        else if axis == mfarray.ndim{
+            //axis = axis
+        }
+        else if axis == -mfarray.ndim - 1{
+            axis = 0
+        }
+        else{
+            preconditionFailure("Invalid axis")
+        }
         
         newshape.insert(1, at: axis)
         var newstrides = mfarray.strides
@@ -183,11 +195,25 @@ extension Matft.mfarray{
     public static func expand_dims(_ mfarray: MfArray, axes: [Int]) -> MfArray{
         let newarray = mfarray.shallowcopy()
         // reorder descending
-        let axes = axes.sorted{ $0 > $1 }
+        let axes = axes.sorted{ $0 < $1 }
         var newshape = mfarray.shape
         var newstrides = mfarray.strides
         for axis in axes{
-            let axis = get_axis(axis, ndim: mfarray.ndim)
+            let ndim = newshape.count
+            var axis = axis
+            if axis < ndim && axis > -ndim - 1{
+                axis = get_axis(axis, ndim: ndim)
+            }
+            else if axis == ndim{
+                //axis = axis
+            }
+            else if axis == -ndim - 1{
+                axis = 0
+            }
+            else{
+                preconditionFailure("Invalid axis")
+            }
+            
             newshape.insert(1, at: axis)
             newstrides.insert(0, at: axis)
         }
