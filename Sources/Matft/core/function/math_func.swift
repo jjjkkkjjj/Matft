@@ -531,6 +531,6 @@ extension Matft.mfarray.math{//use vDSP
             ssq = math_by_vDSP(mfarray, vDSP_vssqD)
         }
 
-        return ssq / Matft.mfarray.math.square(mfarray)
+        return (ssq / Matft.mfarray.math.square(mfarray)).nearest()
     }
 }
