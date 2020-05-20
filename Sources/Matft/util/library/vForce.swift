@@ -13,9 +13,7 @@ internal typealias vForce_vv_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T
 
 internal func math_vv_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: vForce_vv_func<T>) -> MfArray{
     var mfarray = mfarray
-    if !(mfarray.mfflags.column_contiguous || mfarray.mfflags.row_contiguous){//neither row nor column contiguous, close to row major
-        mfarray = to_row_major(mfarray)
-    }
+    mfarray = check_contiguous(mfarray)
     
     let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.storedSize){
         dstptr in
@@ -35,9 +33,7 @@ internal typealias vForce_1arg_vv_func<T> = (UnsafeMutablePointer<T>, UnsafePoin
 
 internal func math_1arg_vv_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ arg: UnsafePointer<T>, _ vForce_func: vForce_1arg_vv_func<T>) -> MfArray{
     var mfarray = mfarray
-    if !(mfarray.mfflags.column_contiguous || mfarray.mfflags.row_contiguous){//neither row nor column contiguous, close to row major
-        mfarray = to_row_major(mfarray)
-    }
+    mfarray = check_contiguous(mfarray)
     
     let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.storedSize){
         dstptr in

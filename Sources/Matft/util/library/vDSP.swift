@@ -23,9 +23,7 @@ internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP
     //return mfarray must be either row or column major
     var mfarray = mfarray
     //print(mfarray)
-    if !(mfarray.mfflags.column_contiguous || mfarray.mfflags.row_contiguous){//neither row nor column contiguous, close to row major
-        mfarray = to_row_major(mfarray)
-    }
+    mfarray = check_contiguous(mfarray)
     //print(mfarray)
     //print(mfarray.strides)
     
@@ -57,9 +55,7 @@ fileprivate func _run_biop_vs<T: MfStorable>(_ srcptr: UnsafePointer<T>, _ scala
 internal func biop_vs_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T, _ vDSP_func: vDSP_biop_vs_func<T>) -> MfArray{
     var mfarray = l_mfarray
 
-    if !(mfarray.mfflags.column_contiguous || mfarray.mfflags.row_contiguous){//neither row nor column contiguous, close to row major
-        mfarray = to_row_major(mfarray)
-    }
+    mfarray = check_contiguous(mfarray)
     
     let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.storedSize){
         dstptr in
@@ -84,9 +80,8 @@ fileprivate func _run_biop_sv<T: MfStorable>(_ scalar: T, _ srcptr: UnsafePointe
 internal func biop_sv_by_vDSP<T: MfStorable>(_ l_scalar: T, _ r_mfarray: MfArray, _ vDSP_func: vDSP_biop_sv_func<T>) -> MfArray{
     var mfarray = r_mfarray
 
-    if !(mfarray.mfflags.column_contiguous || mfarray.mfflags.row_contiguous){//neither row nor column contiguous, close to row major
-        mfarray = to_row_major(mfarray)
-    }
+    mfarray = check_contiguous(mfarray)
+    
     
     let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.storedSize){
         dstptr in
@@ -172,6 +167,8 @@ fileprivate func _run_stats<T: MfStorable>(_ srcptr: UnsafePointer<T>, _ dstptr:
 
 // for along given axis
 internal func stats_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int, vDSP_func: vDSP_stats_func<T>) -> MfArray{
+    let mfarray = check_contiguous(mfarray)
+    
     var retShape = mfarray.shape
     let count = retShape.remove(at: axis)
     var retStrides = mfarray.strides
@@ -218,6 +215,8 @@ internal func stats_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int, v
 
 // for all elements
 internal func stats_all_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_func: vDSP_stats_func<T>) -> MfArray{
+    let mfarray = check_contiguous(mfarray)
+    
     var dst = T.zero
     mfarray.withDataUnsafeMBPtrT(datatype: T.self){
         [unowned mfarray] in
@@ -240,6 +239,8 @@ fileprivate func _run_stats_index<T: MfStorable>(_ srcptr: UnsafePointer<T>, vDS
 
 //for along given axis
 internal func stats_index_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int, vDSP_func: vDSP_stats_index_func<T>) -> MfArray{
+    let mfarray = check_contiguous(mfarray)
+    
     var retShape = mfarray.shape
     let count = retShape.remove(at: axis)
     var retStrides = mfarray.strides
@@ -294,7 +295,8 @@ internal func stats_index_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: 
 
 // for all elements
 internal func stats_index_all_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_func: vDSP_stats_index_func<T>) -> MfArray{
-
+    let mfarray = check_contiguous(mfarray)
+    
     let dst = mfarray.withDataUnsafeMBPtrT(datatype: T.self){
         [unowned mfarray] in
         Int(_run_stats_index($0.baseAddress!, vDSP_func: vDSP_func, stride: 1, mfarray.size))
@@ -417,9 +419,7 @@ internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ min: T, _ max: T
     //return mfarray must be either row or column major
     var mfarray = mfarray
     //print(mfarray)
-    if !(mfarray.mfflags.column_contiguous || mfarray.mfflags.row_contiguous){//neither row nor column contiguous, close to row major
-        mfarray = to_row_major(mfarray)
-    }
+    mfarray = check_contiguous(mfarray)
     //print(mfarray)
     //print(mfarray.strides)
     

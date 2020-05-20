@@ -217,3 +217,19 @@ internal func to_column_major(_ mfarray: MfArray) -> MfArray{
     }
 }
 
+/**
+ Return contiguous mfarray. If passed mfarray is arleady contiguous, return one directly
+ */
+internal func check_contiguous(_ mfarray: MfArray, _ mforder: MfOrder = .Row) -> MfArray{
+    if mfarray.mfflags.row_contiguous || mfarray.mfflags.column_contiguous{
+        return mfarray
+    }
+    else{
+        switch mforder {
+        case .Row:
+            return to_row_major(mfarray)
+        case .Column:
+            return to_column_major(mfarray)
+        }
+    }
+}

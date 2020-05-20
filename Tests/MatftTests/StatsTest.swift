@@ -317,4 +317,33 @@ final class StatsTests: XCTestCase {
                                                                                            [ 17,  22]]]], mftype: .UInt8))
         }
     }
+    
+    func test_subscripted(){
+        do{
+            let a = MfArray([[3, -19],
+                             [-22, 4]])
+            
+            XCTAssertEqual(Matft.mfarray.stats.mean(a[0]), MfArray([-8], mftype: .Float))
+            XCTAssertEqual(Matft.mfarray.stats.mean(a[0~,1]), MfArray([-7.5], mftype: .Float))
+            XCTAssertEqual(Matft.mfarray.stats.sum(a[0]), MfArray([-16]))
+            XCTAssertEqual(Matft.mfarray.stats.sum(a[0~,1]), MfArray([-15]))
+            
+            
+            let b = MfArray([[2, 1177],
+                             [5, -43]])
+            
+            XCTAssertEqual(Matft.mfarray.stats.mean(b[0]), MfArray([589.5], mftype: .Float))
+            XCTAssertEqual(Matft.mfarray.stats.mean(b[0~,1]), MfArray([567], mftype: .Float))
+            XCTAssertEqual(Matft.mfarray.stats.sum(b[0]), MfArray([1179]))
+            XCTAssertEqual(Matft.mfarray.stats.sum(b[0~,1]), MfArray([1134]))
+        }
+
+        do{
+            let a = MfArray([[2.0, 1.0, -3.0, 0.0, -0.87, 1.2, 5.5134, -8.78],
+                             [3.0, 1.0, 4.0, -5.0, -0.0002, 2.0, 3.4, -5.0]], mftype: .Double, mforder: .Column)
+
+            XCTAssertEqual(Matft.mfarray.stats.mean(a[0~, 1~5]), MfArray([-0.35877500000000007]))
+            XCTAssertEqual(Matft.mfarray.stats.sum(a[0~, 1~5]), MfArray([-2.8702000000000005]))
+        }
+    }
 }
