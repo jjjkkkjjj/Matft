@@ -119,10 +119,15 @@ internal func create_mfstructure(_ shape: inout [Int], _ strides: inout [Int]) -
     return newmfstructure
 }
 
+/*
 internal func copy_mfdata(_ mfdata: MfData){
-    
+    let newmfdata = withDummyDataMRPtr(mfdata.mftype, storedSize: mfdata._storedSize){
+        dstptr in
+        dstptr.copyMemory(from: mfdata._data + mfdata._byteOffset, byteCount: mfarray.byteSize)
+    }
 }
 
 internal func create_mfdata(){
     
 }
+*/

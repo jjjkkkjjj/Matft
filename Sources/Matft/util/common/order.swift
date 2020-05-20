@@ -177,17 +177,8 @@ internal func copyAll(_ mfarray: MfArray) -> MfArray{
             dstptr.copyMemory(from: $0, byteCount: mfarray.byteSize)
         }
     }
-    let newmfstructure = withDummyShapeStridesMPtr(mfarray.ndim){
-        (dstshapeptr, dststridesptr) in
-        mfarray.withShapeUnsafeMPtr{
-            [unowned mfarray] in
-            dstshapeptr.assign(from: $0, count: mfarray.ndim)
-        }
-        mfarray.withStridesUnsafeMPtr{
-            [unowned mfarray] in
-            dststridesptr.assign(from: $0, count: mfarray.ndim)
-        }
-    }
+    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    
     return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
 }
 

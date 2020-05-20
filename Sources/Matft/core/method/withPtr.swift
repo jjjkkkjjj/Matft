@@ -94,6 +94,7 @@ internal func withDummyDataMRPtr(_ mftype: MfType, storedSize: Int, _ body: (Uns
     }
 }
 
+// not used
 internal func withDummy(mftype: MfType, storedSize: Int, ndim: Int, _ body: (UnsafeMutableRawPointer, UnsafeMutableBufferPointer<Int>, UnsafeMutableBufferPointer<Int>) throws -> Void) rethrows -> MfArray{
     let dummyShapePtr = UnsafeMutableBufferPointer(start: create_unsafeMPtrT(type: Int.self, count: ndim), count: ndim)
     let dummyStridesPtr = UnsafeMutableBufferPointer(start: create_unsafeMPtrT(type: Int.self, count: ndim), count: ndim)

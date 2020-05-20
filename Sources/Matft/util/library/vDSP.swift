@@ -175,42 +175,24 @@ internal func stats_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int, v
     //remove and get stride at given axis
     let stride = retStrides.remove(at: axis)
     
-    
-    let retndim = retShape.count
-
-    let ret = withDummy(mftype: mfarray.mftype, storedSize: mfarray.storedSize, ndim: retndim){
-        dataptr, shapeptr, stridesptr in
-
-        //move
-        retShape.withUnsafeMutableBufferPointer{
-            shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-        }
-        
-        //move
-        retStrides.withUnsafeMutableBufferPointer{
-            stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-        }
-        
+    let retSize = shape2size(&retShape)
+    let newmfdata = withDummyDataMRPtr(mfarray.mftype, storedSize: retSize){
+        dstptr in
+        var dstptrT = dstptr.bindMemory(to: T.self, capacity: retSize)
         
         mfarray.withDataUnsafeMBPtrT(datatype: T.self){
             srcptr in
-            var dstptr = dataptr.bindMemory(to: T.self, capacity: shape2size(shapeptr))
-            for flat in FlattenIndSequence(shapeptr: shapeptr, stridesptr: stridesptr){
-                _run_stats(srcptr.baseAddress! + flat.flattenIndex, dstptr, vDSP_func: vDSP_func, stride: stride, count)
-                dstptr += 1
+            for flat in FlattenIndSequence(shape: &retShape, strides: &retStrides){
+                _run_stats(srcptr.baseAddress! + flat.flattenIndex, dstptrT, vDSP_func: vDSP_func, stride: stride, count)
+                dstptrT += 1
                 //print(flat.flattenIndex, flat.indices)
             }
         }
-        
-        //row major order because FlattenIndSequence count up for row major
-        let newstridesptr = shape2strides(shapeptr, mforder: .Row)
-        //move
-        stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: retndim)
-        //free
-        newstridesptr.deallocate()
     }
+    
+    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
 
-    return ret
+    return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
 }
 
 // for all elements
@@ -248,49 +230,31 @@ internal func stats_index_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: 
     let stride = Int32(retStrides.remove(at: axis))
     
     
-    let retndim = retShape.count
-
-    let ret = withDummy(mftype: MfType.Int, storedSize: mfarray.storedSize, ndim: retndim){
-        dataptr, shapeptr, stridesptr in
-
-        //move
-        retShape.withUnsafeMutableBufferPointer{
-            shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-        }
-        //move
-        retStrides.withUnsafeMutableBufferPointer{
-            stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-        }
-        let retsize = shape2size(shapeptr)
+    let retSize = shape2size(&retShape)
+    let newmfdata = withDummyDataMRPtr(.Int, storedSize: retSize){
+        dstptr in
+        let dstptrF = dstptr.bindMemory(to: Float.self, capacity: retSize)
+        
         mfarray.withDataUnsafeMBPtrT(datatype: T.self){
             srcptr in
-
-            var i32array = Array<Int32>(repeating: 0, count: retsize)
+            var i32array = Array<Int32>(repeating: 0, count: retSize)
             //let srcptr = stride >= 0 ? srcptr.baseAddress! : srcptr.baseAddress! - mfarray.offsetIndex
             let srcptr = srcptr.baseAddress!
-            for (i, flat) in FlattenIndSequence(shapeptr: shapeptr, stridesptr: stridesptr).enumerated(){
+            for (i, flat) in FlattenIndSequence(shape: &retShape, strides: &retStrides).enumerated(){
                 i32array[i] = _run_stats_index(srcptr + flat.flattenIndex, vDSP_func: vDSP_func, stride: stride, count) / stride
                 //print(flat.flattenIndex, flat.indices)
             }
             
-            let dstptr = dataptr.bindMemory(to: Float.self, capacity: retsize)
             //convert dataptr(int) to float
             i32array.withUnsafeBufferPointer{
-                unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vflt32, retsize)
+                unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptrF, vDSP_vflt32, retSize)
             }
-            
         }
-        
-        
-        //row major order because FlattenIndSequence count up for row major
-        let newstridesptr = shape2strides(shapeptr, mforder: .Row)
-        //move
-        stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: retndim)
-        //free
-        newstridesptr.deallocate()
     }
+    
+    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
 
-    return ret
+    return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
 }
 
 // for all elements
@@ -349,29 +313,18 @@ internal func sort_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int,
     let lastaxis = mfarray.ndim - 1
     // move lastaxis and given axis and align order
     let srcmfarray = mfarray.moveaxis(src: axis, dst: lastaxis).conv_order(mforder: .Row)
-    let retndim = srcmfarray.ndim
     var retShape = srcmfarray.shape
-    var retStrides = srcmfarray.strides
     
     var offset = 0
 
-    
-    let ret = withDummy(mftype: MfType.Int, storedSize: mfarray.storedSize, ndim: retndim){
-        dataptr, shapeptr, stridesptr in
-
-        //move
-        retShape.withUnsafeMutableBufferPointer{
-            shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-        }
-        //move
-        retStrides.withUnsafeMutableBufferPointer{
-            stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-        }
-        let retsize = shape2size(shapeptr)
+    let retSize = shape2size(&retShape)
+    let newmfdata = withDummyDataMRPtr(.Int, storedSize: retSize){
+        dstptr in
+        let dstptrF = dstptr.bindMemory(to: Float.self, capacity: retSize)
+        
         srcmfarray.withDataUnsafeMBPtrT(datatype: T.self){
             srcptr in
             
-            let dstptr = dataptr.bindMemory(to: Float.self, capacity: retsize)
             for _ in 0..<mfarray.storedSize / count{
                 var uiarray = Array<UInt>(stride(from: 0, to: UInt(count), by: 1))
                 //let srcptr = stride >= 0 ? srcptr.baseAddress! : srcptr.baseAddress! - mfarray.offsetIndex
@@ -382,23 +335,18 @@ internal func sort_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int,
                 //convert dataptr(int) to float
                 var flarray = uiarray.map{ Float($0) }
                 flarray.withUnsafeMutableBufferPointer{
-                    (dstptr + offset).moveAssign(from: $0.baseAddress!, count: count)
+                    (dstptrF + offset).moveAssign(from: $0.baseAddress!, count: count)
                 }
                 
                 offset += count
             }
             
         }
-        
-        
-        //row major order because FlattenIndSequence count up for row major
-        let newstridesptr = shape2strides(shapeptr, mforder: .Row)
-        //move
-        stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: retndim)
-        //free
-        newstridesptr.deallocate()
     }
     
+    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+    
+    let ret = MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     
     // re-move axis and lastaxis
     return ret.moveaxis(src: lastaxis, dst: axis)

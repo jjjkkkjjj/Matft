@@ -23,13 +23,7 @@ extension MfArray: CustomStringConvertible{
         var strides = self.strides
         
         if self.size > 1000{//if size > 1000, some elements left out will be viewed
-            let flattenLOIndSeq = shape.withUnsafeMutableBufferPointer{
-                shapeptr in
-                strides.withUnsafeMutableBufferPointer{
-                    stridesptr in
-                    FlattenLOIndSequence(storedSize: self.storedSize, shapeptr: shapeptr, stridesptr: stridesptr)
-                }
-            }
+            let flattenLOIndSeq = FlattenLOIndSequence(storedSize: self.storedSize, shape: &shape, strides: &strides)
             
             var lastIndices: [Int]? = nil
             for (flattenIndex, indices) in flattenLOIndSeq{
@@ -69,13 +63,8 @@ extension MfArray: CustomStringConvertible{
             }
         }
         else{ // all elements will be viewed
-            let flattenIndSeq = shape.withUnsafeMutableBufferPointer{
-                shapeptr in
-                strides.withUnsafeMutableBufferPointer{
-                    stridesptr in
-                    FlattenIndSequence(shapeptr: shapeptr, stridesptr: stridesptr)
-                }
-            }
+            let flattenIndSeq = FlattenIndSequence(shape: &shape, strides: &strides)
+            
             for var ret in flattenIndSeq{
                 desc += "\t\(flattenData[ret.flattenIndex + self.offsetIndex]),\t"
 
