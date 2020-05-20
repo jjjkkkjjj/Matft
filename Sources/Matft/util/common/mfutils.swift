@@ -81,6 +81,48 @@ internal func copy_mfstructure(_ mfstructure: MfStructure) -> MfStructure{
     }
 }
 
+/**
+    Create mfstructure from shape only
+ */
+internal func create_mfstructure(_ shape: inout [Int], mforder: MfOrder) -> MfStructure{
+    let ndim = shape.count
+    let newmfstructure = withDummyShapeStridesMBPtr(ndim){
+        shapeptr, stridesptr in
+        shape.withUnsafeMutableBufferPointer{
+            shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: ndim)
+        }
+        
+        let newstrides = shape2strides(shapeptr, mforder: mforder)
+        stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: ndim)
+        
+        newstrides.deallocate()
+    }
+    
+    return newmfstructure
+}
+
+/**
+    Create mfstructure from shape and strides
+ */
+internal func create_mfstructure(_ shape: inout [Int], _ strides: inout [Int]) -> MfStructure{
+    let ndim = shape.count
+    let newmfstructure = withDummyShapeStridesMPtr(ndim){
+        shapeptr, stridesptr in
+        shape.withUnsafeMutableBufferPointer{
+            shapeptr.moveAssign(from: $0.baseAddress!, count: ndim)
+        }
+        strides.withUnsafeMutableBufferPointer{
+            stridesptr.moveAssign(from: $0.baseAddress!, count: ndim)
+        }
+    }
+    
+    return newmfstructure
+}
+
 internal func copy_mfdata(_ mfdata: MfData){
+    
+}
+
+internal func create_mfdata(){
     
 }

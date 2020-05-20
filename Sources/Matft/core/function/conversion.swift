@@ -173,15 +173,7 @@ extension Matft.mfarray{
         var newstrides = mfarray.strides
         newstrides.insert(0, at: axis)
         
-        let newmfstructure = withDummyShapeStridesMPtr(mfarray.ndim + 1){
-            shapeptr, stridesptr in
-            newshape.withUnsafeMutableBufferPointer{
-                shapeptr.moveAssign(from: $0.baseAddress!, count: mfarray.ndim + 1)
-            }
-            newstrides.withUnsafeMutableBufferPointer{
-                stridesptr.moveAssign(from: $0.baseAddress!, count: mfarray.ndim + 1)
-            }
-        }
+        let newmfstructure = create_mfstructure(&newshape, &newstrides)
         newarray.mfstructure = newmfstructure
         
         return newarray
@@ -218,17 +210,7 @@ extension Matft.mfarray{
             newstrides.insert(0, at: axis)
         }
         
-        let newndim = newshape.count
-        
-        let newmfstructure = withDummyShapeStridesMPtr(newndim){
-            shapeptr, stridesptr in
-            newshape.withUnsafeMutableBufferPointer{
-                shapeptr.moveAssign(from: $0.baseAddress!, count: newndim)
-            }
-            newstrides.withUnsafeMutableBufferPointer{
-                stridesptr.moveAssign(from: $0.baseAddress!, count: newndim)
-            }
-        }
+        let newmfstructure = create_mfstructure(&newshape, &newstrides)
         newarray.mfstructure = newmfstructure
         
         return newarray
@@ -264,16 +246,7 @@ extension Matft.mfarray{
         }
         
         let newarray = mfarray.shallowcopy()
-        let newndim = newshape.count
-        let newmfstructure = withDummyShapeStridesMPtr(newndim){
-            shapeptr, stridesptr in
-            newshape.withUnsafeMutableBufferPointer{
-                shapeptr.moveAssign(from: $0.baseAddress!, count: newndim)
-            }
-            newstrides.withUnsafeMutableBufferPointer{
-                stridesptr.moveAssign(from: $0.baseAddress!, count: newndim)
-            }
-        }
+        let newmfstructure = create_mfstructure(&newshape, &newstrides)
         newarray.mfstructure = newmfstructure
         return newarray
         /*
@@ -307,16 +280,7 @@ extension Matft.mfarray{
         
         
         let newarray = mfarray.shallowcopy()
-        let newndim = newshape.count
-        let newmfstructure = withDummyShapeStridesMPtr(newndim){
-            shapeptr, stridesptr in
-            newshape.withUnsafeMutableBufferPointer{
-                shapeptr.moveAssign(from: $0.baseAddress!, count: newndim)
-            }
-            newstrides.withUnsafeMutableBufferPointer{
-                stridesptr.moveAssign(from: $0.baseAddress!, count: newndim)
-            }
-        }
+        let newmfstructure = create_mfstructure(&newshape, &newstrides)
         newarray.mfstructure = newmfstructure
         return newarray
     }

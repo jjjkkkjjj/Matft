@@ -63,21 +63,9 @@ internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfA
 
 internal func copy_by_cblas<T: MfStorable>(_ mfarray: MfArray, mforder: MfOrder, cblas_func: cblas_convorder_func<T>) -> MfArray{
     let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.size){_ in}//dummy
-    let newstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
-            shapeptr, stridesptr in
-            mfarray.withShapeUnsafeMBPtr{
-            [unowned mfarray] (orig_shapeptr) in
-                let newstridesptr = shape2strides(orig_shapeptr, mforder: mforder)
-                
-                //copy
-                shapeptr.baseAddress!.assign(from: orig_shapeptr.baseAddress!, count: mfarray.ndim)
-                
-                //move
-                stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
-                //free
-                newstridesptr.deallocate()
-            }
-        }
+    var shape = mfarray.shape
+    
+    let newstructure = create_mfstructure(&shape, mforder: mforder)
 
     let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
     return copy_mfarray(mfarray, dsttmpMfarray: ret, cblas_func: cblas_func)
@@ -118,19 +106,7 @@ internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarr
     // must be row major
     let retorder = _matmul_convorder(&lmfarray, &rmfarray)
     
-    let newmfstructure = withDummyShapeStridesMBPtr(retndim){
-        shapeptr, stridesptr in
-        //move
-        retshape.withUnsafeMutableBufferPointer{
-            shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-        }
-        //move
-        let newstrides = shape2strides(shapeptr, mforder: retorder)
-        stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: retndim)
-        //free
-        newstrides.deallocate()
-    }
-    
+    let newmfstructure = create_mfstructure(&retshape, mforder: retorder)
 
     let matNum = lshape[retndim - 2] * rshape[retndim - 1]
     let l_matNum = lshape[retndim - 2] * lshape[retndim - 1]

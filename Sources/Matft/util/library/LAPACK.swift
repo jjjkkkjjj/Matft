@@ -135,21 +135,8 @@ internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func:
         }
     }
     
-    let newmfstructure = withDummyShapeStridesMBPtr(mfarray.ndim){
-        [unowned mfarray] (shapeptr, stridesptr) in
-        
-        //shape
-        mfarray.withShapeUnsafeMBPtr{
-            [unowned mfarray] in
-            shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: mfarray.ndim)
-        }
-        
-        //strides
-        let newstridesptr = shape2strides(shapeptr, mforder: .Row)
-        stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: mfarray.ndim)
-        
-        newstridesptr.deallocate()
-    }
+    var shape = mfarray.shape
+    let newmfstructure = create_mfstructure(&shape, mforder: .Row)
     
     return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
 }
@@ -180,28 +167,15 @@ internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func:
             dstoffset += 1
         }
     }
-    let retndim = mfarray.ndim - 2 != 0 ? mfarray.ndim - 2 : 1
-    let newmfstructure = withDummyShapeStridesMBPtr(retndim){
-        [unowned mfarray] (shapeptr, stridesptr) in
-        
-        //shape
-        if mfarray.ndim - 2 != 0{
-            mfarray.withShapeUnsafeMBPtr{
-                shapeptr.baseAddress!.assign(from: $0.baseAddress!, count: retndim)
-            }
-            
-            //strides
-            let newstridesptr = shape2strides(shapeptr, mforder: .Row)
-            stridesptr.baseAddress!.moveAssign(from: newstridesptr.baseAddress!, count: retndim)
-            
-            newstridesptr.deallocate()
-        }
-        else{
-            shapeptr[0] = 1
-            stridesptr[0] = 1
-        }
-        
+    
+    var shape: [Int]
+    if mfarray.ndim - 2 != 0{
+        shape = Array(mfarray.shape.prefix(mfarray.ndim - 2))
     }
+    else{
+        shape = [1]
+    }
+    let newmfstructure = create_mfstructure(&shape, mforder: .Row)
     
     return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
 }

@@ -16,17 +16,8 @@ extension Matft.mfarray{
            - mfarray: mfarray
     */
     static public func shallowcopy(_ mfarray: MfArray) -> MfArray{
-        let newstructure = withDummyShapeStridesMPtr(mfarray.ndim){
-            shapeptr, stridesptr in
-            mfarray.withShapeUnsafeMPtr{
-                [unowned mfarray] in
-                shapeptr.assign(from: $0, count: mfarray.ndim)
-            }
-            mfarray.withStridesUnsafeMPtr{
-                [unowned mfarray] in
-                stridesptr.assign(from: $0, count: mfarray.ndim)
-            }
-        }
+        let newstructure = copy_mfstructure(mfarray.mfstructure)
+        
         return MfArray(base: mfarray, mfstructure: newstructure, offset: mfarray.offsetIndex)
     }
     /**
@@ -96,18 +87,7 @@ extension Matft.mfarray{
 
         }
         
-        let retndim = shape.count
-        let newmfstructure = withDummyShapeStridesMBPtr(retndim){
-            shapeptr, stridesptr in
-            shape.withUnsafeMutableBufferPointer{
-                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-            }
-            
-            let newstrides = shape2strides(shapeptr, mforder: .Row)
-            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: retndim)
-            
-            newstrides.deallocate()
-        }
+        let newmfstructure = create_mfstructure(&shape, mforder: mforder)
         
         return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
@@ -188,18 +168,7 @@ extension Matft.mfarray{
 
         }
         
-        let ndim = shape.count
-        let newmfstructure = withDummyShapeStridesMBPtr(ndim){
-            shapeptr, stridesptr in
-            shape.withUnsafeMutableBufferPointer{
-                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: ndim)
-            }
-            
-            let newstrides = shape2strides(shapeptr, mforder: mforder)
-            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: ndim)
-            
-            newstrides.deallocate()
-        }
+        let newmfstructure = create_mfstructure(&shape, mforder: mforder)
         
         return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
         
@@ -260,18 +229,8 @@ extension Matft.mfarray{
             }
         }
         
-        let retndim = retShape.count
-        let newmfstructure = withDummyShapeStridesMBPtr(retndim){
-            shapeptr, stridesptr in
-            retShape.withUnsafeMutableBufferPointer{
-                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-            }
-            
-            let newstrides = shape2strides(shapeptr, mforder: .Row)
-            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: retndim)
-            
-            newstrides.deallocate()
-        }
+        let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+        
         return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
     /**
@@ -330,18 +289,8 @@ extension Matft.mfarray{
             }
         }
         
-        let retndim = retShape.count
-        let newmfstructure = withDummyShapeStridesMBPtr(retndim){
-            shapeptr, stridesptr in
-            retShape.withUnsafeMutableBufferPointer{
-                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-            }
-            
-            let newstrides = shape2strides(shapeptr, mforder: .Column)
-            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: retndim)
-            
-            newstrides.deallocate()
-        }
+        let newmfstructure = create_mfstructure(&retShape, mforder: .Column)
+        
         return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
     /**
@@ -431,17 +380,7 @@ extension Matft.mfarray{
             }
         }
         
-        let newmfstructure = withDummyShapeStridesMBPtr(retndim){
-            shapeptr, stridesptr in
-            retShape.withUnsafeMutableBufferPointer{
-                shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-            }
-            
-            let newstrides = shape2strides(shapeptr, mforder: fasterOrder)
-            stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: retndim)
-            
-            newstrides.deallocate()
-        }
+        let newmfstructure = create_mfstructure(&retShape, mforder: fasterOrder)
         
         return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
