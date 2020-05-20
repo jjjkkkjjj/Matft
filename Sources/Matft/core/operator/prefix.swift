@@ -12,3 +12,8 @@ prefix operator -
 public prefix func -(_ mfarray: MfArray) -> MfArray{
     return Matft.mfarray.neg(mfarray)
 }
+
+prefix operator !
+public prefix func !(_ mfarray: MfArray) -> MfArray{
+    return Matft.mfarray.logical_not(mfarray)
+}

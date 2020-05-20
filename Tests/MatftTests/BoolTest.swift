@@ -2,7 +2,7 @@ import XCTest
 //@testable import Matft
 import Matft
 
-final class EqualTests: XCTestCase {
+final class BoolTests: XCTestCase {
     
     func testAllEqual() {
         do{
@@ -72,4 +72,43 @@ final class EqualTests: XCTestCase {
         }
     }
     
+    
+    func testLogicalNot(){
+        do{
+            let a = MfArray([true, false])
+            XCTAssertEqual(!a, MfArray([false, true]))
+        }
+        
+        do{
+            let a = MfArray([2, 1, -3, 0])
+            let b = MfArray([2.0, 1.01, -3.0, 0.0])
+            
+            XCTAssertEqual(a === b, MfArray([true, false, true, true]))
+            XCTAssertEqual(!(a === b), MfArray([false, true, false, false]))
+            
+            let c = MfArray([2.0, 1.0, -3.0, 0.0])
+            XCTAssertEqual(!(a === c), MfArray([false, false, false, false]))
+        }
+        
+        do{
+            let a = Matft.mfarray.arange(start: 0, to: 8, by: 1, shape: [2,2,2])
+            let b = MfArray([[[0,1],
+                             [2,3]],
+            
+                             [[4,5],
+                              [6,7]]])
+            XCTAssertEqual(!(a === b), MfArray([[[false,false],
+                                              [false,false]],
+            
+                                             [[false,false],
+                                              [false,false]]]))
+            
+            XCTAssertEqual(!(a[0~,0~,~~-1] === Matft.mfarray.arange(start: 7, to: -1, by: -1, shape: [2,2,2])),
+                                    MfArray([[[true,true],
+                                              [true,true]],
+                                    
+                                             [[true,true],
+                                              [true,true]]]))
+        }
+    }
 }

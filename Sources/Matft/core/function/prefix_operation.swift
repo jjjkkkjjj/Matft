@@ -23,13 +23,12 @@ extension Matft.mfarray{
        - parameters:
            - mfarray: mfarray
     */
-    /*
     public static func logical_not(_ mfarray: MfArray) -> MfArray{
         var ret = to_Bool(mfarray)// copy and convert to bool
         ret = Matft.mfarray.math.abs(ret - 1) // force cast to Float
         ret.mfdata._mftype = .Bool
         return ret
-    }*/
+    }
 }
 
 fileprivate enum PreOp{

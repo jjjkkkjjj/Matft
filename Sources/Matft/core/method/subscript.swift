@@ -9,7 +9,7 @@
 import Foundation
 import Accelerate
 
-extension MfArray{
+extension MfArray: MfSubscriptable{
     public subscript(indices: Int...) -> Any{
         get {
             var indices: [Any] = indices
@@ -43,6 +43,50 @@ extension MfArray{
             return self._set_mfarray(indices: &indices, newValue: newValue)
         }
     }
+    /*
+    public subscript(indices: MfArray) -> MfArray{
+        get{
+            switch indices.mftype {
+            case .Bool:
+                preconditionFailure("Bool Getter is not supported now but will be supported future.")
+            case .Int:
+                preconditionFailure("Int is not supported now but will be supported future.")
+            default:
+                preconditionFailure("indices must be Bool or Int, but got \(indices.mftype)")
+            }
+            
+        }
+        set(newValue){
+            switch indices.mftype {
+            case .Bool:
+                precondition(indices.shape == self.shape, "masked mfarray must be same shape")
+                /*
+                 >>> a = np.array([1,2])
+                 >>> b = a[0]
+                 >>> b
+                 1
+                 >>> a[np.array([True, True])] = 555
+                 >>> a
+                 array([555, 555])
+                 >>> b
+                 1
+                 */
+                let ret = !indices * self + indices * newValue
+                switch self.storedType {
+                case .Float:
+                    _ = copy_mfarray(ret, dsttmpMfarray: self, cblas_func: cblas_scopy)
+                case .Double:
+                    _ = copy_mfarray(ret, dsttmpMfarray: self, cblas_func: cblas_dcopy)
+                }
+            case .Int:
+                preconditionFailure("Int is not supported now but will be supported future.")
+            default:
+                preconditionFailure("indices must be Bool or Int, but got \(indices.mftype)")
+            }
+            
+        }
+    }
+    */
     //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
     public subscript(indices: Any...) -> MfArray{
         get{
