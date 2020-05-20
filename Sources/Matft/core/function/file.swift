@@ -177,10 +177,12 @@ fileprivate func _gen<T: MfStorable>(parser: _TxtParser, fillnan: T, _ mftype: M
         let arr_str = line.split(separator: parser.delimiter, omittingEmptySubsequences: false)
         
         // check column number
-        col_num = col_num == -1 ? arr_str.count : col_num
-        if arr_str.count != col_num{
-            print("Some errors were detected !\nLine #\(row) (got \(arr_str.count) columns instead of \(col_num)")
-            return nil
+        if use_cols == nil{
+            col_num = col_num == -1 ? arr_str.count : col_num
+            if arr_str.count != col_num{
+                print("Some errors were detected !\nLine #\(row) (got \(arr_str.count) columns instead of \(col_num)")
+                return nil
+            }
         }
         
         var ret_line: [T] = []

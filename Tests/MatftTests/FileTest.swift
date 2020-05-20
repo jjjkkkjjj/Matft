@@ -63,6 +63,7 @@ final class FileTests: XCTestCase {
     }
     
     func test_genfromtxt() {
+        
         do{
             let test1 = self.get_url(filename: "test1.csv")
             let arr1 = Matft.mfarray.file.genfromtxt(url: test1, delimiter: ",", mftype: .Float, encoding: .shiftJIS)
@@ -105,5 +106,21 @@ final class FileTests: XCTestCase {
             
         }
         
+        do{
+            let test4 = self.get_url(filename: "test5.csv")
+            let a1 = Matft.mfarray.file.genfromtxt(url: test4, delimiter: ",", mftype: .Float, skiprows: [0, 4], use_cols: [0, 1], encoding: .shiftJIS)
+            
+            XCTAssertEqual(a1!, MfArray([[1, 0],
+                                         [3, 4],
+                                         [2, 3]], mftype: .Float))
+            
+            let a2 = Matft.mfarray.file.genfromtxt(url: test4, delimiter: ",", mftype: .Double, skiprows: [0, 4], use_cols: [3, 4], encoding: .shiftJIS, max_rows: 3)
+            
+            XCTAssertEqual(a2!, MfArray([[6, -3],
+                                         [8, 2],
+                                         [1, 1]], mftype: .Double))
+            
+        }
+
     }
 }
