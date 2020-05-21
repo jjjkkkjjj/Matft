@@ -318,7 +318,7 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.argsort      | *numpy.argsort           |
 
 - File
-save function has not developed yet.
+  save function has not developed yet.
 
 | Matft                         | Numpy            |
 | ----------------------------- | :--------------- |
@@ -339,6 +339,7 @@ save function has not developed yet.
 | Matft.cross<br />*^    | numpy.cross<br />n/a       |
 |Matft.matmul<br />*&　　　|numpy.matmul<br />@　|
 | Matft.equal<br />===   | numpy.equal<br />==        |
+| Matft.not_equal<br />!==   | numpy.not_equal<br />!=        |
 | Matft.allEqual<br />== | numpy.array_equal<br />n/a |
 | Matft.neg<br />-       | numpy.negative<br />-      |
 
@@ -386,6 +387,9 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
 | Matft.linalg.svd         | numpy.linalg.svd   |
 | Matft.linalg.polar_left  | scipy.linalg.polar |
 | Matft.linalg.polar_right | scipy.linalg.polar |
+| Matft.linalg.normlp_vec | scipy.linalg.norm |
+| Matft.linalg.normfro_mat | scipy.linalg.norm |
+| Matft.linalg.normnuc_mat | scipy.linalg.norm |
 
 <!--
 
