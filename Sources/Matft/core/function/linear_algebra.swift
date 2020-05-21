@@ -206,5 +206,138 @@ extension Matft.linalg{
         let p = svd.rt.T *& s *& svd.rt
         return (u, p)
     }
+    
+    
+    /**
+       Calculate lp norm along given axis. Note that ord = Float.infinity and -Float.infinity are also available.
+       - parameters:
+            - mfarray: mfarray
+            - ord: (Optional) Order of the norm
+            - axis: (Optional) axis, if not given, get mean for all elements
+            - keepDims: (Optional) whether to keep original dimension, default is true
+    */
+    public static func normlp_vec(_ mfarray: MfArray, ord: Float = 2, axis: Int = -1, keepDims: Bool = false) -> MfArray{
+        /*
+         // ref: https://github.com/numpy/numpy/blob/91118b3363b636f932f7ff6748d8259e9eb2c23a/numpy/linalg/linalg.py#L2316-L2557
+         vDSP_svesq(<#T##__A: UnsafePointer<Float>##UnsafePointer<Float>#>, <#T##__IA: vDSP_Stride##vDSP_Stride#>, <#T##__C: UnsafeMutablePointer<Float>##UnsafeMutablePointer<Float>#>, <#T##__N: vDSP_Length##vDSP_Length#>)
+         dlange_(<#T##__norm: UnsafeMutablePointer<Int8>!##UnsafeMutablePointer<Int8>!#>, <#T##__m: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>, <#T##__n: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>, <#T##__a: UnsafeMutablePointer<__CLPK_doublereal>!##UnsafeMutablePointer<__CLPK_doublereal>!#>, <#T##__lda: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>, <#T##__work: UnsafeMutablePointer<__CLPK_doublereal>!##UnsafeMutablePointer<__CLPK_doublereal>!#>)
+         cblas_dnrm2(<#T##__N: Int32##Int32#>, <#T##__X: UnsafePointer<Double>!##UnsafePointer<Double>!#>, <#T##__incX: Int32##Int32#>)
+         */
+        if ord == Float.infinity{
+            return Matft.math.abs(mfarray).max(axis: axis, keepDims: keepDims)
+        }
+        else if ord == -Float.infinity{
+            return Matft.math.abs(mfarray).min(axis: axis, keepDims: keepDims)
+        }
+        if ord != 0{
+            let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponent: ord)
+            return Matft.math.power(bases: abspow.sum(axis: axis, keepDims: keepDims), exponent: 1/ord)
+        }
+        else{
+            // remove mfarray == 0, and count up non-zero
+            return (mfarray !== 0).astype(mfarray.mftype).sum(axis: axis, keepDims: keepDims)
+        }
+    }
+    
+    /**
+       Calculate norm for matrix. When ord is 2, same as frobenius norm.
+       - parameters:
+           - mfarray: mfarray
+    */
+    public static func normlp_mat(_ mfarray: MfArray, ord: Float? = 2, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray{
+        var axes: (row: Int, col: Int) = (get_axis(axes.row, ndim: mfarray.ndim), get_axis(axes.col, ndim: mfarray.ndim))
+        
+        precondition(axes.row != axes.col, "Duplicate axes given.")
+        
+        var ret: MfArray
+        if ord == 2{
+            ret = _multi_svd_norm(mfarray: mfarray, axes: &axes, op: Matft.stats.max)
+        }
+        else if ord == -2{
+            ret = _multi_svd_norm(mfarray: mfarray, axes: &axes, op: Matft.stats.min)
+        }
+        else if ord == 1{
+            if axes.col > axes.row{
+                axes.col -= 1
+            }
+            ret = Matft.math.abs(mfarray).sum(axis: axes.row, keepDims: false).max(axis: axes.col, keepDims: false)
+        }
+        else if ord == Float.infinity{
+            if axes.row > axes.col{
+                axes.row -= 1
+            }
+            ret = Matft.math.abs(mfarray).sum(axis: axes.col, keepDims: false).max(axis: axes.row, keepDims: false)
+        }
+        else if ord == -1{
+            if axes.col > axes.row{
+                axes.col -= 1
+            }
+            ret = Matft.math.abs(mfarray).sum(axis: axes.row, keepDims: false).min(axis: axes.col, keepDims: false)
+        }
+        else if ord == -Float.infinity{
+            if axes.row > axes.col{
+                axes.row -= 1
+            }
+            ret = Matft.math.abs(mfarray).sum(axis: axes.col, keepDims: false).min(axis: axes.row, keepDims: false)
+        }
+        else{
+            preconditionFailure("Invalid norm order for matrices.")
+        }
+        
+        if keepDims{
+            var retShape = mfarray.shape
+            retShape[axes.row] = 1
+            retShape[axes.col] = 1
+            ret = ret.reshape(retShape)
+        }
+        
+        return ret
+    }
+    
+    public static func normfro_mat(_ mfarray: MfArray, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray{
+        let axes: (row: Int, col: Int) = (get_axis(axes.row, ndim: mfarray.ndim), get_axis(axes.col, ndim: mfarray.ndim))
+        
+        precondition(axes.row != axes.col, "Duplicate axes given.")
+        
+        let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponent: 2)
+        
+        var ret = Matft.math.power(bases: abspow.sum(axis: max(axes.row, axes.col), keepDims: false).sum(axis: min(axes.row, axes.col), keepDims: false), exponent: 1/2)
+        
+        if keepDims{
+            var retShape = mfarray.shape
+            retShape[axes.row] = 1
+            retShape[axes.col] = 1
+            ret = ret.reshape(retShape)
+        }
+        
+        return ret
+    }
+    public static func normnuc_mat(_ mfarray: MfArray, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray{
+        var axes: (row: Int, col: Int) = (get_axis(axes.row, ndim: mfarray.ndim), get_axis(axes.col, ndim: mfarray.ndim))
+        
+        precondition(axes.row != axes.col, "Duplicate axes given.")
+        
+        var ret = _multi_svd_norm(mfarray: mfarray, axes: &axes, op: Matft.stats.sum)
+        
+        if keepDims{
+            var retShape = mfarray.shape
+            retShape[axes.row] = 1
+            retShape[axes.col] = 1
+            ret = ret.reshape(retShape)
+        }
+        
+        return ret
+    }
 }
 
+fileprivate typealias _norm_op = (MfArray, Int?, Bool) -> MfArray
+fileprivate func _multi_svd_norm(mfarray: MfArray, axes: inout (row: Int, col: Int), op: _norm_op) -> MfArray{
+    do{
+        let mfarray = mfarray.moveaxis(src: [axes.row, axes.col], dst: [-2, -1])
+        let ret = op(try Matft.linalg.svd(mfarray).s, -1, false)
+        return ret
+    }
+    catch{
+        fatalError("Cannot calculate svd")
+    }
+}
