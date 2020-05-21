@@ -434,6 +434,34 @@ extension Matft{
         
         return mfarray.transpose(axes: axes)
     }
+    /**
+       move from given axis to dstination axis
+       - parameters:
+            - mfarray: mfarray
+            - src: [Int]
+            - dst: [Int]
+    */
+    public static func moveaxis(_ mfarray: MfArray, src: [Int], dst: [Int]) -> MfArray{
+        precondition(src.count == dst.count, "must be same size")
+        var sources: [Int] = [], dstinations: [Int] = []
+        for (s, d) in zip(src, dst){
+            sources += [get_axis(s, ndim: mfarray.ndim)]
+            dstinations += [get_axis(d, ndim: mfarray.ndim)]
+        }
+        
+        var order = Array(0..<mfarray.ndim).filter{ !sources.contains($0) }
+        
+        for (s, d) in zip(sources, dstinations).sorted(by: { $0.1 < $1.1 }){
+            if d == order.count{
+                order.append(s)
+            }
+            else{
+                order.insert(s, at: d)
+            }
+        }
+        
+        return mfarray.transpose(axes: order)
+    }
     
     /**
        Get sorted mfarray along given  axis
