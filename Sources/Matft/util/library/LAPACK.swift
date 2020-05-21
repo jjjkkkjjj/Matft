@@ -556,9 +556,10 @@ fileprivate func _withNNStackedMajorPtr<T: MfStorable>(mfarray: MfArray, type: T
     let matricesNum = mfarray.size / (squaredSize * squaredSize)
     
     // get stacked row major and copy
-    let rowmajorMfarray = mforder == .Row ? to_row_major(mfarray) : to_column_major(mfarray)
+    let rowMfarray = mforder == .Row ? to_row_major(mfarray) : to_row_major(mfarray.swapaxes(axis1: -1, axis2: -2))
+    
     var offset = 0
-    try rowmajorMfarray.withDataUnsafeMBPtrT(datatype: T.self){
+    try rowMfarray.withDataUnsafeMBPtrT(datatype: T.self){
         for _ in 0..<matricesNum{
             try body($0.baseAddress! + offset, squaredSize, offset)
             
@@ -577,9 +578,10 @@ fileprivate func _withMNStackedMajorPtr<T: MfStorable>(mfarray: MfArray, type: T
     let matricesNum = mfarray.size / (M * N)
     
     // get stacked row major and copy
-    let rowmajorMfarray = mforder == .Row ? to_row_major(mfarray) : to_column_major(mfarray)
+    let rowMfarray = mforder == .Row ? to_row_major(mfarray) : to_row_major(mfarray.swapaxes(axis1: -1, axis2: -2))
+    
     var offset = 0
-    try rowmajorMfarray.withDataUnsafeMBPtrT(datatype: T.self){
+    try rowMfarray.withDataUnsafeMBPtrT(datatype: T.self){
         for _ in 0..<matricesNum{
             try body($0.baseAddress! + offset, M, N, offset)
             
