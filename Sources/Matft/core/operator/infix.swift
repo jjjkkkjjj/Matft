@@ -51,6 +51,21 @@ public func /<T: MfTypable>(l_scalar: T, r_mfarray: MfArray) -> MfArray{
 public func ===(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
     return Matft.equal(l_mfarray, r_mfarray)
 }
+public func ===<T: MfTypable>(l_mfarray: MfArray, r_scalar: T) -> MfArray{
+    return Matft.equal(l_mfarray, r_scalar)
+}
+public func ===<T: MfTypable>(l_scalar: T, r_mfarray: MfArray) -> MfArray{
+    return Matft.equal(l_scalar, r_mfarray)
+}
+public func !==(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
+    return Matft.not_equal(l_mfarray, r_mfarray)
+}
+public func !==<T: MfTypable>(l_mfarray: MfArray, r_scalar: T) -> MfArray{
+    return Matft.not_equal(l_mfarray, r_scalar)
+}
+public func !==<T: MfTypable>(l_scalar: T, r_mfarray: MfArray) -> MfArray{
+    return Matft.not_equal(l_scalar, r_mfarray)
+}
 
 extension MfArray: Equatable{
     public static func == (lhs: MfArray, rhs: MfArray) -> Bool {

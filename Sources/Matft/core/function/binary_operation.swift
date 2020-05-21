@@ -289,6 +289,53 @@ extension Matft{
         return _equal_operation(l_mfarray, r_mfarray)
     }
     /**
+        Check equality in element-wise. Returned mfarray's type will be bool.
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_scalar: right scalar conformed to MfTypable
+    */
+    public static func equal<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
+        return _equal_operation(l_mfarray, Matft.nums(r_scalar, shape: [1]))
+    }
+    /**
+        Check equality in element-wise. Returned mfarray's type will be bool.
+       - parameters:
+           - l_scalar: left scalar conformed to MfTypable
+           - r_mfarray: right mfarray
+    */
+    public static func equal<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
+        return _equal_operation(Matft.nums(l_scalar, shape: [1]), r_mfarray)
+    }
+    
+    /**
+        Check NOT equality in element-wise. Returned mfarray's type will be bool.
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_mfarray: right mfarray
+    */
+    public static func not_equal(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+        return Matft.logical_not(_equal_operation(l_mfarray, r_mfarray))
+    }
+    /**
+        Check equality in element-wise. Returned mfarray's type will be bool.
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_scalar: right scalar conformed to MfTypable
+    */
+    public static func not_equal<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
+        return Matft.logical_not(_equal_operation(l_mfarray, Matft.nums(r_scalar, shape: [1])))
+    }
+    /**
+        Check equality in element-wise. Returned mfarray's type will be bool.
+       - parameters:
+           - l_scalar: left scalar conformed to MfTypable
+           - r_mfarray: right mfarray
+    */
+    public static func not_equal<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
+        return Matft.logical_not(_equal_operation(Matft.nums(l_scalar, shape: [1]), r_mfarray))
+    }
+    
+    /**
         Check equality in element-wise, and then when all of elements are true, return true, otherwise false
        - parameters:
            - l_mfarray: left mfarray
