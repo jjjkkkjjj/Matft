@@ -98,6 +98,31 @@ extension Matft.stats{
             return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sveD)
         }
     }
+    /**
+       Calculate root of sum MfArray
+       - parameters:
+            - mfarray: mfarray
+            - axis: (Optional) axis, if not given, get summation for all elements
+            - keepDims: (Optional) whether to keep original dimension, default is true
+    */
+    public static func sumsqrt(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+        return Matft.math.sqrt(Matft.stats.sum(mfarray, axis: axis, keepDims: keepDims))
+    }
+    /**
+       Calculate sum of squared MfArray
+       - parameters:
+            - mfarray: mfarray
+            - axis: (Optional) axis, if not given, get summation for all elements
+            - keepDims: (Optional) whether to keep original dimension, default is true
+    */
+    public static func squaresum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+        switch mfarray.storedType {
+        case .Float:
+            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesq)
+        case .Double:
+            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesqD)
+        }
+    }
 }
 
 

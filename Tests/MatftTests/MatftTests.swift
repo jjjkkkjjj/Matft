@@ -108,7 +108,7 @@ func view5(){
     print(Matft.math.ceil(b))
     print(Matft.math.nearest(b))
     
-    print(Matft.math.power(a, exponents: b))
+    print(Matft.math.power(bases: b, exponents: a))
 }
 
 func view6(){

@@ -453,46 +453,53 @@ extension Matft.math{//use math_vv_by_vecLib
     /**
        Calculate power of each element
        - parameters:
-            - mfarray: mfarray
+            - base: Float
+            - exponents: mfarray
     */
-    public static func power(_ mfarray: MfArray, exponents: Float) -> MfArray{
-        switch mfarray.storedType {
+    public static func power(base: Float, exponents: MfArray) -> MfArray{
+        switch exponents.storedType {
         case .Float:
-            var exp = Array<Float>(repeating: exponents, count: mfarray.storedSize)
-            let ret = math_1arg_vv_by_vForce(mfarray, &exp, vvpowf)
+            var bases = Array<Float>(repeating: base, count: exponents.storedSize)
+            let ret = math_1arg_vv_by_vForce(exponents, &bases, vvpowf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            var exp = Array<Double>(repeating: Double(exponents), count: mfarray.storedSize)
-            let ret = math_1arg_vv_by_vForce(mfarray, &exp, vvpow)
+            var bases = Array<Double>(repeating: Double(base), count: exponents.storedSize)
+            let ret = math_1arg_vv_by_vForce(exponents, &bases, vvpow)
             ret.mfdata._mftype = .Double
             return ret
         }
     }
-    public static func power(_ mfarray: MfArray, exponents: MfArray) -> MfArray{
-        var exponents = exponents.broadcast_to(shape: mfarray.shape)
+    /**
+       Calculate power of each element
+       - parameters:
+            - base: mfarray
+            - exponents: mfarray
+    */
+    public static func power(bases: MfArray, exponents: MfArray) -> MfArray{
+        var bases = bases.broadcast_to(shape: exponents.shape)
         
-        var mfarray = mfarray
+        var exponents = exponents
 
-        if mfarray.mftype != exponents.mftype{
-            if mfarray.mftype == MfType.priority(mfarray.mftype, exponents.mftype){
-                exponents = exponents.astype(mfarray.mftype)
+        if exponents.mftype != bases.mftype{
+            if exponents.mftype == MfType.priority(exponents.mftype, bases.mftype){
+                bases = bases.astype(exponents.mftype)
             }
             else{
-                mfarray = mfarray.astype(exponents.mftype)
+                exponents = exponents.astype(bases.mftype)
             }
         }
         
-        switch mfarray.storedType {
+        switch exponents.storedType {
         case .Float:
-            let ret = exponents.withDataUnsafeMBPtrT(datatype: Float.self){
-                math_1arg_vv_by_vForce(mfarray, $0.baseAddress!, vvpowf)
+            let ret = bases.withDataUnsafeMBPtrT(datatype: Float.self){
+                math_1arg_vv_by_vForce(exponents, $0.baseAddress!, vvpowf)
             }
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = exponents.withDataUnsafeMBPtrT(datatype: Double.self){
-                math_1arg_vv_by_vForce(mfarray, $0.baseAddress!, vvpow)
+            let ret = bases.withDataUnsafeMBPtrT(datatype: Double.self){
+                math_1arg_vv_by_vForce(exponents, $0.baseAddress!, vvpow)
             }
             ret.mfdata._mftype = .Double
             return ret

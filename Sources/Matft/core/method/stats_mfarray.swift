@@ -60,6 +60,26 @@ extension MfArray{
     public func sum(axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         return Matft.stats.sum(self, axis: axis, keepDims: keepDims)
     }
+    /**
+       Calculate root of sum MfArray
+       - parameters:
+            - mfarray: mfarray
+            - axis: (Optional) axis, if not given, get summation for all elements
+            - keepDims: (Optional) whether to keep original dimension, default is true
+    */
+    public func sumsqrt(axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+        return Matft.stats.sumsqrt(self, axis: axis, keepDims: keepDims)
+    }
+    /**
+       Calculate sum of squared MfArray
+       - parameters:
+            - mfarray: mfarray
+            - axis: (Optional) axis, if not given, get summation for all elements
+            - keepDims: (Optional) whether to keep original dimension, default is true
+    */
+    public func squaresum(axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+        return Matft.stats.squaresum(self, axis: axis, keepDims: keepDims)
+    }
 }
 
 
