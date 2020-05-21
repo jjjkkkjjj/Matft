@@ -18,7 +18,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func add(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype) = _biop_broadcast_to(l_mfarray, r_mfarray)
+        let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(rettype){
         case .Float:
             return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
@@ -33,7 +33,7 @@ extension Matft{
            - r_scalar: right scalar conformed to MfTypable
     */
     public static func add<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
-        let r_mfype = MfType.mftype(value: r_scalar as Any)
+        let r_mfype = MfType.mftype(value: r_scalar)
         let retmftype = MfType.priority(l_mfarray.mftype, r_mfype)
         
         var l_mfarray = l_mfarray
@@ -55,7 +55,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func add<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
-        let l_mfype = MfType.mftype(value: l_scalar as Any)
+        let l_mfype = MfType.mftype(value: l_scalar)
         let retmftype = MfType.priority(l_mfype, r_mfarray.mftype)
         
         var r_mfarray = r_mfarray
@@ -77,7 +77,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func sub(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype) = _biop_broadcast_to(l_mfarray, r_mfarray)
+        let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(rettype){
         case .Float:
             return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
@@ -92,7 +92,7 @@ extension Matft{
            - r_scalar: right scalar conformed to MfTypable
     */
     public static func sub<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
-        let r_mfype = MfType.mftype(value: r_scalar as Any)
+        let r_mfype = MfType.mftype(value: r_scalar)
         let retmftype = MfType.priority(l_mfarray.mftype, r_mfype)
         
         var l_mfarray = l_mfarray
@@ -114,7 +114,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func sub<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
-        let l_mfype = MfType.mftype(value: l_scalar as Any)
+        let l_mfype = MfType.mftype(value: l_scalar)
         let retmftype = MfType.priority(l_mfype, r_mfarray.mftype)
         
         var r_mfarray = r_mfarray
@@ -136,7 +136,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func mul(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype) = _biop_broadcast_to(l_mfarray, r_mfarray)
+        let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(rettype){
         case .Float:
             return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul)
@@ -151,7 +151,7 @@ extension Matft{
            - r_scalar: right scalar conformed to MfTypable
     */
     public static func mul<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
-        let r_mfype = MfType.mftype(value: r_scalar as Any)
+        let r_mfype = MfType.mftype(value: r_scalar)
         let retmftype = MfType.priority(l_mfarray.mftype, r_mfype)
         
         var l_mfarray = l_mfarray
@@ -173,7 +173,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func mul<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
-        let l_mfype = MfType.mftype(value: l_scalar as Any)
+        let l_mfype = MfType.mftype(value: l_scalar)
         let retmftype = MfType.priority(l_mfype, r_mfarray.mftype)
         
         var r_mfarray = r_mfarray
@@ -195,7 +195,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func div(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype) = _biop_broadcast_to(l_mfarray, r_mfarray)
+        let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(rettype){
         case .Float:
             let ret = biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv)
@@ -212,7 +212,7 @@ extension Matft{
            - r_scalar: right scalar conformed to MfTypable
     */
     public static func div<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
-        let r_mfype = MfType.mftype(value: r_scalar as Any)
+        let r_mfype = MfType.mftype(value: r_scalar)
         let retmftype = MfType.priority(l_mfarray.mftype, r_mfype)
         
         var l_mfarray = l_mfarray
@@ -345,80 +345,6 @@ extension Matft{
         return _equalAll_operation(l_mfarray, r_mfarray)
     }
     
-}
-
-extension Matft.stats{
-    
-    /**
-       Element-wise  maximum of mfarray and mfarray
-       - parameters:
-            - l_mfarray: mfarray
-            - r_mfarray: mfarray
-    */
-
-    public static func maximum(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype) = _biop_broadcast_to(l_mfarray, r_mfarray)
-        switch MfType.storedType(rettype) {
-        case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmax)
-        case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmaxD)
-        }
-    }
-
-    /**
-       Element-wise  minimum of mfarray and mfarray
-       - parameters:
-            - l_mfarray: mfarray
-            - r_mfarray: mfarray
-    */
-
-    public static func minimum(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype) = _biop_broadcast_to(l_mfarray, r_mfarray)
-        switch MfType.storedType(rettype) {
-        case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmin)
-        case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vminD)
-        }
-    }
-
-}
-
-
-fileprivate func _biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (l: MfArray, r: MfArray, t: MfType){
-    var l_mfarray = l_mfarray
-    var r_mfarray = r_mfarray
-    /*
-    if l_mfarray.storedSize < r_mfarray.storedSize{
-        l_mfarray = r_mfarray
-        r_mfarray = l_mfarray
-    }*/
-    
-    let rettype = MfType.priority(l_mfarray.mftype, r_mfarray.mftype)
-    if l_mfarray.mftype != rettype{
-        l_mfarray = l_mfarray.astype(rettype)
-    }
-    else if r_mfarray.mftype != rettype{
-        r_mfarray = r_mfarray.astype(rettype)
-    }
-    
-    if l_mfarray.size > r_mfarray.size{
-        r_mfarray = r_mfarray.broadcast_to(shape: l_mfarray.shape)
-    }
-    else if r_mfarray.size > l_mfarray.size{
-        l_mfarray = l_mfarray.broadcast_to(shape: r_mfarray.shape)
-    }
-    // below condition has same size implicitly
-    // below condition cannot be deprecated into above condition because l.size > r.size & l.ndim < r.ndim is possible
-    else if l_mfarray.ndim > r_mfarray.ndim{
-        r_mfarray = r_mfarray.broadcast_to(shape: l_mfarray.shape)
-    }
-    else if r_mfarray.ndim > l_mfarray.ndim{
-        l_mfarray = l_mfarray.broadcast_to(shape: r_mfarray.shape)
-    }
-    
-    return (l_mfarray, r_mfarray, rettype)
 }
 
 
@@ -579,7 +505,7 @@ fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: ino
 
 
 fileprivate func _cross_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-    var (l_mfarray, r_mfarray, rettype) = _biop_broadcast_to(l_mfarray, r_mfarray)
+    var (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
     
     let orig_shape_for3d = l_mfarray.shape
     let lastdim = orig_shape_for3d[l_mfarray.ndim - 1]

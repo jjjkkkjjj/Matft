@@ -50,3 +50,38 @@ internal func get_shape(_ shape: [Int], _ size: Int) -> [Int]{
         }
     }
 }
+
+internal func biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (l: MfArray, r: MfArray, t: MfType){
+    var l_mfarray = l_mfarray
+    var r_mfarray = r_mfarray
+    /*
+    if l_mfarray.storedSize < r_mfarray.storedSize{
+        l_mfarray = r_mfarray
+        r_mfarray = l_mfarray
+    }*/
+    
+    let rettype = MfType.priority(l_mfarray.mftype, r_mfarray.mftype)
+    if l_mfarray.mftype != rettype{
+        l_mfarray = l_mfarray.astype(rettype)
+    }
+    else if r_mfarray.mftype != rettype{
+        r_mfarray = r_mfarray.astype(rettype)
+    }
+    
+    if l_mfarray.size > r_mfarray.size{
+        r_mfarray = r_mfarray.broadcast_to(shape: l_mfarray.shape)
+    }
+    else if r_mfarray.size > l_mfarray.size{
+        l_mfarray = l_mfarray.broadcast_to(shape: r_mfarray.shape)
+    }
+    // below condition has same size implicitly
+    // below condition cannot be deprecated into above condition because l.size > r.size & l.ndim < r.ndim is possible
+    else if l_mfarray.ndim > r_mfarray.ndim{
+        r_mfarray = r_mfarray.broadcast_to(shape: l_mfarray.shape)
+    }
+    else if r_mfarray.ndim > l_mfarray.ndim{
+        l_mfarray = l_mfarray.broadcast_to(shape: r_mfarray.shape)
+    }
+    
+    return (l_mfarray, r_mfarray, rettype)
+}

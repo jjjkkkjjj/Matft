@@ -83,6 +83,39 @@ extension Matft.stats{
             return _stats_calc_index(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_minviD)
         }
     }
+    
+    /**
+       Element-wise  maximum of mfarray and mfarray
+       - parameters:
+            - l_mfarray: mfarray
+            - r_mfarray: mfarray
+    */
+    public static func maximum(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+        let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
+        switch MfType.storedType(rettype) {
+        case .Float:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmax)
+        case .Double:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmaxD)
+        }
+    }
+
+    /**
+       Element-wise  minimum of mfarray and mfarray
+       - parameters:
+            - l_mfarray: mfarray
+            - r_mfarray: mfarray
+    */
+    public static func minimum(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+        let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
+        switch MfType.storedType(rettype) {
+        case .Float:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmin)
+        case .Double:
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vminD)
+        }
+    }
+    
     /**
        Get summation value along axis
        - parameters:

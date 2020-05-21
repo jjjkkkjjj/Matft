@@ -225,3 +225,33 @@ internal func check_contiguous(_ mfarray: MfArray, _ mforder: MfOrder = .Row) ->
         }
     }
 }
+internal func check_biop_contiguous(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ mforder: MfOrder = .Row, convertL: Bool = true) -> (l: MfArray, r: MfArray, biggerL: Bool, retstoredSize: Int){
+    let l: MfArray, r: MfArray
+    let biggerL: Bool
+    let retstoredSize: Int
+    if r_mfarray.mfflags.column_contiguous || r_mfarray.mfflags.row_contiguous{
+        l = l_mfarray
+        r = r_mfarray
+        biggerL = false
+        retstoredSize = r_mfarray.storedSize
+    }
+    else if l_mfarray.mfflags.column_contiguous || l_mfarray.mfflags.row_contiguous{
+        l = l_mfarray
+        r = r_mfarray
+        biggerL = true
+        retstoredSize = l_mfarray.storedSize
+    }
+    else{
+        if convertL{
+            l = Matft.conv_order(l_mfarray, mforder: mforder)
+            r = r_mfarray
+        }
+        else{
+            l = l_mfarray
+            r = Matft.conv_order(r_mfarray, mforder: mforder)
+        }
+        biggerL = true
+        retstoredSize = l_mfarray.storedSize
+    }
+    return (l, r, biggerL, retstoredSize)
+}

@@ -104,23 +104,9 @@ fileprivate func _run_biop_vv<T: MfStorable>(lptr: UnsafePointer<T>, _ lstride: 
 }
 
 internal func biop_vv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, vDSP_func: vDSP_biop_vv_func<T>) -> MfArray{
-    let biggerL: Bool // flag whether l is bigger than r
-    let retstoredSize: Int
-    var l_mfarray = l_mfarray
+    // biggerL: flag whether l is bigger than r
     //return mfarray must be either row or column major
-    if r_mfarray.mfflags.column_contiguous || r_mfarray.mfflags.row_contiguous{
-        biggerL = false
-        retstoredSize = r_mfarray.storedSize
-    }
-    else if l_mfarray.mfflags.column_contiguous || l_mfarray.mfflags.row_contiguous{
-        biggerL = true
-        retstoredSize = l_mfarray.storedSize
-    }
-    else{
-        l_mfarray = Matft.conv_order(l_mfarray, mforder: .Row)
-        biggerL = true
-        retstoredSize = l_mfarray.storedSize
-    }
+    let (l_mfarray, r_mfarray, biggerL, retstoredSize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
     
     
     let newdata = withDummyDataMRPtr(l_mfarray.mftype, storedSize: retstoredSize){

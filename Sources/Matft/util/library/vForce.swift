@@ -29,22 +29,25 @@ internal func math_vv_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 
-internal typealias vForce_1arg_vv_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
+internal typealias vForce_biop_vv_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
 
-internal func math_1arg_vv_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ arg: UnsafePointer<T>, _ vForce_func: vForce_1arg_vv_func<T>) -> MfArray{
-    var mfarray = mfarray
-    mfarray = check_contiguous(mfarray)
+internal func math_biop_vv_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ vForce_func: vForce_biop_vv_func<T>) -> MfArray{
+    let l_mfarray = to_row_major(l_mfarray)
+    let r_mfarray = to_row_major(r_mfarray)
     
-    let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.storedSize){
+    var storedSize = Int32(l_mfarray.storedSize)
+    let newdata = withDummyDataMRPtr(l_mfarray.mftype, storedSize: l_mfarray.storedSize){
         dstptr in
-        let dstptrT = dstptr.bindMemory(to: T.self, capacity: mfarray.storedSize)
-        mfarray.withDataUnsafeMBPtrT(datatype: T.self){
-            [unowned mfarray] in
-            var storedSize = Int32(mfarray.storedSize)
-            vForce_func(dstptrT, $0.baseAddress!, arg, &storedSize)
+        let dstptrT = dstptr.bindMemory(to: T.self, capacity: l_mfarray.storedSize)
+        l_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            lptr in
+            r_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+                rptr in
+                vForce_func(dstptrT, lptr.baseAddress!, rptr.baseAddress!, &storedSize)
+            }
         }
     }
-    
-    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+
+    let newmfstructure = copy_mfstructure(l_mfarray.mfstructure)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
