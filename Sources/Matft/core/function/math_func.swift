@@ -457,18 +457,16 @@ extension Matft.math{//use math_vv_by_vecLib
             - exponents: mfarray
     */
     public static func power(base: Float, exponents: MfArray) -> MfArray{
-        switch exponents.storedType {
-        case .Float:
-            var bases = Array<Float>(repeating: base, count: exponents.storedSize)
-            let ret = math_1arg_vv_by_vForce(exponents, &bases, vvpowf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            var bases = Array<Double>(repeating: Double(base), count: exponents.storedSize)
-            let ret = math_1arg_vv_by_vForce(exponents, &bases, vvpow)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+        return Matft.math.power(bases: Matft.nums(base, shape: [1]), exponents: exponents)
+    }
+    /**
+       Calculate power of each element
+       - parameters:
+            - bases: mfarray
+            - exponent: Float
+    */
+    public static func power(bases: MfArray, exponent: Float) -> MfArray{
+        return Matft.math.power(bases: bases, exponents: Matft.nums(exponent, shape: [1]))
     }
     /**
        Calculate power of each element
@@ -477,30 +475,15 @@ extension Matft.math{//use math_vv_by_vecLib
             - exponents: mfarray
     */
     public static func power(bases: MfArray, exponents: MfArray) -> MfArray{
-        var bases = bases.broadcast_to(shape: exponents.shape)
+        let (bases, exponents, rettype) = biop_broadcast_to(bases, exponents)
         
-        var exponents = exponents
-
-        if exponents.mftype != bases.mftype{
-            if exponents.mftype == MfType.priority(exponents.mftype, bases.mftype){
-                bases = bases.astype(exponents.mftype)
-            }
-            else{
-                exponents = exponents.astype(bases.mftype)
-            }
-        }
-        
-        switch exponents.storedType {
+        switch MfType.storedType(rettype) {
         case .Float:
-            let ret = bases.withDataUnsafeMBPtrT(datatype: Float.self){
-                math_1arg_vv_by_vForce(exponents, $0.baseAddress!, vvpowf)
-            }
+            let ret = math_biop_vv_by_vForce(exponents, bases, vvpowf)
             ret.mfdata._mftype = .Float
             return ret
         case .Double:
-            let ret = bases.withDataUnsafeMBPtrT(datatype: Double.self){
-                math_1arg_vv_by_vForce(exponents, $0.baseAddress!, vvpow)
-            }
+            let ret = math_biop_vv_by_vForce(exponents, bases, vvpow)
             ret.mfdata._mftype = .Double
             return ret
         }

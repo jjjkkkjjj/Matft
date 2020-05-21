@@ -221,6 +221,32 @@ final class MathTests: XCTestCase {
 
                                                                               [[    4096.0,        8192.0],
                                                                                [    16384.0,        32768.0]]]]))
+            let b = Matft.nums(2, shape: [1])
+            XCTAssertEqual(Matft.math.power(bases: b, exponents: a), MfArray([[[[    1.0,        2.0],
+                                                                               [    4.0,        8.0]],
+
+                                                                              [[    16.0,        32.0],
+                                                                               [    64.0,        128.0]]],
+
+
+                                                                             [[[    256.0,        512.0],
+                                                                               [    1024.0,        2048.0]],
+
+                                                                              [[    4096.0,        8192.0],
+                                                                               [    16384.0,        32768.0]]]]))
+            XCTAssertEqual(Matft.math.power(bases: a, exponent: 2).round(decimals: 4),
+                           MfArray([[[[  0,   1],
+                                      [  4,   9]],
+
+                                     [[ 16,  25],
+                                      [ 36,  49]]],
+
+
+                                    [[[ 64,  81],
+                                      [100, 121]],
+
+                                     [[144, 169],
+                                      [196, 225]]]], mftype: .Float))
         }
     }
 }
