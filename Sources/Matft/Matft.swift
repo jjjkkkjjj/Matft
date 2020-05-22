@@ -9,7 +9,6 @@
 import Foundation
 
 public class Matft{
-
     /**
        Leanear algebra
     */

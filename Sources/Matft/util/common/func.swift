@@ -51,7 +51,7 @@ internal func get_shape(_ shape: [Int], _ size: Int) -> [Int]{
     }
 }
 
-internal func biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (l: MfArray, r: MfArray, t: MfType){
+internal func biop_broadcast_to<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> (l: MfArray<T>, r: MfArray<T>){
     var l_mfarray = l_mfarray
     var r_mfarray = r_mfarray
     /*
@@ -59,14 +59,6 @@ internal func biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (
         l_mfarray = r_mfarray
         r_mfarray = l_mfarray
     }*/
-    
-    let rettype = MfType.priority(l_mfarray.mftype, r_mfarray.mftype)
-    if l_mfarray.mftype != rettype{
-        l_mfarray = l_mfarray.astype(rettype)
-    }
-    else if r_mfarray.mftype != rettype{
-        r_mfarray = r_mfarray.astype(rettype)
-    }
     
     if l_mfarray.size > r_mfarray.size{
         r_mfarray = r_mfarray.broadcast_to(shape: l_mfarray.shape)
@@ -83,5 +75,5 @@ internal func biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (
         l_mfarray = l_mfarray.broadcast_to(shape: r_mfarray.shape)
     }
     
-    return (l_mfarray, r_mfarray, rettype)
+    return (l_mfarray, r_mfarray)
 }

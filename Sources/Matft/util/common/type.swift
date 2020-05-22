@@ -8,7 +8,7 @@
 import Foundation
 import Accelerate
 
-internal func to_Bool(_ mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray{
+internal func to_Bool<T: MfTypable>(_ mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray<Bool>{
     
     let ret = mfarray.astype(.Float)
     // TODO: use vDSP_vthr?
@@ -16,7 +16,7 @@ internal func to_Bool(_ mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: 
     case .Float:
         ret.withDataUnsafeMBPtrT(datatype: Float.self){
             [unowned ret] (dataptr) in
-            var newptr = dataptr.map{ abs($0) <= thresholdF ? Float.zero : Float(1) }
+            var newptr = dataptr.map{ abs($0) <= thresholdF ? false : true }
             newptr.withUnsafeMutableBufferPointer{
                 dataptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: ret.storedSize)
             }
@@ -25,6 +25,5 @@ internal func to_Bool(_ mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: 
         fatalError("Bug was occurred. Bool's storedType is not double.")
     }
     
-    ret.mfdata._mftype = .Bool
     return ret
 }

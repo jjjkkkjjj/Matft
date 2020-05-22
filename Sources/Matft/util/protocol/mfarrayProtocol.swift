@@ -10,6 +10,6 @@ import Foundation
 
 
 public protocol MfArrayProtocol{
-    associatedtype ArrayType
+    associatedtype ArrayType: MfTypable
     
 }

@@ -9,15 +9,15 @@
 import Foundation
 import Accelerate
 
-internal func flatten_array(ptr: UnsafeBufferPointer<Any>, mforder: inout MfOrder) -> (flatten: [Any], shape: [Int]){
+internal func flatten_array<T: MfTypable>(ptr: UnsafeBufferPointer<Any>, mforder: inout MfOrder) -> (flatten: [T], shape: [Int]){
     var shape: [Int] = [ptr.count]
     var queue = ptr.compactMap{ $0 }
     
     switch mforder {
     case .Row:
-        return (_get_flatten_row_major(queue: &queue, shape: &shape), shape)
+        return (_get_flatten_row_major(queue: &queue, shape: &shape) as! [T], shape)
     case .Column:
-        return (_get_flatten_column_major(queue: &queue, shape: &shape), shape)
+        return (_get_flatten_column_major(queue: &queue, shape: &shape) as! [T], shape)
     /*case .None:
         fatalError("Select row or column as MfOrder.")*/
     }

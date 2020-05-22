@@ -25,6 +25,8 @@ extension Int: MfTypable {}
 extension Float: MfTypable {}
 extension Double: MfTypable {}
 
+extension Bool: MfTypable {}
+
 public protocol MfStorable: MfTypable, FloatingPoint{
 
     static func num(_ number: Int) -> Self

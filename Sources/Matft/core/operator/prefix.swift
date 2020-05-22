@@ -9,11 +9,11 @@
 import Foundation
 
 prefix operator -
-public prefix func -(_ mfarray: MfArray) -> MfArray{
+public prefix func -<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
     return Matft.neg(mfarray)
 }
 
 prefix operator !
-public prefix func !(_ mfarray: MfArray) -> MfArray{
+public prefix func !<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
     return Matft.logical_not(mfarray)
 }

@@ -70,9 +70,9 @@ public enum MfType: Int{
         }
     }
     
-    static internal func storedType(_ mftype: MfType) -> StoredType{
+    static internal func storedType<T: MfTypable>(_ mftype: T.Type) -> StoredType{
         switch mftype {
-        case .Double:
+        case is Double.Type:
             return .Double
         default: // all mftypes are stored as float except for double
             return .Float

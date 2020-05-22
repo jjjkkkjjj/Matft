@@ -8,13 +8,12 @@
 
 import Foundation
 
-public class MfData{
+public class MfData<ArrayType: MfTypable>{
     private var __refdata: MfData? // must be referenced because refdata could be freed automatically?
     public internal(set) var _data: UnsafeMutableRawPointer
     
-    public internal(set) var _mftype: MfType
     internal var _storedType: StoredType{
-        return MfType.storedType(self._mftype)
+        return MfType.storedType(ArrayType.self)
     }
     public let _storedSize: Int
     public var _storedByteSize: Int{
@@ -45,16 +44,14 @@ public class MfData{
     
     
     
-    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, mftype: MfType){
+    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int){
         self._data = dataptr
         self._storedSize = storedSize
-        self._mftype = mftype
         self._offset = 0
     }
     public init(mfdata: MfData){
         self._data = mfdata._data
         self._storedSize = mfdata._storedSize
-        self._mftype = mfdata._mftype
         self._offset = 0
     }
     
@@ -64,7 +61,6 @@ public class MfData{
         self.__refdata = refdata
         self._data = refdata._data
         self._storedSize = refdata._storedSize
-        self._mftype = refdata._mftype
         self._offset = offset
     }
     
