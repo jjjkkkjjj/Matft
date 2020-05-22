@@ -153,7 +153,7 @@ Packages
 .build/
 xcuserdata
 DerivedData/
-*.xcodeproj
+#*.xcodeproj
 
 # End of https://www.gitignore.io/api/swift,xcode,macos,cocoapods
 

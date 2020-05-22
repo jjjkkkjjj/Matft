@@ -12,11 +12,25 @@
 
   - 開発者
     - バージョンができたら，commitにタグをつけ，pushする
-      - git tag -a **x.x.x** -m "メッセージ" (commit id)"
-        ※**x.x.x**の形でないといけない
-        ※ブランチだとたぶんうまくいかない
-      - git push --tags
-  
+
+      ```bash
+      git tag -a x.x.x -m "メッセージ" (commit id)"
+      ```
+
+      ※**x.x.x**の形でないといけない
+      ※ブランチだとたぶんうまくいかない
+
+      ```bash
+      git push --tags
+      ```
+
+    - タグの削除
+
+      ```bash
+      git tag --delete {tagname}
+      git push origin :{tag name}/
+      ```
+
   - 使用者
   
     - Project > Build Setting > + でgitのURL入れて，適宜選ぶ
@@ -43,7 +57,9 @@
   swift package generate-xcodeproj
   ```
 
-- **面倒なのでしない！**
+- File > New Target > iOS > framework
+  作成
+  →Manage Scheme
 
 - SchemeをShareする
 

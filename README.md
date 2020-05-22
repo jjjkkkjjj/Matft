@@ -1,5 +1,7 @@
 # Matft
 
+![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-success) ![CocoaPods compatible](https://img.shields.io/badge/CocoaPods-compatible-success)  ![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-success) ![license](https://img.shields.io/badge/license-BSD--3-green)
+
 **Matft** is Numpy-like library in Swift. Function name and usage is similar to Numpy.
 
 ## Feature & Usage
@@ -907,8 +909,6 @@ c = a.T
   - File >Swift Packages >Update to Latest Package versions
     ![update](https://user-images.githubusercontent.com/16914891/77145225-4367c180-6acb-11ea-98ea-8d7a5a2a669f.png)
 
-<!--
-
 ### Carthage
 
 - Set Cartfile
@@ -919,8 +919,6 @@ c = a.T
 	```
 
 - Import Matft.framework made by above process to your project
-
--->
 
 ### CocoaPods
 
