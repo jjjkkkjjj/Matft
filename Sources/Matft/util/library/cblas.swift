@@ -16,7 +16,7 @@ internal func copy_unsafeptrT<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcS
     cblas_func(Int32(size), srcptr, Int32(srcStride), dstptr, Int32(dstStride))
 }
 
-internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfArray, cblas_func: cblas_convorder_func<T>) -> MfArray{
+internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray<T>, dsttmpMfarray: MfArray<T>, cblas_func: cblas_convorder_func<T>) -> MfArray<T>{
     
     
     dsttmpMfarray.withDataUnsafeMBPtrT(datatype: T.self){
@@ -61,8 +61,8 @@ internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfA
     return dsttmpMfarray
 }
 
-internal func copy_by_cblas<T: MfStorable>(_ mfarray: MfArray, mforder: MfOrder, cblas_func: cblas_convorder_func<T>) -> MfArray{
-    let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.size){_ in}//dummy
+internal func copy_by_cblas<T: MfStorable>(_ mfarray: MfArray<T>, mforder: MfOrder, cblas_func: cblas_convorder_func<T>) -> MfArray<T>{
+    let newdata = withDummyDataMRPtr(T.self, storedSize: mfarray.size){_ in}//dummy
     var shape = mfarray.shape
     
     let newstructure = create_mfstructure(&shape, mforder: mforder)
@@ -95,7 +95,7 @@ fileprivate func _run_matmul<T: MfStorable>(_ mforder: MfOrder, _ lrow: Int, _ l
     }
 }
 
-internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray, cblas_func: cblas_matmul_func<T>) -> MfArray{
+internal func matmul_by_cblas<T: MfTypable, U: MfStorable>(_ lmfarray: inout MfArray<T>, _ rmfarray: inout MfArray<T>, cblas_func: cblas_matmul_func<U>) -> MfArray<T>{
     let lshape = lmfarray.shape
     let rshape = rmfarray.shape
     var retshape = lmfarray.shape
@@ -113,22 +113,22 @@ internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarr
     let r_matNum = rshape[retndim - 2] * rshape[retndim - 1]
     let iterNum = newmfstructure._size / matNum
     
-    let newmfdata = withDummyDataMRPtr(lmfarray.mftype, storedSize: newmfstructure._size){
+    let newmfdata = withDummyDataMRPtr(T.self, storedSize: newmfstructure._size){
         dstptr in
-        var dstptrT = dstptr.bindMemory(to: T.self, capacity: newmfstructure._size)
-        lmfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        var dstptrU = dstptr.bindMemory(to: U.self, capacity: newmfstructure._size)
+        lmfarray.withDataUnsafeMBPtrT(datatype: U.self){
             lptr in
             var lptr = lptr.baseAddress!
-            rmfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            rmfarray.withDataUnsafeMBPtrT(datatype: U.self){
                 rptr in
                 var rptr = rptr.baseAddress!
                 
                 for _ in 0..<iterNum{
-                    _run_matmul(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr, rshape[retndim - 2], rshape[retndim - 1], rptr, dstptrT, cblas_func)
+                    _run_matmul(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr, rshape[retndim - 2], rshape[retndim - 1], rptr, dstptrU, cblas_func)
                     
                     lptr += l_matNum
                     rptr += r_matNum
-                    dstptrT += matNum
+                    dstptrU += matNum
                 }
             }
         }
@@ -137,7 +137,7 @@ internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarr
     return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
 }
 
-fileprivate func _matmul_convorder(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray) -> MfOrder{
+fileprivate func _matmul_convorder<T: MfTypable>(_ lmfarray: inout MfArray<T>, _ rmfarray: inout MfArray<T>) -> MfOrder{
     // order
     /*
     // must be close to either row or column major

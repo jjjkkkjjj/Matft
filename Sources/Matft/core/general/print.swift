@@ -12,7 +12,7 @@ extension MfArray: CustomStringConvertible{
     public var description: String{
         var desc = "mfarray = \n"
         if self.size == 0{
-            desc += "\t[], type=\(self.mftype), shape=\(self.shape)"
+            desc += "\t[], type=\(ArrayType.self), shape=\(self.shape)"
             return desc
         }
         
@@ -80,7 +80,7 @@ extension MfArray: CustomStringConvertible{
         //remove redundunt "[", "\n" and "\n"
         desc = String(desc.dropLast((self.ndim - 1)*2 + 2))
         //append mfarray  info
-        desc += " type=\(self.mftype), shape=\(self.shape)"
+        desc += " type=\(ArrayType.self), shape=\(self.shape)"
         
         return desc
     }
@@ -110,7 +110,7 @@ fileprivate func _clousure_number(mfarray: MfArray, ind: Int) -> Int{
 }*/
 
 //count clousure "[" number
-fileprivate func _clousure_number(mfarray: MfArray, indices: inout [Int]) -> Int{
+fileprivate func _clousure_number<T>(mfarray: MfArray<T>, indices: inout [Int]) -> Int{
     var clousureNum = 1
     let shape = mfarray.shape
     for axis in (0..<indices.count - 1).reversed(){

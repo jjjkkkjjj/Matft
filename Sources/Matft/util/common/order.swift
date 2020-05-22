@@ -168,9 +168,9 @@ fileprivate func _recurrsion_flatten(elements: Any, mftype : inout MfType, shape
 /**
     - Important: strides must be checked before calling this function
  */
-internal func copyAll(_ mfarray: MfArray) -> MfArray{
+internal func copyAll<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
     assert(mfarray.mfflags.row_contiguous || mfarray.mfflags.column_contiguous, "To call copyAll function, passed mfarray must be contiguous")
-    let newmfdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.size){
+    let newmfdata = withDummyDataMRPtr(T.self, storedSize: mfarray.size){
         dstptr in
         mfarray.withDataUnsafeMRPtr{
             [unowned mfarray] in
@@ -182,7 +182,7 @@ internal func copyAll(_ mfarray: MfArray) -> MfArray{
     return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
 }
 
-internal func to_row_major(_ mfarray: MfArray) -> MfArray{
+internal func to_row_major<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
     if mfarray.mfflags.row_contiguous{
         return copyAll(mfarray)
     }
@@ -196,7 +196,7 @@ internal func to_row_major(_ mfarray: MfArray) -> MfArray{
     
 }
 
-internal func to_column_major(_ mfarray: MfArray) -> MfArray{
+internal func to_column_major<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
     if mfarray.mfflags.column_contiguous{
         return copyAll(mfarray)
     }
@@ -212,7 +212,7 @@ internal func to_column_major(_ mfarray: MfArray) -> MfArray{
 /**
  Return contiguous mfarray. If passed mfarray is arleady contiguous, return one directly
  */
-internal func check_contiguous(_ mfarray: MfArray, _ mforder: MfOrder = .Row) -> MfArray{
+internal func check_contiguous<T: MfTypable>(_ mfarray: MfArray<T>, _ mforder: MfOrder = .Row) -> MfArray<T>{
     if mfarray.mfflags.row_contiguous || mfarray.mfflags.column_contiguous{
         return mfarray
     }
@@ -225,8 +225,8 @@ internal func check_contiguous(_ mfarray: MfArray, _ mforder: MfOrder = .Row) ->
         }
     }
 }
-internal func check_biop_contiguous(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ mforder: MfOrder = .Row, convertL: Bool = true) -> (l: MfArray, r: MfArray, biggerL: Bool, retstoredSize: Int){
-    let l: MfArray, r: MfArray
+internal func check_biop_contiguous<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, _ mforder: MfOrder = .Row, convertL: Bool = true) -> (l: MfArray<T>, r: MfArray<T>, biggerL: Bool, retstoredSize: Int){
+    let l: MfArray<T>, r: MfArray<T>
     let biggerL: Bool
     let retstoredSize: Int
     if r_mfarray.mfflags.column_contiguous || r_mfarray.mfflags.row_contiguous{

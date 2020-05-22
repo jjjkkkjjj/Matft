@@ -29,7 +29,7 @@ internal func array2UnsafeMPtrT<T: MfTypable>(_ array: inout [T]) -> UnsafeMutab
    - Important: this function allocate new memory, so don't forget deallocate!
 */
 
-typealias pre_convert_func<T: MfTypable, U: MfTypable> = (_ flattenarray: inout [T]) -> [U]
+fileprivate typealias pre_convert_func<T: MfTypable, U: MfTypable> = (_ flattenarray: inout [T]) -> [U]
 fileprivate protocol ToRawPtrProtocol{
     associatedtype ArrayType: MfTypable
     associatedtype StoredType: MfStorable

@@ -8,24 +8,35 @@
 
 import Foundation
 
-public protocol MfTypable: Numeric{}
+public protocol MfTypable{
+    static var zero: Self { get }
+}
 
-extension UInt8: MfTypable {}
-extension UInt16: MfTypable {}
-extension UInt32: MfTypable {}
-extension UInt64: MfTypable {}
-extension UInt: MfTypable {}
+public protocol StoredFloat{}
+public protocol StoredDouble{}
 
-extension Int8: MfTypable {}
-extension Int16: MfTypable {}
-extension Int32: MfTypable {}
-extension Int64: MfTypable {}
-extension Int: MfTypable {}
+public protocol MfNumeric: Numeric, Strideable{}
 
-extension Float: MfTypable {}
-extension Double: MfTypable {}
+extension UInt8: MfTypable, MfNumeric, StoredFloat {}
+extension UInt16: MfTypable, MfNumeric, StoredFloat {}
+extension UInt32: MfTypable, MfNumeric, StoredDouble {}
+extension UInt64: MfTypable, MfNumeric, StoredDouble {}
+extension UInt: MfTypable, MfNumeric, StoredDouble {}
 
-extension Bool: MfTypable {}
+extension Int8: MfTypable, MfNumeric, StoredFloat {}
+extension Int16: MfTypable, MfNumeric, StoredFloat {}
+extension Int32: MfTypable, MfNumeric, StoredFloat {}
+extension Int64: MfTypable, MfNumeric, StoredDouble {}
+extension Int: MfTypable, MfNumeric, StoredFloat {}
+
+extension Float: MfTypable, MfNumeric, StoredFloat {}
+extension Double: MfTypable, MfNumeric, StoredDouble {}
+
+extension Bool: MfTypable, StoredFloat {
+    public static var zero: Bool {
+        return false
+    }
+}
 
 public protocol MfStorable: MfTypable, FloatingPoint{
 

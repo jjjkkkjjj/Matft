@@ -13,83 +13,47 @@ extension Matft.file{
        - parameters:
            - mfarray: mfarray
     */
-    public static func loadtxt(url: URL, delimiter: Character, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
+    public static func loadtxt<T: MfStorable>(url: URL, delimiter: Character, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray<T>?{
 
         guard let parser = _TxtParser(url, delimiter, encoding, removeBlank) else { return nil }
 
-        switch MfType.storedType(mftype) {
-        case .Float:
-            return _load(parser: parser, type: Float.self, mftype, skiprows, use_cols, max_rows)
-            
-        case .Double:
-            return _load(parser: parser, type: Double.self, mftype, skiprows, use_cols, max_rows)
-        }
+        return _load(parser: parser, type: T.self, skiprows, use_cols, max_rows)
     }
-    public static func loadtxt(path: String, delimiter: Character, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
+    public static func loadtxt<T: MfStorable>(path: String, delimiter: Character, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray<T>?{
         
         guard let parser = _TxtParser(path, delimiter, encoding, removeBlank) else { return nil }
         
-        switch MfType.storedType(mftype) {
-        case .Float:
-            return _load(parser: parser, type: Float.self, mftype, skiprows, use_cols, max_rows)
-            
-        case .Double:
-            return _load(parser: parser, type: Double.self, mftype, skiprows, use_cols, max_rows)
-        }
+        return _load(parser: parser, type: T.self, skiprows, use_cols, max_rows)
     }
     
-    public static func genfromtxt<T: MfStorable>(url: URL, delimiter: Character, fillnan: T, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
+    public static func genfromtxt<T: MfStorable>(url: URL, delimiter: Character, fillnan: T, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray<T>?{
         
         guard let parser = _TxtParser(url, delimiter, encoding, removeBlank) else { return nil }
         
-        switch MfType.storedType(mftype) {
-        case .Float:
-            return _gen(parser: parser, fillnan: Float.from(fillnan), mftype, skiprows, use_cols, max_rows)
-            
-        case .Double:
-            return _gen(parser: parser, fillnan: Double.from(fillnan), mftype, skiprows, use_cols, max_rows)
-        }
+        return _gen(parser: parser, fillnan: T.from(fillnan), skiprows, use_cols, max_rows)
     }
-    public static func genfromtxt(url: URL, delimiter: Character, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
+    public static func genfromtxt<T: MfStorable>(url: URL, delimiter: Character, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray<T>?{
         
         guard let parser = _TxtParser(url, delimiter, encoding, removeBlank) else { return nil }
         
-        switch MfType.storedType(mftype) {
-        case .Float:
-            return _gen(parser: parser, fillnan: Float.nan, mftype, skiprows, use_cols, max_rows)
-            
-        case .Double:
-            return _gen(parser: parser, fillnan: Double.nan, mftype, skiprows, use_cols, max_rows)
-        }
+        return _gen(parser: parser, fillnan: T.nan, skiprows, use_cols, max_rows)
     }
-    public static func genfromtxt<T: MfStorable>(path: String, delimiter: Character, fillnan: T, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
+    public static func genfromtxt<T: MfStorable>(path: String, delimiter: Character, fillnan: T, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray<T>?{
         
         guard let parser = _TxtParser(path, delimiter, encoding, removeBlank) else { return nil }
         
-        switch MfType.storedType(mftype) {
-        case .Float:
-            return _gen(parser: parser, fillnan: Float.from(fillnan), mftype, skiprows, use_cols, max_rows)
-            
-        case .Double:
-            return _gen(parser: parser, fillnan: Double.from(fillnan), mftype, skiprows, use_cols, max_rows)
-        }
+        return _gen(parser: parser, fillnan: T.from(fillnan), skiprows, use_cols, max_rows)
     }
-    public static func genfromtxt(path: String, delimiter: Character, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
+    public static func genfromtxt<T: MfStorable>(path: String, delimiter: Character, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray<T>?{
         
         guard let parser = _TxtParser(path, delimiter, encoding, removeBlank) else { return nil }
         
-        switch MfType.storedType(mftype) {
-        case .Float:
-            return _gen(parser: parser, fillnan: Float.nan, mftype, skiprows, use_cols, max_rows)
-            
-        case .Double:
-            return _gen(parser: parser, fillnan: Double.nan, mftype, skiprows, use_cols, max_rows)
-        }
+        return _gen(parser: parser, fillnan: T.nan, skiprows, use_cols, max_rows)
     }
 
 }
 
-fileprivate func _load<T: MfStorable>(parser: _TxtParser, type: T.Type, _ mftype: MfType = .Float, _ skiprows: [Int]? = nil, _ use_cols: [Int]? = nil, _ max_rows: Int? = nil) -> MfArray?{
+fileprivate func _load<T: MfStorable>(parser: _TxtParser, type: T.Type, _ skiprows: [Int]? = nil, _ use_cols: [Int]? = nil, _ max_rows: Int? = nil) -> MfArray<T>?{
     /*
     cannot load ,\n
     e.g.) test.csv
@@ -140,10 +104,10 @@ fileprivate func _load<T: MfStorable>(parser: _TxtParser, type: T.Type, _ mftype
     }
     
     //squeeze if one line only
-    return MfArray(ret, mftype: mftype).squeeze()
+    return MfArray(ret).squeeze()
 }
 
-fileprivate func _gen<T: MfStorable>(parser: _TxtParser, fillnan: T, _ mftype: MfType = .Float, _ skiprows: [Int]? = nil, _ use_cols: [Int]? = nil, _ max_rows: Int? = nil) -> MfArray?{
+fileprivate func _gen<T: MfStorable>(parser: _TxtParser, fillnan: T, _ skiprows: [Int]? = nil, _ use_cols: [Int]? = nil, _ max_rows: Int? = nil) -> MfArray<T>?{
     /*
     cannot load imbalance delimiter
     e.g.) test.csv
@@ -208,7 +172,7 @@ fileprivate func _gen<T: MfStorable>(parser: _TxtParser, fillnan: T, _ mftype: M
     }
     
     //squeeze if one line only
-    return MfArray(ret, mftype: mftype).squeeze()
+    return MfArray(ret).squeeze()
 }
 
 

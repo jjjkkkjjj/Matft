@@ -24,9 +24,7 @@ extension Matft{
            - mfarray: mfarray
     */
     public static func logical_not<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<Bool>{
-        var ret = to_Bool(mfarray)// copy and convert to bool
-        ret = Matft.math.abs(ret - 1) // force cast to Float
-        return ret
+        return to_NotBool(mfarray)
     }
 }
 

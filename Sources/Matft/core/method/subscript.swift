@@ -10,30 +10,20 @@ import Foundation
 import Accelerate
 
 extension MfArray: MfSubscriptable{
-    public subscript(indices: Int...) -> Any{
+    public subscript(indices: Int...) -> ArrayType{
         get {
             var indices: [Any] = indices
             let ret = self._get_mfarray(indices: &indices)
 
-            if let scalar = ret.scalar{
-                return scalar
-            }
-            else{
-                return ret
-            }
+            return ret
         }
         set(newValue){
             var indices: [Any] = indices
-            
-            if let newValue = newValue as? MfArray{
-                return self._set_mfarray(indices: &indices, newValue: newValue)
-            }
-            else{
-                return self._set_mfarray(indices: &indices, newValue: MfArray([newValue]))
-            }
+                        
+            return self._set_mfarray(indices: &indices, newValue: MfArray([newValue]))
         }
     }
-    public subscript(indices: MfSlice...) -> MfArray{
+    public subscript(indices: MfSlice...) -> MfArray<ArrayType>{
         get{
             var indices: [Any] = indices
             return self._get_mfarray(indices: &indices)
@@ -88,7 +78,7 @@ extension MfArray: MfSubscriptable{
     }
     */
     //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
-    public subscript(indices: Any...) -> MfArray{
+    public subscript(indices: Any...) -> MfArray<ArrayType>{
         get{
             var indices = indices
             return self._get_mfarray(indices: &indices)

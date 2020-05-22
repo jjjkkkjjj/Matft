@@ -8,21 +8,21 @@
 
 import Foundation
 
-internal struct OptOffsetParams: Sequence{
-    let bigger_mfarray: MfArray
-    let smaller_mfarray: MfArray
+internal struct OptOffsetParams<T: MfTypable>: Sequence{
+    let bigger_mfarray: MfArray<T>
+    let smaller_mfarray: MfArray<T>
     
-    public init(bigger_mfarray: MfArray, smaller_mfarray: MfArray){
+    public init(bigger_mfarray: MfArray<T>, smaller_mfarray: MfArray<T>){
         self.bigger_mfarray = bigger_mfarray
         self.smaller_mfarray = smaller_mfarray
     }
     
-    func makeIterator() -> OptOffsetParamIterator {
+    func makeIterator() -> OptOffsetParamIterator<T> {
         return OptOffsetParamIterator(optParams: self)
     }
 }
 
-internal struct OptOffsetParamIterator: IteratorProtocol{
+internal struct OptOffsetParamIterator<T: MfTypable>: IteratorProtocol{
     let stride: (b: Int, s: Int)
     let blocksize: Int
     let itershapes: [Int]
@@ -32,7 +32,7 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
     var indicesOfAxes: [Int]
     var offset: (b: Int, s: Int)? = (0, 0)
     
-    public init(optParams: OptOffsetParams){
+    public init(optParams: OptOffsetParams<T>){
         var shape = optParams.bigger_mfarray.shape
         var b_strides = optParams.bigger_mfarray.strides
         var s_strides = optParams.smaller_mfarray.strides

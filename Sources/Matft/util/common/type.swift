@@ -10,20 +10,48 @@ import Accelerate
 
 internal func to_Bool<T: MfTypable>(_ mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray<Bool>{
     
-    let ret = mfarray.astype(.Float)
-    // TODO: use vDSP_vthr?
-    switch ret.storedType {
-    case .Float:
-        ret.withDataUnsafeMBPtrT(datatype: Float.self){
-            [unowned ret] (dataptr) in
-            var newptr = dataptr.map{ abs($0) <= thresholdF ? false : true }
+    let ret = mfarray.astype(Float.self)
+    let retsize = mfarray.size
+    let newmfdata = withDummyDataMRPtr(Bool.self, storedSize: retsize){
+        (dataptr) in
+        
+        let dataptrF = dataptr.bindMemory(to: Float.self, capacity: retsize)
+        mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+            [unowned mfarray] (srcptr) in
+            // TODO: use vDSP_vthr?
+            var newptr = srcptr.map{ abs($0) <= thresholdF ? Float.zero : Float(1) }
             newptr.withUnsafeMutableBufferPointer{
-                dataptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: ret.storedSize)
+                dataptrF.moveAssign(from: $0.baseAddress!, count: retsize)
             }
         }
-    case .Double:
-        fatalError("Bug was occurred. Bool's storedType is not double.")
+        
     }
     
-    return ret
+    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    
+    return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+}
+
+internal func to_NotBool<T: MfTypable>(_ mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray<Bool>{
+    
+    let ret = mfarray.astype(Float.self)
+    let retsize = mfarray.size
+    let newmfdata = withDummyDataMRPtr(Bool.self, storedSize: retsize){
+        (dataptr) in
+        
+        let dataptrF = dataptr.bindMemory(to: Float.self, capacity: retsize)
+        mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+            [unowned mfarray] (srcptr) in
+            // TODO: use vDSP_vthr?
+            var newptr = srcptr.map{ abs($0) > thresholdF ? Float.zero : Float(1) }
+            newptr.withUnsafeMutableBufferPointer{
+                dataptrF.moveAssign(from: $0.baseAddress!, count: retsize)
+            }
+        }
+        
+    }
+    
+    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    
+    return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
 }

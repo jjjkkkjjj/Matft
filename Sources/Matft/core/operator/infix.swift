@@ -38,13 +38,13 @@ public func *<T: MfTypable>(l_scalar: T, r_mfarray: MfArray<T>) -> MfArray<T>{
     return Matft.mul(l_scalar, r_mfarray)
 }
 
-public func /<T: MfTypable>(l_mfarray: MfArray<T>, r_mfarray: MfArray<T>) -> MfArray<T>{
+public func /<T: MfStorable>(l_mfarray: MfArray<T>, r_mfarray: MfArray<T>) -> MfArray<T>{
     return Matft.div(l_mfarray, r_mfarray)
 }
-public func /<T: MfTypable>(l_mfarray: MfArray<T>, r_scalar: T) -> MfArray<T>{
+public func /<T: MfStorable>(l_mfarray: MfArray<T>, r_scalar: T) -> MfArray<T>{
     return Matft.div(l_mfarray, r_scalar)
 }
-public func /<T: MfTypable>(l_scalar: T, r_mfarray: MfArray<T>) -> MfArray<T>{
+public func /<T: MfStorable>(l_scalar: T, r_mfarray: MfArray<T>) -> MfArray<T>{
     return Matft.div(l_scalar, r_mfarray)
 }
 

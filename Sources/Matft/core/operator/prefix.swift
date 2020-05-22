@@ -14,6 +14,6 @@ public prefix func -<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
 }
 
 prefix operator !
-public prefix func !<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
+public prefix func !<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<Bool>{
     return Matft.logical_not(mfarray)
 }

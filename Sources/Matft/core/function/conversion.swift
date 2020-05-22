@@ -16,19 +16,14 @@ extension Matft{
             - mfarray: mfarray
             - mftype: the type of mfarray
     */
-    public static func astype(_ mfarray: MfArray, mftype: MfType) -> MfArray{
+    public static func astype<T: MfTypable, U: MfTypable>(_ mfarray: MfArray<T>, mftype: U.Type) -> MfArray<U>{
         //let newarray = Matft.shallowcopy(mfarray)
         //newarray.mfdata._mftype = mftype
-        if mftype == .Bool{
-            return to_Bool(mfarray)
+        if U.self is Bool.Type{
+            return to_Bool(mfarray) as! MfArray<U>
         }
         
-        let newStoredType = MfType.storedType(mftype)
-        if mfarray.storedType == newStoredType{
-            let ret = mfarray.deepcopy()
-            ret.mfdata._mftype = mftype
-            return ret
-        }
+        let newStoredType = MfType.storedType(T.self)
         
         //copy shape and strides
         let newmfstructure: MfStructure
@@ -40,7 +35,7 @@ extension Matft{
         
         switch newStoredType{
         case .Float://double to float
-            let newdata = withDummyDataMRPtr(mftype, storedSize: mfarray.storedSize){
+            let newdata = withDummyDataMRPtr(U.self, storedSize: mfarray.storedSize){
                 let dstptr = $0.bindMemory(to:  Float.self, capacity: mfarray.storedSize)
                 mfarray.withDataUnsafeMBPtrT(datatype: Double.self){
                     [unowned mfarray] in
@@ -51,7 +46,7 @@ extension Matft{
             return MfArray(mfdata: newdata, mfstructure: newmfstructure)
             
         case .Double://float to double
-            let newdata = withDummyDataMRPtr(mftype, storedSize: mfarray.storedSize){
+            let newdata = withDummyDataMRPtr(U.self, storedSize: mfarray.storedSize){
                 let dstptr = $0.bindMemory(to:  Double.self, capacity: mfarray.storedSize)
                 mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
                     [unowned mfarray] in
@@ -68,7 +63,7 @@ extension Matft{
             - mfarray: mfarray
             - axes: (Optional) the indices of shape. In case this is left out, get transposed mfarray
     */
-    public static func transpose(_ mfarray: MfArray, axes: [Int]? = nil) -> MfArray{
+    public static func transpose<T: MfTypable>(_ mfarray: MfArray<T>, axes: [Int]? = nil) -> MfArray<T>{
         var permutation: [Int] = [], reverse_permutation: [Int] = []
         let ndim =  mfarray.shape.count
         
@@ -113,7 +108,7 @@ extension Matft{
             - order: (Optional) order, default is nil, which means close to either row or column major if possibe.
        - Important: this function will create copy not view
     */
-    public static func reshape(_ mfarray: MfArray, newshape: [Int], order: MfOrder? = nil) -> MfArray{
+    public static func reshape<T: MfTypable>(_ mfarray: MfArray<T>, newshape: [Int], order: MfOrder? = nil) -> MfArray<T>{
         var newshape = get_shape(newshape, mfarray.size)
         precondition(mfarray.size == shape2size(&newshape), "new shape's size:\(shape2size(&newshape)) must be same as mfarray's size:\(mfarray.size)")
         
@@ -125,10 +120,10 @@ extension Matft{
         switch order {
         case .Row:
             let flattenArray = mfarray.flatten(.Row)
-            return MfArray(flattenArray.data, mftype: mfarray.mftype, shape: newshape, mforder: .Row)
+            return MfArray(flattenArray.data, shape: newshape, mforder: .Row)
         case .Column:
             let flattenArray = mfarray.flatten(.Column)
-            return MfArray(flattenArray.data, mftype: mfarray.mftype, shape: newshape, mforder: .Row)
+            return MfArray(flattenArray.data, shape: newshape, mforder: .Row)
         }
         
         /* i wanna implement no copy version
@@ -151,7 +146,7 @@ extension Matft{
             - mfarray: mfarray
             - axis: the expanded axis
     */
-    public static func expand_dims(_ mfarray: MfArray, axis: Int) -> MfArray{
+    public static func expand_dims<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int) -> MfArray<T>{
         let newarray = mfarray.shallowcopy()
         
         var newshape = mfarray.shape
@@ -172,7 +167,7 @@ extension Matft{
             - mfarray: mfarray
             - axes: the list of expanded axes
     */
-    public static func expand_dims(_ mfarray: MfArray, axes: [Int]) -> MfArray{
+    public static func expand_dims<T: MfTypable>(_ mfarray: MfArray<T>, axes: [Int]) -> MfArray<T>{
         let newarray = mfarray.shallowcopy()
         // reorder descending
         let axes = axes.sorted{ $0 < $1 }
@@ -196,7 +191,7 @@ extension Matft{
             - mfarray: mfarray
             - axis: (Optional) the removed axis
     */
-    public static func squeeze(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
+    public static func squeeze<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil) -> MfArray<T>{
         var newshape = mfarray.shape
         var newstrides = mfarray.strides
         
@@ -242,7 +237,7 @@ extension Matft{
             - mfarray: mfarray
             - axes: the list of  removed axes
     */
-    public static func squeeze(_ mfarray: MfArray, axes: [Int]) -> MfArray{
+    public static func squeeze<T: MfTypable>(_ mfarray: MfArray<T>, axes: [Int]) -> MfArray<T>{
         // reoder descending
         let axes = axes.sorted{ $0 > $1 }
         var newshape = mfarray.shape
@@ -266,7 +261,7 @@ extension Matft{
             - mfarray: mfarray
             - shape: shape
     */
-    public static func broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
+    public static func broadcast_to<T: MfTypable>(_ mfarray: MfArray<T>, shape: [Int]) -> MfArray<T>{
         var new_shape = shape
         //let newarray = Matft.shallowcopy(mfarray)
         let new_ndim = shape2ndim(&new_shape)
@@ -315,7 +310,7 @@ extension Matft{
             - mfarray: mfarray
             - mforder: mforder
     */
-    public static func conv_order(_ mfarray: MfArray, mforder: MfOrder) -> MfArray{
+    public static func conv_order<T: MfTypable>(_ mfarray: MfArray<T>, mforder: MfOrder) -> MfArray<T>{
         switch mforder {
         case .Row:
             return to_row_major(mfarray)
@@ -329,7 +324,7 @@ extension Matft{
             - mfarray: mfarray
             - mforder: (Optional) mforder, default is Row
     */
-    public static func flatten(_ mfarray: MfArray, mforder: MfOrder = .Row) -> MfArray{
+    public static func flatten<T: MfTypable>(_ mfarray: MfArray<T>, mforder: MfOrder = .Row) -> MfArray<T>{
         let ret = Matft.conv_order(mfarray, mforder: mforder)
         
         //shape
@@ -350,7 +345,7 @@ extension Matft{
             - mfarray: mfarray
             - axis: (optional) the reversed axis
     */
-    public static func flip(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
+    public static func flip<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil) -> MfArray<T>{
         if let axis = axis{
             let axis = get_axis(axis, ndim: mfarray.ndim)
             var slices = Array<MfSlice>(repeating: MfSlice(start: 0, to: nil, by: 1), count: mfarray.ndim)
@@ -367,7 +362,7 @@ extension Matft{
             - mfarray: mfarray
             - axes: (optional) the reversed axis of list
     */
-    public static func flip(_ mfarray: MfArray, axes: [Int]? = nil) -> MfArray{
+    public static func flip<T: MfTypable>(_ mfarray: MfArray<T>, axes: [Int]? = nil) -> MfArray<T>{
         let axes = axes ?? Array(stride(from: 0, to: mfarray.ndim, by: 1))
         
         var slices = Array<MfSlice>(repeating: MfSlice(start: 0, to: nil, by: 1), count: mfarray.ndim)
@@ -385,7 +380,7 @@ extension Matft{
             - min: (optional) Minimum value. If nil is passed, handled as -inf
             - max: (optional) Maximum value. If nil is passed, handled as inf
     */
-    public static func clip<T: MfTypable>(_ mfarray: MfArray, min: T? = nil, max: T? = nil) -> MfArray{
+    public static func clip<T: MfTypable>(_ mfarray: MfArray<T>, min: T? = nil, max: T? = nil) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let min = min == nil ? -Float.infinity : Float.from(min!)
@@ -405,7 +400,7 @@ extension Matft{
             - axis1: Int
             - axis2: Int
     */
-    public static func swapaxes(_ mfarray: MfArray, axis1: Int, axis2: Int) -> MfArray{
+    public static func swapaxes<T: MfTypable>(_ mfarray: MfArray<T>, axis1: Int, axis2: Int) -> MfArray<T>{
         let axis1 = get_axis(axis1, ndim: mfarray.ndim)
         let axis2 = get_axis(axis2, ndim: mfarray.ndim)
         
@@ -423,7 +418,7 @@ extension Matft{
             - src: Int
             - dst: Int
     */
-    public static func moveaxis(_ mfarray: MfArray, src: Int, dst: Int) -> MfArray{
+    public static func moveaxis<T: MfTypable>(_ mfarray: MfArray<T>, src: Int, dst: Int) -> MfArray<T>{
         let src = get_axis(src, ndim: mfarray.ndim)
         let dst = get_axis(dst, ndim: mfarray.ndim)
         
@@ -441,7 +436,7 @@ extension Matft{
             - src: [Int]
             - dst: [Int]
     */
-    public static func moveaxis(_ mfarray: MfArray, src: [Int], dst: [Int]) -> MfArray{
+    public static func moveaxis<T: MfTypable>(_ mfarray: MfArray<T>, src: [Int], dst: [Int]) -> MfArray<T>{
         precondition(src.count == dst.count, "must be same size")
         var sources: [Int] = [], dstinations: [Int] = []
         for (s, d) in zip(src, dst){
@@ -470,10 +465,10 @@ extension Matft{
             - axis: (Optional) axis, if not given, get summation for all elements
             - order: (Optional) ascending or descending. default is ascending
     */
-    public static func sort(_ mfarray: MfArray, axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray{
+    public static func sort<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray<T>{
         
         let _axis: Int
-        let _dst: MfArray
+        let _dst: MfArray<T>
         if axis != nil && mfarray.ndim > 1{// for given axis
             _axis = get_axis(axis!, ndim: mfarray.ndim)
             _dst = mfarray.deepcopy()
@@ -496,10 +491,10 @@ extension Matft{
             - axis: (Optional) axis, if not given, get summation for all elements
             - order: (Optional) ascending or descending. default is ascending
     */
-    public static func argsort(_ mfarray: MfArray, axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray{
+    public static func argsort<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray<Int>{
         
         let _axis: Int
-        let _dst: MfArray
+        let _dst: MfArray<T>
         if axis != nil && mfarray.ndim > 1{// for given axis
             _axis = get_axis(axis!, ndim: mfarray.ndim)
             _dst = mfarray.deepcopy()

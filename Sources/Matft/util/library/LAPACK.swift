@@ -38,7 +38,7 @@ fileprivate func _run_lapack<T: MfStorable>(copiedCoefPtr: UnsafeMutablePointer<
         throw MfError.LinAlgError.singularMatrix("The factorization has been completed, but the factor U(of A=PLU) is exactly singular, so the solution could not be computed.")
     }
 }
-internal func solve_by_lapack<T: MfStorable>(_ coef: MfArray, _ b: MfArray, _ eqNum: Int, _ dstColNum: Int, _ lapack_func: lapack_solve<T>) throws -> MfArray{
+internal func solve_by_lapack<T: MfStorable>(_ coef: MfArray<T>, _ b: MfArray<T>, _ eqNum: Int, _ dstColNum: Int, _ lapack_func: lapack_solve<T>) throws -> MfArray<T>{
     assert(coef.storedType == b.storedType, "must be same storedType")
     
     //get column flatten
@@ -116,13 +116,13 @@ fileprivate func _run_inv<T: MfStorable>(_ squaredSize: Int, srcdstptr: UnsafeMu
     }
 }
 
-internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func: lapack_LU<T>, _ inv_lapack_func: lapack_inv<T>, _ retMfType: MfType) throws -> MfArray{
+internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray<T>, _ lu_lapack_func: lapack_LU<T>, _ inv_lapack_func: lapack_inv<T>, _ retMfType: MfType) throws -> MfArray<T>{
     
-    let newmfdata = try withDummyDataMRPtr(retMfType, storedSize: mfarray.size){
+    let newmfdata = try withDummyDataMRPtr(T.self, storedSize: mfarray.size){
         dstptr in
         let dstptrF = dstptr.bindMemory(to: T.self, capacity: mfarray.size)
         
-        try _withNNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Row){
+        try _withNNStackedMajorPtr(mfarray: mfarray, storedType: T.self, mforder: .Row){
             srcptr, squaredSize, offset in
             //LU decomposition
             var IPIV = try _run_lu(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: lu_lapack_func)
@@ -142,13 +142,13 @@ internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func:
 }
 
 
-internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func: lapack_LU<T>, _ retMfType: MfType, _ retSize: Int) throws -> MfArray{
-    let newmfdata = try withDummyDataMRPtr(retMfType, storedSize: retSize){
+internal func det_by_lapack<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, _ lu_lapack_func: lapack_LU<U>, _ retSize: Int) throws -> MfArray<T>{
+    let newmfdata = try withDummyDataMRPtr(T.self, storedSize: retSize){
         dstptr in
-        let dstptrF = dstptr.bindMemory(to: T.self, capacity: retSize)
+        let dstptrU = dstptr.bindMemory(to: U.self, capacity: retSize)
         
         var dstoffset = 0
-        try _withNNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Row){
+        try _withNNStackedMajorPtr(mfarray: mfarray, storedType: U.self, mforder: .Row){
             srcptr, squaredSize, offset in
             //LU decomposition
             let IPIV = try _run_lu(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: lu_lapack_func)
@@ -157,13 +157,13 @@ internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func:
             //Note that L and U's determinant are calculated by product of diagonal elements
             // L's determinant is always one
             //ref: https://stackoverflow.com/questions/47315471/compute-determinant-from-lu-decomposition-in-lapack
-            var det = T.num(1)
+            var det = U.num(1)
             for i in 0..<squaredSize{
                 det *= IPIV[i] != __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*squaredSize).pointee : -(srcptr.advanced(by: i + i*squaredSize).pointee)
             }
             
             //assign
-            (dstptrF + dstoffset).assign(from: &det, count: 1)
+            (dstptrU + dstoffset).assign(from: &det, count: 1)
             dstoffset += 1
         }
     }
@@ -352,22 +352,22 @@ fileprivate func _run_eigen<T: MfStorable>(_ squaredSize: Int, copiedSrcPtr: Uns
     }
 }
 
-internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfType, _ lapack_func: lapack_eigen<T>) throws -> (valRe: MfArray, valIm: MfArray, lvecRe: MfArray, lvecIm: MfArray, rvecRe: MfArray, rvecIm: MfArray){
+internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray<T>, _ lapack_func: lapack_eigen<T>) throws -> (valRe: MfArray<T>, valIm: MfArray<T>, lvecRe: MfArray<T>, lvecIm: MfArray<T>, rvecRe: MfArray<T>, rvecIm: MfArray<T>){
     let shape = mfarray.shape
     let squaredSize = shape[mfarray.ndim - 1]
     //let eigValNum = mfarray.size / (squaredSize * squaredSize)
     
     // create mfarraies
     //eigenvectors
-    let lvecRe = Matft.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
-    let lvecIm = Matft.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
-    let rvecRe = Matft.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
-    let rvecIm = Matft.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
+    let lvecRe = Matft.nums(T.zero, shape: shape, mforder: .Row)
+    let lvecIm = Matft.nums(T.zero, shape: shape, mforder: .Row)
+    let rvecRe = Matft.nums(T.zero, shape: shape, mforder: .Row)
+    let rvecIm = Matft.nums(T.zero, shape: shape, mforder: .Row)
     
     //eigenvalues
     let valshape = Array(shape.prefix(mfarray.ndim - 1))
-    let valRe = Matft.nums(T.zero, shape: valshape, mftype: retMfType, mforder: .Row)
-    let valIm = Matft.nums(T.zero, shape: valshape, mftype: retMfType, mforder: .Row)
+    let valRe = Matft.nums(T.zero, shape: valshape, mforder: .Row)
+    let valIm = Matft.nums(T.zero, shape: valshape, mforder: .Row)
     //offset for calculation
     var vec_offset = 0
     var val_offset = 0
@@ -378,7 +378,7 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: Mf
             rvecRePtr, rvecImPtr in
             try withDataMBPtr_multi(datatype: T.self, valRe, valIm){
                 valRePtr, valImPtr in
-                try _withNNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Column){
+                try _withNNStackedMajorPtr(mfarray: mfarray, storedType: T.self, mforder: .Column){
                 srcptr, _, offset in
                     
                     try _run_eigen(squaredSize, copiedSrcPtr: srcptr, lvecRePtr.baseAddress! + vec_offset, lvecImPtr.baseAddress! + vec_offset, rvecRePtr.baseAddress! + vec_offset, rvecImPtr.baseAddress! + vec_offset, valRePtr.baseAddress! + val_offset, valImPtr.baseAddress! + val_offset, lapack_func: lapack_func)
@@ -493,27 +493,27 @@ fileprivate func _run_svd<T: MfStorable>(_ rowNum: Int, _ colNum: Int, _ srcptr:
     }
 }
 
-internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfType, _ full_matrices: Bool, _ lapack_func: lapack_svd<T>) throws -> (v: MfArray, s: MfArray, rt: MfArray){
+internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray<T>, _ full_matrices: Bool, _ lapack_func: lapack_svd<T>) throws -> (v: MfArray<T>, s: MfArray<T>, rt: MfArray<T>){
     let shape = mfarray.shape
     let M = shape[mfarray.ndim - 2]
     let N = shape[mfarray.ndim - 1]
     let ssize = min(M, N)
     let stackedShape = Array(shape.prefix(mfarray.ndim - 2))
     
-    let v: MfArray, s: MfArray, rt: MfArray
+    let v: MfArray<T>, s: MfArray<T>, rt: MfArray<T>
     let vcol: Int, rtrow: Int
     if full_matrices{
-        v = Matft.nums(T.zero, shape: stackedShape + [M, M], mftype: retMfType, mforder: .Row)
-        s = Matft.nums(T.zero, shape: stackedShape + [ssize], mftype: retMfType, mforder: .Row)
-        rt = Matft.nums(T.zero, shape: stackedShape + [N, N], mftype: retMfType, mforder: .Row)
+        v = Matft.nums(T.zero, shape: stackedShape + [M, M], mforder: .Row)
+        s = Matft.nums(T.zero, shape: stackedShape + [ssize], mforder: .Row)
+        rt = Matft.nums(T.zero, shape: stackedShape + [N, N], mforder: .Row)
         
         vcol = M
         rtrow = N
     }
     else{
-        v = Matft.nums(T.zero, shape: stackedShape + [ssize, M], mftype: retMfType, mforder: .Row) // returned shape = (..., M, ssize)
-        s = Matft.nums(T.zero, shape: stackedShape + [ssize], mftype: retMfType, mforder: .Row)
-        rt = Matft.nums(T.zero, shape: stackedShape + [N, ssize], mftype: retMfType, mforder: .Row) // returned shape = (..., ssize, N)
+        v = Matft.nums(T.zero, shape: stackedShape + [ssize, M], mforder: .Row) // returned shape = (..., M, ssize)
+        s = Matft.nums(T.zero, shape: stackedShape + [ssize], mforder: .Row)
+        rt = Matft.nums(T.zero, shape: stackedShape + [N, ssize], mforder: .Row) // returned shape = (..., ssize, N)
         
         vcol = ssize
         rtrow = ssize
@@ -530,7 +530,7 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfTy
             sptr in
             try rt.withDataUnsafeMBPtrT(datatype: T.self){
                 rtptr in
-                try _withMNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Column){
+                try _withMNStackedMajorPtr(mfarray: mfarray, storedType: T.self, mforder: .Column){
                     srcptr, _, _, _ in
                     
                     try _run_svd(M, N, srcptr, vptr.baseAddress! + v_offset, sptr.baseAddress! + s_offset, rtptr.baseAddress! + rt_offset, full_matrices, lapack_func: lapack_func)
@@ -550,7 +550,7 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfTy
 /**
     - Important: This function for last shape is NxN
  */
-fileprivate func _withNNStackedMajorPtr<T: MfStorable>(mfarray: MfArray, type: T.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<T>, Int, Int) throws -> Void) rethrows -> Void{
+fileprivate func _withNNStackedMajorPtr<T: MfTypable, U: MfStorable>(mfarray: MfArray<T>, storedType: U.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<U>, Int, Int) throws -> Void) rethrows -> Void{
     let shape = mfarray.shape
     let squaredSize = shape[mfarray.ndim - 1]
     let matricesNum = mfarray.size / (squaredSize * squaredSize)
@@ -559,7 +559,7 @@ fileprivate func _withNNStackedMajorPtr<T: MfStorable>(mfarray: MfArray, type: T
     let rowMfarray = mforder == .Row ? to_row_major(mfarray) : to_row_major(mfarray.swapaxes(axis1: -1, axis2: -2))
     
     var offset = 0
-    try rowMfarray.withDataUnsafeMBPtrT(datatype: T.self){
+    try rowMfarray.withDataUnsafeMBPtrT(datatype: U.self){
         for _ in 0..<matricesNum{
             try body($0.baseAddress! + offset, squaredSize, offset)
             
@@ -571,7 +571,7 @@ fileprivate func _withNNStackedMajorPtr<T: MfStorable>(mfarray: MfArray, type: T
 /**
     - Important: This function for last shape is MxN
  */
-fileprivate func _withMNStackedMajorPtr<T: MfStorable>(mfarray: MfArray, type: T.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<T>, Int, Int, Int) throws -> Void) rethrows -> Void{
+fileprivate func _withMNStackedMajorPtr<T: MfTypable, U: MfStorable>(mfarray: MfArray<T>, storedType: U.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<U>, Int, Int, Int) throws -> Void) rethrows -> Void{
     let shape = mfarray.shape
     let M = shape[mfarray.ndim - 2]
     let N = shape[mfarray.ndim - 1]
@@ -581,7 +581,7 @@ fileprivate func _withMNStackedMajorPtr<T: MfStorable>(mfarray: MfArray, type: T
     let rowMfarray = mforder == .Row ? to_row_major(mfarray) : to_row_major(mfarray.swapaxes(axis1: -1, axis2: -2))
     
     var offset = 0
-    try rowMfarray.withDataUnsafeMBPtrT(datatype: T.self){
+    try rowMfarray.withDataUnsafeMBPtrT(datatype: U.self){
         for _ in 0..<matricesNum{
             try body($0.baseAddress! + offset, M, N, offset)
             

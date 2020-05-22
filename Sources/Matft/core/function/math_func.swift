@@ -20,15 +20,13 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func sin(_ mfarray: MfArray) -> MfArray{
+    public static func sin<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvsinf)
-            ret.mfdata._mftype = .Float
             return ret
         case .Double:
             let ret = math_vv_by_vForce(mfarray, vvsin)
-            ret.mfdata._mftype = .Double
             return ret
         }
     }
@@ -37,7 +35,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func asin(_ mfarray: MfArray) -> MfArray{
+    public static func asin<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvasinf)
@@ -54,7 +52,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func sinh(_ mfarray: MfArray) -> MfArray{
+    public static func sinh<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvsinhf)
@@ -71,7 +69,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func asinh(_ mfarray: MfArray) -> MfArray{
+    public static func asinh<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvasinhf)
@@ -88,7 +86,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func cos(_ mfarray: MfArray) -> MfArray{
+    public static func cos<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvcosf)
@@ -105,7 +103,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func acos(_ mfarray: MfArray) -> MfArray{
+    public static func acos<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvacosf)
@@ -122,7 +120,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func cosh(_ mfarray: MfArray) -> MfArray{
+    public static func cosh<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvcoshf)
@@ -139,7 +137,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func acosh(_ mfarray: MfArray) -> MfArray{
+    public static func acosh<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvacoshf)
@@ -156,7 +154,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func tan(_ mfarray: MfArray) -> MfArray{
+    public static func tan<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvtanf)
@@ -173,7 +171,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func atan(_ mfarray: MfArray) -> MfArray{
+    public static func atan<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvatanf)
@@ -190,7 +188,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func tanh(_ mfarray: MfArray) -> MfArray{
+    public static func tanh<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvtanhf)
@@ -207,7 +205,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func atanh(_ mfarray: MfArray) -> MfArray{
+    public static func atanh<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvatanhf)
@@ -229,7 +227,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func sqrt(_ mfarray: MfArray) -> MfArray{
+    public static func sqrt<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvsqrtf)
@@ -246,7 +244,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func rsqrt(_ mfarray: MfArray) -> MfArray{
+    public static func rsqrt<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvrsqrtf)
@@ -263,7 +261,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func exp(_ mfarray: MfArray) -> MfArray{
+    public static func exp<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvexpf)
@@ -280,7 +278,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func log(_ mfarray: MfArray) -> MfArray{
+    public static func log<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvlogf)
@@ -297,7 +295,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func log2(_ mfarray: MfArray) -> MfArray{
+    public static func log2<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvlog2f)
@@ -314,7 +312,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func log10(_ mfarray: MfArray) -> MfArray{
+    public static func log10<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvlog10f)
@@ -336,7 +334,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func ceil(_ mfarray: MfArray) -> MfArray{
+    public static func ceil<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvceilf)
@@ -353,7 +351,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func floor(_ mfarray: MfArray) -> MfArray{
+    public static func floor<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvfloorf)
@@ -370,7 +368,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func trunc(_ mfarray: MfArray) -> MfArray{
+    public static func trunc<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvintf)
@@ -387,7 +385,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func nearest(_ mfarray: MfArray) -> MfArray{
+    public static func nearest<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvnintf)
@@ -418,7 +416,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func abs(_ mfarray: MfArray) -> MfArray{
+    public static func abs<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvfabsf)
@@ -435,7 +433,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func reciprocal(_ mfarray: MfArray) -> MfArray{
+    public static func reciprocal<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             let ret = math_vv_by_vForce(mfarray, vvrecf)
@@ -456,7 +454,7 @@ extension Matft.math{//use math_vv_by_vecLib
             - base: Float
             - exponents: mfarray
     */
-    public static func power(base: Float, exponents: MfArray) -> MfArray{
+    public static func power<T: MfTypable>(base: T, exponents: MfArray<T>) -> MfArray<T>{
         return Matft.math.power(bases: Matft.nums(base, shape: [1]), exponents: exponents)
     }
     /**
@@ -465,7 +463,7 @@ extension Matft.math{//use math_vv_by_vecLib
             - bases: mfarray
             - exponent: Float
     */
-    public static func power(bases: MfArray, exponent: Float) -> MfArray{
+    public static func power<T: MfTypable>(bases: MfArray<T>, exponent: T) -> MfArray<T>{
         return Matft.math.power(bases: bases, exponents: Matft.nums(exponent, shape: [1]))
     }
     /**
@@ -474,7 +472,7 @@ extension Matft.math{//use math_vv_by_vecLib
             - base: mfarray
             - exponents: mfarray
     */
-    public static func power(bases: MfArray, exponents: MfArray) -> MfArray{
+    public static func power<T: MfTypable>(bases: MfArray<T>, exponents: MfArray<T>) -> MfArray<T>{
         let (bases, exponents, rettype) = biop_broadcast_to(bases, exponents)
         
         switch MfType.storedType(rettype) {
@@ -496,7 +494,7 @@ extension Matft.math{//use vDSP
        - parameters:
             - mfarray: mfarray
     */
-    public static func square(_ mfarray: MfArray) -> MfArray{
+    public static func square<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             return math_by_vDSP(mfarray, vDSP_vsq)
@@ -510,8 +508,8 @@ extension Matft.math{//use vDSP
        - parameters:
             - mfarray: mfarray
     */
-    public static func sign(_ mfarray: MfArray) -> MfArray{
-        var ssq: MfArray // signed squared values
+    public static func sign<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
+        var ssq: MfArray<T> // signed squared values
         switch mfarray.storedType {
         case .Float:
             ssq = math_by_vDSP(mfarray, vDSP_vssq)

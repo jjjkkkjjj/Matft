@@ -9,39 +9,15 @@
 import Foundation
 
 extension MfArray{
-    public var first: AnyObject?{
+    public var first: ArrayType?{
         if self.size == 0{
             return nil
         }
-        let strides = self.strides
-        let shape = self.shape
-        var flattenIndex = 0
-        for axis in 0..<ndim{
-            flattenIndex += strides[axis] >= 0 ? 0 : -strides[axis]*shape[axis] + strides[axis]
-        }
-        
-        switch self.storedType {
-        case .Float:
-            let valueF = self.withDataUnsafeMBPtrT(datatype: Float.self){
-                dataptr in
-                dataptr[flattenIndex]
-            }
-            return _T2U2Any(valueF, mftype: self.mftype)
-        case .Double:
-            let valueD = self.withDataUnsafeMBPtrT(datatype: Double.self){
-                dataptr in
-                dataptr[flattenIndex]
-            }
-            return _T2U2Any(valueD, mftype: self.mftype)
-        }
+        return self.data[0]
     }
     
-    public var scalar: AnyObject?{
+    public var scalar: ArrayType?{
         return self.size == 1 ? self.first! : nil
-    }
-    public func scalar<T: MfTypable>(_ type: T.Type) -> T?{
-        precondition(MfType.mftype(value: T.zero) == self.mftype, "could not cast \(T.self) from \(self.mftype)")
-        return self.size == 1 ? self.first! as? T : nil
     }
     
 }

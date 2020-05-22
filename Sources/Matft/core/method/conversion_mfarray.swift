@@ -14,7 +14,7 @@ extension MfArray{
        - parameters:
             - mftype: the type of mfarray
     */
-    public func astype(_ mftype: MfType) -> MfArray{
+    public func astype<T: MfTypable>(_ mftype: T.Type) -> MfArray<T>{
         return Matft.astype(self, mftype: mftype)
     }
     
@@ -30,7 +30,7 @@ extension MfArray{
        Create transposed mfarray. Created mfarray will be sharing data with original one
        - parameters:
     */
-    public var T: MfArray{
+    public var T: MfArray<ArrayType>{
         return Matft.transpose(self)
     }
     
@@ -108,7 +108,7 @@ extension MfArray{
        - parameters:
             - axes: (optional) the reversed axis of list
     */
-    public func flip(_ mfarray: MfArray, axes: [Int]? = nil) -> MfArray{
+    public func flip(axes: [Int]? = nil) -> MfArray{
         return Matft.flip(self, axes: axes)
     }
     
@@ -118,7 +118,7 @@ extension MfArray{
             - min: (optional) Minimum value. If nil is passed, handled as -inf
             - max: (optional) Maximum value. If nil is passed, handled as inf
     */
-    public func clip<T: MfTypable>(min: T? = nil, max: T? = nil) -> MfArray{
+    public func clip(min: ArrayType? = nil, max: ArrayType? = nil) -> MfArray{
         return Matft.clip(self, min: min, max: max)
     }
     

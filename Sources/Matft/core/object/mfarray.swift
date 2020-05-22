@@ -23,21 +23,18 @@ public class MfArray<ArrayType: MfTypable>{
     
     //mfdata getter
     //return base's data
-    public var data: [Any]{
+    public var data: [ArrayType]{
         if let base = self.base{
             return base.data
         }
         else{
             return self.withDataUnsafeMRPtr{
                 [unowned self] in
-                unsafeMRBPtr2array_viaForD($0, mftype: self.mftype, size: self.storedSize)
+                unsafeMRBPtr2array_viaForD($0, size: self.storedSize)
             }
         }
     }
     
-    public var mftype: MfType{
-        return self.mfdata._mftype
-    }
     public var storedType: StoredType{
         return self.mfdata._storedType
     }

@@ -15,7 +15,7 @@ extension Matft{
        - parameters:
            - mfarray: mfarray
     */
-    static public func shallowcopy(_ mfarray: MfArray) -> MfArray{
+    static public func shallowcopy<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         let newstructure = copy_mfstructure(mfarray.mfstructure)
         
         return MfArray(base: mfarray, mfstructure: newstructure, offset: mfarray.offsetIndex)
@@ -26,7 +26,7 @@ extension Matft{
             - mfarray: mfarray
             - order: (Optional) order, default is nil, which means close to either row or column major if possibe.
     */
-    static public func deepcopy(_ mfarray: MfArray, order: MfOrder? = nil) -> MfArray{
+    static public func deepcopy<T: MfTypable>(_ mfarray: MfArray<T>, order: MfOrder? = nil) -> MfArray<T>{
         if let order = order{
             switch order {
             case .Row:
@@ -61,16 +61,15 @@ extension Matft{
             - mftype: (Optional) the type of mfarray
             - order: (Optional) order, default is nil, which means close to row major
     */
-    static public func nums<T: MfTypable>(_ value: T, shape: [Int], mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
+    static public func nums<T: MfTypable>(_ value: T, shape: [Int], mforder: MfOrder = .Row) -> MfArray<T>{
         var shape = shape
         let size = shape.withUnsafeMutableBufferPointer{
             shape2size($0)
         }
         
-        let retmftype = mftype ?? MfType.mftype(value: T.zero)
-        let newmfdata = withDummyDataMRPtr(retmftype, storedSize: size){
+        let newmfdata = withDummyDataMRPtr(T.self, storedSize: size){
             ptr in
-            switch MfType.storedType(retmftype){
+            switch MfType.storedType(T.self){
             case .Float:
                 var arr = Array(repeating: Float.from(value), count: size)
                 let ptrF = ptr.bindMemory(to: Float.self, capacity: size)
@@ -100,8 +99,8 @@ extension Matft{
             - mftype: (Optional) the type of mfarray
             - order: (Optional) order, default is nil, which means close to row major
     */
-    static public func arange<T: Strideable>(start: T, to: T, by: T.Stride, shape: [Int]? = nil, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
-        return MfArray(Array(stride(from: start, to: to, by: by)), mftype: mftype, shape: shape, mforder: mforder)
+    static public func arange<T: MfNumeric>(start: T, to: T, by: T.Stride, shape: [Int]? = nil, mforder: MfOrder = .Row) -> MfArray<T>{
+        return MfArray(Array(stride(from: start, to: to, by: by)), shape: shape, mforder: mforder)
     }
     /**
        Create identity matrix. The size is (dim, dim)
@@ -110,12 +109,12 @@ extension Matft{
             - mftype: (Optional) the type of mfarray
             - order: (Optional) order, default is nil, which means close to row major
     */
-    static public func eye(dim: Int, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
+    static public func eye<T: MfNumeric>(dim: Int, mforder: MfOrder = .Row) -> MfArray<T>{
         var eye = Array(repeating: Array(repeating: 0, count: dim), count: dim)
         for i in 0..<dim{
             eye[i][i] = 1
         }
-        return MfArray(eye, mftype: mftype, mforder: mforder)
+        return MfArray(eye, mforder: mforder)
     }
     /**
        Create diagonal matrix. The size is (dim, dim)
@@ -124,24 +123,23 @@ extension Matft{
             - mftype: (Optional) the type of mfarray
             - order: (Optional) order, default is nil, which means close to row major
     */
-    static public func diag<T: MfTypable>(v: [T], mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
+    static public func diag<T: MfNumeric>(v: [T], mforder: MfOrder = .Row) -> MfArray<T>{
         let dim = v.count
         var d = Array(repeating: Array(repeating: T.zero, count: dim), count: dim)
         for i in 0..<dim{
             d[i][i] = v[i]
         }
-        return MfArray(d, mftype: mftype, mforder: mforder)
+        return MfArray(d, mforder: mforder)
     }
-    static public func diag(v: MfArray, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
+    static public func diag<T: MfTypable>(v: MfArray<T>, mforder: MfOrder = .Row) -> MfArray<T>{
         precondition(v.ndim == 1, "must be 1d")
         let dim = v.size
         let size = dim*dim
-        let retmftype = mftype ?? v.mftype
         var shape = [dim, dim]
         
-        let newmfdata = withDummyDataMRPtr(retmftype, storedSize: size){
+        let newmfdata = withDummyDataMRPtr(T.self, storedSize: size){
             ptr in
-            switch MfType.storedType(retmftype){
+            switch MfType.storedType(T.self){
             case .Float:
                 let ptrF = ptr.bindMemory(to: Float.self, capacity: size)
                 var d = Array(repeating: Float.zero, count: size)
@@ -178,21 +176,18 @@ extension Matft{
        - parameters:
             - mfarrays: the array of MfArray.
     */
-    static public func vstack(_ mfarrays: [MfArray]) -> MfArray {
+    static public func vstack<T: MfTypable>(_ mfarrays: [MfArray<T>]) -> MfArray<T> {
         if mfarrays.count == 1{
             return mfarrays[0].deepcopy()
         }
         
         var retShape = mfarrays.first!.shape // shape except for given axis first, return shape later
-        var retMfType = mfarrays.first!.mftype
         var concatDim = retShape.remove(at: 0)
         
         //check if argument is valid or not
         for i in 1..<mfarrays.count{
             var shapeExceptAxis = mfarrays[i].shape
             concatDim += shapeExceptAxis.remove(at: 0)
-            
-            retMfType = MfType.priority(retMfType, mfarrays[i].mftype)
             
             precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
         }
@@ -202,9 +197,9 @@ extension Matft{
         let rmajorArrays = mfarrays.map{ Matft.conv_order($0, mforder: .Row) }
         let retSize = shape2size(&retShape)
         
-        let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
+        let newmfdata = withDummyDataMRPtr(T.self, storedSize: retSize){
             dstptr in
-            switch MfType.storedType(retMfType){
+            switch MfType.storedType(T.self){
             case .Float:
                 let dstptrF = dstptr.bindMemory(to: Float.self, capacity: retSize)
                 var offset = 0
@@ -238,21 +233,18 @@ extension Matft{
        - parameters:
             - mfarrays: the array of MfArray.
     */
-    static public func hstack(_ mfarrays: [MfArray]) -> MfArray {
+    static public func hstack<T: MfTypable>(_ mfarrays: [MfArray<T>]) -> MfArray<T> {
         if mfarrays.count == 1{
             return mfarrays[0].deepcopy()
         }
         
         var retShape = mfarrays.first!.shape // shape except for given axis first, return shape later
-        var retMfType = mfarrays.first!.mftype
         var concatDim = retShape.remove(at: retShape.count - 1)
         
         //check if argument is valid or not
         for i in 1..<mfarrays.count{
             var shapeExceptAxis = mfarrays[i].shape
             concatDim += shapeExceptAxis.remove(at: shapeExceptAxis.count - 1)
-            
-            retMfType = MfType.priority(retMfType, mfarrays[i].mftype)
             
             precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
         }
@@ -262,9 +254,9 @@ extension Matft{
         let cmajorArrays = mfarrays.map{ Matft.conv_order($0, mforder: .Column) }
         let retSize = shape2size(&retShape)
         
-        let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
+        let newmfdata = withDummyDataMRPtr(T.self, storedSize: retSize){
             dstptr in
-            switch MfType.storedType(retMfType){
+            switch MfType.storedType(T.self){
             case .Float:
                 let dstptrF = dstptr.bindMemory(to: Float.self, capacity: retSize)
                 var offset = 0
@@ -299,7 +291,7 @@ extension Matft{
             - mfarrays: the array of MfArray.
             - axis: the axis to concatenate
     */
-    static public func concatenate(_ mfarrays: [MfArray], axis: Int = 0) -> MfArray{
+    static public func concatenate<T: MfTypable>(_ mfarrays: [MfArray<T>], axis: Int = 0) -> MfArray<T>{
         if mfarrays.count == 1{
             return mfarrays[0].deepcopy()
         }
@@ -318,14 +310,10 @@ extension Matft{
         
         var concatDim = retShape.remove(at: axis)
         
-        var retMfType = mfarrays.first!.mftype
-        
         //check if argument is valid or not
         for i in 1..<mfarrays.count{
             var shapeExceptAxis = mfarrays[i].shape
             concatDim += shapeExceptAxis.remove(at: axis)
-            
-            retMfType = MfType.priority(retMfType, mfarrays[i].mftype)
             
             precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
         }
@@ -343,12 +331,12 @@ extension Matft{
         let fasterBlockSize = rowSize >= columnSize ? rowSize : columnSize
         let slowerBlockSize = rowSize >= columnSize ? columnSize : rowSize
         
-        let majorArrays = mfarrays.map{ Matft.conv_order($0, mforder: fasterOrder).astype(retMfType) }
+        let majorArrays = mfarrays.map{ Matft.conv_order($0, mforder: fasterOrder) }
         let retSize = shape2size(&retShape)
         
-        let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
+        let newmfdata = withDummyDataMRPtr(T.self, storedSize: retSize){
             dstptr in
-            switch MfType.storedType(retMfType){
+            switch MfType.storedType(T.self){
             case .Float:
                 let dstptrF = dstptr.bindMemory(to: Float.self, capacity: retSize)
     

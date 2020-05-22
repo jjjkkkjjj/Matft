@@ -44,7 +44,7 @@ extension Matft.linalg{
                 
             */
      */
-    public static func solve(_ coef: MfArray, b: MfArray) throws -> MfArray{
+    public static func solve<T: MfStorable>(_ coef: MfArray<T>, b: MfArray<T>) throws -> MfArray<T>{
         precondition((coef.ndim == 2), "cannot solve non linear simultaneous equations")
         
         let coefShape = coef.shape
@@ -64,21 +64,18 @@ extension Matft.linalg{
             dstColNum = bShape[1]
         }
                 
-        let returnedType = StoredType.priority(coef.storedType, b.storedType)
-        
-
-        switch returnedType{
+        switch MfType.storedType(T.self){
         case .Float:
-            let coefF = coef.astype(.Float) //even if original one is float, create copy
-            let bF = b.astype(.Float)
+            let coefF = coef.astype(Float.self) //even if original one is float, create copy
+            let bF = b.astype(Float.self)
             
             let ret = try solve_by_lapack(coefF, bF, coefShape[0], dstColNum, sgesv_)
             
             return ret
             
         case .Double:
-            let coefD = coef.astype(.Double) //even if original one is float, create copy
-            let bD = b.astype(.Double) //even if original one is float, create copy
+            let coefD = coef.astype(Double.self) //even if original one is float, create copy
+            let bD = b.astype(Double.self) //even if original one is float, create copy
             
             let ret = try solve_by_lapack(coefD, bD, coefShape[0], dstColNum, dgesv_)
             
@@ -93,7 +90,7 @@ extension Matft.linalg{
        - throws:
        An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
     */
-    public static func inv(_ mfarray: MfArray) throws -> MfArray{
+    public static func inv<T: MfStorable>(_ mfarray: MfArray<T>) throws -> MfArray<T>{
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
@@ -114,7 +111,7 @@ extension Matft.linalg{
        - throws:
        An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
     */
-    public static func det(_ mfarray: MfArray) throws -> MfArray{
+    public static func det<T: MfStorable>(_ mfarray: MfArray<T>) throws -> MfArray<T>{
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get a determinant from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
@@ -152,7 +149,7 @@ extension Matft.linalg{
         }
 
     }*/
-    public static func eigen(_ mfarray: MfArray) throws -> (valRe: MfArray, valIm: MfArray, lvecRe: MfArray, lvecIm: MfArray, rvecRe: MfArray, rvecIm: MfArray){
+    public static func eigen<T: MfStorable>(_ mfarray: MfArray<T>) throws -> (valRe: MfArray<T>, valIm: MfArray<T>, lvecRe: MfArray<T>, lvecIm: MfArray<T>, rvecRe: MfArray<T>, rvecIm: MfArray<T>){
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
@@ -167,7 +164,7 @@ extension Matft.linalg{
 
     }
     
-    public static func svd(_ mfarray: MfArray, full_mtrices: Bool = true) throws -> (v: MfArray, s: MfArray, rt: MfArray){
+    public static func svd<T: MfStorable>(_ mfarray: MfArray<T>, full_mtrices: Bool = true) throws -> (v: MfArray<T>, s: MfArray<T>, rt: MfArray<T>){
         switch mfarray.storedType {
         case .Float:
             return try svd_by_lapack(mfarray, .Float, full_mtrices, sgesdd_)
@@ -177,7 +174,7 @@ extension Matft.linalg{
         }
     }
     
-    public static func polar_left(_ mfarray: MfArray) throws -> (p: MfArray, l: MfArray){
+    public static func polar_left<T: MfStorable>(_ mfarray: MfArray<T>) throws -> (p: MfArray<T>, l: MfArray<T>){
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
@@ -192,7 +189,7 @@ extension Matft.linalg{
         
         return (p, l)
     }
-    public static func polar_right(_ mfarray: MfArray) throws -> (u: MfArray, p: MfArray){
+    public static func polar_right<T: MfStorable>(_ mfarray: MfArray<T>) throws -> (u: MfArray<T>, p: MfArray<T>){
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
@@ -216,7 +213,7 @@ extension Matft.linalg{
             - axis: (Optional) axis, if not given, get mean for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func normlp_vec(_ mfarray: MfArray, ord: Float = 2, axis: Int = -1, keepDims: Bool = false) -> MfArray{
+    public static func normlp_vec<T: MfStorable>(_ mfarray: MfArray<T>, ord: Float = 2, axis: Int = -1, keepDims: Bool = false) -> MfArray<T>{
         /*
          // ref: https://github.com/numpy/numpy/blob/91118b3363b636f932f7ff6748d8259e9eb2c23a/numpy/linalg/linalg.py#L2316-L2557
          vDSP_svesq(<#T##__A: UnsafePointer<Float>##UnsafePointer<Float>#>, <#T##__IA: vDSP_Stride##vDSP_Stride#>, <#T##__C: UnsafeMutablePointer<Float>##UnsafeMutablePointer<Float>#>, <#T##__N: vDSP_Length##vDSP_Length#>)
@@ -235,7 +232,7 @@ extension Matft.linalg{
         }
         else{
             // remove mfarray == 0, and count up non-zero
-            return (mfarray !== 0).astype(mfarray.mftype).sum(axis: axis, keepDims: keepDims)
+            return (mfarray !== 0).astype(T.self).sum(axis: axis, keepDims: keepDims)
         }
     }
     
@@ -244,12 +241,12 @@ extension Matft.linalg{
        - parameters:
            - mfarray: mfarray
     */
-    public static func normlp_mat(_ mfarray: MfArray, ord: Float? = 2, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray{
+    public static func normlp_mat<T: MfStorable>(_ mfarray: MfArray<T>, ord: Float? = 2, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray<T>{
         var axes: (row: Int, col: Int) = (get_axis(axes.row, ndim: mfarray.ndim), get_axis(axes.col, ndim: mfarray.ndim))
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
         
-        var ret: MfArray
+        var ret: MfArray<T>
         if ord == 2{
             ret = _multi_svd_norm(mfarray: mfarray, axes: &axes, op: Matft.stats.max)
         }
@@ -294,7 +291,7 @@ extension Matft.linalg{
         return ret
     }
     
-    public static func normfro_mat(_ mfarray: MfArray, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray{
+    public static func normfro_mat<T: MfStorable>(_ mfarray: MfArray<T>, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray<T>{
         let axes: (row: Int, col: Int) = (get_axis(axes.row, ndim: mfarray.ndim), get_axis(axes.col, ndim: mfarray.ndim))
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
@@ -312,7 +309,7 @@ extension Matft.linalg{
         
         return ret
     }
-    public static func normnuc_mat(_ mfarray: MfArray, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray{
+    public static func normnuc_mat<T: MfStorable>(_ mfarray: MfArray<T>, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray<T>{
         var axes: (row: Int, col: Int) = (get_axis(axes.row, ndim: mfarray.ndim), get_axis(axes.col, ndim: mfarray.ndim))
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
@@ -330,8 +327,8 @@ extension Matft.linalg{
     }
 }
 
-fileprivate typealias _norm_op = (MfArray, Int?, Bool) -> MfArray
-fileprivate func _multi_svd_norm(mfarray: MfArray, axes: inout (row: Int, col: Int), op: _norm_op) -> MfArray{
+fileprivate typealias _norm_op<T: MfStorable> = (MfArray<T>, Int?, Bool) -> MfArray<T>
+fileprivate func _multi_svd_norm<T: MfStorable>(mfarray: MfArray<T>, axes: inout (row: Int, col: Int), op: _norm_op<T>) -> MfArray<T>{
     do{
         let mfarray = mfarray.moveaxis(src: [axes.row, axes.col], dst: [-2, -1])
         let ret = op(try Matft.linalg.svd(mfarray).s, -1, false)

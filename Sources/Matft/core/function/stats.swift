@@ -17,12 +17,12 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get mean for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func mean(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+    public static func mean<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc(mfarray.astype(.Float), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv)
+            return _stats_calc(mfarray.astype(Float.self), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv)
         case .Double:
-            return _stats_calc(mfarray.astype(.Double), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanvD)
+            return _stats_calc(mfarray.astype(Double.self), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanvD)
         }
     }
     /**
@@ -32,7 +32,7 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get maximum for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func max(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+    public static func max<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxv)
@@ -46,7 +46,7 @@ extension Matft.stats{
             - mfarray: mfarray
             - axis: (Optional) axis, if not given, get index of maximum for all elements (flattenarray)
     */
-    public static func argmax(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
+    public static func argmax<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil) -> MfArray<Int>{
         switch mfarray.storedType {
         case .Float:
             return _stats_calc_index(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_maxvi)
@@ -61,7 +61,7 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get minimum for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func min(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+    public static func min<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minv)
@@ -75,7 +75,7 @@ extension Matft.stats{
             - mfarray: mfarray
             - axis: (Optional) axis, if not given, get index of minimum for all elements (flattenarray)
     */
-    public static func argmin(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
+    public static func argmin<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil) -> MfArray<Int>{
         switch mfarray.storedType {
         case .Float:
             return _stats_calc_index(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_minvi)
@@ -90,9 +90,9 @@ extension Matft.stats{
             - l_mfarray: mfarray
             - r_mfarray: mfarray
     */
-    public static func maximum(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
-        switch MfType.storedType(rettype) {
+    public static func maximum<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+        let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
+        switch MfType.storedType(T.self) {
         case .Float:
             return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmax)
         case .Double:
@@ -106,9 +106,9 @@ extension Matft.stats{
             - l_mfarray: mfarray
             - r_mfarray: mfarray
     */
-    public static func minimum(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
-        switch MfType.storedType(rettype) {
+    public static func minimum<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+        let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
+        switch MfType.storedType(T.self) {
         case .Float:
             return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmin)
         case .Double:
@@ -123,7 +123,7 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get summation for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func sum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+    public static func sum<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sve)
@@ -138,7 +138,7 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get summation for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func sumsqrt(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+    public static func sumsqrt<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
         return Matft.math.sqrt(Matft.stats.sum(mfarray, axis: axis, keepDims: keepDims))
     }
     /**
@@ -148,7 +148,7 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get summation for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func squaresum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+    public static func squaresum<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesq)
@@ -159,7 +159,7 @@ extension Matft.stats{
 }
 
 
-fileprivate func _stats_calc<T: MfStorable>(_ typedArray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_func<T>) -> MfArray{
+fileprivate func _stats_calc<T: MfTypable, U: MfStorable>(_ typedArray: MfArray<T>, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_func<U>) -> MfArray<T>{
     
     if axis != nil && typedArray.ndim > 1{// for given axis
         let axis = get_axis(axis!, ndim: typedArray.ndim)
@@ -176,7 +176,7 @@ fileprivate func _stats_calc<T: MfStorable>(_ typedArray: MfArray, axis: Int?, k
     }
 }
 
-fileprivate func _stats_calc_index<T: MfStorable>(_ mfarray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_index_func<T>) -> MfArray{
+fileprivate func _stats_calc_index<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_index_func<U>) -> MfArray<Int>{
     
     if axis != nil && mfarray.ndim > 1{// for given axis
         let axis = get_axis(axis!, ndim: mfarray.ndim)

@@ -17,7 +17,7 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_mfarray: right mfarray
     */
-    public static func add<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func add<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(T.self){
         case .Float:
@@ -32,7 +32,7 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_scalar: right scalar conformed to MfTypable
     */
-    public static func add<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
+    public static func add<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
         switch MfType.storedType(T.self) {
         case .Float:
             return biop_vs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsadd)
@@ -46,7 +46,7 @@ extension Matft{
            - l_scalar: left scalar conformed to MfTypable
            - r_mfarray: right mfarray
     */
-    public static func add<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func add<T: MfNumeric>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         switch MfType.storedType(T.self) {
         case .Float:
             return biop_vs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsadd)
@@ -60,7 +60,7 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_mfarray: right mfarray
     */
-    public static func sub<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func sub<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(T.self){
         case .Float:
@@ -75,7 +75,7 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_scalar: right scalar conformed to MfTypable
     */
-    public static func sub<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
+    public static func sub<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
         
         switch MfType.storedType(T.self) {
         case .Float:
@@ -90,7 +90,7 @@ extension Matft{
            - l_scalar: left scalar conformed to MfTypable
            - r_mfarray: right mfarray
     */
-    public static func sub<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func sub<T: MfNumeric>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         
         switch MfType.storedType(T.self) {
         case .Float:
@@ -105,7 +105,7 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_mfarray: right mfarray
     */
-    public static func mul<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func mul<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(T.self){
         case .Float:
@@ -120,7 +120,7 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_scalar: right scalar conformed to MfTypable
     */
-    public static func mul<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
+    public static func mul<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
         
         switch MfType.storedType(T.self) {
         case .Float:
@@ -135,7 +135,7 @@ extension Matft{
            - l_scalar: left scalar conformed to MfTypable
            - r_mfarray: right mfarray
     */
-    public static func mul<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func mul<T: MfNumeric>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         
         switch MfType.storedType(T.self) {
         case .Float:
@@ -150,13 +150,11 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_mfarray: right mfarray
     */
-    public static func div<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func div<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(T.self){
         case .Float:
-            let ret = biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv)
-            ret.mfdata._mftype = .Float
-            return ret
+            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv)
         case .Double:
             return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
         }
@@ -167,7 +165,7 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_scalar: right scalar conformed to MfTypable
     */
-    public static func div<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
+    public static func div<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
 
         switch MfType.storedType(T.self) {
         case .Float:
@@ -182,7 +180,7 @@ extension Matft{
            - l_scalar: left scalar conformed to MfTypable
            - r_mfarray: right mfarray
     */
-    public static func div<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func div<T: MfNumeric>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         
         switch MfType.storedType(T.self) {
         case .Float:
@@ -198,7 +196,7 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_mfarray: right mfarray
     */
-    public static func matmul<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func matmul<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         return _matmul_operation(l_mfarray, r_mfarray)
     }
     
@@ -208,7 +206,7 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_mfarray: right mfarray
     */
-    public static func inner<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func inner<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         return _inner_operation(l_mfarray, r_mfarray)
     }
     /**
@@ -217,7 +215,7 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_mfarray: right mfarray
     */
-    public static func cross<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func cross<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         return _cross_operation(l_mfarray, r_mfarray)
     }
     
@@ -331,7 +329,7 @@ To use matmul(a,b) you need
  */
 
 //very dirty code....
-fileprivate func _matmul_operation<T: MfTypable>(_ lmfarray: MfArray<T>, _ rmfarray: MfArray<T>) -> MfArray<T>{
+fileprivate func _matmul_operation<T: MfNumeric>(_ lmfarray: MfArray<T>, _ rmfarray: MfArray<T>) -> MfArray<T>{
     precondition(lmfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
     precondition(rmfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
     
@@ -367,7 +365,7 @@ fileprivate func _matmul_operation<T: MfTypable>(_ lmfarray: MfArray<T>, _ rmfar
 }
 
 
-fileprivate func _matmul_broadcast_to<T: MfTypable>(_ lmfarray: inout MfArray<T>, _ rmfarray: inout MfArray<T>){
+fileprivate func _matmul_broadcast_to<T: MfNumeric>(_ lmfarray: inout MfArray<T>, _ rmfarray: inout MfArray<T>){
     var lshape = lmfarray.shape
     var lstrides = lmfarray.strides
     var rshape = rmfarray.shape
@@ -435,7 +433,7 @@ fileprivate func _matmul_broadcast_to<T: MfTypable>(_ lmfarray: inout MfArray<T>
 }
 
 
-fileprivate func _cross_operation<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+fileprivate func _cross_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
     var (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
     
     let orig_shape_for3d = l_mfarray.shape
@@ -450,7 +448,7 @@ fileprivate func _cross_operation<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfa
         return ret
     }
     else if lastdim == 3{
-        let ret: MfArray<T> = Matft.nums(0, shape: [l_mfarray.shape[0], lastdim])
+        let ret: MfArray<T> = Matft.nums(T.zero, shape: [l_mfarray.shape[0], lastdim])
         
         ret[0~,0] = l_mfarray[0~,1] * r_mfarray[0~,2] - l_mfarray[0~,2]*r_mfarray[0~,1]
         ret[0~,1] = l_mfarray[0~,2] * r_mfarray[0~,0] - l_mfarray[0~,0]*r_mfarray[0~,2]
@@ -464,11 +462,10 @@ fileprivate func _cross_operation<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfa
 }
 
 //uncompleted
-fileprivate func _inner_operation<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+fileprivate func _inner_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
     let lastdim = l_mfarray.shape[l_mfarray.ndim - 1]
     precondition(lastdim == r_mfarray.shape[r_mfarray.ndim - 1], "Last dimension must be same")
     let retShape = Array(l_mfarray.shape.prefix(l_mfarray.ndim - 1) + r_mfarray.shape.prefix(r_mfarray.ndim - 1))
-    let rettype = l_mfarray.mftype
     
     //convert shape to calculate
     let l_mfarray = l_mfarray.reshape([-1, lastdim])
@@ -476,7 +473,7 @@ fileprivate func _inner_operation<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfa
     let r_mfarray = r_mfarray.reshape([-1, lastdim])
     let r_calcsize = r_mfarray.shape[0]
     
-    let ret = Matft.nums(0, shape: [l_calcsize*r_calcsize], mftype: rettype)
+    let ret = Matft.nums(T.zero, shape: [l_calcsize*r_calcsize])
     for lind in 0..<l_calcsize{
         for rind in 0..<r_calcsize{
             ret[lind*r_calcsize + rind] = (l_mfarray[lind] * r_mfarray[rind]).sum()
@@ -551,7 +548,7 @@ fileprivate func _equalAll_operation<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_
         }
         else{
             // bool
-            guard let data = diff.astype(.Float).data as? [Float] else{
+            guard let data = diff.data as? [Float] else{
                 return false
             }
             
