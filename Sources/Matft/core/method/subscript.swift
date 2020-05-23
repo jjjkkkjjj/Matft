@@ -10,7 +10,7 @@ import Foundation
 import Accelerate
 
 extension MfArray: MfSubscriptable{
-    public subscript(indices: Int...) -> ArrayType{
+    public subscript(indices: Int...) -> MfArray<ArrayType>{
         get {
             var indices: [Any] = indices
             let ret = self._get_mfarray(indices: &indices)
@@ -20,7 +20,7 @@ extension MfArray: MfSubscriptable{
         set(newValue){
             var indices: [Any] = indices
                         
-            return self._set_mfarray(indices: &indices, newValue: MfArray([newValue]))
+            return self._set_mfarray(indices: &indices, newValue: newValue)
         }
     }
     public subscript(indices: MfSlice...) -> MfArray<ArrayType>{

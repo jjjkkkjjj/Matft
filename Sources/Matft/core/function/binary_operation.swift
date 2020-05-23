@@ -225,7 +225,10 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_mfarray: right mfarray
     */
-    public static func equal<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+    public static func equal<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        return _equal_operation(l_mfarray, r_mfarray)
+    }
+    public static func equal<T: MfBinary>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
         return _equal_operation(l_mfarray, r_mfarray)
     }
     /**
@@ -234,7 +237,10 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_scalar: right scalar conformed to MfTypable
     */
-    public static func equal<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<Bool>{
+    public static func equal<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<Bool>{
+        return _equal_operation(l_mfarray, Matft.nums(r_scalar, shape: [1]))
+    }
+    public static func equal<T: MfBinary>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<Bool>{
         return _equal_operation(l_mfarray, Matft.nums(r_scalar, shape: [1]))
     }
     /**
@@ -243,7 +249,10 @@ extension Matft{
            - l_scalar: left scalar conformed to MfTypable
            - r_mfarray: right mfarray
     */
-    public static func equal<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+    public static func equal<T: MfNumeric>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        return _equal_operation(Matft.nums(l_scalar, shape: [1]), r_mfarray)
+    }
+    public static func equal<T: MfBinary>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
         return _equal_operation(Matft.nums(l_scalar, shape: [1]), r_mfarray)
     }
     
@@ -253,7 +262,10 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_mfarray: right mfarray
     */
-    public static func not_equal<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+    public static func not_equal<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        return Matft.logical_not(_equal_operation(l_mfarray, r_mfarray))
+    }
+    public static func not_equal<T: MfBinary>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
         return Matft.logical_not(_equal_operation(l_mfarray, r_mfarray))
     }
     /**
@@ -262,7 +274,10 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_scalar: right scalar conformed to MfTypable
     */
-    public static func not_equal<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<Bool>{
+    public static func not_equal<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<Bool>{
+        return Matft.logical_not(_equal_operation(l_mfarray, Matft.nums(r_scalar, shape: [1])))
+    }
+    public static func not_equal<T: MfBinary>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<Bool>{
         return Matft.logical_not(_equal_operation(l_mfarray, Matft.nums(r_scalar, shape: [1])))
     }
     /**
@@ -271,7 +286,10 @@ extension Matft{
            - l_scalar: left scalar conformed to MfTypable
            - r_mfarray: right mfarray
     */
-    public static func not_equal<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+    public static func not_equal<T: MfNumeric>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        return Matft.logical_not(_equal_operation(Matft.nums(l_scalar, shape: [1]), r_mfarray))
+    }
+    public static func not_equal<T: MfBinary>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
         return Matft.logical_not(_equal_operation(Matft.nums(l_scalar, shape: [1]), r_mfarray))
     }
     
@@ -281,7 +299,10 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_mfarray: right mfarray
     */
-    public static func allEqual<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> Bool{
+    public static func allEqual<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> Bool{
+        return _equalAll_operation(l_mfarray, r_mfarray)
+    }
+    public static func allEqual<T: MfBinary>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> Bool{
         return _equalAll_operation(l_mfarray, r_mfarray)
     }
     
@@ -485,7 +506,7 @@ fileprivate func _inner_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfa
 
 
 
-fileprivate func _equal_operation<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray<Bool>{
+fileprivate func _equal_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray<Bool>{
     let diff = l_mfarray - r_mfarray
     //print(diff)
     
@@ -502,65 +523,30 @@ fileprivate func _equal_operation<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfa
     print(diff)*/
     return !to_Bool(diff, thresholdF: thresholdF, thresholdD: thresholdD)
 }
-
-fileprivate func _equalAll_operation<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> Bool{
-   //print(diff)
-   if l_mfarray.shape != r_mfarray.shape{
-       return false
-   }
-    let diff = l_mfarray - r_mfarray
+fileprivate func _equal_operation<T: MfBinary>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray<Bool>{
+    let diff = l_mfarray.astype(Float.self) - r_mfarray.astype(Float.self)
     
-    // diff must be 0 if all of elements are same
-    switch diff.storedType {
-    case .Float:
-        if let data = diff.data as? [UInt8]{
-            return data.allSatisfy{ $0 == UInt8.zero }
-        }
-        else if let data = diff.data as? [UInt16]{
-            return data.allSatisfy{ $0 == UInt8.zero }
-        }
-        else if let data = diff.data as? [UInt32]{
-            return data.allSatisfy{ $0 == UInt32.zero }
-        }
-        else if let data = diff.data as? [UInt64]{
-            return data.allSatisfy{ $0 == UInt64.zero }
-        }
-        else if let data = diff.data as? [UInt]{
-            return data.allSatisfy{ $0 == UInt.zero }
-        }
-        else if let data = diff.data as? [Int8]{
-            return data.allSatisfy{ $0 == Int8.zero }
-        }
-        else if let data = diff.data as? [Int16]{
-            return data.allSatisfy{ $0 == Int16.zero }
-        }
-        else if let data = diff.data as? [Int32]{
-            return data.allSatisfy{ $0 == Int32.zero }
-        }
-        else if let data = diff.data as? [Int64]{
-            return data.allSatisfy{ $0 == Int64.zero }
-        }
-        else if let data = diff.data as? [Int]{
-            return data.allSatisfy{ $0 == Int.zero }
-        }
-        else if let data = diff.data as? [Float]{
-            return data.allSatisfy{ abs($0) <= thresholdF }
-        }
-        else{
-            // bool
-            guard let data = diff.data as? [Float] else{
-                return false
-            }
-            
-            return data.allSatisfy{ $0 == Float.zero }
-        }
-    case .Double:
-        if let data = diff.data as? [Double]{
-            return data.allSatisfy{ abs($0) <= thresholdD }
-        }
-        else{
-            return false
-        }
-    }
-    
+    return !to_Bool(diff, thresholdF: thresholdF, thresholdD: thresholdD)
 }
+
+fileprivate func _equalAll_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> Bool{
+   //print(diff)
+    if l_mfarray.shape != r_mfarray.shape{
+       return false
+    }
+    let diff = l_mfarray - r_mfarray
+
+    return diff.data.allSatisfy{ $0 == T.zero }
+}
+fileprivate func _equalAll_operation<T: MfBinary>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> Bool{
+   //print(diff)
+    if l_mfarray.shape != r_mfarray.shape{
+       return false
+    }
+
+    return zip(l_mfarray.data, r_mfarray.data).allSatisfy{ $0 == $1 }
+}
+
+    
+
+

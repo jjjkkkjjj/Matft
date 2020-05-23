@@ -12,27 +12,30 @@ public protocol MfTypable{
     static var zero: Self { get }
 }
 
-public protocol StoredFloat{}
-public protocol StoredDouble{}
+public protocol StoredFloat: MfTypable{}
+public protocol StoredDouble: MfTypable{}
 
 public protocol MfNumeric: Numeric, Strideable{}
+public protocol MfBinary: Numeric{
+    static var zero: Self { get }
+}
 
-extension UInt8: MfTypable, MfNumeric, StoredFloat {}
-extension UInt16: MfTypable, MfNumeric, StoredFloat {}
-extension UInt32: MfTypable, MfNumeric, StoredDouble {}
-extension UInt64: MfTypable, MfNumeric, StoredDouble {}
-extension UInt: MfTypable, MfNumeric, StoredDouble {}
+extension UInt8: MfNumeric, StoredFloat {}
+extension UInt16: MfNumeric, StoredFloat {}
+extension UInt32: MfNumeric, StoredDouble {}
+extension UInt64: MfNumeric, StoredDouble {}
+extension UInt: MfNumeric, StoredDouble {}
 
-extension Int8: MfTypable, MfNumeric, StoredFloat {}
-extension Int16: MfTypable, MfNumeric, StoredFloat {}
-extension Int32: MfTypable, MfNumeric, StoredFloat {}
-extension Int64: MfTypable, MfNumeric, StoredDouble {}
-extension Int: MfTypable, MfNumeric, StoredFloat {}
+extension Int8: MfNumeric, StoredFloat {}
+extension Int16: MfNumeric, StoredFloat {}
+extension Int32: MfNumeric, StoredFloat {}
+extension Int64: MfNumeric, StoredDouble {}
+extension Int: MfNumeric, StoredFloat {}
 
-extension Float: MfTypable, MfNumeric, StoredFloat {}
-extension Double: MfTypable, MfNumeric, StoredDouble {}
+extension Float: MfNumeric, StoredFloat {}
+extension Double: MfNumeric, StoredDouble {}
 
-extension Bool: MfTypable, StoredFloat {
+extension Bool: MfBinary, StoredFloat {
     public static var zero: Bool {
         return false
     }

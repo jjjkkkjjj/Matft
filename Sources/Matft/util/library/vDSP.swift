@@ -19,7 +19,7 @@ internal func unsafePtrT2UnsafeMPtrU<T: MfTypable, U: MfTypable>(_ srcptr: Unsaf
 fileprivate func _run_preop<T: MfTypable, U: MfTypable>(_ srcptr: UnsafePointer<T>,  _ dstptr: UnsafeMutablePointer<U>, _ count: Int, _ vDSP_func: vDSP_convert_func<T, U>){
     vDSP_func(srcptr, vDSP_Stride(1), dstptr, vDSP_Stride(1), vDSP_Length(count))
 }
-internal func preop_by_vDSP<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, _ vDSP_func: vDSP_convert_func<U, U>) -> MfArray<T>{
+internal func preop_by_vDSP<T: MfTypable, U: MfStorable, V: MfTypable>(_ mfarray: MfArray<T>, _ vDSP_func: vDSP_convert_func<U, U>) -> MfArray<V>{
     //return mfarray must be either row or column major
     var mfarray = mfarray
     //print(mfarray)
@@ -27,7 +27,7 @@ internal func preop_by_vDSP<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, 
     //print(mfarray)
     //print(mfarray.strides)
     
-    let newdata = withDummyDataMRPtr(T.self, storedSize: mfarray.storedSize){
+    let newdata = withDummyDataMRPtr(V.self, storedSize: mfarray.storedSize){
         dstptr in
         let dstptrT = dstptr.bindMemory(to: U.self, capacity: mfarray.storedSize)
         mfarray.withDataUnsafeMBPtrT(datatype: U.self){
@@ -41,7 +41,7 @@ internal func preop_by_vDSP<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, 
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 // same above
-internal func math_by_vDSP<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, _ vDSP_func: vDSP_convert_func<U, U>) -> MfArray<T>{
+internal func math_by_vDSP<T: MfTypable, U: MfStorable, V: MfTypable>(_ mfarray: MfArray<T>, _ vDSP_func: vDSP_convert_func<U, U>) -> MfArray<V>{
     return preop_by_vDSP(mfarray, vDSP_func)
 }
 

@@ -34,7 +34,7 @@ fileprivate protocol ToRawPtrProtocol{
     associatedtype ArrayType: MfTypable
     associatedtype StoredType: MfStorable
     static var vDSP_func: vDSP_convert_func<ArrayType, StoredType>? { get }
-    
+    let a: CGFloat = 0
     static func convert(_ flattenarray: inout [ArrayType]) -> UnsafeMutableRawPointer
 }
 extension ToRawPtrProtocol{

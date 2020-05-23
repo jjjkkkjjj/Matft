@@ -10,8 +10,38 @@ import Foundation
 import Accelerate
 
 //ref https://developer.apple.com/documentation/accelerate/veclib/vforce
+/*
+internal protocol mathProtocol{
+    associatedtype StoredType: MfStorable
+    associatedtype RetType: MfTypable
+    static var vForce_sin_func: vForce_vv_func<StoredType> { get }
+    static func sin<T>(_ mfarray: MfArray<T>) -> MfArray<RetType> where T: MfTypable
+}
+extension mathProtocol{
+    static func sin<T>(_ mfarray: MfArray<T>) -> MfArray<RetType> where T: MfTypable{
+        let ret: MfArray<RetType> = math_vv_by_vForce(mfarray, Self.vForce_sin_func)
+        return ret
+    }
+}
 
-extension Matft.math{//use math_vv_by_vecLib
+extension Matft.math: mathProtocol{}
+
+extension Matft.math{
+    typealias StoredType = Float
+    typealias RetType = Float
+    static var vForce_sin_func: vForce_vv_func<Float> = vvsinf
+    
+    static func sin<T>(_ mfarray: MfArray<T>) -> MfArray<RetType> where T: StoredFloat
+}
+extension Matft.math{
+    typealias StoredType = Double
+    typealias RetType = Double
+    static var vForce_sin_func: vForce_vv_func<Double> = vvsin
+}
+*/
+extension Matft.math{
+    
+    //use math_vv_by_vecLib
     //
     // trigonometric
     //
@@ -20,202 +50,132 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func sin<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvsinf)
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvsin)
-            return ret
-        }
+    public static func sin<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvsinf)
+    }
+    public static func sin<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvsin)
     }
     /**
        Calculate the arcsin for all elements
        - parameters:
             - mfarray: mfarray
     */
-    public static func asin<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvasinf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvasin)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func asin<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvasinf)
+    }
+    public static func asin<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvasin)
     }
     /**
        Calculate the hyperbolic sin for all elements
        - parameters:
             - mfarray: mfarray
     */
-    public static func sinh<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvsinhf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvsinh)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func sinh<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvsinhf)
+    }
+    public static func sinh<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvsinh)
     }
     /**
        Calculate the archyperbolic sin for all elements
        - parameters:
             - mfarray: mfarray
     */
-    public static func asinh<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvasinhf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvasinh)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func asinh<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvasinhf)
+    }
+    public static func asinh<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvasinh)
     }
     /**
        Calculate the cos for all elements
        - parameters:
             - mfarray: mfarray
     */
-    public static func cos<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvcosf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvcos)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func cos<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvcosf)
+    }
+    public static func cos<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvcos)
     }
     /**
        Calculate the arccos for all elements
        - parameters:
             - mfarray: mfarray
     */
-    public static func acos<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvacosf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvacos)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func acos<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvacosf)
+    }
+    public static func acos<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvacos)
     }
     /**
        Calculate the hyperbolic cos for all elements
        - parameters:
             - mfarray: mfarray
     */
-    public static func cosh<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvcoshf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvcosh)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func cosh<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvcoshf)
+    }
+    public static func cosh<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvcosh)
     }
     /**
        Calculate the arc hyperbolic cos for all elements
        - parameters:
             - mfarray: mfarray
     */
-    public static func acosh<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvacoshf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvacosh)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func acosh<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvacoshf)
+    }
+    public static func acosh<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvacosh)
     }
     /**
        Calculate the tan for all elements
        - parameters:
             - mfarray: mfarray
     */
-    public static func tan<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvtanf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvtan)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func tan<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvtanf)
+    }
+    public static func tan<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvtan)
     }
     /**
        Calculate the arctan for all elements
        - parameters:
             - mfarray: mfarray
     */
-    public static func atan<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvatanf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvatan)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func atan<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvatanf)
+    }
+    public static func atan<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvatan)
     }
     /**
        Calculate the hyperbolic tan for all elements
        - parameters:
             - mfarray: mfarray
     */
-    public static func tanh<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvtanhf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvtanh)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func tanh<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvtanhf)
+    }
+    public static func tanh<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvtanh)
     }
     /**
        Calculate the arc hyperbolic tan for all elements
        - parameters:
             - mfarray: mfarray
     */
-    public static func atanh<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvatanhf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvatanh)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func atanh<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvatanhf)
+    }
+    public static func atanh<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvatanh)
     }
     
     
@@ -227,102 +187,66 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func sqrt<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvsqrtf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvsqrt)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func sqrt<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvsqrtf)
+    }
+    public static func sqrt<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvsqrt)
     }
     /**
        Return the reciprocal square root of each element
        - parameters:
             - mfarray: mfarray
     */
-    public static func rsqrt<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvrsqrtf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvrsqrt)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func rsqrt<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvrsqrtf)
+    }
+    public static func rsqrt<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvrsqrt)
     }
     /**
        Calculate the exponetial for all elements
        - parameters:
             - mfarray: mfarray
     */
-    public static func exp<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvexpf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvexp)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func exp<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvexpf)
+    }
+    public static func exp<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvexp)
     }
     /**
        Calculate the natural log for all elements. i.e. log_e X
        - parameters:
             - mfarray: mfarray
     */
-    public static func log<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvlogf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvlog)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func log<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvlogf)
+    }
+    public static func log<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvlog)
     }
     /**
        Calculate the base 2 log for all elements. i.e. log_2 X
        - parameters:
             - mfarray: mfarray
     */
-    public static func log2<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvlog2f)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvlog2)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func log2<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvlog2f)
+    }
+    public static func log2<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvlog2)
     }
     /**
        Calculate the base 10 log for all elements. i.e. log_10 X
        - parameters:
             - mfarray: mfarray
     */
-    public static func log10<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvlog10f)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvlog10)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func log10<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvlog10f)
+    }
+    public static func log10<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvlog10)
     }
     
     
@@ -334,77 +258,58 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func ceil<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvceilf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvceil)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func ceil<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Int32>{
+        return math_vv_by_vForce(mfarray, vvceilf)
+    }
+    public static func ceil<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Int64>{
+        return math_vv_by_vForce(mfarray, vvceil)
     }
     /**
        Return the floor of each element
        - parameters:
             - mfarray: mfarray
     */
-    public static func floor<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvfloorf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvfloor)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func floor<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Int32>{
+        return math_vv_by_vForce(mfarray, vvfloorf)
+    }
+    public static func floor<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Int64>{
+        return math_vv_by_vForce(mfarray, vvfloor)
     }
     /**
        Return the interfer truncation of each element
        - parameters:
             - mfarray: mfarray
     */
-    public static func trunc<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvintf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvint)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func trunc<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Int32>{
+        return math_vv_by_vForce(mfarray, vvintf)
+    }
+    public static func trunc<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Int64>{
+        return math_vv_by_vForce(mfarray, vvint)
     }
     /**
        Return the nearest interfer of each element
        - parameters:
             - mfarray: mfarray
     */
-    public static func nearest<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvnintf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvnint)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func nearest<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Int32>{
+        return math_vv_by_vForce(mfarray, vvnintf)
+    }
+    public static func nearest<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Int64>{
+        return math_vv_by_vForce(mfarray, vvnint)
     }
     /**
           Return the round give by number of decimals of each element
           - parameters:
             - decimals: (Optional) Int, default is 0, which is equivelent to nearest
     */
-    public static func round(_ mfarray: MfArray, decimals: Int = 0) -> MfArray{
-        let pow = powf(10, Float(decimals))
-        let n =  Matft.math.nearest(mfarray * pow)
+    public static func round<T: StoredFloat>(_ mfarray: MfArray<T>, decimals: Int = 0) -> MfArray<Int32>{
+        let pow = Int32(powf(10, Float(decimals)))
+        let n: MfArray<Int32> =  math_vv_by_vForce(mfarray * pow, vvnintf)
+        return n / pow
+    }
+    public static func round<T: StoredDouble>(_ mfarray: MfArray<T>, decimals: Int = 0) -> MfArray<Int64>{
+        let pow = Int64(powf(10, Float(decimals)))
+        let n: MfArray<Int64> =  math_vv_by_vForce(mfarray * pow, vvnintf)
         return n / pow
     }
     
@@ -416,34 +321,22 @@ extension Matft.math{//use math_vv_by_vecLib
        - parameters:
             - mfarray: mfarray
     */
-    public static func abs<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvfabsf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvfabs)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func abs<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvfabsf)
+    }
+    public static func abs<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvfabs)
     }
     /**
        Return the reciprocal value of each element
        - parameters:
             - mfarray: mfarray
     */
-    public static func reciprocal<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            let ret = math_vv_by_vForce(mfarray, vvrecf)
-            ret.mfdata._mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_vv_by_vForce(mfarray, vvrec)
-            ret.mfdata._mftype = .Double
-            return ret
-        }
+    public static func reciprocal<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Float>{
+        return math_vv_by_vForce(mfarray, vvrecf)
+    }
+    public static func reciprocal<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Double>{
+        return math_vv_by_vForce(mfarray, vvrec)
     }
 }
 
@@ -454,7 +347,7 @@ extension Matft.math{//use math_vv_by_vecLib
             - base: Float
             - exponents: mfarray
     */
-    public static func power<T: MfTypable>(base: T, exponents: MfArray<T>) -> MfArray<T>{
+    public static func power<T: MfNumeric>(base: T, exponents: MfArray<T>) -> MfArray<T>{
         return Matft.math.power(bases: Matft.nums(base, shape: [1]), exponents: exponents)
     }
     /**
@@ -463,7 +356,7 @@ extension Matft.math{//use math_vv_by_vecLib
             - bases: mfarray
             - exponent: Float
     */
-    public static func power<T: MfTypable>(bases: MfArray<T>, exponent: T) -> MfArray<T>{
+    public static func power<T: MfNumeric>(bases: MfArray<T>, exponent: T) -> MfArray<T>{
         return Matft.math.power(bases: bases, exponents: Matft.nums(exponent, shape: [1]))
     }
     /**
@@ -472,18 +365,14 @@ extension Matft.math{//use math_vv_by_vecLib
             - base: mfarray
             - exponents: mfarray
     */
-    public static func power<T: MfTypable>(bases: MfArray<T>, exponents: MfArray<T>) -> MfArray<T>{
-        let (bases, exponents, rettype) = biop_broadcast_to(bases, exponents)
+    public static func power<T: MfNumeric>(bases: MfArray<T>, exponents: MfArray<T>) -> MfArray<T>{
+        let (bases, exponents) = biop_broadcast_to(bases, exponents)
         
-        switch MfType.storedType(rettype) {
+        switch MfType.storedType(T.self) {
         case .Float:
-            let ret = math_biop_vv_by_vForce(exponents, bases, vvpowf)
-            ret.mfdata._mftype = .Float
-            return ret
+            return math_biop_vv_by_vForce(exponents, bases, vvpowf)
         case .Double:
-            let ret = math_biop_vv_by_vForce(exponents, bases, vvpow)
-            ret.mfdata._mftype = .Double
-            return ret
+            return math_biop_vv_by_vForce(exponents, bases, vvpow)
         }
     }
 }
@@ -508,6 +397,14 @@ extension Matft.math{//use vDSP
        - parameters:
             - mfarray: mfarray
     */
+    public static func sign<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Int32>{
+        let ssq: MfArray<Float> = math_by_vDSP(mfarray, vDSP_vssq)
+        let sq: MfArray<Float> = Matft.math.square(mfarray)
+        return (ssq / sq).nearest()
+    }
+    public static func reciprocal<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Int64>{
+        return math_vv_by_vForce(mfarray, vvrec)
+    }
     public static func sign<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
         var ssq: MfArray<T> // signed squared values
         switch mfarray.storedType {

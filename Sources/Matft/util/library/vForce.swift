@@ -11,11 +11,11 @@ import Accelerate
 
 internal typealias vForce_vv_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
 
-internal func math_vv_by_vForce<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, _ vForce_func: vForce_vv_func<U>) -> MfArray<T>{
+internal func math_vv_by_vForce<T: MfTypable, U: MfStorable, V: MfTypable>(_ mfarray: MfArray<T>, _ vForce_func: vForce_vv_func<U>) -> MfArray<V>{
     var mfarray = mfarray
     mfarray = check_contiguous(mfarray)
     
-    let newdata = withDummyDataMRPtr(T.self, storedSize: mfarray.storedSize){
+    let newdata = withDummyDataMRPtr(V.self, storedSize: mfarray.storedSize){
         dstptr in
         let dstptrU = dstptr.bindMemory(to: U.self, capacity: mfarray.storedSize)
         mfarray.withDataUnsafeMBPtrT(datatype: U.self){
