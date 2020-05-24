@@ -33,13 +33,13 @@ final class PreOpTests: XCTestCase {
                                                 [0.0002, -2, -3.4, 5]]))
 
         }
-        /*
+        
         do{
             let a = Matft.arange(start: UInt8(0), to: 4*4, by: 1, shape: [4,4]).T
-            let b = MfArray<UInt8>([[-5, 3, 2, 4],
-                                    [-9, 3, 1, 1],
-                                    [22, 17, 0, -2],
-                                    [1, -7, 3, 3]], mforder: .Column)
+            let b = MfArray<UInt8>([[251, 3, 2, 4],
+                                    [247, 3, 1, 1],
+                                    [22, 17, 0, 254],
+                                    [1, 249, 3, 3]], mforder: .Column)
             XCTAssertEqual(-a, MfArray<UInt8>([[  0, 252, 248, 244],
                                                [255, 251, 247, 243],
                                                [254, 250, 246, 242],
@@ -48,7 +48,7 @@ final class PreOpTests: XCTestCase {
                                                [  9, 253, 255, 255],
                                                [234, 239,   0,   2],
                                                [255,   7, 253, 253]]))
-        }*/
+        }
     }
     
 

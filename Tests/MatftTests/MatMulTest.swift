@@ -34,23 +34,23 @@ final class MatMulTests: XCTestCase {
                                               [ 2.60920e+00,  4.40000e+00, -2.94020e+00,  6.34000e+00],
                                               [ 1.00000e-03, -1.00000e+01, -1.70000e+01,  2.50000e+01]]))
         }
-        /*
+        
         do{
-            let a = Matft.arange(start: 0, to: 4*4, by: 1, shape: [4,4], mftype: .UInt8).T
-            let b = MfArray([[-5, 3, 2, 4],
-                             [-9, 3, 1, 1],
-                             [22, 17, 0, -2],
-                             [1, -7, 3, 3]], mftype: .UInt8, mforder: .Column)
+            let a = Matft.arange(start: UInt8.zero, to: 4*4, by: 1, shape: [4,4]).T
+            let b = MfArray<UInt8>([[251, 3, 2, 4],
+                             [247, 3, 1, 1],
+                             [22, 17, 0, 254],
+                             [1, 249, 3, 3]], mforder: .Column)
             
-            XCTAssertEqual(a*&b, MfArray([[152,  64,  40,  24],
+            XCTAssertEqual(a*&b, MfArray<UInt8>([[152,  64,  40,  24],
                                           [161,  80,  46,  30],
                                           [170,  96,  52,  36],
-                                          [179, 112,  58,  42]], mftype: .UInt8))
-            XCTAssertEqual(b*&a, MfArray([[ 19,  35,  51,  67],
+                                          [179, 112,  58,  42]]))
+            XCTAssertEqual(b*&a, MfArray<UInt8>([[ 19,  35,  51,  67],
                                           [  8, 248, 232, 216],
                                           [ 11, 159,  51, 199],
-                                          [  8,   8,   8,   8]], mftype: .UInt8))
-        }*/
+                                          [  8,   8,   8,   8]]))
+        }
     }
     
     //element-wise

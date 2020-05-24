@@ -532,16 +532,28 @@ fileprivate func _equalAll_operation<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_
     if l_mfarray.shape != r_mfarray.shape{
        return false
     }
-    //let (l, r) = biop_broadcast_to(l_mfarray, r_mfarray)
-    //let (l_mfarray, r_mfarray) = conv_order_biop(l, r)
-    
+    let (l, r) = biop_broadcast_to(l_mfarray, r_mfarray)
+    let (l_mfarray, r_mfarray) = conv_order_biop(l, r)
+    // for contiguous array
+    // below example, l_mfarray is row contiguous
+    // print(l_mfarray.data, r_mfarray.data)
+    //>> [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31] [10, 11]
+    let l_data = Array(l_mfarray.data[l_mfarray.offsetIndex..<l_mfarray.offsetIndex+l_mfarray.size])
+    let r_data = Array(r_mfarray.data[r_mfarray.offsetIndex..<r_mfarray.offsetIndex+r_mfarray.size])
+
     switch l_mfarray.storedType {
     case .Float:
-        let diff = l_mfarray.astype(Float.self) - r_mfarray.astype(Float.self)
-        return diff.data.allSatisfy{ abs($0) <= thresholdF }
+        if let l_data = l_data as? [Float], let r_data = r_data as? [Float]{
+            return zip(l_data, r_data).allSatisfy{ abs($0 - $1) <= thresholdF }
+        }
+        //print(l_data, r_data)
+        return zip(l_data, r_data).allSatisfy{ $0 == $1 }
+        
     case .Double:
-        let diff = l_mfarray.astype(Double.self) - r_mfarray.astype(Double.self)
-        return diff.data.allSatisfy{ abs($0) <= thresholdD }
+        if let l_data = l_data as? [Double], let r_data = r_data as? [Double]{
+            return zip(l_data, r_data).allSatisfy{ abs($0 - $1) <= thresholdD }
+        }
+        return zip(l_data, r_data).allSatisfy{ $0 == $1 }
     }
 }
 

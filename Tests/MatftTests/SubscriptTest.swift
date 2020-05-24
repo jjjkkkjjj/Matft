@@ -143,6 +143,7 @@ final class SubscriptTests: XCTestCase {
     }
     
     func testSubscrpt_Subscript(){
+        
         do{
             let a = Matft.arange(start: 0.0, to: 27*2, by: 2, shape: [3,3,3], mforder: .Column)
 
@@ -231,6 +232,7 @@ final class SubscriptTests: XCTestCase {
             let a = Matft.arange(start: 0, to: 4*4*2, by: 1, shape: [4,4,2])
             
             let b = a[0~, 1]
+            
             XCTAssertEqual(b[~~-1], MfArray<Int>([[26, 27],
                                                   [18, 19],
                                                   [10, 11],

@@ -152,9 +152,9 @@ fileprivate func _run_stats<T: MfStorable>(_ srcptr: UnsafePointer<T>, _ dstptr:
 }
 
 // for along given axis
-internal func stats_axis_by_vDSP<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, axis: Int, vDSP_func: vDSP_stats_func<U>) -> MfArray<T>{
+internal func stats_axis_by_vDSP<T: MfTypable, U: MfStorable, V: MfTypable>(_ mfarray: MfArray<T>, axis: Int, vDSP_func: vDSP_stats_func<U>) -> MfArray<V>{
     let mfarray = check_contiguous(mfarray)
-    
+
     var retShape = mfarray.shape
     let count = retShape.remove(at: axis)
     var retStrides = mfarray.strides
@@ -162,7 +162,7 @@ internal func stats_axis_by_vDSP<T: MfTypable, U: MfStorable>(_ mfarray: MfArray
     let stride = retStrides.remove(at: axis)
     
     let retSize = shape2size(&retShape)
-    let newmfdata = withDummyDataMRPtr(T.self, storedSize: retSize){
+    let newmfdata = withDummyDataMRPtr(V.self, storedSize: retSize){
         dstptr in
         var dstptrU = dstptr.bindMemory(to: U.self, capacity: retSize)
         
@@ -171,7 +171,7 @@ internal func stats_axis_by_vDSP<T: MfTypable, U: MfStorable>(_ mfarray: MfArray
             for flat in FlattenIndSequence(shape: &retShape, strides: &retStrides){
                 _run_stats(srcptr.baseAddress! + flat.flattenIndex, dstptrU, vDSP_func: vDSP_func, stride: stride, count)
                 dstptrU += 1
-                print(flat.flattenIndex, flat.indices)
+                //print(flat.flattenIndex, flat.indices)
             }
         }
     }
@@ -182,16 +182,16 @@ internal func stats_axis_by_vDSP<T: MfTypable, U: MfStorable>(_ mfarray: MfArray
 }
 
 // for all elements
-internal func stats_all_by_vDSP<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, vDSP_func: vDSP_stats_func<U>) -> MfArray<T>{
+internal func stats_all_by_vDSP<T: MfTypable, U: MfStorable, V: MfTypable>(_ mfarray: MfArray<T>, vDSP_func: vDSP_stats_func<U>) -> MfArray<V>{
     let mfarray = check_contiguous(mfarray)
 
     var retShape = [1]
-    let newmfdata = withDummyDataMRPtr(T.self, storedSize: 1){
+    let newmfdata = withDummyDataMRPtr(V.self, storedSize: 1){
         dstptr in
         let dstptrU = dstptr.bindMemory(to: U.self, capacity: 1)
         mfarray.withDataUnsafeMBPtrT(datatype: U.self){
             [unowned mfarray](srcptr) in
-            _run_stats(srcptr.baseAddress!, dstptrU, vDSP_func: vDSP_func, stride: 1, mfarray.storedSize)
+            _run_stats(srcptr.baseAddress!, dstptrU, vDSP_func: vDSP_func, stride: 1, mfarray.size)
         }
     }
     

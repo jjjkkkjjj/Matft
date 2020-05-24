@@ -157,15 +157,15 @@ extension Matft.stats{
 }
 
 
-fileprivate func _stats_calc<T: MfTypable, U: MfStorable>(_ typedArray: MfArray<T>, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_func<U>) -> MfArray<T>{
+fileprivate func _stats_calc<T: MfTypable, U: MfStorable, V: MfTypable>(_ typedArray: MfArray<T>, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_func<U>) -> MfArray<V>{
     
     if axis != nil && typedArray.ndim > 1{// for given axis
         let axis = get_axis(axis!, ndim: typedArray.ndim)
-        let ret = stats_axis_by_vDSP(typedArray, axis: axis, vDSP_func: vDSP_func)
+        let ret: MfArray<V> = stats_axis_by_vDSP(typedArray, axis: axis, vDSP_func: vDSP_func)
         return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
     }
     else{// for all elements
-        let ret = stats_all_by_vDSP(typedArray, vDSP_func: vDSP_func)
+        let ret: MfArray<V> = stats_all_by_vDSP(typedArray, vDSP_func: vDSP_func)
         if keepDims{
             let shape = Array(repeating: 1, count: typedArray.ndim)
             return Matft.reshape(ret, newshape: shape)
