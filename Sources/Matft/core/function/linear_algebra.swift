@@ -243,7 +243,7 @@ extension Matft.linalg{
         return (u, p)
     }
     
-    /*
+    
     /**
        Calculate lp norm along given axis. Note that ord = Float.infinity and -Float.infinity are also available.
        - parameters:
@@ -252,7 +252,7 @@ extension Matft.linalg{
             - axis: (Optional) axis, if not given, get mean for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func normlp_vec<T: MfStorable>(_ mfarray: MfArray<T>, ord: Float = 2, axis: Int = -1, keepDims: Bool = false) -> MfArray<T>{
+    public static func normlp_vec<T: MfNumeric & StoredFloat>(_ mfarray: MfArray<T>, ord: Float = 2, axis: Int = -1, keepDims: Bool = false) -> MfArray<Float>{
         /*
          // ref: https://github.com/numpy/numpy/blob/91118b3363b636f932f7ff6748d8259e9eb2c23a/numpy/linalg/linalg.py#L2316-L2557
          vDSP_svesq(<#T##__A: UnsafePointer<Float>##UnsafePointer<Float>#>, <#T##__IA: vDSP_Stride##vDSP_Stride#>, <#T##__C: UnsafeMutablePointer<Float>##UnsafeMutablePointer<Float>#>, <#T##__N: vDSP_Length##vDSP_Length#>)
@@ -271,7 +271,7 @@ extension Matft.linalg{
         }
         else{
             // remove mfarray == 0, and count up non-zero
-            return (mfarray !== 0).astype(T.self).sum(axis: axis, keepDims: keepDims)
+            return (mfarray !== 0).astype(Float.self).sum(axis: axis, keepDims: keepDims)
         }
     }
     
@@ -280,17 +280,17 @@ extension Matft.linalg{
        - parameters:
            - mfarray: mfarray
     */
-    public static func normlp_mat<T: MfStorable>(_ mfarray: MfArray<T>, ord: Float? = 2, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray<T>{
+    public static func normlp_mat<T: MfNumeric & StoredFloat>(_ mfarray: MfArray<T>, ord: Float? = 2, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray<Float>{
         var axes: (row: Int, col: Int) = (get_axis(axes.row, ndim: mfarray.ndim), get_axis(axes.col, ndim: mfarray.ndim))
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
         
-        var ret: MfArray<T>
+        var ret: MfArray<Float>
         if ord == 2{
-            ret = _multi_svd_norm(mfarray: mfarray, axes: &axes, op: Matft.stats.max)
+            ret = _multi_svd_norm(mfarray: mfarray.astype(Float.self), axes: &axes, op: Matft.stats.max)
         }
         else if ord == -2{
-            ret = _multi_svd_norm(mfarray: mfarray, axes: &axes, op: Matft.stats.min)
+            ret = _multi_svd_norm(mfarray: mfarray.astype(Float.self), axes: &axes, op: Matft.stats.min)
         }
         else if ord == 1{
             if axes.col > axes.row{
@@ -330,7 +330,7 @@ extension Matft.linalg{
         return ret
     }
     
-    public static func normfro_mat<T: MfStorable>(_ mfarray: MfArray<T>, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray<T>{
+    public static func normfro_mat<T: MfNumeric & StoredFloat>(_ mfarray: MfArray<T>, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray<Float>{
         let axes: (row: Int, col: Int) = (get_axis(axes.row, ndim: mfarray.ndim), get_axis(axes.col, ndim: mfarray.ndim))
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
@@ -348,12 +348,12 @@ extension Matft.linalg{
         
         return ret
     }
-    public static func normnuc_mat<T: MfStorable>(_ mfarray: MfArray<T>, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray<T>{
+    public static func normnuc_mat<T: MfNumeric & StoredFloat>(_ mfarray: MfArray<T>, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray<Float>{
         var axes: (row: Int, col: Int) = (get_axis(axes.row, ndim: mfarray.ndim), get_axis(axes.col, ndim: mfarray.ndim))
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
         
-        var ret = _multi_svd_norm(mfarray: mfarray, axes: &axes, op: Matft.stats.sum)
+        var ret = _multi_svd_norm(mfarray: mfarray.astype(Float.self), axes: &axes, op: Matft.stats.sum)
         
         if keepDims{
             var retShape = mfarray.shape
@@ -363,11 +363,11 @@ extension Matft.linalg{
         }
         
         return ret
-    }*/
+    }
 }
-/*
-fileprivate typealias _norm_op<T: MfStorable> = (MfArray<T>, Int?, Bool) -> MfArray<T>
-fileprivate func _multi_svd_norm<T: MfStorable>(mfarray: MfArray<T>, axes: inout (row: Int, col: Int), op: _norm_op<T>) -> MfArray<T>{
+
+fileprivate typealias _norm_op = (MfArray<Float>, Int?, Bool) -> MfArray<Float>
+fileprivate func _multi_svd_norm(mfarray: MfArray<Float>, axes: inout (row: Int, col: Int), op: _norm_op) -> MfArray<Float>{
     do{
         let mfarray = mfarray.moveaxis(src: [axes.row, axes.col], dst: [-2, -1])
         let ret = op(try Matft.linalg.svd(mfarray).s, -1, false)
@@ -377,5 +377,5 @@ fileprivate func _multi_svd_norm<T: MfStorable>(mfarray: MfArray<T>, axes: inout
         fatalError("Cannot calculate svd")
     }
 }
-*/
+
 

@@ -131,7 +131,7 @@ final class MathTests: XCTestCase {
                                       [ 0.0044257 , -0.75968791]]]]))
             
             XCTAssertEqual(Matft.math.sin(a.transpose(axes: [3,0,2,1])*3.1415926535).round(decimals: 7),
-                           MfArray<Int32>([[[[ 0, 0],
+                           MfArray<Float>([[[[ 0, 0],
                                       [0, 0]],
 
                                      [[0, 0],
@@ -231,7 +231,7 @@ final class MathTests: XCTestCase {
                                                                               [[    4096.0,        8192.0],
                                                                                [    16384.0,        32768.0]]]]))
             XCTAssertEqual(Matft.math.power(bases: a, exponent: 2).round(decimals: 4),
-                           MfArray<Int32>([[[[  0,   1],
+                           MfArray<Float>([[[[  0,   1],
                                       [  4,   9]],
 
                                      [[ 16,  25],

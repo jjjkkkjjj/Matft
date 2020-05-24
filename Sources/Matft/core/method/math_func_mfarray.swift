@@ -44,7 +44,7 @@ extension MfArray where ArrayType: StoredFloat{
           Return the round give by number of decimals of each element
           - parameters:
     */
-    public func round(decimals: Int = 0) -> MfArray<Int32>{
+    public func round(decimals: Int = 0) -> MfArray<Float>{
         return Matft.math.round(self, decimals: decimals)
     }
     
@@ -94,7 +94,7 @@ extension MfArray where ArrayType: StoredDouble{
           Return the round give by number of decimals of each element
           - parameters:
     */
-    public func round(decimals: Int = 0) -> MfArray<Int64>{
+    public func round(decimals: Int = 0) -> MfArray<Double>{
         return Matft.math.round(self, decimals: decimals)
     }
     

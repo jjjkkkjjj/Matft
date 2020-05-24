@@ -302,15 +302,15 @@ extension Matft.math{
           - parameters:
             - decimals: (Optional) Int, default is 0, which is equivelent to nearest
     */
-    public static func round<T: StoredFloat>(_ mfarray: MfArray<T>, decimals: Int = 0) -> MfArray<Int32>{
-        let pow = Int32(powf(10, Float(decimals)))
-        let n: MfArray<Int32> =  math_vv_by_vForce(mfarray.astype(Int32.self) * pow, vvnintf)
-        return n / pow
+    public static func round<T: StoredFloat>(_ mfarray: MfArray<T>, decimals: Int = 0) -> MfArray<Float>{
+        let powF = powf(10, Float(decimals))
+        let n: MfArray<Float> =  math_vv_by_vForce(mfarray.astype(Float.self) * powF, vvnintf)
+        return n / powF
     }
-    public static func round<T: StoredDouble>(_ mfarray: MfArray<T>, decimals: Int = 0) -> MfArray<Int64>{
-        let pow = Int64(powf(10, Float(decimals)))
-        let n: MfArray<Int64> =  math_vv_by_vForce(mfarray.astype(Int64.self) * pow, vvnintf)
-        return n / pow
+    public static func round<T: StoredDouble>(_ mfarray: MfArray<T>, decimals: Int = 0) -> MfArray<Double>{
+        let powD = pow(10.0, Double(decimals))
+        let n: MfArray<Double> =  math_vv_by_vForce(mfarray.astype(Double.self) * powD, vvnintf)
+        return n / powD
     }
     
     //

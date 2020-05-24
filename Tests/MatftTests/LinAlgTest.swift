@@ -214,33 +214,33 @@ final class LinAlgTests: XCTestCase {
             
         }
     }
-    /*
+    
     func testNorm_vec(){
         do{
             let a = Matft.arange(start: 0, to: 16, by: 1, shape: [2,2,2,2])
             
             XCTAssertEqual(Matft.linalg.normlp_vec(a, ord: 2, axis: 3).round(decimals: 4),
-                           MfArray<Int>([[[ 1.0        ,  3.60555128],
+                           MfArray<Float>([[[ 1.0        ,  3.60555128],
                                      [ 6.40312424,  9.21954446]],
 
                                     [[12.04159458, 14.86606875],
                                      [17.69180601, 20.51828453]]]).round(decimals: 4))
             XCTAssertEqual(Matft.linalg.normlp_vec(a, ord: 2, axis: 0).round(decimals: 4),
-                           MfArray<Int>([[[ 8.0        ,  9.05538514],
+                           MfArray<Float>([[[ 8.0        ,  9.05538514],
                                      [10.19803903, 11.40175425]],
 
                                     [[12.64911064, 13.92838828],
                                      [15.23154621, 16.55294536]]]).round(decimals: 4))
             
             XCTAssertEqual(Matft.linalg.normlp_vec(a, ord: 0, axis: 0).round(decimals: 4),
-            MfArray<Int>([[[1.0, 2.0],
+            MfArray<Float>([[[1.0, 2.0],
                       [2.0, 2.0]],
 
                      [[2.0, 2.0],
                       [2.0, 2.0]]]).round(decimals: 4))
             
             XCTAssertEqual(Matft.linalg.normlp_vec(a, ord: Float.infinity, axis: -1).round(decimals: 4),
-            MfArray<Int>([[[ 1.0,  3.0],
+            MfArray<Float>([[[ 1.0,  3.0],
                       [ 5.0,  7.0]],
 
                      [[ 9.0, 11.0],
@@ -253,18 +253,18 @@ final class LinAlgTests: XCTestCase {
         do{
             let a = Matft.arange(start: 0, to: 16, by: 1, shape: [2,2,2,2])
             XCTAssertEqual(Matft.linalg.normlp_mat(a, ord: 2, axes: (3, 1)).round(decimals: 4),
-                           MfArray<Int>([[ 6.45100985,  9.89123156],
+                           MfArray<Float>([[ 6.45100985,  9.89123156],
                                     [21.40011829, 25.3372271 ]]).round(decimals: 4))
             XCTAssertEqual(Matft.linalg.normlp_mat(a, ord: 2, axes: (0, -1)).round(decimals: 4),
-                           MfArray<Int>([[12.06483816, 15.28810568],
+                           MfArray<Float>([[12.06483816, 15.28810568],
                                     [18.81008019, 22.49163147]]).round(decimals: 4))
             
             XCTAssertEqual(Matft.linalg.normlp_mat(a, ord: -1, axes: (2, 3)).round(decimals: 4),
-            MfArray<Int>([[ 2.0, 10.0],
+            MfArray<Float>([[ 2.0, 10.0],
                      [18.0, 26.0]]).round(decimals: 4))
             
             XCTAssertEqual(Matft.linalg.normlp_mat(a, ord: Float.infinity, axes: (-1, 0)).round(decimals: 4),
-            MfArray<Int>([[10.0, 14.0],
+            MfArray<Float>([[10.0, 14.0],
                      [18.0, 22.0]]).round(decimals: 4))
         }
         
@@ -276,10 +276,10 @@ final class LinAlgTests: XCTestCase {
             let a = Matft.arange(start: 0, to: 16, by: 1, shape: [2,2,2,2])
             
             XCTAssertEqual(Matft.linalg.normfro_mat(a, axes: (2, 0), keepDims: false).round(decimals: 4),
-                           MfArray<Int>([[12.9614814 , 14.56021978],
+                           MfArray<Float>([[12.9614814 , 14.56021978],
                                     [19.79898987, 21.63330765]]).round(decimals: 4))
             XCTAssertEqual(Matft.linalg.normfro_mat(a, axes: (-2, 1), keepDims: false).round(decimals: 4),
-                           MfArray<Int>([[ 7.48331477,  9.16515139],
+                           MfArray<Float>([[ 7.48331477,  9.16515139],
                                     [22.44994432, 24.41311123]]).round(decimals: 4))
             
         }
@@ -290,13 +290,13 @@ final class LinAlgTests: XCTestCase {
             let a = Matft.arange(start: 0, to: 16, by: 1, shape: [2,2,2,2])
             
             XCTAssertEqual(Matft.linalg.normnuc_mat(a, axes: (2, 0), keepDims: false).round(decimals: 4),
-                           MfArray<Int>([[14.14213562, 15.62049935],
+                           MfArray<Float>([[14.14213562, 15.62049935],
                                     [20.59126028, 22.36067977]]).round(decimals: 4))
             XCTAssertEqual(Matft.linalg.normnuc_mat(a, axes: (-2, 1), keepDims: false).round(decimals: 4),
-                           MfArray<Int>([[ 8.48528137, 10.0        ],
+                           MfArray<Float>([[ 8.48528137, 10.0        ],
                                     [22.8035085 , 24.73863375]]).round(decimals: 4))
             
         }
-    }*/
+    }
 }
 
