@@ -10,8 +10,6 @@ import Foundation
 import Accelerate
 
 public class MfArray<T: MfTypable>{
-    public typealias ArrayLiteralElement = T
-    
     public typealias ArrayType = T
     
     public internal(set) var mfdata: MfData<ArrayType> // Only setter is private
@@ -79,17 +77,12 @@ public class MfArray<T: MfTypable>{
     }
     
     
-    public init (_ array: [Any], mftype: MfType? = nil, shape: [Int]? = nil, mforder: MfOrder = .Row) {
+    public init (_ array: [Any], shape: [Int]? = nil, mforder: MfOrder = .Row) {
         
         var _mforder = mforder
         
         var (flatten, _shape): ([ArrayType], [Int]) = array.withUnsafeBufferPointer{
             flatten_array(ptr: $0, mforder: &_mforder)
-        }
-    
-        if mftype == .Object || mftype == .None{
-            //print(flatten)
-            fatalError("Matft does not support Object and None. Shape was \(_shape)")
         }
         
         let ptr = flattenarray2UnsafeMRPtr_viaForD(&flatten)

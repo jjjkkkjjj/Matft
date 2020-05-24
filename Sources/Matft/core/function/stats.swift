@@ -8,7 +8,7 @@
 
 import Foundation
 import Accelerate
-/*
+
 extension Matft.stats{
     /**
        Get mean value along axis
@@ -17,13 +17,11 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get mean for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func mean<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
-        switch mfarray.storedType {
-        case .Float:
-            return _stats_calc(mfarray.astype(Float.self), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv)
-        case .Double:
-            return _stats_calc(mfarray.astype(Double.self), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanvD)
-        }
+    public static func mean<T: StoredFloat>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<Float>{
+        return _stats_calc(mfarray.astype(Float.self), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv)
+    }
+    public static func mean<T: StoredDouble>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<Double>{
+        return _stats_calc(mfarray.astype(Double.self), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanvD)
     }
     /**
        Get maximum value along axis
@@ -32,7 +30,7 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get maximum for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func max<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
+    public static func max<T: MfNumeric>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxv)
@@ -46,7 +44,7 @@ extension Matft.stats{
             - mfarray: mfarray
             - axis: (Optional) axis, if not given, get index of maximum for all elements (flattenarray)
     */
-    public static func argmax<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil) -> MfArray<Int>{
+    public static func argmax<T: MfNumeric>(_ mfarray: MfArray<T>, axis: Int? = nil) -> MfArray<Int>{
         switch mfarray.storedType {
         case .Float:
             return _stats_calc_index(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_maxvi)
@@ -61,7 +59,7 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get minimum for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func min<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
+    public static func min<T: MfNumeric>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minv)
@@ -75,7 +73,7 @@ extension Matft.stats{
             - mfarray: mfarray
             - axis: (Optional) axis, if not given, get index of minimum for all elements (flattenarray)
     */
-    public static func argmin<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil) -> MfArray<Int>{
+    public static func argmin<T: MfNumeric>(_ mfarray: MfArray<T>, axis: Int? = nil) -> MfArray<Int>{
         switch mfarray.storedType {
         case .Float:
             return _stats_calc_index(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_minvi)
@@ -123,7 +121,7 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get summation for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func sum<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
+    public static func sum<T: MfNumeric>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sve)
@@ -138,9 +136,9 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get summation for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func sumsqrt<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
-        return Matft.math.sqrt(Matft.stats.sum(mfarray, axis: axis, keepDims: keepDims))
-    }
+    //public static func sumsqrt<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
+    //    return Matft.math.sqrt(Matft.stats.sum(mfarray, axis: axis, keepDims: keepDims))
+    //}
     /**
        Calculate sum of squared MfArray
        - parameters:
@@ -148,7 +146,7 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get summation for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public static func squaresum<T: MfTypable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
+    public static func squaresum<T: MfNumeric>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesq)
@@ -193,4 +191,4 @@ fileprivate func _stats_calc_index<T: MfTypable, U: MfStorable>(_ mfarray: MfArr
         return ret
     }
 }
-*/
+

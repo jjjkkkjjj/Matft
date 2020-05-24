@@ -6,17 +6,8 @@
 //
 
 import Foundation
-/*
-extension MfArray{
-    /**
-       Get mean value along axis
-       - parameters:
-            - axis: (Optional) axis, if not given, get mean for all elements
-            - keepDims: (Optional) whether to keep original dimension, default is true
-    */
-    public func mean(axis: Int? = nil, keepDims: Bool = false) -> MfArray{
-        return Matft.stats.mean(self, axis: axis, keepDims: keepDims)
-    }
+
+extension MfArray where ArrayType: MfNumeric{
     /**
        Get maximum value along axis
        - parameters:
@@ -67,9 +58,9 @@ extension MfArray{
             - axis: (Optional) axis, if not given, get summation for all elements
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
-    public func sumsqrt(axis: Int? = nil, keepDims: Bool = false) -> MfArray{
-        return Matft.stats.sumsqrt(self, axis: axis, keepDims: keepDims)
-    }
+    //public func sumsqrt(axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+    //    return Matft.stats.sumsqrt(self, axis: axis, keepDims: keepDims)
+    //}
     /**
        Calculate sum of squared MfArray
        - parameters:
@@ -81,4 +72,27 @@ extension MfArray{
         return Matft.stats.squaresum(self, axis: axis, keepDims: keepDims)
     }
 }
-*/
+
+extension MfArray where ArrayType: StoredFloat{
+    /**
+       Get mean value along axis
+       - parameters:
+            - axis: (Optional) axis, if not given, get mean for all elements
+            - keepDims: (Optional) whether to keep original dimension, default is true
+    */
+    public func mean(axis: Int? = nil, keepDims: Bool = false) -> MfArray<Float>{
+        return Matft.stats.mean(self, axis: axis, keepDims: keepDims)
+    }
+}
+
+extension MfArray where ArrayType: StoredDouble{
+    /**
+       Get mean value along axis
+       - parameters:
+            - axis: (Optional) axis, if not given, get mean for all elements
+            - keepDims: (Optional) whether to keep original dimension, default is true
+    */
+    public func mean(axis: Int? = nil, keepDims: Bool = false) -> MfArray<Double>{
+        return Matft.stats.mean(self, axis: axis, keepDims: keepDims)
+    }
+}

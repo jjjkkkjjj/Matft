@@ -206,10 +206,10 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_mfarray: right mfarray
     */
-    /*
+    
     public static func inner<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         return _inner_operation(l_mfarray, r_mfarray)
-    }*/
+    }
     /**
        Cross product
        - parameters:
@@ -480,8 +480,7 @@ fileprivate func _cross_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfa
     }
 }
 
-//uncompleted
-/*
+
 fileprivate func _inner_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
     let lastdim = l_mfarray.shape[l_mfarray.ndim - 1]
     precondition(lastdim == r_mfarray.shape[r_mfarray.ndim - 1], "Last dimension must be same")
@@ -496,13 +495,15 @@ fileprivate func _inner_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfa
     let ret = Matft.nums(T.zero, shape: [l_calcsize*r_calcsize])
     for lind in 0..<l_calcsize{
         for rind in 0..<r_calcsize{
+            print(l_mfarray[lind] * r_mfarray[rind])
+            print((l_mfarray[lind] * r_mfarray[rind]).sum())
             ret[lind*r_calcsize + rind] = (l_mfarray[lind] * r_mfarray[rind]).sum()
         }
     }
     
     return ret.reshape(retShape.count != 0 ? retShape : [1])
 }
-*/
+
 
 
 fileprivate func _equal_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray<Bool>{

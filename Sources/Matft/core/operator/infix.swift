@@ -78,10 +78,9 @@ extension MfArray where ArrayType: MfNumeric{
     static public func *&(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
         return Matft.matmul(l_mfarray, r_mfarray)
     }
-    /*
     static public func *+(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
         return Matft.inner(l_mfarray, r_mfarray)
-    }*/
+    }
     static public func *^(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
         return Matft.cross(l_mfarray, r_mfarray)
     }
