@@ -8,7 +8,7 @@
 
 import Foundation
 import Accelerate
-
+/*
 extension Matft.linalg{
     /**
         Solve N simultaneous equation. Get x in coef*x = b. Returned mfarray's type will be float but be double in case that  mftype of either coef or b is double.
@@ -338,3 +338,4 @@ fileprivate func _multi_svd_norm<T: MfStorable>(mfarray: MfArray<T>, axes: inout
         fatalError("Cannot calculate svd")
     }
 }
+*/

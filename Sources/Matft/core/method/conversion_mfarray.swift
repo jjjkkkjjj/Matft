@@ -157,7 +157,7 @@ extension MfArray{
             - order: (Optional) ascending or descending. default is ascending
     */
     public func sort(axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray{
-        Matft.sort(self, axis: axis, order: order)
+        return Matft.sort(self, axis: axis, order: order)
     }
     /**
        Get sorted mfarray's indices along given  axis
@@ -165,7 +165,7 @@ extension MfArray{
             - axis: (Optional) axis, if not given, get summation for all elements
             - order: (Optional) ascending or descending. default is ascending
     */
-    public func argsort(axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray{
-        Matft.argsort(self, axis: axis, order: order)
+    public func argsort(axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray<Int>{
+        return Matft.argsort(self, axis: axis, order: order)
     }
 }

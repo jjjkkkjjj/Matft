@@ -206,9 +206,10 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_mfarray: right mfarray
     */
+    /*
     public static func inner<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         return _inner_operation(l_mfarray, r_mfarray)
-    }
+    }*/
     /**
        Cross product
        - parameters:
@@ -299,10 +300,7 @@ extension Matft{
            - l_mfarray: left mfarray
            - r_mfarray: right mfarray
     */
-    public static func allEqual<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> Bool{
-        return _equalAll_operation(l_mfarray, r_mfarray)
-    }
-    public static func allEqual<T: MfBinary>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> Bool{
+    public static func allEqual<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> Bool{
         return _equalAll_operation(l_mfarray, r_mfarray)
     }
     
@@ -483,6 +481,7 @@ fileprivate func _cross_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfa
 }
 
 //uncompleted
+/*
 fileprivate func _inner_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
     let lastdim = l_mfarray.shape[l_mfarray.ndim - 1]
     precondition(lastdim == r_mfarray.shape[r_mfarray.ndim - 1], "Last dimension must be same")
@@ -503,7 +502,7 @@ fileprivate func _inner_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfa
     
     return ret.reshape(retShape.count != 0 ? retShape : [1])
 }
-
+*/
 
 
 fileprivate func _equal_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray<Bool>{
@@ -529,24 +528,15 @@ fileprivate func _equal_operation<T: MfBinary>(_ l_mfarray: MfArray<T>, _ r_mfar
     return !to_Bool(diff, thresholdF: thresholdF, thresholdD: thresholdD)
 }
 
-fileprivate func _equalAll_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> Bool{
+fileprivate func _equalAll_operation<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> Bool{
    //print(diff)
     if l_mfarray.shape != r_mfarray.shape{
        return false
     }
-    let diff = l_mfarray - r_mfarray
+    let (l, r) = biop_broadcast_to(l_mfarray, r_mfarray)
+    let (l_mfarray, r_mfarray) = conv_order_biop(l, r)
 
-    return diff.data.allSatisfy{ $0 == T.zero }
+    return l_mfarray.data == r_mfarray.data
 }
-fileprivate func _equalAll_operation<T: MfBinary>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> Bool{
-   //print(diff)
-    if l_mfarray.shape != r_mfarray.shape{
-       return false
-    }
-
-    return zip(l_mfarray.data, r_mfarray.data).allSatisfy{ $0 == $1 }
-}
-
-    
 
 

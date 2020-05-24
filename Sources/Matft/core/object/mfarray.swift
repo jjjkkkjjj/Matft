@@ -9,7 +9,10 @@
 import Foundation
 import Accelerate
 
-public class MfArray<ArrayType: MfTypable>{
+public class MfArray<T: MfTypable>{
+    public typealias ArrayLiteralElement = T
+    
+    public typealias ArrayType = T
     
     public internal(set) var mfdata: MfData<ArrayType> // Only setter is private
     public internal(set) var mfstructure: MfStructure
@@ -74,7 +77,8 @@ public class MfArray<ArrayType: MfTypable>{
     public var mfflags: MfFlags{
         return self.mfstructure._flags
     }
-
+    
+    
     public init (_ array: [Any], mftype: MfType? = nil, shape: [Int]? = nil, mforder: MfOrder = .Row) {
         
         var _mforder = mforder

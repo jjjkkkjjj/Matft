@@ -6,7 +6,7 @@
 //
 
 import Foundation
-
+/*
 extension MfArray{
     /**
        Return the ceiling of each element
@@ -56,3 +56,4 @@ extension MfArray{
         Matft.math.sign(self)
     }
 }
+*/

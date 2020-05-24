@@ -6,7 +6,7 @@
 //
 
 import Foundation
-
+/*
 extension Matft.file{
     /**
         Load file from given path and create mfarray. If the file is not loaded, return nil.
@@ -244,3 +244,4 @@ fileprivate class _TxtParser{
         
     }
 }
+*/

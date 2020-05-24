@@ -8,7 +8,7 @@
 
 import Foundation
 import Accelerate
-
+/*
 extension Matft.stats{
     /**
        Get mean value along axis
@@ -193,3 +193,4 @@ fileprivate func _stats_calc_index<T: MfTypable, U: MfStorable>(_ mfarray: MfArr
         return ret
     }
 }
+*/

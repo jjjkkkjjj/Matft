@@ -333,9 +333,6 @@ extension MfArray: MfSubscriptable{
         let array = self._get_mfarray(indices: &indices)
         var newValue = newValue
 
-        if array.mftype != newValue.mftype{
-            newValue = newValue.astype(array.mftype)
-        }
         //TODO: refactor
         if (array.size == newValue.size && array.size == 1){
             switch array.storedType {

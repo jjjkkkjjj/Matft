@@ -1,7 +1,7 @@
 import XCTest
 //@testable import Matft
 import Matft
-
+/*
 final class StatsTests: XCTestCase {
     
     func test_minmax() {
@@ -347,3 +347,4 @@ final class StatsTests: XCTestCase {
         }
     }
 }
+*/

@@ -15,11 +15,62 @@ internal func flatten_array<T: MfTypable>(ptr: UnsafeBufferPointer<Any>, mforder
     
     switch mforder {
     case .Row:
-        return (_get_flatten_row_major(queue: &queue, shape: &shape) as! [T], shape)
+        var ret = _get_flatten_row_major(queue: &queue, shape: &shape)
+        let retT: [T] = _any2T(flattenarray: &ret)
+        return (retT, shape)
     case .Column:
-        return (_get_flatten_column_major(queue: &queue, shape: &shape) as! [T], shape)
+        var ret = _get_flatten_column_major(queue: &queue, shape: &shape)
+        let retT: [T] = _any2T(flattenarray: &ret)
+        return (retT, shape)
     /*case .None:
         fatalError("Select row or column as MfOrder.")*/
+    }
+}
+
+
+fileprivate func _any2T<T: MfTypable>(flattenarray: inout [Any]) -> [T]{
+    if let flattenarray = flattenarray as? [UInt8]{
+        return flattenarray.map{ T.from($0) }
+    }
+    else if let flattenarray = flattenarray as? [UInt16]{
+        return flattenarray.map{ T.from($0) }
+    }
+    else if let flattenarray = flattenarray as? [UInt32]{
+        return flattenarray.map{ T.from($0) }
+    }
+    else if let flattenarray = flattenarray as? [UInt64]{
+        return flattenarray.map{ T.from($0) }
+    }
+    else if let flattenarray = flattenarray as? [UInt]{
+        return flattenarray.map{ T.from($0) }
+    }
+    //Int
+    else if let flattenarray = flattenarray as? [Int8]{
+        return flattenarray.map{ T.from($0) }
+    }
+    else if let flattenarray = flattenarray as? [Int16]{
+        return flattenarray.map{ T.from($0) }
+    }
+    else if let flattenarray = flattenarray as? [Int32]{
+        return flattenarray.map{ T.from($0) }
+    }
+    else if let flattenarray = flattenarray as? [Int64]{
+        return flattenarray.map{ T.from($0) }
+    }
+    else if let flattenarray = flattenarray as? [Int]{
+        return flattenarray.map{ T.from($0) }
+    }
+    else if let flattenarray = flattenarray as? [Float]{
+        return flattenarray.map{ T.from($0) }
+    }
+    else if let flattenarray = flattenarray as? [Bool]{
+        return flattenarray.map{ T.from($0) }
+    }
+    else if let flattenarray = flattenarray as? [Double]{
+        return flattenarray.map{ T.from($0) }
+    }
+    else{
+        fatalError("flattenarray couldn't cast MfTypable.")
     }
 }
 
@@ -254,4 +305,22 @@ internal func check_biop_contiguous<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_m
         retstoredSize = l_mfarray.storedSize
     }
     return (l, r, biggerL, retstoredSize)
+}
+
+internal func conv_order_biop<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> (l: MfArray<T>, r: MfArray<T>){
+    let l: MfArray<T>, r: MfArray<T>
+    
+    if l_mfarray.mfflags.row_contiguous || r_mfarray.mfflags.row_contiguous{
+        l = l_mfarray.mfflags.row_contiguous ? l_mfarray : to_row_major(l_mfarray)
+        r = r_mfarray.mfflags.row_contiguous ? r_mfarray : to_row_major(r_mfarray)
+    }
+    else if l_mfarray.mfflags.column_contiguous || r_mfarray.mfflags.column_contiguous{
+        l = l_mfarray.mfflags.column_contiguous ? l_mfarray : to_column_major(l_mfarray)
+        r = r_mfarray.mfflags.column_contiguous ? r_mfarray : to_column_major(r_mfarray)
+    }
+    else{
+        l = to_row_major(l_mfarray)
+        r = to_row_major(r_mfarray)
+    }
+    return (l, r)
 }

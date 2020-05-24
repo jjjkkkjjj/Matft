@@ -34,7 +34,6 @@ fileprivate protocol ToRawPtrProtocol{
     associatedtype ArrayType: MfTypable
     associatedtype StoredType: MfStorable
     static var vDSP_func: vDSP_convert_func<ArrayType, StoredType>? { get }
-    let a: CGFloat = 0
     static func convert(_ flattenarray: inout [ArrayType]) -> UnsafeMutableRawPointer
 }
 extension ToRawPtrProtocol{
@@ -67,10 +66,10 @@ struct ToRawPtr {
         typealias StoredType = Float
         static var vDSP_func: vDSP_convert_func<UInt16, Float>? = vDSP_vfltu16
     }
-    struct u32tf: ToRawPtrProtocol {
+    struct u32td: ToRawPtrProtocol {
         typealias ArrayType = UInt32
-        typealias StoredType = Float
-        static var vDSP_func: vDSP_convert_func<UInt32, Float>? = vDSP_vfltu32
+        typealias StoredType = Double
+        static var vDSP_func: vDSP_convert_func<UInt32, Double>? = vDSP_vfltu32D
     }
     
     struct i8tf: ToRawPtrProtocol {
@@ -110,19 +109,19 @@ internal func flattenarray2UnsafeMRPtr_viaForD<T: MfTypable>(_ flattenarray: ino
         return ToRawPtr.u16tf.convert(&flattenarray)
     }
     else if var flattenarray = flattenarray as? [UInt32]{
-        return ToRawPtr.u32tf.convert(&flattenarray)
+        return ToRawPtr.u32td.convert(&flattenarray)
     }
     else if let flattenarray = flattenarray as? [UInt64]{
         //convert uint64 to uint32
         var flatten32array = flattenarray.map{ UInt32($0) }
-        return ToRawPtr.u32tf.convert(&flatten32array)
+        return ToRawPtr.u32td.convert(&flatten32array)
     }
     else if let flattenarray = flattenarray as? [UInt]{
         //convert uint to uint32
         //Note that UInt and Int will be handled as uint32 and Int32 respectively
         //Also Int will be handled as int64
         var flatten32array = flattenarray.map{ UInt32($0) }
-        return ToRawPtr.u32tf.convert(&flatten32array)
+        return ToRawPtr.u32td.convert(&flatten32array)
     }
     //Int
     else if var flattenarray = flattenarray as? [Int8]{

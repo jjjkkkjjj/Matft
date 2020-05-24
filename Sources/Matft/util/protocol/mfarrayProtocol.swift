@@ -9,7 +9,8 @@
 import Foundation
 
 
-public protocol MfArrayProtocol{
+public protocol MfArrayProtocol: ExpressibleByArrayLiteral{
     associatedtype ArrayType: MfTypable
     
 }
+

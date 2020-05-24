@@ -1,7 +1,7 @@
 import XCTest
 //@testable import Matft
 import Matft
-
+/*
 final class MatMulTests: XCTestCase {
     
     func testSameShape() {
@@ -113,3 +113,4 @@ final class MatMulTests: XCTestCase {
         
     }
 }
+*/

@@ -8,7 +8,7 @@
 
 import Foundation
 import Accelerate
-
+/*
 //ref https://developer.apple.com/documentation/accelerate/veclib/vforce
 /*
 internal protocol mathProtocol{
@@ -417,3 +417,4 @@ extension Matft.math{//use vDSP
         return (ssq / Matft.math.square(mfarray)).nearest()
     }
 }
+*/

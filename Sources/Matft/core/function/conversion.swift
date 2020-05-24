@@ -23,7 +23,7 @@ extension Matft{
             return to_Bool(mfarray) as! MfArray<U>
         }
         
-        let newStoredType = MfType.storedType(T.self)
+        let newStoredType = MfType.storedType(U.self)
         
         //copy shape and strides
         let newmfstructure: MfStructure

@@ -1,6 +1,6 @@
 import XCTest
 import Matft
-
+/*
 final class MatftTests: XCTestCase {
     func testExample() {
         // This is an example of a functional test case.
@@ -169,3 +169,4 @@ func view9(){
     print(c === e)
     print(c == e)
 }
+*/

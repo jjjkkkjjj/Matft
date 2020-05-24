@@ -16,12 +16,12 @@ internal func copy_unsafeptrT<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcS
     cblas_func(Int32(size), srcptr, Int32(srcStride), dstptr, Int32(dstStride))
 }
 
-internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray<T>, dsttmpMfarray: MfArray<T>, cblas_func: cblas_convorder_func<T>) -> MfArray<T>{
+internal func copy_mfarray<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, dsttmpMfarray: MfArray<T>, cblas_func: cblas_convorder_func<U>) -> MfArray<T>{
     
     
-    dsttmpMfarray.withDataUnsafeMBPtrT(datatype: T.self){
+    dsttmpMfarray.withDataUnsafeMBPtrT(datatype: U.self){
         [unowned dsttmpMfarray] (dstptr) in
-        mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        mfarray.withDataUnsafeMBPtrT(datatype: U.self){
             [unowned mfarray] (srcptr) in
             /*
             var b = [5,6,7,2.0]
@@ -61,7 +61,7 @@ internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray<T>, dsttmpMfarray: 
     return dsttmpMfarray
 }
 
-internal func copy_by_cblas<T: MfStorable>(_ mfarray: MfArray<T>, mforder: MfOrder, cblas_func: cblas_convorder_func<T>) -> MfArray<T>{
+internal func copy_by_cblas<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, mforder: MfOrder, cblas_func: cblas_convorder_func<U>) -> MfArray<T>{
     let newdata = withDummyDataMRPtr(T.self, storedSize: mfarray.size){_ in}//dummy
     var shape = mfarray.shape
     

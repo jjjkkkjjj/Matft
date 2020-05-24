@@ -1,7 +1,7 @@
 import XCTest
 //@testable import Matft
 import Matft
-
+/*
 final class StackTests: XCTestCase {
 
     func test_hstack() {
@@ -172,3 +172,4 @@ final class StackTests: XCTestCase {
         }
     }
 }
+*/

@@ -17,7 +17,7 @@ extension MfArray{
     }
     
     public var scalar: ArrayType?{
-        return self.size == 1 ? self.first! : nil
+        return self.size == 1 ? self.data[self.offsetIndex] : nil
     }
     
 }

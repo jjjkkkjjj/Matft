@@ -1,7 +1,7 @@
 import XCTest
 //@testable import Matft
 import Matft
-
+/*
 final class ProductTests: XCTestCase {
     
     
@@ -76,3 +76,4 @@ final class ProductTests: XCTestCase {
     }
     
 }
+*/

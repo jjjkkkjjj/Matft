@@ -6,7 +6,7 @@
 //
 
 import Foundation
-
+/*
 extension MfArray{
     /**
        Get mean value along axis
@@ -81,3 +81,4 @@ extension MfArray{
         return Matft.stats.squaresum(self, axis: axis, keepDims: keepDims)
     }
 }
+*/

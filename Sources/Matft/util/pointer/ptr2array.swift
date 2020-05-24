@@ -50,10 +50,10 @@ struct ToArray {
         typealias StoredType = Float
         static var vDSP_func: vDSP_convert_func<Float, UInt16>? = vDSP_vfixu16
     }
-    struct ftu32: ToArrayProtocol {
+    struct dtu32: ToArrayProtocol {
         typealias ArrayType = UInt32
-        typealias StoredType = Float
-        static var vDSP_func: vDSP_convert_func<Float, UInt32>? = vDSP_vfixu32
+        typealias StoredType = Double
+        static var vDSP_func: vDSP_convert_func<Double, UInt32>? = vDSP_vfixu32D
     }
     
     struct fti8: ToArrayProtocol {
@@ -94,12 +94,12 @@ internal func unsafeMRBPtr2array_viaForD<T: MfTypable>(_ ptr: UnsafeMutableRawPo
     case is UInt16.Type:
         return ToArray.ftu16.convert(ptr, size: size) as! [T]
     case is UInt32.Type:
-        return ToArray.ftu32.convert(ptr, size: size) as! [T]
+        return ToArray.dtu32.convert(ptr, size: size) as! [T]
     case is UInt64.Type:
-        let u32array = ToArray.ftu32.convert(ptr, size: size) as! [UInt32]
+        let u32array = ToArray.dtu32.convert(ptr, size: size)
         return u32array.map{ UInt64($0) } as! [T]
     case is UInt.Type:
-        let u32array = ToArray.ftu32.convert(ptr, size: size) as! [UInt32]
+        let u32array = ToArray.dtu32.convert(ptr, size: size)
         return u32array.map{ UInt($0) } as! [T]
     case is Int8.Type:
         return ToArray.fti8.convert(ptr, size: size) as! [T]
@@ -108,17 +108,17 @@ internal func unsafeMRBPtr2array_viaForD<T: MfTypable>(_ ptr: UnsafeMutableRawPo
     case is Int32.Type:
         return ToArray.fti32.convert(ptr, size: size) as! [T]
     case is Int64.Type:
-        let i32array = ToArray.fti32.convert(ptr, size: size) as! [Int32]
+        let i32array = ToArray.fti32.convert(ptr, size: size)
         return i32array.map{ Int64($0) } as! [T]
     case is Int.Type:
-        let i32array = ToArray.fti32.convert(ptr, size: size) as! [Int32]
+        let i32array = ToArray.fti32.convert(ptr, size: size)
         return i32array.map{ Int($0) } as! [T]
     case is Float.Type:
         return ToArray.ftf.convert(ptr, size: size) as! [T]
     case is Double.Type:
         return ToArray.dtd.convert(ptr, size: size) as! [T]
     case is Bool.Type:
-        let farray = ToArray.ftf.convert(ptr, size: size) as! [Float]
+        let farray = ToArray.ftf.convert(ptr, size: size)
         return farray.map{ $0 != Float.zero } as! [T]
     default:
         fatalError("Unsupported type \(T.self).")
