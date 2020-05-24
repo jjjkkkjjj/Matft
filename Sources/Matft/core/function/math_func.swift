@@ -8,7 +8,7 @@
 
 import Foundation
 import Accelerate
-/*
+
 //ref https://developer.apple.com/documentation/accelerate/veclib/vforce
 /*
 internal protocol mathProtocol{
@@ -304,12 +304,12 @@ extension Matft.math{
     */
     public static func round<T: StoredFloat>(_ mfarray: MfArray<T>, decimals: Int = 0) -> MfArray<Int32>{
         let pow = Int32(powf(10, Float(decimals)))
-        let n: MfArray<Int32> =  math_vv_by_vForce(mfarray * pow, vvnintf)
+        let n: MfArray<Int32> =  math_vv_by_vForce(mfarray.astype(Int32.self) * pow, vvnintf)
         return n / pow
     }
     public static func round<T: StoredDouble>(_ mfarray: MfArray<T>, decimals: Int = 0) -> MfArray<Int64>{
         let pow = Int64(powf(10, Float(decimals)))
-        let n: MfArray<Int64> =  math_vv_by_vForce(mfarray * pow, vvnintf)
+        let n: MfArray<Int64> =  math_vv_by_vForce(mfarray.astype(Int64.self) * pow, vvnintf)
         return n / pow
     }
     
@@ -383,7 +383,7 @@ extension Matft.math{//use vDSP
        - parameters:
             - mfarray: mfarray
     */
-    public static func square<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
+    public static func square<T: MfNumeric>(_ mfarray: MfArray<T>) -> MfArray<T>{
         switch mfarray.storedType {
         case .Float:
             return math_by_vDSP(mfarray, vDSP_vsq)
@@ -398,23 +398,15 @@ extension Matft.math{//use vDSP
             - mfarray: mfarray
     */
     public static func sign<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Int32>{
+        let mfarray = mfarray.astype(Float.self)
         let ssq: MfArray<Float> = math_by_vDSP(mfarray, vDSP_vssq)
         let sq: MfArray<Float> = Matft.math.square(mfarray)
         return (ssq / sq).nearest()
     }
-    public static func reciprocal<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Int64>{
-        return math_vv_by_vForce(mfarray, vvrec)
-    }
-    public static func sign<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        var ssq: MfArray<T> // signed squared values
-        switch mfarray.storedType {
-        case .Float:
-            ssq = math_by_vDSP(mfarray, vDSP_vssq)
-        case .Double:
-            ssq = math_by_vDSP(mfarray, vDSP_vssqD)
-        }
-
-        return (ssq / Matft.math.square(mfarray)).nearest()
+    public static func sign<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Int64>{
+        let mfarray = mfarray.astype(Double.self)
+        let ssq: MfArray<Double> = math_by_vDSP(mfarray, vDSP_vssqD)
+        let sq: MfArray<Double> = Matft.math.square(mfarray)
+        return (ssq / sq).nearest()
     }
 }
-*/

@@ -6,13 +6,13 @@
 //
 
 import Foundation
-/*
-extension MfArray{
+
+extension MfArray where ArrayType: StoredFloat{
     /**
        Return the ceiling of each element
        - parameters:
     */
-    public func ceil() -> MfArray{
+    public func ceil() -> MfArray<Int32>{
         return Matft.math.ceil(self)
     }
     
@@ -20,7 +20,7 @@ extension MfArray{
        Return the floor of each element
        - parameters:
     */
-    public func floor() -> MfArray{
+    public func floor() -> MfArray<Int32>{
         return Matft.math.floor(self)
     }
     
@@ -28,7 +28,7 @@ extension MfArray{
        Return the interger truncation of each element
        - parameters:
     */
-    public func trunc() -> MfArray{
+    public func trunc() -> MfArray<Int32>{
         return Matft.math.trunc(self)
     }
     
@@ -36,7 +36,7 @@ extension MfArray{
           Return the nearest interger of each element
           - parameters:
     */
-    public func nearest() -> MfArray{
+    public func nearest() -> MfArray<Int32>{
         return Matft.math.nearest(self)
     }
     
@@ -44,7 +44,7 @@ extension MfArray{
           Return the round give by number of decimals of each element
           - parameters:
     */
-    public func round(decimals: Int = 0) -> MfArray{
+    public func round(decimals: Int = 0) -> MfArray<Int32>{
         return Matft.math.round(self, decimals: decimals)
     }
     
@@ -52,8 +52,58 @@ extension MfArray{
        Calculate signed MfArray
        - parameters:
     */
-    public func sign() -> MfArray{
+    public func sign() -> MfArray<Int32>{
         Matft.math.sign(self)
     }
 }
-*/
+
+extension MfArray where ArrayType: StoredDouble{
+    /**
+       Return the ceiling of each element
+       - parameters:
+    */
+    public func ceil() -> MfArray<Int64>{
+        return Matft.math.ceil(self)
+    }
+    
+    /**
+       Return the floor of each element
+       - parameters:
+    */
+    public func floor() -> MfArray<Int64>{
+        return Matft.math.floor(self)
+    }
+    
+    /**
+       Return the interger truncation of each element
+       - parameters:
+    */
+    public func trunc() -> MfArray<Int64>{
+        return Matft.math.trunc(self)
+    }
+    
+    /**
+          Return the nearest interger of each element
+          - parameters:
+    */
+    public func nearest() -> MfArray<Int64>{
+        return Matft.math.nearest(self)
+    }
+    
+    /**
+          Return the round give by number of decimals of each element
+          - parameters:
+    */
+    public func round(decimals: Int = 0) -> MfArray<Int64>{
+        return Matft.math.round(self, decimals: decimals)
+    }
+    
+    /**
+       Calculate signed MfArray
+       - parameters:
+    */
+    public func sign() -> MfArray<Int64>{
+        Matft.math.sign(self)
+    }
+}
+
