@@ -33,28 +33,55 @@ extension Matft{
         }
         newmfstructure = copy_mfstructure(mfarray.mfstructure)
         
-        switch newStoredType{
-        case .Float://double to float
-            let newdata = withDummyDataMRPtr(U.self, storedSize: mfarray.storedSize){
-                let dstptr = $0.bindMemory(to:  Float.self, capacity: mfarray.storedSize)
-                mfarray.withDataUnsafeMBPtrT(datatype: Double.self){
-                    [unowned mfarray] in
-                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vdpsp, mfarray.storedSize)
+        if mfarray.storedType == newStoredType{
+            switch newStoredType{
+            case .Float://double to float
+                let newdata = withDummyDataMRPtr(U.self, storedSize: mfarray.storedSize){
+                    let dstptr = $0.bindMemory(to:  Float.self, capacity: mfarray.storedSize)
+                    mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+                        [unowned mfarray] in
+                        dstptr.assign(from: $0.baseAddress!, count: mfarray.storedSize)
+                    }
                 }
-            }
-            
-            return MfArray(mfdata: newdata, mfstructure: newmfstructure)
-            
-        case .Double://float to double
-            let newdata = withDummyDataMRPtr(U.self, storedSize: mfarray.storedSize){
-                let dstptr = $0.bindMemory(to:  Double.self, capacity: mfarray.storedSize)
-                mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
-                    [unowned mfarray] in
-                     unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vspdp, mfarray.storedSize)
+                
+                return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+                
+            case .Double://float to double
+                let newdata = withDummyDataMRPtr(U.self, storedSize: mfarray.storedSize){
+                    let dstptr = $0.bindMemory(to:  Double.self, capacity: mfarray.storedSize)
+                    mfarray.withDataUnsafeMBPtrT(datatype: Double.self){
+                        [unowned mfarray] in
+                         dstptr.assign(from: $0.baseAddress!, count: mfarray.storedSize)
+                    }
                 }
+                
+                return MfArray(mfdata: newdata, mfstructure: newmfstructure)
             }
-            
-            return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+        }
+        else{
+            switch newStoredType{
+            case .Float://double to float
+                let newdata = withDummyDataMRPtr(U.self, storedSize: mfarray.storedSize){
+                    let dstptr = $0.bindMemory(to:  Float.self, capacity: mfarray.storedSize)
+                    mfarray.withDataUnsafeMBPtrT(datatype: Double.self){
+                        [unowned mfarray] in
+                        unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vdpsp, mfarray.storedSize)
+                    }
+                }
+                
+                return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+                
+            case .Double://float to double
+                let newdata = withDummyDataMRPtr(U.self, storedSize: mfarray.storedSize){
+                    let dstptr = $0.bindMemory(to:  Double.self, capacity: mfarray.storedSize)
+                    mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+                        [unowned mfarray] in
+                         unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vspdp, mfarray.storedSize)
+                    }
+                }
+                
+                return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+            }
         }
     }
     /**

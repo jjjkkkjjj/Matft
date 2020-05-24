@@ -11,13 +11,13 @@ import Accelerate
 internal func to_Bool<T: MfTypable>(_ mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray<Bool>{
     
     let ret = mfarray.astype(Float.self)
-    let retsize = mfarray.size
+    let retsize = ret.size
     let newmfdata = withDummyDataMRPtr(Bool.self, storedSize: retsize){
         (dataptr) in
         
         let dataptrF = dataptr.bindMemory(to: Float.self, capacity: retsize)
-        mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
-            [unowned mfarray] (srcptr) in
+        ret.withDataUnsafeMBPtrT(datatype: Float.self){
+            srcptr in
             // TODO: use vDSP_vthr?
             var newptr = srcptr.map{ abs($0) <= thresholdF ? Float.zero : Float(1) }
             newptr.withUnsafeMutableBufferPointer{
@@ -35,13 +35,13 @@ internal func to_Bool<T: MfTypable>(_ mfarray: MfArray<T>, thresholdF: Float = 1
 internal func to_NotBool<T: MfTypable>(_ mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray<Bool>{
     
     let ret = mfarray.astype(Float.self)
-    let retsize = mfarray.size
+    let retsize = ret.size
     let newmfdata = withDummyDataMRPtr(Bool.self, storedSize: retsize){
         (dataptr) in
         
         let dataptrF = dataptr.bindMemory(to: Float.self, capacity: retsize)
-        mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
-            [unowned mfarray] (srcptr) in
+        ret.withDataUnsafeMBPtrT(datatype: Float.self){
+            srcptr in
             // TODO: use vDSP_vthr?
             var newptr = srcptr.map{ abs($0) > thresholdF ? Float.zero : Float(1) }
             newptr.withUnsafeMutableBufferPointer{

@@ -520,12 +520,12 @@ fileprivate func _equal_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfa
         }
     }
     print(diff)*/
-    return !to_Bool(diff, thresholdF: thresholdF, thresholdD: thresholdD)
+    return to_NotBool(diff, thresholdF: thresholdF, thresholdD: thresholdD)
 }
 fileprivate func _equal_operation<T: MfBinary>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray<Bool>{
     let diff = l_mfarray.astype(Float.self) - r_mfarray.astype(Float.self)
     
-    return !to_Bool(diff, thresholdF: thresholdF, thresholdD: thresholdD)
+    return to_NotBool(diff, thresholdF: thresholdF, thresholdD: thresholdD)
 }
 
 fileprivate func _equalAll_operation<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> Bool{
@@ -533,10 +533,17 @@ fileprivate func _equalAll_operation<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_
     if l_mfarray.shape != r_mfarray.shape{
        return false
     }
-    let (l, r) = biop_broadcast_to(l_mfarray, r_mfarray)
-    let (l_mfarray, r_mfarray) = conv_order_biop(l, r)
-
-    return l_mfarray.data == r_mfarray.data
+    //let (l, r) = biop_broadcast_to(l_mfarray, r_mfarray)
+    //let (l_mfarray, r_mfarray) = conv_order_biop(l, r)
+    
+    switch l_mfarray.storedType {
+    case .Float:
+        let diff = l_mfarray.astype(Float.self) - r_mfarray.astype(Float.self)
+        return diff.data.allSatisfy{ abs($0) <= thresholdF }
+    case .Double:
+        let diff = l_mfarray.astype(Double.self) - r_mfarray.astype(Double.self)
+        return diff.data.allSatisfy{ abs($0) <= thresholdD }
+    }
 }
 
 
