@@ -495,8 +495,6 @@ fileprivate func _inner_operation<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfa
     let ret = Matft.nums(T.zero, shape: [l_calcsize*r_calcsize])
     for lind in 0..<l_calcsize{
         for rind in 0..<r_calcsize{
-            print(l_mfarray[lind] * r_mfarray[rind])
-            print((l_mfarray[lind] * r_mfarray[rind]).sum())
             ret[lind*r_calcsize + rind] = (l_mfarray[lind] * r_mfarray[rind]).sum()
         }
     }

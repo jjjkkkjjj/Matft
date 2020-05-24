@@ -171,7 +171,7 @@ internal func stats_axis_by_vDSP<T: MfTypable, U: MfStorable>(_ mfarray: MfArray
             for flat in FlattenIndSequence(shape: &retShape, strides: &retStrides){
                 _run_stats(srcptr.baseAddress! + flat.flattenIndex, dstptrU, vDSP_func: vDSP_func, stride: stride, count)
                 dstptrU += 1
-                //print(flat.flattenIndex, flat.indices)
+                print(flat.flattenIndex, flat.indices)
             }
         }
     }
@@ -184,15 +184,14 @@ internal func stats_axis_by_vDSP<T: MfTypable, U: MfStorable>(_ mfarray: MfArray
 // for all elements
 internal func stats_all_by_vDSP<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, vDSP_func: vDSP_stats_func<U>) -> MfArray<T>{
     let mfarray = check_contiguous(mfarray)
-    
+
     var retShape = [1]
     let newmfdata = withDummyDataMRPtr(T.self, storedSize: 1){
         dstptr in
         let dstptrU = dstptr.bindMemory(to: U.self, capacity: 1)
-        
         mfarray.withDataUnsafeMBPtrT(datatype: U.self){
-            srcptr in
-            _run_stats(srcptr.baseAddress!, dstptrU, vDSP_func: vDSP_func, stride: 1, 1)
+            [unowned mfarray](srcptr) in
+            _run_stats(srcptr.baseAddress!, dstptrU, vDSP_func: vDSP_func, stride: 1, mfarray.storedSize)
         }
     }
     
