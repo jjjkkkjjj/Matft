@@ -8,7 +8,7 @@
 
 import Foundation
 import Accelerate
-/*
+
 extension Matft.linalg{
     /**
         Solve N simultaneous equation. Get x in coef*x = b. Returned mfarray's type will be float but be double in case that  mftype of either coef or b is double.
@@ -44,7 +44,33 @@ extension Matft.linalg{
                 
             */
      */
-    public static func solve<T: MfStorable>(_ coef: MfArray<T>, b: MfArray<T>) throws -> MfArray<T>{
+    public static func solve<T: MfNumeric & StoredFloat>(_ coef: MfArray<T>, b: MfArray<T>) throws -> MfArray<Float>{
+        precondition((coef.ndim == 2), "cannot solve non linear simultaneous equations")
+        
+        let coefShape = coef.shape
+        let bShape = b.shape
+        
+        precondition(b.ndim <= 2, "Invalid b. Dimension must be 1 or 2")
+        var dstColNum = 0
+        // check argument
+        if b.ndim == 1{
+            //(m,m)(m)=(m)
+            precondition((coefShape[0] == coefShape[1] && bShape[0] == coefShape[0]), "cannot solve (\(coefShape[0]),\(coefShape[1]))(\(bShape[0]))=(\(bShape[0])) problem")
+            dstColNum = 1
+        }
+        else{//ndim == 2
+            //(m,m)(m,n)=(m,n)
+            precondition((coefShape[0] == coefShape[1] && bShape[0] == coefShape[0]), "cannot solve (\(coefShape[0]),\(coefShape[1]))(\(bShape[0]),\(bShape[1]))=(\(bShape[0]),\(bShape[1])) problem")
+            dstColNum = bShape[1]
+        }
+        
+        let coefF = coef.astype(Float.self) //even if original one is float, create copy
+        let bF = b.astype(Float.self)
+        
+        let ret = try solve_by_lapack(coefF, bF, coefShape[0], dstColNum, sgesv_)
+        return ret
+    }
+    public static func solve<T: MfNumeric & StoredDouble>(_ coef: MfArray<T>, b: MfArray<T>) throws -> MfArray<Double>{
         precondition((coef.ndim == 2), "cannot solve non linear simultaneous equations")
         
         let coefShape = coef.shape
@@ -64,23 +90,11 @@ extension Matft.linalg{
             dstColNum = bShape[1]
         }
                 
-        switch MfType.storedType(T.self){
-        case .Float:
-            let coefF = coef.astype(Float.self) //even if original one is float, create copy
-            let bF = b.astype(Float.self)
-            
-            let ret = try solve_by_lapack(coefF, bF, coefShape[0], dstColNum, sgesv_)
-            
-            return ret
-            
-        case .Double:
-            let coefD = coef.astype(Double.self) //even if original one is float, create copy
-            let bD = b.astype(Double.self) //even if original one is float, create copy
-            
-            let ret = try solve_by_lapack(coefD, bD, coefShape[0], dstColNum, dgesv_)
-            
-            return ret
-        }
+        let coefF = coef.astype(Double.self) //even if original one is float, create copy
+        let bF = b.astype(Double.self)
+        
+        let ret = try solve_by_lapack(coefF, bF, coefShape[0], dstColNum, dgesv_)
+        return ret
     }
     
     /**
@@ -90,18 +104,19 @@ extension Matft.linalg{
        - throws:
        An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
     */
-    public static func inv<T: MfStorable>(_ mfarray: MfArray<T>) throws -> MfArray<T>{
+    public static func inv<T: MfNumeric & StoredFloat>(_ mfarray: MfArray<T>) throws -> MfArray<Float>{
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
         
-        switch mfarray.storedType {
-        case .Float:
-            return try inv_by_lapack(mfarray, sgetrf_, sgetri_, .Float)
-        case .Double:
-            return try inv_by_lapack(mfarray, dgetrf_, dgetri_, .Double)
-        }
-
+        return try inv_by_lapack(mfarray.astype(Float.self), sgetrf_, sgetri_, .Float)
+    }
+    public static func inv<T: MfNumeric & StoredDouble>(_ mfarray: MfArray<T>) throws -> MfArray<Double>{
+        let shape = mfarray.shape
+        precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        
+        return try inv_by_lapack(mfarray.astype(Double.self), dgetrf_, dgetri_, .Double)
     }
     
     /**
@@ -111,20 +126,18 @@ extension Matft.linalg{
        - throws:
        An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
     */
-    public static func det<T: MfStorable>(_ mfarray: MfArray<T>) throws -> MfArray<T>{
+    public static func det<T: MfNumeric>(_ mfarray: MfArray<T>) throws -> MfArray<T>{
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get a determinant from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
         
         let retSize = mfarray.size / (shape[mfarray.ndim - 1] * shape[mfarray.ndim - 1])
-        switch mfarray.storedType {
-        case .Float:
-            return try det_by_lapack(mfarray, sgetrf_, .Float, retSize)
-            
-        case .Double:
-            return try det_by_lapack(mfarray, dgetrf_, .Double, retSize)
+        switch mfarray.storedType{
+            case .Float:
+                return try det_by_lapack(mfarray, sgetrf_, retSize)
+            case .Double:
+                return try det_by_lapack(mfarray, dgetrf_, retSize)
         }
-
     }
     
     /**
@@ -149,32 +162,29 @@ extension Matft.linalg{
         }
 
     }*/
-    public static func eigen<T: MfStorable>(_ mfarray: MfArray<T>) throws -> (valRe: MfArray<T>, valIm: MfArray<T>, lvecRe: MfArray<T>, lvecIm: MfArray<T>, rvecRe: MfArray<T>, rvecIm: MfArray<T>){
+    public static func eigen<T: MfNumeric & StoredFloat>(_ mfarray: MfArray<T>) throws -> (valRe: MfArray<Float>, valIm: MfArray<Float>, lvecRe: MfArray<Float>, lvecIm: MfArray<Float>, rvecRe: MfArray<Float>, rvecIm: MfArray<Float>){
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
         
-        switch mfarray.storedType {
-        case .Float:
-            return try eigen_by_lapack(mfarray, .Float, sgeev_)
-            
-        case .Double:
-            return try eigen_by_lapack(mfarray, .Double, dgeev_)
-        }
-
+        return try eigen_by_lapack(mfarray.astype(Float.self), sgeev_)
+    }
+    public static func eigen<T: MfNumeric & StoredDouble>(_ mfarray: MfArray<T>) throws -> (valRe: MfArray<Double>, valIm: MfArray<Double>, lvecRe: MfArray<Double>, lvecIm: MfArray<Double>, rvecRe: MfArray<Double>, rvecIm: MfArray<Double>){
+        let shape = mfarray.shape
+        precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        
+        return try eigen_by_lapack(mfarray.astype(Double.self), dgeev_)
     }
     
-    public static func svd<T: MfStorable>(_ mfarray: MfArray<T>, full_mtrices: Bool = true) throws -> (v: MfArray<T>, s: MfArray<T>, rt: MfArray<T>){
-        switch mfarray.storedType {
-        case .Float:
-            return try svd_by_lapack(mfarray, .Float, full_mtrices, sgesdd_)
-            
-        case .Double:
-            return try svd_by_lapack(mfarray, .Double, full_mtrices, dgesdd_)
-        }
+    public static func svd<T: MfNumeric & StoredFloat>(_ mfarray: MfArray<T>, full_mtrices: Bool = true) throws -> (v: MfArray<Float>, s: MfArray<Float>, rt: MfArray<Float>){
+        return try svd_by_lapack(mfarray.astype(Float.self), full_mtrices, sgesdd_)
+    }
+    public static func svd<T: MfNumeric & StoredDouble>(_ mfarray: MfArray<T>, full_mtrices: Bool = true) throws -> (v: MfArray<Double>, s: MfArray<Double>, rt: MfArray<Double>){
+        return try svd_by_lapack(mfarray.astype(Double.self), full_mtrices, dgesdd_)
     }
     
-    public static func polar_left<T: MfStorable>(_ mfarray: MfArray<T>) throws -> (p: MfArray<T>, l: MfArray<T>){
+    public static func polar_left<T: MfNumeric & StoredFloat>(_ mfarray: MfArray<T>) throws -> (p: MfArray<Float>, l: MfArray<Float>){
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
@@ -189,7 +199,36 @@ extension Matft.linalg{
         
         return (p, l)
     }
-    public static func polar_right<T: MfStorable>(_ mfarray: MfArray<T>) throws -> (u: MfArray<T>, p: MfArray<T>){
+    public static func polar_left<T: MfNumeric & StoredDouble>(_ mfarray: MfArray<T>) throws -> (p: MfArray<Double>, l: MfArray<Double>){
+        let shape = mfarray.shape
+        precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        
+        let svd = try Matft.linalg.svd(mfarray)
+        // M(=mfarray) = USV
+        let s = Matft.diag(v: svd.s)
+        
+        // M = PL = VSRt => P=VSVt, L=VRt
+        let p = svd.v *& s *& svd.v.T
+        let l = svd.v *& svd.rt
+        
+        return (p, l)
+    }
+    public static func polar_right<T: MfNumeric & StoredFloat>(_ mfarray: MfArray<T>) throws -> (u: MfArray<Float>, p: MfArray<Float>){
+        let shape = mfarray.shape
+        precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        
+        let svd = try Matft.linalg.svd(mfarray)
+        // M(=mfarray) = USV
+        let s = Matft.diag(v: svd.s)
+        
+        // M = UP = VSRt => U=VRt P=RSRt
+        let u = svd.v *& svd.rt
+        let p = svd.rt.T *& s *& svd.rt
+        return (u, p)
+    }
+    public static func polar_right<T: MfNumeric & StoredDouble>(_ mfarray: MfArray<T>) throws -> (u: MfArray<Double>, p: MfArray<Double>){
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
@@ -204,7 +243,7 @@ extension Matft.linalg{
         return (u, p)
     }
     
-    
+    /*
     /**
        Calculate lp norm along given axis. Note that ord = Float.infinity and -Float.infinity are also available.
        - parameters:
@@ -324,9 +363,9 @@ extension Matft.linalg{
         }
         
         return ret
-    }
+    }*/
 }
-
+/*
 fileprivate typealias _norm_op<T: MfStorable> = (MfArray<T>, Int?, Bool) -> MfArray<T>
 fileprivate func _multi_svd_norm<T: MfStorable>(mfarray: MfArray<T>, axes: inout (row: Int, col: Int), op: _norm_op<T>) -> MfArray<T>{
     do{
@@ -339,3 +378,4 @@ fileprivate func _multi_svd_norm<T: MfStorable>(mfarray: MfArray<T>, axes: inout
     }
 }
 */
+

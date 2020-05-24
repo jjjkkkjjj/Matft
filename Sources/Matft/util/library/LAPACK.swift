@@ -38,7 +38,7 @@ fileprivate func _run_lapack<T: MfStorable>(copiedCoefPtr: UnsafeMutablePointer<
         throw MfError.LinAlgError.singularMatrix("The factorization has been completed, but the factor U(of A=PLU) is exactly singular, so the solution could not be computed.")
     }
 }
-internal func solve_by_lapack<T: MfStorable>(_ coef: MfArray<T>, _ b: MfArray<T>, _ eqNum: Int, _ dstColNum: Int, _ lapack_func: lapack_solve<T>) throws -> MfArray<T>{
+internal func solve_by_lapack<T: MfNumeric, U: MfStorable>(_ coef: MfArray<T>, _ b: MfArray<T>, _ eqNum: Int, _ dstColNum: Int, _ lapack_func: lapack_solve<U>) throws -> MfArray<T>{
     assert(coef.storedType == b.storedType, "must be same storedType")
     
     //get column flatten
@@ -47,9 +47,9 @@ internal func solve_by_lapack<T: MfStorable>(_ coef: MfArray<T>, _ b: MfArray<T>
     
     let ret = b_column_major.deepcopy() //even if original one is float, create copy for lapack calculation
     
-    try coef_column_major.withDataUnsafeMBPtrT(datatype: T.self){
+    try coef_column_major.withDataUnsafeMBPtrT(datatype: U.self){
         coefptr in
-        try ret.withDataUnsafeMBPtrT(datatype: T.self){
+        try ret.withDataUnsafeMBPtrT(datatype: U.self){
             try _run_lapack(copiedCoefPtr: coefptr.baseAddress!, eqNum, $0.baseAddress!, dstColNum, lapack_func)
         }
     }
@@ -116,13 +116,13 @@ fileprivate func _run_inv<T: MfStorable>(_ squaredSize: Int, srcdstptr: UnsafeMu
     }
 }
 
-internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray<T>, _ lu_lapack_func: lapack_LU<T>, _ inv_lapack_func: lapack_inv<T>, _ retMfType: MfType) throws -> MfArray<T>{
+internal func inv_by_lapack<T: MfNumeric, U: MfStorable>(_ mfarray: MfArray<T>, _ lu_lapack_func: lapack_LU<U>, _ inv_lapack_func: lapack_inv<U>, _ retMfType: MfType) throws -> MfArray<T>{
     
     let newmfdata = try withDummyDataMRPtr(T.self, storedSize: mfarray.size){
         dstptr in
-        let dstptrF = dstptr.bindMemory(to: T.self, capacity: mfarray.size)
+        let dstptrF = dstptr.bindMemory(to: U.self, capacity: mfarray.size)
         
-        try _withNNStackedMajorPtr(mfarray: mfarray, storedType: T.self, mforder: .Row){
+        try _withNNStackedMajorPtr(mfarray: mfarray, storedType: U.self, mforder: .Row){
             srcptr, squaredSize, offset in
             //LU decomposition
             var IPIV = try _run_lu(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: lu_lapack_func)
@@ -142,7 +142,7 @@ internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray<T>, _ lu_lapack_fu
 }
 
 
-internal func det_by_lapack<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, _ lu_lapack_func: lapack_LU<U>, _ retSize: Int) throws -> MfArray<T>{
+internal func det_by_lapack<T: MfNumeric, U: MfStorable>(_ mfarray: MfArray<T>, _ lu_lapack_func: lapack_LU<U>, _ retSize: Int) throws -> MfArray<T>{
     let newmfdata = try withDummyDataMRPtr(T.self, storedSize: retSize){
         dstptr in
         let dstptrU = dstptr.bindMemory(to: U.self, capacity: retSize)
@@ -352,7 +352,7 @@ fileprivate func _run_eigen<T: MfStorable>(_ squaredSize: Int, copiedSrcPtr: Uns
     }
 }
 
-internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray<T>, _ lapack_func: lapack_eigen<T>) throws -> (valRe: MfArray<T>, valIm: MfArray<T>, lvecRe: MfArray<T>, lvecIm: MfArray<T>, rvecRe: MfArray<T>, rvecIm: MfArray<T>){
+internal func eigen_by_lapack<T: MfNumeric, U: MfStorable>(_ mfarray: MfArray<T>, _ lapack_func: lapack_eigen<U>) throws -> (valRe: MfArray<T>, valIm: MfArray<T>, lvecRe: MfArray<T>, lvecIm: MfArray<T>, rvecRe: MfArray<T>, rvecIm: MfArray<T>){
     let shape = mfarray.shape
     let squaredSize = shape[mfarray.ndim - 1]
     //let eigValNum = mfarray.size / (squaredSize * squaredSize)
@@ -372,13 +372,13 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray<T>, _ lapack_fun
     var vec_offset = 0
     var val_offset = 0
     
-    try withDataMBPtr_multi(datatype: T.self, lvecRe, lvecIm){
+    try withDataMBPtr_multi(datatype: U.self, lvecRe, lvecIm){
         lvecRePtr, lvecImPtr in
-        try withDataMBPtr_multi(datatype: T.self, rvecRe, rvecIm){
+        try withDataMBPtr_multi(datatype: U.self, rvecRe, rvecIm){
             rvecRePtr, rvecImPtr in
-            try withDataMBPtr_multi(datatype: T.self, valRe, valIm){
+            try withDataMBPtr_multi(datatype: U.self, valRe, valIm){
                 valRePtr, valImPtr in
-                try _withNNStackedMajorPtr(mfarray: mfarray, storedType: T.self, mforder: .Column){
+                try _withNNStackedMajorPtr(mfarray: mfarray, storedType: U.self, mforder: .Column){
                 srcptr, _, offset in
                     
                     try _run_eigen(squaredSize, copiedSrcPtr: srcptr, lvecRePtr.baseAddress! + vec_offset, lvecImPtr.baseAddress! + vec_offset, rvecRePtr.baseAddress! + vec_offset, rvecImPtr.baseAddress! + vec_offset, valRePtr.baseAddress! + val_offset, valImPtr.baseAddress! + val_offset, lapack_func: lapack_func)
@@ -493,7 +493,7 @@ fileprivate func _run_svd<T: MfStorable>(_ rowNum: Int, _ colNum: Int, _ srcptr:
     }
 }
 
-internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray<T>, _ full_matrices: Bool, _ lapack_func: lapack_svd<T>) throws -> (v: MfArray<T>, s: MfArray<T>, rt: MfArray<T>){
+internal func svd_by_lapack<T: MfNumeric, U: MfStorable>(_ mfarray: MfArray<T>, _ full_matrices: Bool, _ lapack_func: lapack_svd<U>) throws -> (v: MfArray<T>, s: MfArray<T>, rt: MfArray<T>){
     let shape = mfarray.shape
     let M = shape[mfarray.ndim - 2]
     let N = shape[mfarray.ndim - 1]
@@ -524,13 +524,13 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray<T>, _ full_matrice
     var s_offset = 0
     var rt_offset = 0
     
-    try v.withDataUnsafeMBPtrT(datatype: T.self){
+    try v.withDataUnsafeMBPtrT(datatype: U.self){
         vptr in
-        try s.withDataUnsafeMBPtrT(datatype: T.self){
+        try s.withDataUnsafeMBPtrT(datatype: U.self){
             sptr in
-            try rt.withDataUnsafeMBPtrT(datatype: T.self){
+            try rt.withDataUnsafeMBPtrT(datatype: U.self){
                 rtptr in
-                try _withMNStackedMajorPtr(mfarray: mfarray, storedType: T.self, mforder: .Column){
+                try _withMNStackedMajorPtr(mfarray: mfarray, storedType: U.self, mforder: .Column){
                     srcptr, _, _, _ in
                     
                     try _run_svd(M, N, srcptr, vptr.baseAddress! + v_offset, sptr.baseAddress! + s_offset, rtptr.baseAddress! + rt_offset, full_matrices, lapack_func: lapack_func)
