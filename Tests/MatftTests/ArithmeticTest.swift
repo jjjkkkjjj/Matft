@@ -181,8 +181,8 @@ final class ArithmeticTests: XCTestCase {
         do{
             let a = Matft.arange(start: 0, to: 3*3*3*2, by: 2, shape: [3, 3, 3])
             let b = Matft.arange(start: 0, to: 3*3*3, by: 1, shape: [3, 3, 3])
-            let c = a[~~-1]
-            let d = b[2, 1, ~~-1]
+            let c = a[~<~<-1]
+            let d = b[2, 1, ~<~<-1]
             
             XCTAssertEqual(c+d, MfArray<Int>([[[59, 60, 61],
                                                [65, 66, 67],
@@ -234,8 +234,8 @@ final class ArithmeticTests: XCTestCase {
         do{
             let a = MfArray<Double>([[1.28, -3.2],[1.579, -0.82]])
             let b = MfArray<Double>([2,1])
-            let c = a[-1~-2~-1]
-            let d = b[~~-1]
+            let c = a[-1~<-2~<-1]
+            let d = b[~<~<-1]
 
             XCTAssertEqual(c+d, MfArray<Double>([[2.579, 1.18 ]]))
             XCTAssertEqual(c-d, MfArray<Double>([[ 0.579, -2.82 ]]))

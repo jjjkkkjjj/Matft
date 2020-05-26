@@ -84,8 +84,8 @@ final class MatMulTests: XCTestCase {
     func testNegativeIndexing(){
         let a = Matft.arange(start: 0, to: 3*3*3*2, by: 2, shape: [3, 3, 3])
         let b = Matft.arange(start: 0, to: 3*3*3, by: 1, shape: [3, 3, 3])
-        let c = a[~~-1]
-        let d = b[2, 0~, ~~-1]
+        let c = a[~<~<-1]
+        let d = b[2, 0~<, ~<~<-1]
 
         XCTAssertEqual(c*&d, MfArray<Int>([[[2634, 2520, 2406],
                                        [3048, 2916, 2784],
@@ -99,7 +99,7 @@ final class MatMulTests: XCTestCase {
                                        [ 564,  540,  516],
                                        [ 978,  936,  894]]]))
         
-        XCTAssertEqual(b[~~-1]*&a[2,0~,~~-1], MfArray<Int>([[[2634, 2520, 2406],
+        XCTAssertEqual(b[~<~<-1]*&a[2,0~<,~<~<-1], MfArray<Int>([[[2634, 2520, 2406],
                                                         [3048, 2916, 2784],
                                                         [3462, 3312, 3162]],
 

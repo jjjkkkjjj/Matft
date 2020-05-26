@@ -161,7 +161,7 @@ final class StackTests: XCTestCase {
             let a = Matft.arange(start: 0, to: 45, by: 1, shape: [15,3])
             let b = Matft.arange(start: 0, to: 45, by: 1, shape: [15,3])
             
-            let P = Matft.concatenate([a[0~-1], b[1~]], axis: 0).T
+            let P = Matft.concatenate([a[0~<-1], b[1~<]], axis: 0).T
             
             XCTAssertEqual(P, MfArray([[ 0,  3,  6,  9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39,  3,  6,
                                          9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42],

@@ -324,26 +324,26 @@ final class StatsTests: XCTestCase {
                              [-22, 4]])
             
             XCTAssertEqual(Matft.stats.mean(a[0]), MfArray<Float>([-8]))
-            XCTAssertEqual(Matft.stats.mean(a[0~,1]), MfArray<Float>([-7.5]))
+            XCTAssertEqual(Matft.stats.mean(a[0~<,1]), MfArray<Float>([-7.5]))
             XCTAssertEqual(Matft.stats.sum(a[0]), MfArray<Int>([-16]))
-            XCTAssertEqual(Matft.stats.sum(a[0~,1]), MfArray<Int>([-15]))
+            XCTAssertEqual(Matft.stats.sum(a[0~<,1]), MfArray<Int>([-15]))
             
             
             let b = MfArray<Int>([[2, 1177],
                              [5, -43]])
             
             XCTAssertEqual(Matft.stats.mean(b[0]), MfArray<Float>([589.5]))
-            XCTAssertEqual(Matft.stats.mean(b[0~,1]), MfArray<Float>([567]))
+            XCTAssertEqual(Matft.stats.mean(b[0~<,1]), MfArray<Float>([567]))
             XCTAssertEqual(Matft.stats.sum(b[0]), MfArray<Int>([1179]))
-            XCTAssertEqual(Matft.stats.sum(b[0~,1]), MfArray<Int>([1134]))
+            XCTAssertEqual(Matft.stats.sum(b[0~<,1]), MfArray<Int>([1134]))
         }
 
         do{
             let a = MfArray<Float>([[2.0, 1.0, -3.0, 0.0, -0.87, 1.2, 5.5134, -8.78],
                              [3.0, 1.0, 4.0, -5.0, -0.0002, 2.0, 3.4, -5.0]], mforder: .Column)
 
-            XCTAssertEqual(Matft.stats.mean(a[0~, 1~5]), MfArray<Float>([-0.35877500000000007]))
-            XCTAssertEqual(Matft.stats.sum(a[0~, 1~5]), MfArray<Float>([-2.8702000000000005]))
+            XCTAssertEqual(Matft.stats.mean(a[0~<, 1~<5]), MfArray<Float>([-0.35877500000000007]))
+            XCTAssertEqual(Matft.stats.sum(a[0~<, 1~<5]), MfArray<Float>([-2.8702000000000005]))
         }
     }
 }

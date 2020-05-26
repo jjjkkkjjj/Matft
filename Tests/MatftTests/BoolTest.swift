@@ -28,7 +28,7 @@ final class BoolTests: XCTestCase {
                                   [[4,5],
                                    [6,7]]])
             XCTAssertTrue(a == b)
-            XCTAssertFalse(a[0~,0~,~~-1] == Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2]))
+            XCTAssertFalse(a[0~<,0~<,~<~<-1] == Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2]))
             
         }
     }
@@ -65,7 +65,7 @@ final class BoolTests: XCTestCase {
                                                    [[true,true],
                                                     [true,true]]]))
             
-            XCTAssertEqual(a[0~,0~,~~-1] === Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2]),
+            XCTAssertEqual(a[0~<,0~<,~<~<-1] === Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2]),
                                     MfArray<Bool>([[[false,false],
                                                     [false,false]],
             
@@ -105,7 +105,7 @@ final class BoolTests: XCTestCase {
                                                       [[false,false],
                                                        [false,false]]]))
             
-            XCTAssertEqual(!(a[0~,0~,~~-1] === Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2])),
+            XCTAssertEqual(!(a[0~<,0~<,~<~<-1] === Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2])),
                                     MfArray<Bool>([[[true,true],
                                                     [true,true]],
                                     
@@ -146,7 +146,7 @@ final class BoolTests: XCTestCase {
                                                    [[false,false],
                                                     [false,false]]]))
             
-            XCTAssertEqual(a[0~,0~,~~-1] !== Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2]),
+            XCTAssertEqual(a[0~<,0~<,~<~<-1] !== Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2]),
                                     MfArray<Bool>([[[true,true],
                                                     [true,true]],
                                     
