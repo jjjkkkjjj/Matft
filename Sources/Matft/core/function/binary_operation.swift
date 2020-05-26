@@ -515,15 +515,15 @@ fileprivate func _cross_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
     r_mfarray = r_mfarray.reshape([-1, lastdim])
 
     if lastdim == 2{
-        let ret = l_mfarray[0~,0] * r_mfarray[0~,1] - l_mfarray[0~,1]*r_mfarray[0~,0]
+        let ret = l_mfarray[0~<,0] * r_mfarray[0~<,1] - l_mfarray[0~<,1]*r_mfarray[0~<,0]
         return ret
     }
     else if lastdim == 3{
         let ret = Matft.nums(0, shape: [l_mfarray.shape[0], lastdim], mftype: rettype)
         
-        ret[0~,0] = l_mfarray[0~,1] * r_mfarray[0~,2] - l_mfarray[0~,2]*r_mfarray[0~,1]
-        ret[0~,1] = l_mfarray[0~,2] * r_mfarray[0~,0] - l_mfarray[0~,0]*r_mfarray[0~,2]
-        ret[0~,2] = l_mfarray[0~,0] * r_mfarray[0~,1] - l_mfarray[0~,1]*r_mfarray[0~,0]
+        ret[0~<,0] = l_mfarray[0~<,1] * r_mfarray[0~<,2] - l_mfarray[0~<,2]*r_mfarray[0~<,1]
+        ret[0~<,1] = l_mfarray[0~<,2] * r_mfarray[0~<,0] - l_mfarray[0~<,0]*r_mfarray[0~<,2]
+        ret[0~<,2] = l_mfarray[0~<,0] * r_mfarray[0~<,1] - l_mfarray[0~<,1]*r_mfarray[0~<,0]
         
         return ret.reshape(orig_shape_for3d)
     }
@@ -566,7 +566,7 @@ fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, th
     print(diff)
     diff.withDataUnsafeMRPtr{
         dataptr in
-        var bytes = UnsafeMutableRawBufferPointer(start: dataptr, count: diff.storedByteSize).map{ ~$0 }
+        var bytes = UnsafeMutableRawBufferPointer(start: dataptr, count: diff.storedByteSize).map{ ~<$0 }
         bytes.withUnsafeMutableBufferPointer{
             dataptr.copyMemory(from: $0.baseAddress!, byteCount: diff.storedByteSize)
         }

@@ -25,10 +25,10 @@ final class MatftTests: XCTestCase {
         */
         /*
         let a = Matft.arange(start: 0, to: 8, by: 1, shape: [2,2,2])
-        print(a[0~,0~,~~-1])
+        print(a[0~<,0~<,~<<-1])
         print(Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2]))
-        let k = a[0~,0~,~~-1] - Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2])
-        print(a[0~,0~,~~-1] == Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2]))*/
+        let k = a[0~<,0~<,~<<-1] - Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2])
+        print(a[0~<,0~<,~<<-1] == Matft.arange(start: 7, to: -1, by: -1, shape: [2,2,2]))*/
         /*
         let c = Matft.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
         let d = c.transpose(axes: [0,3,4,2,1,5])
@@ -65,8 +65,8 @@ func view1(){
 func view2(){
     let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
     print(a)
-    let b = a[0~, 1~2]
-    b[0~] = MfArray([999999])
+    let b = a[0~<, 1~<2]
+    b[0~<] = MfArray([999999])
     print(b)
     print(a)
 

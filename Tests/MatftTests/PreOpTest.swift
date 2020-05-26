@@ -94,8 +94,8 @@ final class PreOpTests: XCTestCase {
         do{
             let a = Matft.arange(start: 0, to: 3*3*3*2, by: 2, shape: [3, 3, 3])
             let b = Matft.arange(start: 0, to: 3*3*3, by: 1, shape: [3, 3, 3])
-            let c = a[~~-1]
-            let d = b[2, 1, ~~-1]
+            let c = a[~<<-1]
+            let d = b[2, 1, ~<<-1]
             
             XCTAssertEqual(-c, MfArray([[[-36, -38, -40],
                                          [-42, -44, -46],
@@ -116,8 +116,8 @@ final class PreOpTests: XCTestCase {
         do{
             let a = MfArray([[1.28, -3.2],[1.579, -0.82]])
             let b = MfArray([2,1])
-            let c = a[-1~-2~-1]
-            let d = b[~~-1]
+            let c = a[-1~<-2~<-1]
+            let d = b[~<<-1]
 
             XCTAssertEqual(-c, MfArray([[-1.579,  0.82 ]]))
             XCTAssertEqual(-d, MfArray([ -1, -2 ]))
