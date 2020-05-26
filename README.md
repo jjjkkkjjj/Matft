@@ -143,7 +143,7 @@ You can set **MfSlice** (see below's list) to subscript.
     ```
 
   - ```swift
-    ~ //this is prefix, postfix and infix operator. same as python's slice, ":"
+    ~< //this is prefix, postfix and infix operator. same as python's slice, ":"
     ```
 
 #### (Positive) Indexing
@@ -172,18 +172,18 @@ You can set **MfSlice** (see below's list) to subscript.
 
   #### Slicing
 
-- If you replace ``:`` with ``~``, you can get sliced mfarray.
-Note that use `a[0~]` instead of `a[:]` to get all elements along axis.
+- If you replace ``:`` with ``~<``, you can get sliced mfarray.
+Note that use `a[0~<]` instead of `a[:]` to get all elements along axis.
   
   ```swift
-  print(a[~1])  //same as a[:1] for numpy
+  print(a[~<1])  //same as a[:1] for numpy
   /*
   mfarray = 
   [[[	9,		10,		11],
   [	12,		13,		14],
   [	15,		16,		17]]], type=Int, shape=[1, 3, 3]
   */
-  print(a[1~3]) //same as a[1:3] for numpy
+  print(a[1~<3]) //same as a[1:3] for numpy
   /*
   mfarray = 
   [[[	9,		10,		11],
@@ -194,7 +194,8 @@ Note that use `a[0~]` instead of `a[:]` to get all elements along axis.
   [	21,		22,		23],
   [	24,		25,		26]]], type=Int, shape=[2, 3, 3]
   */
-  print(a[~~2]) //same as a[::2] for numpy
+  print(a[~<~<2]) //same as a[::2] for numpy
+  //print(a[~<<2]) //alias
   /*
   mfarray = 
   [[[	0,		1,		2],
@@ -213,7 +214,7 @@ Note that use `a[0~]` instead of `a[:]` to get all elements along axis.
   That's implementation was hardest for me...
 
   ```swift
-  print(a[~-1])
+  print(a[~<-1])
   /*
   mfarray = 
   [[[	0,		1,		2],
@@ -224,12 +225,13 @@ Note that use `a[0~]` instead of `a[:]` to get all elements along axis.
   [	12,		13,		14],
   [	15,		16,		17]]], type=Int, shape=[2, 3, 3]
   */
-  print(a[-1~-3])
+  print(a[-1~<-3])
   /*
   mfarray = 
   	[], type=Int, shape=[0, 3, 3]
   */
-  print(a[~~-1])
+  print(a[~<~<-1])
+  //print(a[~<<-1]) //alias
   /*
   mfarray = 
   [[[	18,		19,		20],
@@ -252,8 +254,8 @@ Note that use `a[0~]` instead of `a[:]` to get all elements along axis.
   ```swift
   let a = Matft.arange(start: 0, to: 4*4*2, by: 1, shape: [4,4,2])
               
-  let b = a[0~, 1]
-  b[~~-1] = MfArray([9999]) // cannot pass Int directly such like 9999
+  let b = a[0~<, 1]
+  b[~<<-1] = MfArray([9999]) // cannot pass Int directly such like 9999
   
   print(a)
   /*

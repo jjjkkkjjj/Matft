@@ -14,7 +14,7 @@
     - バージョンができたら，commitにタグをつけ，pushする
 
       ```bash
-      git tag -a x.x.x -m "メッセージ" (commit id)"
+      git tag -a x.x.x -m "メッセージ" (commit id)
       ```
 
       ※**x.x.x**の形でないといけない
