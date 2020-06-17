@@ -28,7 +28,7 @@
 
       ```bash
       git tag --delete {tagname}
-      git push origin :{tag name}/
+      git push origin :{tag name}
       ```
 
   - 使用者
@@ -125,7 +125,7 @@
     ※--allow-warningsはもし，``pod lib lint``でwarningが出て，無視して良い時．
     
     ```bash
-  pod trunk push Matft.podspec #--allow-warnings
+    pod trunk push Matft.podspec #--allow-warnings
     ```
 
     ※ミスった場合は一回消す
