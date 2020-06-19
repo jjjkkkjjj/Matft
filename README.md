@@ -916,7 +916,7 @@ c = a.T
 - Set Cartfile
 
 	```/bin/bash
-  echo 'github "realm/realm-cocoa"' > Cartfile
+  echo 'github "jjjkkkjjj/Matft"' > Cartfile
 	carthage update ###or append '--platform ios'
 	```
 
