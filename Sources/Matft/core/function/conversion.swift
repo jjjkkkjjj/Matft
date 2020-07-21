@@ -287,7 +287,7 @@ extension Matft{
                     stridesptr[idim] = 0
                 }
                 else if strides_shape_value != shape[idim]{
-                    preconditionFailure("could not broadcast from shape \(mfarray.ndim), \(orig_shape) into shape \(new_ndim), \(shape)")
+                    preconditionFailure("could not broadcast from shape \(orig_shape) into shape \(shape)")
                 }
                 else{
                     stridesptr[idim] = orig_strides[idim - idim_start]

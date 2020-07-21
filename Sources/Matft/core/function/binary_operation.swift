@@ -435,14 +435,15 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
     
 }
 
-
+//Note that this function is slighly different from biobiop_broadcast_to for precondition and checked axis
+//TODO: gather this function and biobiop_broadcast_to
 fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray){
     var lshape = lmfarray.shape
     var lstrides = lmfarray.strides
     var rshape = rmfarray.shape
     var rstrides = rmfarray.strides
     
-    precondition(lshape[lmfarray.ndim - 1] == rshape[rmfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+    precondition(lshape[lmfarray.ndim - 1] == rshape[rmfarray.ndim - 2], "Last 2 dimensions of the input mfarray must be lmfarray:(...,l,m) and rmfarray:(...,m,n)")
     
     // broadcast
     let retndim: Int

@@ -172,6 +172,7 @@ final class ArithmeticTests: XCTestCase {
                                          [[ 12.0        ,   4.33333333,   2.8       ],
                                           [  7.5       ,  -4.0        , -17.0        ]]], mftype: .Float))
         }
+        
         do{
             
             let a = Matft.arange(start: 1, to: 7, by: 1, shape: [3, 2])
