@@ -296,13 +296,16 @@ internal func check_biop_contiguous<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_m
         if convertL{
             l = Matft.conv_order(l_mfarray, mforder: mforder)
             r = r_mfarray
+            biggerL = true
+            retstoredSize = l.storedSize
         }
         else{
             l = l_mfarray
             r = Matft.conv_order(r_mfarray, mforder: mforder)
+            biggerL = false
+            retstoredSize = r.storedSize
         }
-        biggerL = true
-        retstoredSize = l_mfarray.storedSize
+        
     }
     return (l, r, biggerL, retstoredSize)
 }

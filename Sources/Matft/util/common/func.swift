@@ -54,26 +54,69 @@ internal func get_shape(_ shape: [Int], _ size: Int) -> [Int]{
 internal func biop_broadcast_to<T: MfTypable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> (l: MfArray<T>, r: MfArray<T>){
     var l_mfarray = l_mfarray
     var r_mfarray = r_mfarray
-    /*
-    if l_mfarray.storedSize < r_mfarray.storedSize{
-        l_mfarray = r_mfarray
-        r_mfarray = l_mfarray
-    }*/
     
-    if l_mfarray.size > r_mfarray.size{
-        r_mfarray = r_mfarray.broadcast_to(shape: l_mfarray.shape)
+
+    // broadcast
+    let retndim: Int
+    var lshape = l_mfarray.shape
+    var lstrides = l_mfarray.strides
+    var rshape = r_mfarray.shape
+    var rstrides = r_mfarray.strides
+    
+    // align dimension
+    if l_mfarray.ndim < r_mfarray.ndim{ // l has smaller dim
+        retndim = r_mfarray.ndim
+        lshape = Array<Int>(repeating: 1, count: r_mfarray.ndim - l_mfarray.ndim) + lshape // the 1 concatenated elements means broadcastable
+        lstrides = Array<Int>(repeating: 0, count: r_mfarray.ndim - l_mfarray.ndim) + lstrides// the 0 concatenated elements means broadcastable
     }
-    else if r_mfarray.size > l_mfarray.size{
-        l_mfarray = l_mfarray.broadcast_to(shape: r_mfarray.shape)
+    else if l_mfarray.ndim > r_mfarray.ndim{// r has smaller dim
+        retndim = l_mfarray.ndim
+        rshape = Array<Int>(repeating: 1, count: l_mfarray.ndim - r_mfarray.ndim) + rshape // the 1 concatenated elements means broadcastable
+        rstrides = Array<Int>(repeating: 0, count: l_mfarray.ndim - r_mfarray.ndim) + rstrides// the 0 concatenated elements means broadcastable
     }
-    // below condition has same size implicitly
-    // below condition cannot be deprecated into above condition because l.size > r.size & l.ndim < r.ndim is possible
-    else if l_mfarray.ndim > r_mfarray.ndim{
-        r_mfarray = r_mfarray.broadcast_to(shape: l_mfarray.shape)
+    else{
+        retndim = l_mfarray.ndim
     }
-    else if r_mfarray.ndim > l_mfarray.ndim{
-        l_mfarray = l_mfarray.broadcast_to(shape: r_mfarray.shape)
+
+    let (l_mfstructure, r_mfstructure) = withDummy2ShapeStridesMBPtr(retndim){
+        
+        l_shapeptr, l_stridesptr, r_shapeptr, r_stridesptr in
+        //move
+        lshape.withUnsafeMutableBufferPointer{
+            l_shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
+        lstrides.withUnsafeMutableBufferPointer{
+            l_stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
+        rshape.withUnsafeMutableBufferPointer{
+            r_shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
+        rstrides.withUnsafeMutableBufferPointer{
+            r_stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        }
+        
+        
+        for axis in (0..<retndim).reversed(){
+            if l_shapeptr[axis] == r_shapeptr[axis]{
+                continue
+            }
+            else if l_shapeptr[axis] == 1{
+                l_shapeptr[axis] = r_shapeptr[axis] // aligned to r
+                l_stridesptr[axis] = 0 // broad casted 0
+            }
+            else if r_shapeptr[axis] == 1{
+                r_shapeptr[axis] = l_shapeptr[axis] // aligned to l
+                r_stridesptr[axis] = 0 // broad casted 0
+            }
+            else{
+                preconditionFailure("could not be broadcast together with shapes \(l_mfarray.shape) \(r_mfarray.shape)")
+            }
+        }
     }
+    //print(Array<Int>(UnsafeBufferPointer<Int>(start: l_mfstructure._shape, count: l_mfstructure._ndim)))
+    //print(Array<Int>(UnsafeBufferPointer<Int>(start: r_mfstructure._shape, count: r_mfstructure._ndim)))
+    l_mfarray = MfArray(base: l_mfarray, mfstructure: l_mfstructure, offset: l_mfarray.offsetIndex)
+    r_mfarray = MfArray(base: r_mfarray, mfstructure: r_mfstructure, offset: r_mfarray.offsetIndex)
     
     return (l_mfarray, r_mfarray)
 }
