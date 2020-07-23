@@ -202,20 +202,20 @@ internal struct FlattenLOIndSequenceIterator: IteratorProtocol{
     
     public var indicesOfAxes: [Int]
     public var flattenIndex: Int = 0
-    public var upaxis: Int  = -1//indicates which axis will be counted up
+    public var isUpAxis: Bool  = true//indicates which axis will be counted up
     
     public init(_ flattenLOIndSeq: FlattenLOIndSequence){
         self.flattenLOIndSeq = flattenLOIndSeq
         
         self.indicesOfAxes = Array(repeating: 0, count: flattenLOIndSeq.shape.count)
         self.flattenIndex = 0
-        self.upaxis = -1
+        self.isUpAxis = true
     }
     
     //return (nil nil) indicates skip
     mutating func next() -> (flattenIndex: Int?, indices: [Int]?)? {
-        if self.upaxis == -1{// flattenIndex = 0, indicesOfAxes = [0,...,0] must be returned
-            self.upaxis = self.shape.count - 1
+        if self.isUpAxis{// flattenIndex = 0, indicesOfAxes = [0,...,0] must be returned
+            self.isUpAxis = false
             return (self.flattenIndex, self.indicesOfAxes)
         }
         
@@ -225,30 +225,40 @@ internal struct FlattenLOIndSequenceIterator: IteratorProtocol{
             
             if self.indicesOfAxes[axis] < self.shape[axis] - 1{
                 
-                self.indicesOfAxes[axis] += 1
-                if self.indicesOfAxes[axis] < 3 || self.indicesOfAxes[axis] >= self.shape[axis] - 3{ //0<=index<3 and ndim-3-1<=index<ndim
-                    self.upaxis = axis
+                if self.indicesOfAxes[axis] < 2 || self.indicesOfAxes[axis] >= self.shape[axis] - 4{ //0<=index<3 and dim-3-1<=index<dim
+                    self.indicesOfAxes[axis] += 1
+                    
+                    self.isUpAxis = false
                     
                     self.flattenIndex += self.strides[axis]
                     
                     return (self.flattenIndex, self.indicesOfAxes)
                 }
                 else{// skip
-                    let skipnum = self.shape[axis] - 7
-                   
-                    self.indicesOfAxes[axis] += skipnum
-                    self.flattenIndex += self.strides[axis] * skipnum
+                    let skipnum = self.shape[axis] - 6
                     
+                    if axis == self.indicesOfAxes.count - 1{// last axis
+                        self.indicesOfAxes[axis] += skipnum
+                        self.flattenIndex += self.strides[axis] * skipnum
+                        
+                        self.isUpAxis = false
+                    }
+                    else{
+                        self.indicesOfAxes[axis] += skipnum + 1
+                        self.flattenIndex += self.strides[axis] * (skipnum + 1)
+                        
+                        self.isUpAxis = true // once return (nil, nil) (i.e. skip) and then re-start printing
+                    }
                     return (nil, nil)
                 }
             }
-            else{// next axis
+            else{// next axis, i.e. self.indicesOfAxes[axis] == self.shape[axis] - 1
                 if axis >= 3 && axis < self.indicesOfAxes.count - 3{
                     for _axis in (0..<self.indicesOfAxes.count - 3).reversed(){//shape[_axis] padding for each indicesAxes
                         self.indicesOfAxes[_axis] = self.shape[_axis] - 1
                     }
                     
-                    self.upaxis = axis
+                    self.isUpAxis = false
                     
                     return (nil, nil)
                 }

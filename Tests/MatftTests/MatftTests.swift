@@ -16,6 +16,7 @@ final class MatftTests: XCTestCase {
         //view7()
         //view8()
         //view9()
+        //view10()
         /*
         let a = MfArray([[2, 1, -3, 0],
                          [3, 1, 4, -5]], mftype: .Double, mforder: .Column)
@@ -168,4 +169,10 @@ func view9(){
     let e = MfArray([2.0, 1.0, -3.0, 0.0])
     print(c === e)
     print(c == e)
+}
+
+func view10(){
+    let a = Matft.arange(start: 1, to: 40001, by: 1, shape: [40000])
+    print(a)
+    print(a.reshape([2, 20000]))
 }
