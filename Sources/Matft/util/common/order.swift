@@ -119,7 +119,6 @@ internal func toSwiftArray(_ mfarray: MfArray) -> [Any]{
     let mfarray = !mfarray.mfflags.row_contiguous ? to_row_major(mfarray) : mfarray
     
     var shape = mfarray.shape
-    let ndim = mfarray.ndim
     var data = mfarray.data
     
     return _get_swiftArray(&data, shape: &shape, axis: 0)
