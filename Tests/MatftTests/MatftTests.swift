@@ -17,6 +17,7 @@ final class MatftTests: XCTestCase {
         //view8()
         //view9()
         //view10()
+        //type()
         /*
         let a = MfArray([[2, 1, -3, 0],
                          [3, 1, 4, -5]], mftype: .Double, mforder: .Column)
@@ -175,4 +176,11 @@ func view10(){
     let a = Matft.arange(start: 1, to: 40001, by: 1, shape: [40000])
     print(a)
     print(a.reshape([2, 20000]))
+}
+
+func type(){
+    let a = Matft.arange(start: 1, to: 40001, by: 1, shape: [40000])
+    //let b = a.data as! [Int] //could not cast int32 to int
+    let b = a.data as! [Int]
+    print(b)
 }

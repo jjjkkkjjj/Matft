@@ -379,13 +379,13 @@ final class ConversionTests: XCTestCase {
             let a = MfArray([[2, -7, 0],
                              [1, 5, -2]])
             
-            let b = Matft.expand_dims(a, axis: 0).toArray() as! [[[Int32]]]
+            let b = Matft.expand_dims(a, axis: 0).toArray() as! [[[Int]]]
             XCTAssertEqual(b, [[[ 2, -7,  0],
                                 [ 1,  5, -2]]])
             XCTAssertNotEqual(b, [[[ 2, -3,  0],
                                    [ 1,  5, -2]]])
 
-            let c = Matft.expand_dims(a, axis: 2).toArray() as! [[[Int32]]]
+            let c = Matft.expand_dims(a, axis: 2).toArray() as! [[[Int]]]
             XCTAssertEqual(c, [[[ 2],
                                 [-7],
                                 [ 0]],
@@ -399,18 +399,35 @@ final class ConversionTests: XCTestCase {
             let a = MfArray([[1, 3, 5],
                              [2, -4, -1]], mforder: .Column)
             
-            XCTAssertEqual(a.toArray() as! [[Int32]], [[1, 3, 5],
+            XCTAssertEqual(a.toArray() as! [[Int]], [[1, 3, 5],
                                                        [2, -4, -1]])
 
-            XCTAssertEqual(a.reshape([3, 1, 2]).toArray() as! [[[Int32]]], [[[ 1,  3]],
+            XCTAssertEqual(a.reshape([3, 1, 2]).toArray() as! [[[Int]]], [[[ 1,  3]],
 
                                                                             [[ 5,  2]],
 
                                                                             [[-4, -1]]])
             
-            XCTAssertEqual(a.T.toArray() as! [[Int32]], [[ 1,  2],
+            XCTAssertEqual(a.T.toArray() as! [[Int]], [[ 1,  2],
                                                          [ 3, -4],
                                                          [ 5, -1]])
+        }
+        
+        do{
+            let a = MfArray([[1, 3, 5],
+                             [2, -4, -1]])
+            
+            XCTAssertEqual(a.astype(.Float).toArray() as! [[Float]], [[Float(1), 3, 5],
+                                                                      [2, -4, -1]])
+            
+            XCTAssertEqual(a.astype(.Int16).toArray() as! [[Int16]], [[Int16(1), 3, 5],
+                                                                      [2, -4, -1]])
+            
+            XCTAssertEqual(a.astype(.Double).toArray() as! [[Double]], [[Double(1), 3, 5],
+                                                                        [2, -4, -1]])
+            
+            XCTAssertEqual(a.astype(.Int).toArray() as! [[Int]], [[1, 3, 5],
+                                                                  [2, -4, -1]])
         }
     }
 }

@@ -45,13 +45,19 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawPointer, mftype:
         case .UInt32, .UInt64, .UInt:
             let ptrui32 = create_unsafeMPtrT(type: UInt32.self, count: size)
             unsafePtrT2UnsafeMPtrU(ptrF, ptrui32, vDSP_vfixru32, size)
-            let ret = Array(UnsafeMutableBufferPointer(start: ptrui32, count: size)) as [Any]
+            let ret = Array(UnsafeMutableBufferPointer(start: ptrui32, count: size))
             
             //free
             ptrui32.deinitialize(count: size)
             ptrui32.deallocate()
-
-            return ret
+            
+            if mftype == .UInt64{
+                return ret.map{ UInt64($0) } as [Any]
+            }
+            else if mftype == .UInt{
+                return ret.map{ UInt($0) } as [Any]
+            }
+            return ret as [Any]
         case .Int8:
             let ptri8 = create_unsafeMPtrT(type: Int8.self, count: size)
             unsafePtrT2UnsafeMPtrU(ptrF, ptri8, vDSP_vfixr8, size)
@@ -75,13 +81,19 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawPointer, mftype:
         case .Int32, .Int64, .Int:
             let ptri32 = create_unsafeMPtrT(type: Int32.self, count: size)
             unsafePtrT2UnsafeMPtrU(ptrF, ptri32, vDSP_vfixr32, size)
-            let ret = Array(UnsafeMutableBufferPointer(start: ptri32, count: size)) as [Any]
+            let ret = Array(UnsafeMutableBufferPointer(start: ptri32, count: size))
             
             //free
             ptri32.deinitialize(count: size)
             ptri32.deallocate()
-
-            return ret
+            
+            if mftype == .Int64{
+                return ret.map{ Int64($0) } as [Any]
+            }
+            else if mftype == .Int{
+                return ret.map{ Int($0) } as [Any]
+            }
+            return ret as [Any]
         case .Float:
             let ret = Array(UnsafeMutableBufferPointer(start: ptrF, count: size)) as [Any]
             
