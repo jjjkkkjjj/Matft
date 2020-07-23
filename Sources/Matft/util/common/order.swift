@@ -115,56 +115,35 @@ fileprivate func _get_flatten_column_major(queue: inout [Any], shape: inout [Int
     }
 }
 
-
-/*
-fileprivate func _recurrsion_flatten(elements: Any, mftype : inout MfType, shape: inout [Int], depth: Int = 1) -> [Any]{
-    if let ptr_elements = elements as? UnsafeBufferPointer<Any>{
-        
-        return ptr_elements.flatMap{
-            _recurrsion_flatten(elements: $0, mftype: &mftype, shape: &shape, depth: depth + 1)
-        }
-    }
-    else if let arr_elements = elements as? [Any]{
-        if shape.count - 1 < depth{
-            shape.append(arr_elements
-                .count)
-        }
-        
-        if shape.last! != arr_elements.count{
-            shape = shape.dropLast()
-        }
-        else{
-            return arr_elements.withUnsafeBufferPointer{
-                _recurrsion_flatten(elements: $0, mftype: &mftype, shape: &shape, depth: depth)
-            }
-        }
-    }
+internal func toSwiftArray(_ mfarray: MfArray) -> [Any]{
+    let mfarray = !mfarray.mfflags.row_contiguous ? to_row_major(mfarray) : mfarray
     
-    let _mftype = MfType.mftype(value: elements)
-    mftype = MfType.priority(mftype, _mftype)
-    return [elements]
-
-}*/
-
-
- /*
-//copy array version
-//this implementation was slower 2 times than above function which uses pointer
-
- extension Sequence {
-    private func extract(from value: Any) -> [Any] {
-        if let nestedArray = value as? [Any] {
-            return nestedArray.flatten()
-        }
-        return [value]
-    }
-
-    func flatten() -> [Any] {
-        return flatMap { extract(from: $0) }
-    }
+    var shape = mfarray.shape
+    let ndim = mfarray.ndim
+    var data = mfarray.data
+    
+    return _get_swiftArray(&data, shape: &shape, axis: 0)
 }
 
-*/
+fileprivate func _get_swiftArray(_ data: inout [Any], shape: inout [Int], axis: Int) -> [Any]{
+    let dim = shape[axis]
+    let ndim = shape.count
+    let size = data.count
+    let offset = size / dim // note that this division must be divisible
+    
+    var ret: [Any] = []
+    for i in 0..<dim{
+        var slicedArray = Array(data[i*offset..<(i+1)*offset])
+        if axis + 1 < ndim{
+            ret += [_get_swiftArray(&slicedArray, shape: &shape, axis: axis + 1)]
+        }
+        else{
+            ret += slicedArray
+        }
+    }
+    return ret
+}
+
 /**
     - Important: strides must be checked before calling this function
  */
