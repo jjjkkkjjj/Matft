@@ -286,7 +286,9 @@ Note that use `a[0~<]` instead of `a[:]` to get all elements along axis.
 
 Below is Matft's function list. As I mentioned above, almost functions are similar to Numpy. Also, these function use Accelerate framework inside, the perfomance may keep high.
 
-\* means method function exists too. Shortly, you can use `a.shallowcopy()` when `a` is `MfArray`.
+\* means method function exists too. Shortly, you can use `a.shallowcopy()` where `a` is `MfArray`.
+
+^ means method function only. Shortly, you can use `a.tolist()` **not** `Matft.tolist` where `a` is `MfArray`.
 
 - Creation
 
@@ -320,8 +322,10 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.moveaxis     | *numpy.moveaxis          |
 | *Matft.sort         | *numpy.sort              |
 | *Matft.argsort      | *numpy.argsort           |
+| ^MfArray.toArray | ^numpy.ndarray.tolist |
 
 - File
+  
   save function has not developed yet.
 
 | Matft                         | Numpy            |
