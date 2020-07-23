@@ -117,19 +117,10 @@ extension Matft{
         var newshape = get_shape(newshape, mfarray.size)
         precondition(mfarray.size == shape2size(&newshape), "new shape's size:\(shape2size(&newshape)) must be same as mfarray's size:\(mfarray.size)")
         
-        var order = order ?? .Row
-        if mfarray.mfflags.column_contiguous{
-            order = .Column
-        }
+        let order = order ?? .Row
+        let data = !mfarray.mfflags.row_contiguous ? mfarray.flatten(.Row).data : mfarray.data
         
-        switch order {
-        case .Row:
-            let flattenArray = mfarray.flatten(.Row)
-            return MfArray(flattenArray.data, mftype: mfarray.mftype, shape: newshape, mforder: .Row)
-        case .Column:
-            let flattenArray = mfarray.flatten(.Column)
-            return MfArray(flattenArray.data, mftype: mfarray.mftype, shape: newshape, mforder: .Row)
-        }
+        return MfArray(data, mftype: mfarray.mftype, shape: newshape, mforder: order)
         
         /* i wanna implement no copy version
         let new_ndim = newshape.count
