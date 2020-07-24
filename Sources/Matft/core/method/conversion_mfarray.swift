@@ -44,6 +44,14 @@ extension MfArray{
     }
     
     /**
+       Convert MfArray to Swift's Array
+       - parameters:
+    */
+    public func toArray() -> [Any]{
+        return toSwiftArray(self)
+    }
+    
+    /**
        Create broadcasted mfarray.
        - parameters:
             - shape: shape
