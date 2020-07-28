@@ -336,6 +336,128 @@ extension Matft{
     }
     
     /**
+        Check left mfarray's elements are less than right ones in element-wise. Returned mfarray's type will be bool.
+        - parameters:
+            - l_mfarray: left mfarray
+            - r_mfarray: right mfarray
+     */
+    public static func less(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+        let diff = r_mfarray - l_mfarray
+        return to_Bool(diff.clip(min: 0, max: nil))
+    }
+    /**
+        Check left mfarray's elements are less than right scalar in element-wise. Returned mfarray's type will be bool.
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_scalar: right scalar conformed to MfTypable
+    */
+    public static func less<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
+        let diff = r_scalar - l_mfarray
+        return to_Bool(diff.clip(min: 0, max: nil))
+    }
+    /**
+        Check left scalar is less than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
+       - parameters:
+           - l_scalar: left scalar conformed to MfTypable
+           - r_mfarray: right mfarray
+    */
+    public static func less<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
+        let diff = r_mfarray - l_scalar
+        return to_Bool(diff.clip(min: 0, max: nil))
+    }
+    /**
+        Check left mfarray's elements are less equal than right ones in element-wise. Returned mfarray's type will be bool.
+        - parameters:
+            - l_mfarray: left mfarray
+            - r_mfarray: right mfarray
+     */
+    public static func less_equal(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+        let diff = r_mfarray - l_mfarray
+        return to_Bool(diff.sign() + Float(1))
+    }
+    /**
+        Check left mfarray's elements are less equal than right scalar in element-wise. Returned mfarray's type will be bool.
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_scalar: right scalar conformed to MfTypable
+    */
+    public static func less_equal<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
+        let diff = r_scalar - l_mfarray
+        return to_Bool(diff.sign() + Float(1))
+    }
+    /**
+        Check left scalar is less equal than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
+       - parameters:
+           - l_scalar: left scalar conformed to MfTypable
+           - r_mfarray: right mfarray
+    */
+    public static func less_equal<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
+        let diff = r_mfarray - l_scalar
+        return to_Bool(diff.sign() + Float(1))
+    }
+    
+    /**
+        Check left mfarray's elements are greater than right ones in element-wise. Returned mfarray's type will be bool.
+        - parameters:
+            - l_mfarray: left mfarray
+            - r_mfarray: right mfarray
+     */
+    public static func greater(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+        let diff = l_mfarray - r_mfarray
+        return to_Bool(diff.clip(min: 0, max: nil))
+    }
+    /**
+        Check left scalar is greater than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_scalar: right scalar conformed to MfTypable
+    */
+    public static func greater<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
+        let diff = l_mfarray - r_scalar
+        return to_Bool(diff.clip(min: 0, max: nil))
+    }
+    /**
+        Check left scalar is greater than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
+       - parameters:
+           - l_scalar: left scalar conformed to MfTypable
+           - r_mfarray: right mfarray
+    */
+    public static func greater<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
+        let diff = l_scalar - r_mfarray
+        return to_Bool(diff.clip(min: 0, max: nil))
+    }
+    /**
+        Check left mfarray's elements are greater equal than right ones in element-wise. Returned mfarray's type will be bool.
+        - parameters:
+            - l_mfarray: left mfarray
+            - r_mfarray: right mfarray
+     */
+    public static func greater_equal(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+        let diff = l_mfarray - r_mfarray
+        return to_Bool(diff.sign() + Float(1))
+    }
+    /**
+        Check left scalar is greater equal than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_scalar: right scalar conformed to MfTypable
+    */
+    public static func greater_equal<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
+        let diff = l_mfarray - r_scalar
+        return to_Bool(diff.sign() + Float(1))
+    }
+    /**
+        Check left scalar is greater equal than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
+       - parameters:
+           - l_scalar: left scalar conformed to MfTypable
+           - r_mfarray: right mfarray
+    */
+    public static func greater_equal<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
+        let diff = l_scalar - r_mfarray
+        return to_Bool(diff.sign() + Float(1))
+    }
+    
+    /**
         Check equality in element-wise, and then when all of elements are true, return true, otherwise false
        - parameters:
            - l_mfarray: left mfarray

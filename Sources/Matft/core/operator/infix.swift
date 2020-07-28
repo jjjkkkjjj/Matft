@@ -72,6 +72,44 @@ extension MfArray: Equatable{
         return Matft.allEqual(lhs, rhs)
     }
 }
+// Not inherit Comparable!
+public func <(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
+    return Matft.less(l_mfarray, r_mfarray)
+}
+public func < <T: MfTypable>(l_mfarray: MfArray, r_scalar: T) -> MfArray{
+    return Matft.less(l_mfarray, r_scalar)
+}
+public func < <T: MfTypable>(l_scalar: T, r_mfarray: MfArray) -> MfArray{
+    return Matft.less(l_scalar, r_mfarray)
+}
+public func <=(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
+    return Matft.less_equal(l_mfarray, r_mfarray)
+}
+public func <= <T: MfTypable>(l_mfarray: MfArray, r_scalar: T) -> MfArray{
+    return Matft.less_equal(l_mfarray, r_scalar)
+}
+public func <= <T: MfTypable>(l_scalar: T, r_mfarray: MfArray) -> MfArray{
+    return Matft.less_equal(l_scalar, r_mfarray)
+}
+
+public func >(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
+    return Matft.greater(l_mfarray, r_mfarray)
+}
+public func > <T: MfTypable>(l_mfarray: MfArray, r_scalar: T) -> MfArray{
+    return Matft.greater(l_mfarray, r_scalar)
+}
+public func > <T: MfTypable>(l_scalar: T, r_mfarray: MfArray) -> MfArray{
+    return Matft.greater(l_scalar, r_mfarray)
+}
+public func >=(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
+    return Matft.greater_equal(l_mfarray, r_mfarray)
+}
+public func >= <T: MfTypable>(l_mfarray: MfArray, r_scalar: T) -> MfArray{
+    return Matft.greater_equal(l_mfarray, r_scalar)
+}
+public func >= <T: MfTypable>(l_scalar: T, r_mfarray: MfArray) -> MfArray{
+    return Matft.greater_equal(l_scalar, r_mfarray)
+}
 
 infix operator *&: MultiplicationPrecedence //matmul
 public func *&(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
