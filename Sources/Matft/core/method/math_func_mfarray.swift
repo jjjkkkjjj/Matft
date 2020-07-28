@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension MfArray where ArrayType: MfSignedNumeric{
+extension MfArray where ArrayType: MfNumeric{
     /**
        Calculate signed MfArray
        - parameters:

@@ -397,7 +397,7 @@ extension Matft.math{//use vDSP
        - parameters:
             - mfarray: mfarray
     */
-    public static func sign<T: MfSignedNumeric>(_ mfarray: MfArray<T>) -> MfArray<T>{
+    public static func sign<T: MfNumeric>(_ mfarray: MfArray<T>) -> MfArray<T>{
         let ret = mfarray.astype(T.self)
         switch mfarray.storedType {
         case .Float:

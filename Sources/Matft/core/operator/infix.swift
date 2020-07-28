@@ -73,7 +73,44 @@ extension MfArray where ArrayType: MfNumeric{
     static public func !==(l_scalar: ArrayType, r_mfarray: MfArray) -> MfArray<Bool>{
         return Matft.not_equal(l_scalar, r_mfarray)
     }
+    // Not inherit Comparable!
+    static public func <(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray<Bool>{
+        return Matft.less(l_mfarray, r_mfarray)
+    }
+    static public func < (l_mfarray: MfArray, r_scalar: ArrayType) -> MfArray<Bool>{
+        return Matft.less(l_mfarray, r_scalar)
+    }
+    static public func < (l_scalar: ArrayType, r_mfarray: MfArray) -> MfArray<Bool>{
+        return Matft.less(l_scalar, r_mfarray)
+    }
+    static public func <=(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray<Bool>{
+        return Matft.less_equal(l_mfarray, r_mfarray)
+    }
+    static public func <= (l_mfarray: MfArray, r_scalar:ArrayType) -> MfArray<Bool>{
+        return Matft.less_equal(l_mfarray, r_scalar)
+    }
+    static public func <= (l_scalar: ArrayType, r_mfarray: MfArray) -> MfArray<Bool>{
+        return Matft.less_equal(l_scalar, r_mfarray)
+    }
 
+    static public func >(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray<Bool>{
+        return Matft.greater(l_mfarray, r_mfarray)
+    }
+    static public func > (l_mfarray: MfArray, r_scalar: ArrayType) -> MfArray<Bool>{
+        return Matft.greater(l_mfarray, r_scalar)
+    }
+    static public func > (l_scalar: ArrayType, r_mfarray: MfArray) -> MfArray<Bool>{
+        return Matft.greater(l_scalar, r_mfarray)
+    }
+    static public func >= (l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray<Bool>{
+        return Matft.greater_equal(l_mfarray, r_mfarray)
+    }
+    static public func >= (l_mfarray: MfArray, r_scalar: ArrayType) -> MfArray<Bool>{
+        return Matft.greater_equal(l_mfarray, r_scalar)
+    }
+    static public func >= (l_scalar: ArrayType, r_mfarray: MfArray) -> MfArray<Bool>{
+        return Matft.greater_equal(l_scalar, r_mfarray)
+    }
     
     static public func *&(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
         return Matft.matmul(l_mfarray, r_mfarray)
