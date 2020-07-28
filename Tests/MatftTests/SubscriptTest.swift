@@ -470,6 +470,7 @@ final class SubscriptTests: XCTestCase {
     }
     
     func testBooleanIndexingGet(){
+        
         do{
             let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3, 3, 3])
             let b = MfArray([true, false, true]).broadcast_to(shape: [3, 3, 3])
@@ -488,6 +489,30 @@ final class SubscriptTests: XCTestCase {
             
             let c = MfArray([false, false, true]).broadcast_to(shape: [3, 3, 3])
             XCTAssertEqual(a[c], MfArray([ 2,  5,  8, 11, 14, 17, 20, 23, 26], mftype: .Double))
+        }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
+            let b = MfArray([true, false, true])
+
+            XCTAssertEqual(a[b], MfArray([[[ 0,  1,  2],
+                                           [ 3,  4,  5],
+                                           [ 6,  7,  8]],
+
+                                          [[18, 19, 20],
+                                           [21, 22, 23],
+                                           [24, 25, 26]]]))
+        }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 18, by: 1, shape: [2, 3, 3])
+            let b = MfArray([[true, false, true],
+                             [false, true, true]])
+            
+            XCTAssertEqual(a[b], MfArray([[ 0,  1,  2],
+                                          [ 6,  7,  8],
+                                          [12, 13, 14],
+                                          [15, 16, 17]]))
         }
     }
 }

@@ -20,7 +20,7 @@ extension Matft.stats{
     public static func mean(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc(mfarray.astype(.Float), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv)
+            return boolean2float(_stats_calc(mfarray.astype(.Float), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv))
         case .Double:
             return _stats_calc(mfarray.astype(.Double), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanvD)
         }
@@ -126,7 +126,7 @@ extension Matft.stats{
     public static func sum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sve)
+            return boolean2float(_stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sve))
         case .Double:
             return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sveD)
         }
@@ -151,7 +151,7 @@ extension Matft.stats{
     public static func squaresum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesq)
+            return boolean2float(_stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesq))
         case .Double:
             return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesqD)
         }

@@ -401,11 +401,21 @@ internal func arange_by_vDSP<T: MfStorable>(_ start: T, _ by: T, _ count: Int, _
 }
 */
 
+//TODO: ret dim = ori dim - ind dim + 1.
 internal typealias vDSP_vcmprs_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
 internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, _ vDSP_func: vDSP_vcmprs_func<T>) -> MfArray{
     assert(indices.mftype == .Bool, "must be bool")
+    /*
+     Note that returned shape must be (true number in original indices, (mfarray's shape - original indices' shape));
+     i.e. returned dim = 1(=true number in original indices) + mfarray's dim - indices' dim
+     */
+    let true_num = Float.toInt(indices.sum().scalar(Float.self)!)
+    let orig_ind_dim = indices.ndim
     
+    // broadcast
+    let indices = bool_broadcast_to(indices, shape: mfarray.shape)
+
     // must be row major
     let indicesT: MfArray
     switch mfarray.storedType {
@@ -416,7 +426,10 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
     }
     let mfarray = check_contiguous(mfarray, .Row)
     
-    let retSize = T.toInt(indicesT.sum().scalar(T.self)!)
+    
+    let lastShape = Array(mfarray.shape.suffix(mfarray.ndim - orig_ind_dim))
+    var retShape = [true_num] + lastShape
+    let retSize = shape2size(&retShape)
     
     let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: retSize){
         dstptr in
@@ -432,7 +445,7 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
         }
     }
     
-    var retShape = [retSize]
+    
     let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
     
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)

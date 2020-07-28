@@ -394,8 +394,6 @@ extension MfArray: MfSubscriptable{
         
         switch indices.mftype {
         case .Bool:
-            let indices = indices.broadcast_to(shape: self.shape)
-            
             switch self.storedType {
             case .Float:
                 return boolget_by_vDSP(self, indices, vDSP_vcmprs)
