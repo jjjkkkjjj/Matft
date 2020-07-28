@@ -43,19 +43,11 @@ extension MfArray: MfSubscriptable{
             return self._set_mfarray(indices: &indices, newValue: newValue)
         }
     }
-    /*
+    
     public subscript(indices: MfArray) -> MfArray{
         get{
-            switch indices.mftype {
-            case .Bool:
-                preconditionFailure("Bool Getter is not supported now but will be supported future.")
-            case .Int:
-                preconditionFailure("Int is not supported now but will be supported future.")
-            default:
-                preconditionFailure("indices must be Bool or Int, but got \(indices.mftype)")
-            }
-            
-        }
+            return self._get_mfarray(indices: indices)
+        }/*
         set(newValue){
             switch indices.mftype {
             case .Bool:
@@ -84,9 +76,8 @@ extension MfArray: MfSubscriptable{
                 preconditionFailure("indices must be Bool or Int, but got \(indices.mftype)")
             }
             
-        }
+        }*/
     }
-    */
     //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
     public subscript(indices: Any...) -> MfArray{
         get{
@@ -389,28 +380,83 @@ extension MfArray: MfSubscriptable{
      >>> a[[1,2],[2,2]].base
      None
      */
+    // boolean indexing
+    // note that if not assignment, returned copy value not view.
     /*
+     a = np.arange(5)
+     >>> a[a==1]
+     array([1])
+     >>> a[a==1].base
+     None
+     */
+    
     private func _get_mfarray(indices: MfArray) -> MfArray{
-        precondition(indices.mftype == .Int, "indices must be int, but got \(indices.mftype)")
-        // same as get_index function
-        let ind = (-indices.sign()).clip(min: 0) * MfArray(Array(self.shape.prefix(indices.ndim))) // get_index
-        let offset = (ind * MfArray(Array(self.strides.prefix(indices.ndim)))).sum(axis: -1, keepDims: true) // index * orig_stridesptr[orig_axis]
         
-
-        
-        var orig_axis = 0
-        let orig_shape = self.shape
-        let orig_strides = self.strides
-        
-        for _ in 0..<indices.ndim{
+        switch indices.mftype {
+        case .Bool:
+            let indices = indices.broadcast_to(shape: self.shape)
             
+            switch self.storedType {
+            case .Float:
+                return boolget_by_vDSP(self, indices, vDSP_vcmprs)
+            case .Double:
+                return boolget_by_vDSP(self, indices, vDSP_vcmprsD)
+            }
+            
+        case .Float, .Double:
+            preconditionFailure("indices must be bool or interger, but got \(indices.mftype)")
+        default:
+            preconditionFailure("fancy indexing is not supported")
+            /*
+
+             // same as get_index function
+             let ind = (-indices.sign()).clip(min: 0) * MfArray(Array(self.shape.prefix(indices.ndim))) // get_index
+             let offset = (ind * MfArray(Array(self.strides.prefix(indices.ndim)))).sum(axis: -1, keepDims: true) // index * orig_stridesptr[orig_axis]
+             
+
+             
+             var orig_axis = 0
+             let orig_shape = self.shape
+             let orig_strides = self.strides
+             
+             for _ in 0..<indices.ndim{
+                 
+             }
+             
+             let index = get_index(_index, dim: orig_shapeptr[orig_axis], axis: orig_axis)
+
+             offset += index * orig_stridesptr[orig_axis]
+             orig_axis += 1 // not move
+             new_axis += 0
+             */
         }
         
-        let index = get_index(_index, dim: orig_shapeptr[orig_axis], axis: orig_axis)
-
-        offset += index * orig_stridesptr[orig_axis]
-        orig_axis += 1 // not move
-        new_axis += 0
+        
+    }
+    /*
+    private func _set_mfarray(indices: MfArray, assignedMfarray: MfArray){
+        var indices = indices
+        var assignedMfArray = assignedMfarray
+        let selfshape = self.shape
+        let assignedShape = indices.shape
+        
+        if selfshape != assignedMfarray.shape{
+            assignedMfArray = assignedMfArray.broadcast_to(shape: selfshape)
+        }
+        
+        if selfshape != indices.shape{
+            indices = indices.broadcast_to(shape: selfshape)
+        }
+        
+        
+        switch indices.mftype {
+        case .Bool:
+            self * Matft.logical_not(indices)
+        case .Float, .Double:
+            fatalError("indices must be bool or interger, but got \(indices.mftype)")
+        default:
+            fatalError("fancy indexing is not supported")
+        }
     }*/
 }
 

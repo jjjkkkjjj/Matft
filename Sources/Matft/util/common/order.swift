@@ -190,13 +190,14 @@ internal func to_column_major(_ mfarray: MfArray) -> MfArray{
 /**
  Return contiguous mfarray. If passed mfarray is arleady contiguous, return one directly
  */
-internal func check_contiguous(_ mfarray: MfArray, _ mforder: MfOrder = .Row) -> MfArray{
-    if mfarray.mfflags.row_contiguous || mfarray.mfflags.column_contiguous{
+internal func check_contiguous(_ mfarray: MfArray, _ mforder: MfOrder? = nil) -> MfArray{
+    if ((mfarray.mfflags.row_contiguous || mfarray.mfflags.column_contiguous) && mforder == nil) ||
+        (mfarray.mfflags.row_contiguous && mforder == .Row) || (mfarray.mfflags.column_contiguous && mforder == .Column){
         return mfarray
     }
     else{
         switch mforder {
-        case .Row:
+        case .Row, nil:
             return to_row_major(mfarray)
         case .Column:
             return to_column_major(mfarray)

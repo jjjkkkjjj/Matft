@@ -9,7 +9,7 @@ import Foundation
 import Accelerate
 
 internal func to_Bool(_ mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray{
-    
+    //convert float and contiguous
     let ret = mfarray.astype(.Float)
     // TODO: use vDSP_vthr?
     switch ret.storedType {

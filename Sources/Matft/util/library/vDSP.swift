@@ -400,3 +400,40 @@ internal func arange_by_vDSP<T: MfStorable>(_ start: T, _ by: T, _ count: Int, _
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 */
+
+internal typealias vDSP_vcmprs_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, _ vDSP_func: vDSP_vcmprs_func<T>) -> MfArray{
+    assert(indices.mftype == .Bool, "must be bool")
+    
+    // must be row major
+    let indicesT: MfArray
+    switch mfarray.storedType {
+    case .Float:
+        indicesT = check_contiguous(indices.astype(.Float), .Row)
+    case .Double:
+        indicesT = check_contiguous(indices.astype(.Double), .Row)
+    }
+    let mfarray = check_contiguous(mfarray, .Row)
+    
+    let retSize = T.toInt(indicesT.sum().scalar(T.self)!)
+    
+    let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: retSize){
+        dstptr in
+        let dstptrT = dstptr.bindMemory(to: T.self, capacity: retSize)
+        
+        indicesT.withDataUnsafeMBPtrT(datatype: T.self){
+            [unowned indicesT](indptr) in
+            // note that indices and mfarray is row contiguous
+            mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+                srcptr in
+                vDSP_func(srcptr.baseAddress!, vDSP_Stride(1), indptr.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(indicesT.size))
+            }
+        }
+    }
+    
+    var retShape = [retSize]
+    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+    
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+}
