@@ -83,100 +83,50 @@ internal func flattenarray2UnsafeMRPtr_viaForD(_ flattenarray: inout [Any], mfty
     
     var mftype = MfType.None
     //UInt
-    if let flattenarray = flattenarray as? [UInt8]{
-        let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
-        flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vfltu8, flattenarray.count)
-        }
-        mftype = .UInt8
-        return (UnsafeMutableRawPointer(ptrF), mftype)
+    if var flattenarray = flattenarray as? [UInt8]{
+        return (_array2ptrF(&flattenarray, vDSP_func: vDSP_vfltu8, mftypeBool: mftypeBool), .UInt8)
     }
-    else if let flattenarray = flattenarray as? [UInt16]{
-        let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
-        flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vfltu16, flattenarray.count)
-        }
-        mftype = .UInt16
-        return (UnsafeMutableRawPointer(ptrF), mftype)
+    else if var flattenarray = flattenarray as? [UInt16]{
+        return (_array2ptrF(&flattenarray, vDSP_func: vDSP_vfltu16, mftypeBool: mftypeBool), .UInt16)
     }
-    else if let flattenarray = flattenarray as? [UInt32]{
-        let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
-        flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vfltu32, flattenarray.count)
-        }
-        mftype = .UInt32
-        return (UnsafeMutableRawPointer(ptrF), mftype)
+    else if var flattenarray = flattenarray as? [UInt32]{
+        return (_array2ptrF(&flattenarray, vDSP_func: vDSP_vfltu32, mftypeBool: mftypeBool), .UInt32)
     }
     else if let flattenarray = flattenarray as? [UInt64]{
-        let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
         //convert uint64 to uint32
-        let flatten32array = flattenarray.map{ UInt32($0) }
+        var flatten32array = flattenarray.map{ UInt32($0) }
         
-        flatten32array.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vfltu32, flattenarray.count)
-        }
-        mftype = .UInt64
-        return (UnsafeMutableRawPointer(ptrF), mftype)
+        return (_array2ptrF(&flatten32array, vDSP_func: vDSP_vfltu32, mftypeBool: mftypeBool), .UInt64)
     }
     else if let flattenarray = flattenarray as? [UInt]{
-        let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
         //convert uint to uint32
         //Note that UInt and Int will be handled as uint32 and Int32 respectively
         //Also Int will be handled as int64
-        let flatten32array = flattenarray.map{ UInt32($0) }
+        var flatten32array = flattenarray.map{ UInt32($0) }
         
-        flatten32array.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vfltu32, flattenarray.count)
-        }
-        mftype = .UInt
-        return (UnsafeMutableRawPointer(ptrF), mftype)
+        return (_array2ptrF(&flatten32array, vDSP_func: vDSP_vfltu32, mftypeBool: mftypeBool), .UInt)
     }
     //Int
-    else if let flattenarray = flattenarray as? [Int8]{
-        let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
-        flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vflt8, flattenarray.count)
-        }
-        mftype = .Int8
-        return (UnsafeMutableRawPointer(ptrF), mftype)
+    else if var flattenarray = flattenarray as? [Int8]{
+        return (_array2ptrF(&flattenarray, vDSP_func: vDSP_vflt8, mftypeBool: mftypeBool), .Int8)
     }
-    else if let flattenarray = flattenarray as? [Int16]{
-        let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
-        flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vflt16, flattenarray.count)
-        }
-        mftype = .Int16
-        return (UnsafeMutableRawPointer(ptrF), mftype)
+    else if var flattenarray = flattenarray as? [Int16]{
+        return (_array2ptrF(&flattenarray, vDSP_func: vDSP_vflt16, mftypeBool: mftypeBool), .Int16)
     }
-    else if let flattenarray = flattenarray as? [Int32]{
-        let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
-        flattenarray.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vflt32, flattenarray.count)
-        }
-        mftype = .Int32
-        return (UnsafeMutableRawPointer(ptrF), mftype)
+    else if var flattenarray = flattenarray as? [Int32]{
+        return (_array2ptrF(&flattenarray, vDSP_func: vDSP_vflt32, mftypeBool: mftypeBool), .Int32)
     }
     else if let flattenarray = flattenarray as? [Int64]{
-        let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
         //convert int64 to int32
-        let flatten32array = flattenarray.map{ Int32($0) }
+        var flatten32array = flattenarray.map{ Int32($0) }
         
-        flatten32array.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vflt32, flattenarray.count)
-        }
-        mftype = .Int64
-        return (UnsafeMutableRawPointer(ptrF), mftype)
+        return (_array2ptrF(&flatten32array, vDSP_func: vDSP_vflt32, mftypeBool: mftypeBool), .Int64)
     }
     else if let flattenarray = flattenarray as? [Int]{
-        let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
         //convert int to int32
-        let flatten32array = flattenarray.map{ Int32($0) }
+        var flatten32array = flattenarray.map{ Int32($0) }
         
-        flatten32array.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_vflt32, flattenarray.count)
-        }
-        mftype = .Int
-        return (UnsafeMutableRawPointer(ptrF), mftype)
+        return (_array2ptrF(&flatten32array, vDSP_func: vDSP_vflt32, mftypeBool: mftypeBool), .Int)
     }
     else if var flattenarray = flattenarray as? [Float]{
         let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
@@ -194,33 +144,47 @@ internal func flattenarray2UnsafeMRPtr_viaForD(_ flattenarray: inout [Any], mfty
         let _ = flattenBoolarray.withUnsafeMutableBufferPointer{
             ptrF.moveAssign(from: $0.baseAddress!, count: $0.count)
         }
-        _T2Binary(UnsafeMutableBufferPointer(start: ptrF, count: flattenarray.count))
         mftype = .Bool
         return (UnsafeMutableRawPointer(ptrF), mftype)
     }
     else if var flattenarray = flattenarray as? [Double]{
-        let ptrD = create_unsafeMPtrT(type: Double.self, count: flattenarray.count)
-        let _ = flattenarray.withUnsafeMutableBufferPointer{
-            ptrD.assign(from: $0.baseAddress!, count: $0.count)
-        }
-        mftype = .Double
-        
         if mftypeBool{
-            _T2Binary(UnsafeMutableBufferPointer(start: ptrD, count: flattenarray.count))
-            mftype = .Bool
+            return (_array2ptrF(&flattenarray, vDSP_func: vDSP_vdpsp, mftypeBool: mftypeBool), .Bool)
         }
-        
-        return (UnsafeMutableRawPointer(ptrD), mftype)
+        else{
+            let ptrD = create_unsafeMPtrT(type: Double.self, count: flattenarray.count)
+            let _ = flattenarray.withUnsafeMutableBufferPointer{
+                ptrD.assign(from: $0.baseAddress!, count: $0.count)
+            }
+            mftype = .Double
+            
+            return (UnsafeMutableRawPointer(ptrD), mftype)
+        }
     }
     else{
         fatalError("flattenarray couldn't cast MfTypable.")
     }
 }
 
-fileprivate func _T2Binary<T: MfStorable>(_ ptrT: UnsafeMutableBufferPointer<T>){
-    let size = ptrT.count
-    var arrBinary = ptrT.map{ $0 == T.zero ? T.zero : T.num(1) }
+fileprivate func _Float2Binary(_ ptrF: UnsafeMutableBufferPointer<Float>){
+    let size = ptrF.count
+    var arrBinary = ptrF.map{ $0 == Float.zero ? Float.zero : Float.num(1) }
     arrBinary.withUnsafeMutableBufferPointer{
-        ptrT.baseAddress!.moveAssign(from: $0.baseAddress!, count: size)
+        ptrF.baseAddress!.moveAssign(from: $0.baseAddress!, count: size)
     }
 }
+
+fileprivate func _array2ptrF<T: MfTypable>(_ flattenarray: inout [T], vDSP_func: vDSP_convert_func<T, Float>, mftypeBool: Bool) -> UnsafeMutableRawPointer{
+    let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenarray.count)
+    
+    // convert into Float
+    flattenarray.withUnsafeBufferPointer{
+        unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrF, vDSP_func, flattenarray.count)
+    }
+    
+    if mftypeBool{
+        _Float2Binary(UnsafeMutableBufferPointer(start: ptrF, count: flattenarray.count))
+    }
+    return UnsafeMutableRawPointer(ptrF)
+}
+
