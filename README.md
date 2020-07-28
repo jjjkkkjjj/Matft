@@ -6,6 +6,8 @@
 
 ## Feature & Usage
 
+See [Function List](#Function-List).
+
 ### Declaration
 
 #### MfArray
@@ -247,6 +249,28 @@ Note that use `a[0~<]` instead of `a[:]` to get all elements along axis.
   [	6,		7,		8]]], type=Int, shape=[3, 3, 3]*/
   ```
 
+#### Boolean Indexing(*New!!!*)
+
+- You can use boolean indexing.
+
+  Caution! I don't check performance, so this boolean indexing may be slow
+
+  ```swift
+  let img = MfArray([[1, 2, 3],
+                                 [4, 5, 6],
+                                 [7, 8, 9]], mftype: .UInt8)
+  img[img > 3] = MfArray([10], mftype: .UInt8)
+  print(img)
+  /*
+  mfarray = 
+  [[	1,		2,		3],
+  [	10,		10,		10],
+  [	10,		10,		10]], type=UInt8, shape=[3, 3]
+  */
+  ```
+
+  
+
 #### View
 
 - Note that returned subscripted mfarray will have `base` property (is similar to `view` in Numpy). See [numpy doc](https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.view.html) in detail.
@@ -348,6 +372,10 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 |Matft.matmul<br />*&　　　|numpy.matmul<br />@　|
 | Matft.equal<br />===   | numpy.equal<br />==        |
 | Matft.not_equal<br />!==   | numpy.not_equal<br />!=        |
+| Matft.less<br />< | numpy.less<br />< |
+| Matft.less_equal<br /><= | numpy.less_equal<br /><= |
+| Matft.greater<br />> | numpy.greater<br />> |
+| Matft.greater_equal<br />>= | numpy.greater_equal<br />>= |
 | Matft.allEqual<br />== | numpy.array_equal<br />n/a |
 | Matft.neg<br />-       | numpy.negative<br />-      |
 
@@ -367,8 +395,22 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.math.atan  | numpy.atan  |
 | Matft.math.tanh  | numpy.tanh  |
 | Matft.math.atanh | numpy.atanh |
-
-Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/blob/master/Sources/Matft/core/function/math_func.swift).
+| Matft.math.sqrt | numpy.sqrt |
+| Matft.math.rsqrt | numpy.rsqrt |
+| Matft.math.exp | numpy.exp |
+| Matft.math.log | numpy.log |
+| Matft.math.log2 | numpy.log2 |
+| Matft.math.log10 | numpy.log10 |
+| *Matft.math.ceil | numpy.ceil |
+| *Matft.math.floor | numpy.floor |
+| *Matft.math.trunc | numpy.trunc |
+| *Matft.math.nearest | numpy.nearest |
+| *Matft.math.round | numpy.round |
+| Matft.math.abs | numpy.abs |
+| Matft.math.reciprocal | numpy.reciprocal |
+| Matft.math.power | numpy.power |
+| Matft.math.square | numpy.square |
+| Matft.math.sign | numpy.sign |
 
 - Statistics function
 
@@ -382,6 +424,8 @@ Other function is also available. See [here](https://github.com/jjjkkkjjj/Matft/
 | *Matft.stats.sum    | *numpy.sum    |
 | Matft.stats.maximum | numpy.maximum |
 | Matft.stats.minimum | numpy.minimum |
+| Matft.stats.sumsqrt | n/a |
+| Matft.stats.squaresum | n/a |
 
 
 - Linear algebra
