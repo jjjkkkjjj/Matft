@@ -7,6 +7,16 @@
 
 import Foundation
 
+extension MfArray where ArrayType: MfSignedNumeric{
+    /**
+       Calculate signed MfArray
+       - parameters:
+    */
+    public func sign() -> MfArray<ArrayType>{
+        Matft.math.sign(self)
+    }
+}
+
 extension MfArray where ArrayType: StoredFloat{
     /**
        Return the ceiling of each element
@@ -46,14 +56,6 @@ extension MfArray where ArrayType: StoredFloat{
     */
     public func round(decimals: Int = 0) -> MfArray<Float>{
         return Matft.math.round(self, decimals: decimals)
-    }
-    
-    /**
-       Calculate signed MfArray
-       - parameters:
-    */
-    public func sign() -> MfArray<Int32>{
-        Matft.math.sign(self)
     }
 }
 
@@ -96,14 +98,6 @@ extension MfArray where ArrayType: StoredDouble{
     */
     public func round(decimals: Int = 0) -> MfArray<Double>{
         return Matft.math.round(self, decimals: decimals)
-    }
-    
-    /**
-       Calculate signed MfArray
-       - parameters:
-    */
-    public func sign() -> MfArray<Int64>{
-        Matft.math.sign(self)
     }
 }
 

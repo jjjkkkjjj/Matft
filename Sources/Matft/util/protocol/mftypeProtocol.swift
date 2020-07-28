@@ -18,6 +18,8 @@ public protocol MfTypable: Equatable{
 public protocol StoredFloat: MfTypable{}
 public protocol StoredDouble: MfTypable{}
 
+public protocol MfSignedNumeric {}
+
 public protocol MfNumeric: Numeric, Strideable{}
 public protocol MfBinary: Equatable{
     static var zero: Self { get }
@@ -79,7 +81,7 @@ extension UInt: MfNumeric, StoredDouble {
     }
 }
 
-extension Int8: MfNumeric, StoredFloat {
+extension Int8: MfNumeric, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int8 where T : MfNumeric, T : BinaryInteger {
         return Int8(value)
     }
@@ -90,7 +92,7 @@ extension Int8: MfNumeric, StoredFloat {
         return value != T.zero ? Int8(1) : Int8.zero
     }
 }
-extension Int16: MfNumeric, StoredFloat {
+extension Int16: MfNumeric, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int16 where T : MfNumeric, T : BinaryInteger {
         return Int16(value)
     }
@@ -101,7 +103,7 @@ extension Int16: MfNumeric, StoredFloat {
         return value != T.zero ? Int16(1) : Int16.zero
     }
 }
-extension Int32: MfNumeric, StoredFloat {
+extension Int32: MfNumeric, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int32 where T : MfNumeric, T : BinaryInteger {
         return Int32(value)
     }
@@ -112,7 +114,7 @@ extension Int32: MfNumeric, StoredFloat {
         return value != T.zero ? Int32(1) : Int32.zero
     }
 }
-extension Int64: MfNumeric, StoredFloat {
+extension Int64: MfNumeric, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int64 where T : MfNumeric, T : BinaryInteger {
         return Int64(value)
     }
@@ -123,7 +125,7 @@ extension Int64: MfNumeric, StoredFloat {
         return value != T.zero ? Int64(1) : Int64.zero
     }
 }
-extension Int: MfNumeric, StoredFloat {
+extension Int: MfNumeric, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int where T : MfNumeric, T : BinaryInteger {
         return Int(value)
     }
@@ -135,7 +137,7 @@ extension Int: MfNumeric, StoredFloat {
     }
 }
 
-extension Float: MfNumeric, StoredFloat {
+extension Float: MfNumeric, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Float where T : MfNumeric, T : BinaryInteger {
         return Float(value)
     }
@@ -146,7 +148,7 @@ extension Float: MfNumeric, StoredFloat {
         return value != T.zero ? Float(1) : Float.zero
     }
 }
-extension Double: MfNumeric, StoredDouble {
+extension Double: MfNumeric, StoredDouble, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Double where T : MfNumeric, T : BinaryInteger {
         return Double(value)
     }

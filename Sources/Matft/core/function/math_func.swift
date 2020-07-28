@@ -397,16 +397,28 @@ extension Matft.math{//use vDSP
        - parameters:
             - mfarray: mfarray
     */
-    public static func sign<T: StoredFloat>(_ mfarray: MfArray<T>) -> MfArray<Int32>{
-        let mfarray = mfarray.astype(Float.self)
-        let ssq: MfArray<Float> = math_by_vDSP(mfarray, vDSP_vssq)
-        let sq: MfArray<Float> = Matft.math.square(mfarray)
-        return (ssq / sq).nearest()
-    }
-    public static func sign<T: StoredDouble>(_ mfarray: MfArray<T>) -> MfArray<Int64>{
-        let mfarray = mfarray.astype(Double.self)
-        let ssq: MfArray<Double> = math_by_vDSP(mfarray, vDSP_vssqD)
-        let sq: MfArray<Double> = Matft.math.square(mfarray)
-        return (ssq / sq).nearest()
+    public static func sign<T: MfSignedNumeric>(_ mfarray: MfArray<T>) -> MfArray<T>{
+        let ret = mfarray.astype(T.self)
+        switch mfarray.storedType {
+        case .Float:
+            ret.withContiguousDataUnsafeMPtrT(datatype: Float.self){
+                if $0.pointee > .zero{
+                    $0.pointee = Float.num(1)
+                }
+                else if $0.pointee < .zero{
+                    $0.pointee = -Float.num(1)
+                }
+            }
+        case .Double:
+            ret.withContiguousDataUnsafeMPtrT(datatype: Double.self){
+                if $0.pointee > .zero{
+                    $0.pointee = Double.num(1)
+                }
+                else if $0.pointee < .zero{
+                    $0.pointee = -Double.num(1)
+                }
+            }
+        }
+        return ret
     }
 }

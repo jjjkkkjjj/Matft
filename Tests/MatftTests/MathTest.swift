@@ -175,7 +175,7 @@ final class MathTests: XCTestCase {
                               [[-0.83907153,  0.13673722],
                                [ 0.0044257 , -0.75968791]]]])
             
-            XCTAssertEqual(a.sign(), MfArray<Int32>([[[[ 1.0, -1.0],
+            XCTAssertEqual(a.sign(), MfArray<Float>([[[[ 1.0, -1.0],
                                                 [ 1.0,  1.0]],
 
                                               [[-1.0,  1.0],
@@ -196,9 +196,26 @@ final class MathTests: XCTestCase {
                              [-0.91113026, -0.83907153,  0.0044257 ],
                              [ 0.84385396,  0.90744678,  0.13673722]])
             
-            XCTAssertEqual(a.T.sign(), MfArray<Int32>([[ 1.0, -1.0,  1.0, -1.0,  1.0],
+            XCTAssertEqual(a.T.sign(), MfArray<Float>([[ 1.0, -1.0,  1.0, -1.0,  1.0],
                                                 [ 1.0, -1.0,  1.0, -1.0,  1.0],
                                                 [-1.0,  1.0, -1.0,  1.0,  1.0]]))
+        }
+        do{
+            let a = MfArray<Double>([0.2, -0.02, 0.0, 3.2])
+            XCTAssertEqual(a.sign(), MfArray<Double>([1.0, -1.0, 0.0, 1.0]))
+        }
+        
+        do{
+            let a = MfArray<Int>([[ 2,  0],
+                             [ 1,  2],
+                             [-2,  1],
+                             [ 2,  2],
+                             [ 0,  2]])
+            XCTAssertEqual(a.sign(), MfArray<Int>([[ 1,  0],
+                                              [ 1,  1],
+                                              [-1,  1],
+                                              [ 1,  1],
+                                              [ 0,  1]]))
         }
     }
     
