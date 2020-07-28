@@ -158,7 +158,7 @@ final class LinAlgTests: XCTestCase {
             
             let ret_nofull = try! Matft.linalg.svd(a, full_mtrices: false)
             
-            //XCTAssertEqual((ret_nofull.v *& Matft.diag(v: ret_nofull.s) *& ret_nofull.rt).nearest(), a)
+            XCTAssertEqual((ret_nofull.v *& Matft.diag(v: ret_nofull.s) *& ret_nofull.rt).nearest(), a.astype(Int32.self))
         }
         
         do{
