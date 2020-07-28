@@ -204,6 +204,24 @@ final class MathTests: XCTestCase {
                                                 [ 1.0, -1.0,  1.0, -1.0,  1.0],
                                                 [-1.0,  1.0, -1.0,  1.0,  1.0]]))
         }
+        
+        do{
+            let a = MfArray([0.2, -0.02, 0.0, 3.2])
+            XCTAssertEqual(a.sign(), MfArray([1.0, -1.0, 0.0, 1.0]))
+        }
+        
+        do{
+            let a = MfArray([[ 2,  0],
+                             [ 1,  2],
+                             [-2,  1],
+                             [ 2,  2],
+                             [ 0,  2]])
+            XCTAssertEqual(a.sign(), MfArray([[ 1,  0],
+                                              [ 1,  1],
+                                              [-1,  1],
+                                              [ 1,  1],
+                                              [ 0,  1]]))
+        }
     }
     
     func testPower(){

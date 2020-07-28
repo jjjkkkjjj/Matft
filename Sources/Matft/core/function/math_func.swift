@@ -511,14 +511,28 @@ extension Matft.math{//use vDSP
             - mfarray: mfarray
     */
     public static func sign(_ mfarray: MfArray) -> MfArray{
-        var ssq: MfArray // signed squared values
+        let ret = mfarray.deepcopy()
         switch mfarray.storedType {
         case .Float:
-            ssq = math_by_vDSP(mfarray, vDSP_vssq)
+            ret.withContiguousDataUnsafeMPtrT(datatype: Float.self){
+                if $0.pointee > .zero{
+                    $0.pointee = Float.num(1)
+                }
+                else if $0.pointee < .zero{
+                    $0.pointee = -Float.num(1)
+                }
+            }
+            return ret
         case .Double:
-            ssq = math_by_vDSP(mfarray, vDSP_vssqD)
+            ret.withContiguousDataUnsafeMPtrT(datatype: Double.self){
+                if $0.pointee > .zero{
+                    $0.pointee = Double.num(1)
+                }
+                else if $0.pointee < .zero{
+                    $0.pointee = -Double.num(1)
+                }
+            }
+            return ret
         }
-
-        return (ssq / Matft.math.square(mfarray)).nearest()
     }
 }
