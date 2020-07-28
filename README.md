@@ -6,7 +6,41 @@
 
 ## Feature & Usage
 
-See [Function List](#Function-List).
+- Many types
+
+- Pretty print
+
+- Indexing
+
+  - Positive
+  - Negative
+  - Boolean
+
+- Slicing
+
+  - Start / To / By
+  - New Axis
+
+- View
+
+  - Assignment
+
+- Conversion
+
+  - Broadcast
+  - Transpose
+  - Reshape
+  - Astype
+
+- Mathematic
+
+  - Arithmetic
+  - Statistic
+  - Linear Algebra
+
+...etc.
+
+See [Function List](#Function-List) for all functions.
 
 ### Declaration
 
