@@ -19,8 +19,8 @@ final class ArithmeticTests: XCTestCase {
                                                 [-28,  -2]]))
             XCTAssertEqual(a * 2, MfArray<Int>([[  6, -38],
                                                 [-44,   8]]))
-            //XCTAssertEqual(a / 3, MfArray<Float>([[ 1.0        , -6.33333333],
-            //                                      [-7.33333333,  1.33333333]]))
+            XCTAssertEqual((a / 3).round(decimals: 6), MfArray<Float>([[ 1.0        , -6.33333333],
+                                                                       [-7.33333333,  1.33333333]]).round(decimals: 6))
             
             XCTAssertEqual(5 + b, MfArray<Int>([[   7, 1182],
                                                 [  10,  -38]]))
@@ -29,8 +29,8 @@ final class ArithmeticTests: XCTestCase {
                                                 [  11,  -37]]))
             XCTAssertEqual(2 * b, MfArray<Int>([[   4, 2354],
                                                 [  10,  -86]]))
-            //XCTAssertEqual(3 / b, MfArray<Float>([[ 1.5       ,  0.00254885],
-            //                                      [ 0.6       , -0.06976744]]))
+            XCTAssertEqual((3 / b).round(decimals: 6), MfArray<Float>([[ 1.5       ,  0.00254885],
+                                                                       [ 0.6       , -0.06976744]]).round(decimals: 6))
         }
 
         do{
@@ -46,10 +46,10 @@ final class ArithmeticTests: XCTestCase {
 
 
             
-            /*
-            XCTAssertEqual(a/1.3, MfArray([[ 1.53846154,  0.76923077, -2.30769231,  0.0        ],
-                                           [ 2.30769231,  0.76923077,  3.07692308, -3.84615385]]))
-            */
+            
+            XCTAssertEqual((a/1.3).round(decimals: 6), MfArray<Float>([[ 1.53846154,  0.76923077, -2.30769231,  0.0        ],
+                                                                       [ 2.30769231,  0.76923077,  3.07692308, -3.84615385]]).round(decimals: 6))
+            
         }
         
     }
@@ -76,8 +76,9 @@ final class ArithmeticTests: XCTestCase {
                                                 [  -27,    47]]))
             XCTAssertEqual(c * d, MfArray<Int>([[     6, -22363],
                                                 [  -110,   -172]]))
-            //XCTAssertEqual(a / b, MfArray<Float>([[ 1.5       , -0.01614274],
-            //                                      [-4.4       , -0.09302326]]))
+
+            XCTAssertEqual((c / d).round(decimals: 6), MfArray<Float>([[ 1.5       , -0.01614274],
+                                                                       [-4.4       , -0.09302326]]).round(decimals: 6))
         }
 
         do{
@@ -95,12 +96,11 @@ final class ArithmeticTests: XCTestCase {
 
             XCTAssertEqual(a*b, MfArray<Double>([[-1.74000e+00,  1.20000e+00, -1.65402e+01, -0.00000e+00],
                                                  [-6.00000e-04,  2.00000e+00,  1.36000e+01,  2.50000e+01]]))
-            /*
-            //rounding error will be occurred
-            XCTAssertEqual(a/b, MfArray([[-2.29885057e+00,  8.33333333e-01, -5.44128850e-01,
+            
+            XCTAssertEqual((a/b).round(decimals: 10), MfArray<Double>([[-2.2988505747126435,  8.33333333333333e-01, -0.5441288497116117,
                                           -0.00000000e+00],
-                                         [-1.50000000e+04,  5.00000000e-01,  1.17647059e+00,
-                                          1.00000000e+00]]))*/
+                                         [-1.50000000e+04,  5.00000000e-01,  1.1764705882352942,
+                1.00000000e+00]]).round(decimals: 10))
         }
         
         do{
@@ -121,12 +121,11 @@ final class ArithmeticTests: XCTestCase {
                                                 [247,  15,   9,  13],
                                                 [ 44, 102,   0, 228],
                                                 [  3, 207,  33,  45]]))
-            /*
-            //rounding error will be occurred
-            XCTAssertEqual(a/b, MfArray([[0.00000000e+00, 1.33333333e+00, 4.00000000e+00, 3.00000000e+00],
-                                         [4.04858300e-03, 1.66666667e+00, 9.00000000e+00, 1.30000000e+01],
-                                         [9.09090909e-02, 3.52941176e-01, -Double.nan, 5.51181102e-02],
-                                         [3.00000000e+00, 2.81124498e-02, 3.66666667e+00, 5.00000000e+00]], mftype: .Float))*/
+
+            XCTAssertEqual(a/b, MfArray<UInt8>([[    0,        1,        3,        2],
+                                                [    0,        1,        8,        12],
+                                                [    0,        0,        0,        0],
+                                                [    2,        0,        3,        4]]))
         }
     }
     
@@ -289,18 +288,21 @@ final class ArithmeticTests: XCTestCase {
                                               [[   0,   44,   84],
                                                [ 138,  176,  210],
                                                [ 276,  308,  336]]]))
-            /*
-            XCTAssertEqual(c/d, MfArray([[[1.56521739, 1.72727273, 1.9047619 ],
-                                          [1.82608696, 2.0       , 2.19047619],
-                                          [2.08695652, 2.27272727, 2.47619048]],
+            //print(c)
+            //print(d)
+            //print(36/23) = c[0,0,0] / d[0]
+            //Note that 36 / 23 > 1.5, but got 1
+            XCTAssertEqual(c/d, MfArray<Int>([[[    1,        1,        1],
+                                               [    1,        2,        2],
+                                               [    2,        2,        2]],
 
-                                         [[0.7826087 , 0.90909091, 1.04761905],
-                                          [1.04347826, 1.18181818, 1.33333333],
-                                          [1.30434783, 1.45454545, 1.61904762]],
+                                              [[    0,        0,        1],
+                                               [    1,        1,        1],
+                                               [    1,        1,        1]],
 
-                                         [[0.0       , 0.09090909, 0.19047619],
-                                          [0.26086957, 0.36363636, 0.47619048],
-                                          [0.52173913, 0.63636364, 0.76190476]]], mftype: .Float))*/
+                                              [[    0,        0,        0],
+                                               [    0,        0,        0],
+                                               [    0,        0,        0]]]))
         }
         
         do{

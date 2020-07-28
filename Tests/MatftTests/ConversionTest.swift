@@ -402,7 +402,7 @@ final class ConversionTests: XCTestCase {
 
             XCTAssertEqual(a.toArray() as! [[Int]], [[1, 3, 5],
                                                        [2, -4, -1]])
-            print(a.reshape([3,1,2]))
+
             XCTAssertEqual(a.reshape([3, 1, 2]).toArray() as! [[[Int]]], [[[ 1,  3]],
 
                                                                             [[ 5,  2]],

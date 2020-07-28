@@ -303,13 +303,13 @@ extension Matft.math{
             - decimals: (Optional) Int, default is 0, which is equivelent to nearest
     */
     public static func round<T: StoredFloat>(_ mfarray: MfArray<T>, decimals: Int = 0) -> MfArray<Float>{
-        let powF = powf(10, Float(decimals))
+        let powF = powf(10.0, Float(decimals))
         let n: MfArray<Float> =  math_vv_by_vForce(mfarray.astype(Float.self) * powF, vvnintf)
         return n / powF
     }
     public static func round<T: StoredDouble>(_ mfarray: MfArray<T>, decimals: Int = 0) -> MfArray<Double>{
         let powD = pow(10.0, Double(decimals))
-        let n: MfArray<Double> =  math_vv_by_vForce(mfarray.astype(Double.self) * powD, vvnintf)
+        let n: MfArray<Double> =  math_vv_by_vForce(mfarray.astype(Double.self) * powD, vvnint)
         return n / powD
     }
     

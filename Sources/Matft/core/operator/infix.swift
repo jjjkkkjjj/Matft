@@ -44,7 +44,7 @@ extension MfArray where ArrayType: MfNumeric{
     static public func *(l_scalar: ArrayType, r_mfarray: MfArray) -> MfArray{
         return Matft.mul(l_scalar, r_mfarray)
     }
-
+    
     static public func /(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
         return Matft.div(l_mfarray, r_mfarray)
     }
