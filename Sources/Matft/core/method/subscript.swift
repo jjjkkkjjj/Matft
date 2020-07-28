@@ -47,36 +47,10 @@ extension MfArray: MfSubscriptable{
     public subscript(indices: MfArray) -> MfArray{
         get{
             return self._get_mfarray(indices: indices)
-        }/*
+        }
         set(newValue){
-            switch indices.mftype {
-            case .Bool:
-                precondition(indices.shape == self.shape, "masked mfarray must be same shape")
-                /*
-                 >>> a = np.array([1,2])
-                 >>> b = a[0]
-                 >>> b
-                 1
-                 >>> a[np.array([True, True])] = 555
-                 >>> a
-                 array([555, 555])
-                 >>> b
-                 1
-                 */
-                let ret = !indices * self + indices * newValue
-                switch self.storedType {
-                case .Float:
-                    _ = copy_mfarray(ret, dsttmpMfarray: self, cblas_func: cblas_scopy)
-                case .Double:
-                    _ = copy_mfarray(ret, dsttmpMfarray: self, cblas_func: cblas_dcopy)
-                }
-            case .Int:
-                preconditionFailure("Int is not supported now but will be supported future.")
-            default:
-                preconditionFailure("indices must be Bool or Int, but got \(indices.mftype)")
-            }
-            
-        }*/
+            return self._set_mfarray(indices: indices, assignedMfarray: newValue)
+        }
     }
     //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
     public subscript(indices: Any...) -> MfArray{
@@ -431,31 +405,70 @@ extension MfArray: MfSubscriptable{
         
         
     }
-    /*
+    
     private func _set_mfarray(indices: MfArray, assignedMfarray: MfArray){
-        var indices = indices
-        var assignedMfArray = assignedMfarray
-        let selfshape = self.shape
-        let assignedShape = indices.shape
-        
-        if selfshape != assignedMfarray.shape{
-            assignedMfArray = assignedMfArray.broadcast_to(shape: selfshape)
-        }
-        
-        if selfshape != indices.shape{
-            indices = indices.broadcast_to(shape: selfshape)
-        }
-        
         
         switch indices.mftype {
         case .Bool:
-            self * Matft.logical_not(indices)
+            switch self.storedType {
+            case .Float:
+                _setter(self, indices, assignMfArray: assignedMfarray, type: Float.self)
+            case .Double:
+                _setter(self, indices, assignMfArray: assignedMfarray, type: Double.self)
+            }
+            
         case .Float, .Double:
             fatalError("indices must be bool or interger, but got \(indices.mftype)")
         default:
             fatalError("fancy indexing is not supported")
         }
-    }*/
+    }
+}
+
+
+fileprivate func _setter<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, assignMfArray: MfArray, type: T.Type){
+    let true_num = Float.toInt(indices.sum().scalar(Float.self)!)
+    let orig_ind_dim = indices.ndim
+    
+    // broadcast
+    let indices = bool_broadcast_to(indices, shape: mfarray.shape)
+    
+    // must be row major
+    let indicesT: MfArray
+    switch mfarray.storedType {
+    case .Float:
+        indicesT = check_contiguous(indices.astype(.Float), .Row)
+    case .Double:
+        indicesT = check_contiguous(indices.astype(.Double), .Row)
+    }
+    
+    // calculate assignMfarray's size
+    let lastShape = Array(mfarray.shape.suffix(mfarray.ndim - orig_ind_dim))
+    let assignShape = [true_num] + lastShape
+    //let assignSize = shape2size(&assignShape)
+    
+    let assignMfArray = assignMfArray.broadcast_to(shape: assignShape).flatten(.Row).astype(mfarray.mftype)
+    
+    var srcoffset = 0
+    var indoffset = 0
+    
+    indicesT.withDataUnsafeMBPtrT(datatype: T.self){
+        indptr in
+        let indptr = indptr.baseAddress!
+        assignMfArray.withDataUnsafeMBPtrT(datatype: T.self){
+            assptr in
+            let srcptr = assptr.baseAddress!
+            mfarray.withContiguousDataUnsafeMPtrT(datatype: T.self){
+                if (indptr + indoffset).pointee != T.zero{
+                    $0.assign(from: srcptr + srcoffset, count: 1)
+                    srcoffset += 1
+                    //print(srcptr.pointee)
+                }
+                indoffset += 1
+            }
+        }
+    }
+    
 }
 
 fileprivate func _inner_product(_ left: UnsafeMutableBufferPointer<Int>, _ right: UnsafeMutableBufferPointer<Int>) -> Int{
