@@ -27,6 +27,16 @@ extension MfArray{
         
         return ret
     }
+    public func withContiguousDataUnsafeMPtrT<T>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> Void) rethrows -> Void{
+        var shape = self.shape
+        var strides = self.strides
+        try self.withDataUnsafeMBPtrT(datatype: T.self){
+            ptr in
+            for ind in FlattenIndSequence(shape: &shape, strides: &strides){
+                try body(ptr.baseAddress! + ind.flattenIndex)
+            }
+        }
+    }
     
     public func withShapeUnsafeMBPtr<R>(_ body: (UnsafeMutableBufferPointer<Int>) throws -> R) rethrows -> R{
         return try body(UnsafeMutableBufferPointer(start: self.mfstructure._shape, count: self.ndim))

@@ -469,4 +469,119 @@ final class SubscriptTests: XCTestCase {
             
         }
     }
+    
+    func testBooleanIndexingGet(){
+        
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3, 3, 3])
+            let b = MfArray<Bool>([true, false, true]).broadcast_to(shape: [3, 3, 3])
+            
+            XCTAssertEqual(a[b], MfArray<Int>([ 0,  2,  3,  5,  6,  8,  9, 11, 12, 14, 15, 17, 18, 20, 21, 23, 24, 26]))
+            
+            let c = MfArray<Bool>([false, false, true]).broadcast_to(shape: [3, 3, 3])
+            XCTAssertEqual(a[c], MfArray<Int>([ 2,  5,  8, 11, 14, 17, 20, 23, 26]))
+        }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3, 3, 3]).astype(Double.self)
+            let b = MfArray<Bool>([true, false, true]).broadcast_to(shape: [3, 3, 3])
+            
+            XCTAssertEqual(a[b], MfArray<Double>([ 0,  2,  3,  5,  6,  8,  9, 11, 12, 14, 15, 17, 18, 20, 21, 23, 24, 26]))
+            
+            let c = MfArray<Bool>([false, false, true]).broadcast_to(shape: [3, 3, 3])
+            XCTAssertEqual(a[c], MfArray<Double>([ 2,  5,  8, 11, 14, 17, 20, 23, 26]))
+        }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
+            let b = MfArray<Bool>([true, false, true])
+
+            XCTAssertEqual(a[b], MfArray<Int>([[[ 0,  1,  2],
+                                           [ 3,  4,  5],
+                                           [ 6,  7,  8]],
+
+                                          [[18, 19, 20],
+                                           [21, 22, 23],
+                                           [24, 25, 26]]]))
+        }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 18, by: 1, shape: [2, 3, 3])
+            let b = MfArray<Bool>([[true, false, true],
+                             [false, true, true]])
+            
+            XCTAssertEqual(a[b], MfArray<Int>([[ 0,  1,  2],
+                                          [ 6,  7,  8],
+                                          [12, 13, 14],
+                                          [15, 16, 17]]))
+        }
+    }
+    
+    func testBooleanIndexingSet(){
+        
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3, 3, 3])
+            let b = MfArray<Bool>([true, false, true]).broadcast_to(shape: [3, 3, 3])
+            
+            a[b] = MfArray<Int>([555])
+            XCTAssertEqual(a, MfArray<Int>([[[555,   1, 555],
+                                        [555,   4, 555],
+                                        [555,   7, 555]],
+
+                                       [[555,  10, 555],
+                                        [555,  13, 555],
+                                        [555,  16, 555]],
+
+                                       [[555,  19, 555],
+                                        [555,  22, 555],
+                                        [555,  25, 555]]]))
+            
+            let c = MfArray<Bool>([false, false, true]).broadcast_to(shape: [3, 3, 3])
+            
+            a[c] = MfArray<Int>([333])
+            XCTAssertEqual(a, MfArray<Int>([[[555,   1, 333],
+                                        [555,   4, 333],
+                                        [555,   7, 333]],
+
+                                       [[555,  10, 333],
+                                        [555,  13, 333],
+                                        [555,  16, 333]],
+
+                                       [[555,  19, 333],
+                                        [555,  22, 333],
+                                        [555,  25, 333]]]))
+        }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 160000, by: 1, shape: [400, 400])
+            let c = MfArray<Bool>([true]).broadcast_to(shape: [400, 400])
+            
+            self.measure {
+                a[c] = MfArray([555])
+                // time in release mode
+                // average: 0.009, relative standard deviation: 15.930%, values: [0.012394, 0.009048, 0.008606, 0.007531, 0.007859, 0.007862, 0.008099, 0.007935, 0.008400, 0.007617]
+            }
+            //a[c] = MfArray<Int>([555])
+            XCTAssertEqual(a, MfArray<Int>([555]).broadcast_to(shape: [400, 400]))
+        }
+        
+        
+        do{
+            let a = Matft.arange(start: 0, to: 18, by: 1, shape: [2, 3, 3])
+            let b = MfArray<Bool>([[true, false, true],
+                             [false, true, true]])
+            
+            a[b] = MfArray<Int>([[-1,  0,  2],
+                            [ 3,  7,  4],
+                            [ 2,  3, 14],
+                            [ 8,  4,  4]])
+            XCTAssertEqual(a, MfArray<Int>([[[-1,  0,  2],
+                                        [ 3,  4,  5],
+                                        [ 3,  7,  4]],
+
+                                       [[ 9, 10, 11],
+                                        [ 2,  3, 14],
+                                        [ 8,  4,  4]]]))
+        }
+    }
 }

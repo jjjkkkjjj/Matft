@@ -129,6 +129,10 @@ extension Matft.stats{
             return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sveD)
         }
     }
+    public static func sum<T: MfBinary>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<Float>{
+        let ret: MfArray<Float> = _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sve)
+        return ret
+    }
     /**
        Calculate root of sum MfArray
        - parameters:

@@ -96,3 +96,15 @@ extension MfArray where ArrayType: StoredDouble{
         return Matft.stats.mean(self, axis: axis, keepDims: keepDims)
     }
 }
+
+extension MfArray where ArrayType: MfBinary{
+    /**
+       Get summation value along axis
+       - parameters:
+            - axis: (Optional) axis, if not given, get summation for all elements
+            - keepDims: (Optional) whether to keep original dimension, default is true
+    */
+    public func sum(axis: Int? = nil, keepDims: Bool = false) -> MfArray<Float>{
+        return Matft.stats.sum(self, axis: axis, keepDims: keepDims)
+    }
+}

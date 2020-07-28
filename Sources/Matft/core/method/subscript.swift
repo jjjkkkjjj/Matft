@@ -33,50 +33,16 @@ extension MfArray: MfSubscriptable{
             return self._set_mfarray(indices: &indices, newValue: newValue)
         }
     }
-    /*
-    public subscript(indices: MfArray) -> MfArray{
+    
+    public subscript(indices: MfArray<Bool>) -> MfArray<ArrayType>{
         get{
-            switch indices.mftype {
-            case .Bool:
-                preconditionFailure("Bool Getter is not supported now but will be supported future.")
-            case .Int:
-                preconditionFailure("Int is not supported now but will be supported future.")
-            default:
-                preconditionFailure("indices must be Bool or Int, but got \(indices.mftype)")
-            }
-            
+            return self._get_mfarray(indices: indices)
         }
         set(newValue){
-            switch indices.mftype {
-            case .Bool:
-                precondition(indices.shape == self.shape, "masked mfarray must be same shape")
-                /*
-                 >>> a = np.array([1,2])
-                 >>> b = a[0]
-                 >>> b
-                 1
-                 >>> a[np.array([True, True])] = 555
-                 >>> a
-                 array([555, 555])
-                 >>> b
-                 1
-                 */
-                let ret = !indices * self + indices * newValue
-                switch self.storedType {
-                case .Float:
-                    _ = copy_mfarray(ret, dsttmpMfarray: self, cblas_func: cblas_scopy)
-                case .Double:
-                    _ = copy_mfarray(ret, dsttmpMfarray: self, cblas_func: cblas_dcopy)
-                }
-            case .Int:
-                preconditionFailure("Int is not supported now but will be supported future.")
-            default:
-                preconditionFailure("indices must be Bool or Int, but got \(indices.mftype)")
-            }
-            
+            self._set_mfarray(indices: indices, assignedMfarray: newValue)
         }
     }
-    */
+    
     //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
     public subscript(indices: Any...) -> MfArray<ArrayType>{
         get{
@@ -89,104 +55,7 @@ extension MfArray: MfSubscriptable{
         }
     }
     
-    /*
-    public subscript(indices: [Int]) -> Any{
-        
-        get{
-            var indices = indices
-            precondition(indices.count == self.ndim, "cannot return value because given indices were invalid")
-            let flattenIndex = self.withStridesUnsafeMBPtr{
-                stridesptr in
-                indices.withUnsafeMutableBufferPointer{
-                    _inner_product($0, stridesptr)
-                }
-            }
-
-            precondition(flattenIndex < self.size, "indices \(indices) is out of bounds")
-            if self.mftype == .Double{
-                return self.data[flattenIndex]
-            }
-            else{
-                return self.data[flattenIndex]
-            }
-        }
-        set(newValue){
-            var indices = indices
-            precondition(indices.count == self.ndim, "cannot return value because given indices were invalid")
-            let flattenIndex = self.withStridesUnsafeMBPtr{
-                stridesptr in
-                indices.withUnsafeMutableBufferPointer{
-                    _inner_product($0, stridesptr)
-                }
-            }
-            
-            precondition(flattenIndex < self.size, "indices \(indices) is out of bounds")
-            if let newValue = newValue as? Double{
-                self.withDataUnsafeMBPtrT(datatype: Double.self){
-                    $0[flattenIndex] = newValue
-                }
-            }
-            else if let newValue = newValue as? UInt8{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? UInt16{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? UInt32{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? UInt64{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? UInt{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? Int8{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? Int16{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? Int32{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? Int64{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? Int{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? Float{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else{
-                fatalError("Unsupported type was input")
-            }
-        }
-        
-    }*/
+    
     //Use opaque?
     private func _get_mfarray(indices: inout [Any]) -> MfArray{
         precondition(indices.count <= self.ndim, "cannot return value because given indices were too many")
@@ -376,29 +245,91 @@ extension MfArray: MfSubscriptable{
      >>> a[[1,2],[2,2]].base
      None
      */
+    // boolean indexing
+    // note that if not assignment, returned copy value not view.
     /*
-    private func _get_mfarray(indices: MfArray) -> MfArray{
-        precondition(indices.mftype == .Int, "indices must be int, but got \(indices.mftype)")
-        // same as get_index function
-        let ind = (-indices.sign()).clip(min: 0) * MfArray(Array(self.shape.prefix(indices.ndim))) // get_index
-        let offset = (ind * MfArray(Array(self.strides.prefix(indices.ndim)))).sum(axis: -1, keepDims: true) // index * orig_stridesptr[orig_axis]
+     a = np.arange(5)
+     >>> a[a==1]
+     array([1])
+     >>> a[a==1].base
+     None
+     */
+    private func _get_mfarray(indices: MfArray<Bool>) -> MfArray<ArrayType>{
         
-
-        
-        var orig_axis = 0
-        let orig_shape = self.shape
-        let orig_strides = self.strides
-        
-        for _ in 0..<indices.ndim{
-            
+        switch self.storedType {
+        case .Float:
+            return boolget_by_vDSP(self, indices, vDSP_vcmprs)
+        case .Double:
+            return boolget_by_vDSP(self, indices, vDSP_vcmprsD)
         }
-        
-        let index = get_index(_index, dim: orig_shapeptr[orig_axis], axis: orig_axis)
+        /*
+         // same as get_index function
+         let ind = (-indices.sign()).clip(min: 0) * MfArray(Array(self.shape.prefix(indices.ndim))) // get_index
+         let offset = (ind * MfArray(Array(self.strides.prefix(indices.ndim)))).sum(axis: -1, keepDims: true) // index * orig_stridesptr[orig_axis]
+         
+         
+         var orig_axis = 0
+         let orig_shape = self.shape
+         let orig_strides = self.strides
+         
+         for _ in 0..<indices.ndim{
+             
+         }
+         
+         let index = get_index(_index, dim: orig_shapeptr[orig_axis], axis: orig_axis)
+         offset += index * orig_stridesptr[orig_axis]
+         orig_axis += 1 // not move
+         new_axis += 0
+         */
+    }
+    
+    private func _set_mfarray(indices: MfArray<Bool>, assignedMfarray: MfArray<ArrayType>){
+        switch self.storedType {
+        case .Float:
+            _setter(self, indices, assignMfArray: assignedMfarray, type: Float.self)
+        case .Double:
+            _setter(self, indices, assignMfArray: assignedMfarray, type: Double.self)
+        }
+    }
+}
 
-        offset += index * orig_stridesptr[orig_axis]
-        orig_axis += 1 // not move
-        new_axis += 0
-    }*/
+fileprivate func _setter<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, _ indices: MfArray<Bool>, assignMfArray: MfArray<T>, type: U.Type){
+    let true_num = Float.toInt(indices.sum().scalar!)
+    let orig_ind_dim = indices.ndim
+    
+    // broadcast
+    let indices = bool_broadcast_to(indices, shape: mfarray.shape)
+    
+    // must be row major
+    let indicesU: MfArray<U> = check_contiguous(indices.astype(U.self), .Row)
+    
+    // calculate assignMfarray's size
+    let lastShape = Array(mfarray.shape.suffix(mfarray.ndim - orig_ind_dim))
+    let assignShape = [true_num] + lastShape
+    //let assignSize = shape2size(&assignShape)
+    
+    let assignMfArray = assignMfArray.broadcast_to(shape: assignShape).flatten(.Row).astype(T.self)
+    
+    var srcoffset = 0
+    var indoffset = 0
+    
+    indicesU.withDataUnsafeMBPtrT(datatype: U.self){
+        indptr in
+        let indptr = indptr.baseAddress!
+        assignMfArray.withDataUnsafeMBPtrT(datatype: U.self){
+            assptr in
+            let srcptr = assptr.baseAddress!
+            mfarray.withContiguousDataUnsafeMPtrT(datatype: U.self){
+                if (indptr + indoffset).pointee != U.zero{
+                    $0.assign(from: srcptr + srcoffset, count: 1)
+                    srcoffset += 1
+                    //print(srcptr.pointee)
+                }
+                indoffset += 1
+            }
+        }
+    }
+    
 }
 
 fileprivate func _inner_product(_ left: UnsafeMutableBufferPointer<Int>, _ right: UnsafeMutableBufferPointer<Int>) -> Int{
