@@ -243,13 +243,14 @@ internal func to_column_major<T: MfTypable>(_ mfarray: MfArray<T>) -> MfArray<T>
 /**
  Return contiguous mfarray. If passed mfarray is arleady contiguous, return one directly
  */
-internal func check_contiguous<T: MfTypable>(_ mfarray: MfArray<T>, _ mforder: MfOrder = .Row) -> MfArray<T>{
-    if mfarray.mfflags.row_contiguous || mfarray.mfflags.column_contiguous{
+internal func check_contiguous<T: MfTypable>(_ mfarray: MfArray<T>, _ mforder: MfOrder? = .Row) -> MfArray<T>{
+    if ((mfarray.mfflags.row_contiguous || mfarray.mfflags.column_contiguous) && mforder == nil) ||
+    (mfarray.mfflags.row_contiguous && mforder == .Row) || (mfarray.mfflags.column_contiguous && mforder == .Column){
         return mfarray
     }
     else{
         switch mforder {
-        case .Row:
+        case .Row, nil:
             return to_row_major(mfarray)
         case .Column:
             return to_column_major(mfarray)

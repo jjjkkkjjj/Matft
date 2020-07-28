@@ -9,7 +9,7 @@ import Foundation
 import Accelerate
 
 internal func to_Bool<T: MfTypable>(_ mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray<Bool>{
-    
+    //convert float and contiguous
     let ret = mfarray.astype(Float.self)
     let retsize = ret.size
     let newmfdata = withDummyDataMRPtr(Bool.self, storedSize: retsize){
@@ -33,7 +33,7 @@ internal func to_Bool<T: MfTypable>(_ mfarray: MfArray<T>, thresholdF: Float = 1
 }
 
 internal func to_NotBool<T: MfTypable>(_ mfarray: MfArray<T>, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray<Bool>{
-    
+    //convert float and contiguous
     let ret = mfarray.astype(Float.self)
     let retsize = ret.size
     let newmfdata = withDummyDataMRPtr(Bool.self, storedSize: retsize){

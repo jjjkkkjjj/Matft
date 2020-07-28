@@ -556,12 +556,12 @@ final class SubscriptTests: XCTestCase {
             let a = Matft.arange(start: 0, to: 160000, by: 1, shape: [400, 400])
             let c = MfArray<Bool>([true]).broadcast_to(shape: [400, 400])
             
-            self.measure {
-                a[c] = MfArray([555])
+            //self.measure {
+                //a[c] = MfArray([555])
                 // time in release mode
                 // average: 0.009, relative standard deviation: 15.930%, values: [0.012394, 0.009048, 0.008606, 0.007531, 0.007859, 0.007862, 0.008099, 0.007935, 0.008400, 0.007617]
-            }
-            //a[c] = MfArray<Int>([555])
+            //}
+            a[c] = MfArray<Int>([555])
             XCTAssertEqual(a, MfArray<Int>([555]).broadcast_to(shape: [400, 400]))
         }
         
