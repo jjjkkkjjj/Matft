@@ -20,6 +20,28 @@ extension MfArray{
         return self.size == 1 ? self.data[self.offsetIndex] : nil
     }
     
+    /**
+    FlatMap function for scalar.
+        - Parameters:
+            - datatype: MfTypable Type. This must be same as corresponding MfType
+        - Important:
+            If you want flatten array, use `a.flatten().data as! [T]`
+     */
+    public func scalarFlatMap<R>(_ body: (ArrayType) throws -> R) rethrows -> [R]{
+        var ret: [R] = []
+        switch self.storedType {
+        case .Float:
+            try self.withContiguousDataUnsafeMPtrT(datatype: Float.self){
+                ret.append(try body(T.from($0.pointee)))
+            }
+        case .Double:
+            try self.withContiguousDataUnsafeMPtrT(datatype: Double.self){
+                ret.append(try body(T.from($0.pointee)))
+            }
+        }
+        
+        return ret
+    }
 }
 
 
