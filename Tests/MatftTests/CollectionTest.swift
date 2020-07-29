@@ -55,4 +55,20 @@ final class CollectionTests: XCTestCase {
             }
         }
     }
+    
+    func test_scalarFlatMap(){
+        do{
+            let a = MfArray([[3, -19],
+                             [-22, 4]])
+            
+            let aflat = a.scalarFlatMap(datatype: Int.self){ $0 }
+            XCTAssertEqual(aflat, [3, -19, -22, 4])
+            
+            let aTflat = a.T.scalarFlatMap(datatype: Int.self){ $0 }
+            XCTAssertEqual(aTflat, [3, -22, -19, 4])
+            
+            let aTConvflat = a.T.scalarFlatMap(datatype: Int.self){ Float($0) }
+            XCTAssertEqual(aTConvflat, [Float(3), -22, -19, 4])
+        }
+    }
 }
