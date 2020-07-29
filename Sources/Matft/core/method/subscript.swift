@@ -163,7 +163,7 @@ extension MfArray: MfSubscriptable{
         
     }*/
     //Use opaque?
-    private func _get_mfarray(indices: inout [Any]) -> MfArray{
+    internal func _get_mfarray(indices: inout [Any]) -> MfArray{
         precondition(indices.count <= self.ndim, "cannot return value because given indices were too many")
 
         // supplement insufficient slices

@@ -9,7 +9,7 @@
 import Foundation
 
 extension MfArray{
-    public var first: AnyObject?{
+    public var scalarFirst: AnyObject?{
         if self.size == 0{
             return nil
         }
@@ -37,11 +37,11 @@ extension MfArray{
     }
     
     public var scalar: AnyObject?{
-        return self.size == 1 ? self.first! : nil
+        return self.size == 1 ? self.scalarFirst! : nil
     }
     public func scalar<T: MfTypable>(_ type: T.Type) -> T?{
         precondition(MfType.mftype(value: T.zero) == self.mftype, "could not cast \(T.self) from \(self.mftype)")
-        return self.size == 1 ? self.first! as? T : nil
+        return self.size == 1 ? self.scalarFirst! as? T : nil
     }
     
 }
