@@ -23,6 +23,8 @@
     + [Carthage](#carthage)
     + [CocoaPods](#cocoapods)
 
+Note: You can use [Protocol version(beta version)](https://github.com/jjjkkkjjj/Matft/tree/protocol) too.
+
 ## Feature & Usage
 
 - Many types
