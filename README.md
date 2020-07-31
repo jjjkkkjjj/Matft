@@ -14,7 +14,7 @@
       - [(Positive) Indexing](#-positive--indexing)
       - [Slicing](#slicing)
       - [Negative Indexing](#negative-indexing)
-      - [Boolean Indexing(*New!!!*)](#boolean-indexing--new-----)
+      - [Boolean Indexing](#boolean-indexing)
       - [View](#view)
   * [Function List](#function-list)
   * [Performance](#performance)
@@ -35,7 +35,7 @@ Note: You can use [Protocol version(beta version)](https://github.com/jjjkkkjjj/
 
   - Positive
   - Negative
-  - Boolean
+  - **Boolean**
 
 - Slicing
 
@@ -52,7 +52,7 @@ Note: You can use [Protocol version(beta version)](https://github.com/jjjkkkjjj/
   - Transpose
   - Reshape
   - Astype
-
+- **Univarsal function reduction**
 - Mathematic
 
   - Arithmetic
@@ -304,7 +304,7 @@ Note that use `a[0~<]` instead of `a[:]` to get all elements along axis.
   [	6,		7,		8]]], type=Int, shape=[3, 3, 3]*/
   ```
 
-#### Boolean Indexing(*New!!!*)
+#### Boolean Indexing
 
 - You can use boolean indexing.
 
@@ -435,6 +435,13 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.allEqual<br />== | numpy.array_equal<br />n/a |
 | Matft.neg<br />-       | numpy.negative<br />-      |
 
+- Universal Fucntion Reduction
+
+| Matft                                                        | Numpy                                                   |
+| ------------------------------------------------------------ | ------------------------------------------------------- |
+| *Matft.ufuncReduce<br />e.g.) Matft.ufuncReduce(a, Matft.add) | numpy.add.reduce<br />e.g.) numpy.add.reduce(a)         |
+| *Matft.ufuncAccumulate<br />e.g.) Matft.ufuncAccumulate(a, Matft.add) | numpy.add.accumulate<br />e.g.) numpy.add.accumulate(a) |
+
 - Math function
 
 | Matft                    | Numpy       |
@@ -480,8 +487,9 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.stats.sum    | *numpy.sum    |
 | Matft.stats.maximum | numpy.maximum |
 | Matft.stats.minimum | numpy.minimum |
-| Matft.stats.sumsqrt | n/a |
-| Matft.stats.squaresum | n/a |
+| *Matft.stats.sumsqrt | n/a |
+| *Matft.stats.squaresum | n/a |
+| *Matft.stats.cumsum | *numpy.cumsum |
 
 
 - Linear algebra
