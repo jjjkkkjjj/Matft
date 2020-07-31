@@ -36,4 +36,34 @@ final class ReduceTests: XCTestCase {
             XCTAssertEqual(a.ufuncReduce(Matft.stats.minimum, axis: nil), MfArray([3.0]))
         }
     }
+    
+    func testAccumulate(){
+        do{
+            let a = MfArray([2, 3, 5])
+            
+            XCTAssertEqual(a.ufuncAccumulate(Matft.add), MfArray([2, 5, 10]))
+            
+            XCTAssertEqual(a.ufuncAccumulate(Matft.mul), MfArray([2, 6, 30]))
+        }
+        
+        do{
+            let I = Matft.eye(dim: 2)
+            
+            XCTAssertEqual(I.ufuncAccumulate(Matft.add, axis: 0), MfArray([[1,  0],
+                                                                           [1,  1]]))
+            
+            XCTAssertEqual(I.ufuncAccumulate(Matft.add, axis: 1), MfArray([[1,  1],
+                                                                           [0,  1]]))
+        }
+        
+        do{
+            let a = MfArray([1, 3, 2, 5, 4])
+            
+            XCTAssertEqual(a.ufuncAccumulate(Matft.stats.maximum), MfArray([1, 3, 3, 5, 5]))
+            
+            let b = MfArray([11,12,13,20,19,18,17,18,23,21])
+            
+            XCTAssertEqual(b.ufuncAccumulate(Matft.stats.maximum), MfArray([11, 12, 13, 20, 20, 20, 20, 20, 23, 23]))
+        }
+    }
 }

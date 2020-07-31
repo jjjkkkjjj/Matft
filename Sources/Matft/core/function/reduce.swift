@@ -15,8 +15,8 @@ extension Matft{
     /**
         Return reduced MfArray applied passed ufunc
         - Parameters:
-            - ufunc: Binary operation function with two arguments like (l_mfarray: MfArray, r_mfarray: MfArray)
             - mfarray: mfarray
+            - ufunc: Binary operation function with two arguments like (l_mfarray: MfArray, r_mfarray: MfArray)
             - axis: (Optional) axis, if not given, get reduction for all axes
             - keepDims: (Optional) whether to keep original dimension, default is true
             - initial: Initial MfArray
@@ -85,6 +85,43 @@ extension Matft{
                 return ret
             }
         }
+    }
+    
+    /**
+        Return accumulated MfArray applied passed ufunc along axis
+        - Parameters:
+            - mfarray: mfarray
+            - ufunc: Binary operation function with two arguments like (l_mfarray: MfArray, r_mfarray: MfArray)
+            - axis: axis
+     */
+    public static func ufuncAccumulate(mfarray: MfArray, ufunc: biopufuncNoargs, axis: Int = 0) -> MfArray {
+        let axis = get_axis(axis, ndim: mfarray.ndim)
+        
+        
+        // conversion
+        var saxes = Array(axis..<mfarray.ndim)
+        var laxes = Array(0..<axis)
+        let movedMfArray = mfarray.transpose(axes: saxes + laxes).conv_order(mforder: .Row)// to Row order
+        let accums = Matft.nums_like(0, mfarray: movedMfArray) // note that this ret must be converted
+        // get initial value
+        let first = movedMfArray.first!
+        
+        // run reduction
+        var ind = 0
+        accums[ind] = first
+        let _ = movedMfArray.dropFirst().reduce(first){
+            l, r in
+            ind += 1
+            let next = ufunc(l, r)
+            accums[ind] = next
+            return next
+        }
+        
+        //re-conversion
+        saxes = Array(axis..<accums.ndim)
+        laxes = Array(0..<axis)
+        let ret = accums.transpose(axes: saxes + laxes)
+        return ret
     }
 }
 

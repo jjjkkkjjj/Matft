@@ -8,7 +8,25 @@
 import Foundation
 
 extension MfArray{
+    /**
+       Return reduced MfArray applied passed ufunc
+       - Parameters:
+           - ufunc: Binary operation function with two arguments like (l_mfarray: MfArray, r_mfarray: MfArray)
+           - axis: (Optional) axis, if not given, get reduction for all axes
+           - keepDims: (Optional) whether to keep original dimension, default is true
+           - initial: Initial MfArray
+    */
     public func ufuncReduce(_ ufunc: biopufuncNoargs, axis: Int? = 0, keepDims: Bool = false, initial: MfArray? = nil) -> MfArray{
         return Matft.ufuncReduce(mfarray: self, ufunc: ufunc, axis: axis, keepDims: keepDims, initial: initial)
+    }
+    
+    /**
+        Return accumulated MfArray applied passed ufunc along axis
+        - Parameters:
+            - ufunc: Binary operation function with two arguments like (l_mfarray: MfArray, r_mfarray: MfArray)
+            - axis: axis
+     */
+    public func ufuncAccumulate(_ ufunc: biopufuncNoargs, axis: Int = 0) -> MfArray {
+        return Matft.ufuncAccumulate(mfarray: self, ufunc: ufunc, axis: axis)
     }
 }
