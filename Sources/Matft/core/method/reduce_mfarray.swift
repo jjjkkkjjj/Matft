@@ -8,7 +8,7 @@
 import Foundation
 
 extension MfArray{
-    public func ufuncreduce(_ ufunc: biopufuncNoargs, axis: Int = 0, keepDims: Bool = false, initial: MfArray? = nil) -> MfArray{
-        return Matft.ufuncreduce(mfarray: self, ufunc: ufunc, axis: axis, keepDims: keepDims, initial: initial)
+    public func ufuncReduce(_ ufunc: biopufuncNoargs, axis: Int? = 0, keepDims: Bool = false, initial: MfArray? = nil) -> MfArray{
+        return Matft.ufuncReduce(mfarray: self, ufunc: ufunc, axis: axis, keepDims: keepDims, initial: initial)
     }
 }
