@@ -11,7 +11,8 @@ extension MfArray: Collection{
     
     public subscript(index: Int) -> MfArray {
         var indices: [Any] = [index]
-        return self._get_mfarray(indices: &indices)
+        let ret = self._get_mfarray(indices: &indices)
+        return ret.ndim > 0 ? ret : ret.expand_dims(axis: 0)// avoid scalar, but I think this is not efficient way
     }
 }
 
