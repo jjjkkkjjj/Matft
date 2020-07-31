@@ -92,6 +92,15 @@ extension Matft{
         return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
     /**
+       Create same value with passed mfarray's structure
+       - parameters:
+            - value: the value of T, which must conform to MfTypable protocol
+            - mfarray: mfarray
+    */
+    static public func nums_like<T: MfTypable>(_ value: T, mfarray: MfArray, mforder: MfOrder = .Row) -> MfArray{
+        return Matft.nums(value, shape: mfarray.shape, mftype: mfarray.mftype, mforder: mforder)
+    }
+    /**
        Create arithmetic sequence mfarray
        - parameters:
             - start: the start term of arithmetic sequence
