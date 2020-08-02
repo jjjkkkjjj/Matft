@@ -71,6 +71,16 @@ extension MfArray where ArrayType: MfNumeric{
     public func squaresum(axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         return Matft.stats.squaresum(self, axis: axis, keepDims: keepDims)
     }
+    
+    
+    /**
+       Calculate cumulative sum of MfArray along axis
+       - parameters:
+            - axis: (Optional) axis, if not given, get cumulative summation for flatten array
+    */
+    public func cumsum(axis: Int? = nil) -> MfArray{
+        return Matft.stats.cumsum(self, axis: axis)
+    }
 }
 
 extension MfArray where ArrayType: StoredFloat{

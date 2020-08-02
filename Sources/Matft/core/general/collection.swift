@@ -9,9 +9,10 @@ extension MfArray: Collection{
         return i + 1
     }
     
-    public subscript(index: Int) -> MfArray {
+    public subscript(index: Int) -> MfArray<ArrayType> {
         var indices: [Any] = [index]
-        return self._get_mfarray(indices: &indices)
+        let ret = self._get_mfarray(indices: &indices)
+        return ret.ndim > 0 ? ret : ret.expand_dims(axis: 0)// avoid scalar, but I think this is not efficient way
     }
 }
 

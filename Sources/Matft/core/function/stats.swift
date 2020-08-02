@@ -158,6 +158,21 @@ extension Matft.stats{
             return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesqD)
         }
     }
+    
+    /**
+       Calculate cumulative sum of MfArray along axis
+       - parameters:
+            - mfarray: mfarray
+            - axis: (Optional) axis, if not given, get cumulative summation for flatten array
+    */
+    public static func cumsum<T: MfNumeric>(_ mfarray: MfArray<T>, axis: Int? = nil) -> MfArray<T>{
+        if let axis = axis{
+            return mfarray.ufuncAccumulate(Matft.add, axis: axis)
+        }
+        else{
+            return mfarray.flatten().ufuncAccumulate(Matft.add)
+        }
+    }
 }
 
 

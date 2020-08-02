@@ -313,17 +313,18 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 
 - Creation
 
-| Matft              | Numpy             |
-| ------------------ | ----------------- |
-| *Matft.shallowcopy | *numpy.copy       |
-| *Matft.deepcopy    | copy.deepcopy     |
-| Matft.nums         | numpy.ones * N    |
-| Matft.arange       | numpy.arange      |
-| Matft.eye          | numpy.eye         |
-| Matft.diag         | numpy.diag        |
-| Matft.vstack       | numpy.vstack      |
-| Matft.hstack       | numpy.hstack      |
-| Matft.concatenate  | numpy.concatenate |
+| Matft              | Numpy               |
+| ------------------ | ------------------- |
+| *Matft.shallowcopy | *numpy.copy         |
+| *Matft.deepcopy    | copy.deepcopy       |
+| Matft.nums         | numpy.ones * N      |
+| Matft.nums_like    | numpy.ones_like * N |
+| Matft.arange       | numpy.arange        |
+| Matft.eye          | numpy.eye           |
+| Matft.diag         | numpy.diag          |
+| Matft.vstack       | numpy.vstack        |
+| Matft.hstack       | numpy.hstack        |
+| Matft.concatenate  | numpy.concatenate   |
 
 
 - Conversion
