@@ -118,9 +118,9 @@ extension Matft{
         precondition(mfarray.size == shape2size(&newshape), "new shape's size:\(shape2size(&newshape)) must be same as mfarray's size:\(mfarray.size)")
         
         let order = order ?? .Row
-        let data = !mfarray.mfflags.row_contiguous ? mfarray.flatten(.Row).data : mfarray.data
+        let mfarray = mfarray.flatten(order)
         
-        return MfArray(data, mftype: mfarray.mftype, shape: newshape, mforder: order)
+        return MfArray(mfarray.data, mftype: mfarray.mftype, shape: newshape, mforder: order)
         
         /* i wanna implement no copy version
         let new_ndim = newshape.count
