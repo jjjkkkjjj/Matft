@@ -152,6 +152,14 @@ extension Matft.linalg{
         }
 
     }*/
+    
+    /**
+       Get eigenvelues of passed mfarray. Returned mfarray's type will be converted properly.
+       - parameters:
+           - mfarray: mfarray
+       - throws:
+       An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge`
+    */
     public static func eigen(_ mfarray: MfArray) throws -> (valRe: MfArray, valIm: MfArray, lvecRe: MfArray, lvecIm: MfArray, rvecRe: MfArray, rvecIm: MfArray){
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
@@ -167,6 +175,14 @@ extension Matft.linalg{
 
     }
     
+    /**
+       Do singular value decomposition of passed mfarray. Returned mfarray's type will be converted properly.
+       - parameters:
+           - mfarray: mfarray
+           - full_matrices: Bool, if true returned v and rt have the shapes (..., M, M) and (..., N, N) respectively. Otherwise, the shapes are (..., M, K) and (..., K, N), respectively, where K = min(M, N).
+       - throws:
+       An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge`
+    */
     public static func svd(_ mfarray: MfArray, full_mtrices: Bool = true) throws -> (v: MfArray, s: MfArray, rt: MfArray){
         switch mfarray.storedType {
         case .Float:
@@ -177,6 +193,13 @@ extension Matft.linalg{
         }
     }
     
+    /**
+       Do left polar decomposition of passed mfarray. Returned mfarray's type will be converted properly.
+       - parameters:
+           - mfarray: mfarray
+       - throws:
+       An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge`
+    */
     public static func polar_left(_ mfarray: MfArray) throws -> (p: MfArray, l: MfArray){
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
@@ -192,6 +215,13 @@ extension Matft.linalg{
         
         return (p, l)
     }
+    /**
+       Do right polar decomposition of passed mfarray. Returned mfarray's type will be converted properly.
+       - parameters:
+           - mfarray: mfarray
+       - throws:
+       An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge`
+    */
     public static func polar_right(_ mfarray: MfArray) throws -> (u: MfArray, p: MfArray){
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
@@ -294,6 +324,11 @@ extension Matft.linalg{
         return ret
     }
     
+    /**
+       Calculate frobenius norm for matrix.
+       - parameters:
+           - mfarray: mfarray
+    */
     public static func normfro_mat(_ mfarray: MfArray, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray{
         let axes: (row: Int, col: Int) = (get_axis(axes.row, ndim: mfarray.ndim), get_axis(axes.col, ndim: mfarray.ndim))
         
@@ -312,6 +347,12 @@ extension Matft.linalg{
         
         return ret
     }
+    
+    /**
+       Calculate nuclear norm for matrix.
+       - parameters:
+           - mfarray: mfarray
+    */
     public static func normnuc_mat(_ mfarray: MfArray, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray{
         var axes: (row: Int, col: Int) = (get_axis(axes.row, ndim: mfarray.ndim), get_axis(axes.col, ndim: mfarray.ndim))
         
