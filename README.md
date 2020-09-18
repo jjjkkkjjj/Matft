@@ -501,6 +501,7 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.linalg.det         | numpy.linalg.det   |
 | Matft.linalg.eigen       | numpy.linalg.eig   |
 | Matft.linalg.svd         | numpy.linalg.svd   |
+| Matft.linalg.pinv | numpy.linalg.pinv |
 | Matft.linalg.polar_left  | scipy.linalg.polar |
 | Matft.linalg.polar_right | scipy.linalg.polar |
 | Matft.linalg.normlp_vec | scipy.linalg.norm |

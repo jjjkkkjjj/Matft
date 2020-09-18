@@ -183,14 +183,47 @@ extension Matft.linalg{
        - throws:
        An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge`
     */
-    public static func svd(_ mfarray: MfArray, full_mtrices: Bool = true) throws -> (v: MfArray, s: MfArray, rt: MfArray){
+    public static func svd(_ mfarray: MfArray, full_matrices: Bool = true) throws -> (v: MfArray, s: MfArray, rt: MfArray){
         switch mfarray.storedType {
         case .Float:
-            return try svd_by_lapack(mfarray, .Float, full_mtrices, sgesdd_)
+            return try svd_by_lapack(mfarray, .Float, full_matrices, sgesdd_)
             
         case .Double:
-            return try svd_by_lapack(mfarray, .Double, full_mtrices, dgesdd_)
+            return try svd_by_lapack(mfarray, .Double, full_matrices, dgesdd_)
         }
+    }
+    
+    /**
+       Get last 2 dim's MxN mfarray's pseudo-inverse. Returned mfarray's type will be float but be double in case that mftype of mfarray is double.
+       - parameters:
+           - mfarray: mfarray
+       - throws:
+       An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+    */
+    public static func pinv(_ mfarray: MfArray, rcond: Float = 1e-15) throws -> MfArray{
+        precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        // v's shape = (...,N,X)
+        // s's shape = (min(X,Y),)
+        // rt.shape = (...,Y,M)
+        let (v, s, rt) = try Matft.linalg.svd(mfarray, full_matrices: false)
+        
+        switch mfarray.storedType {
+        case .Float:
+            let smax = s.max().scalar(Float.self)!
+            let condition = rcond * smax
+            let spinv_array = s.scalarFlatMap(datatype: Float.self){ $0 <= condition ? Float.zero : 1/$0 }
+            let spinv = MfArray(spinv_array)
+            return rt.swapaxes(axis1: -1, axis2: -2) *& (spinv.expand_dims(axis: 1) * v.swapaxes(axis1: -1, axis2: -2))
+            
+        case .Double:
+            let smax = s.max().scalar(Double.self)!
+            let condition = Double(rcond) * smax
+            let spinv_array = s.scalarFlatMap(datatype: Double.self){ $0 <= condition ? Double.zero : 1/$0 }
+            let spinv = MfArray(spinv_array)
+            return rt.swapaxes(axis1: -1, axis2: -2) *& (spinv.expand_dims(axis: 1) * v.swapaxes(axis1: -1, axis2: -2))
+        }
+        
+        
     }
     
     /**
