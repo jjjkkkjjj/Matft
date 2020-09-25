@@ -25,9 +25,8 @@ let package = Package(
         .testTarget(
             name: "MatftTests",
             dependencies: ["Matft"]),
-        /*
         .testTarget(
             name: "PerformanceTests",
-            dependencies: ["Matft"]),*/
+            dependencies: ["Matft"]),
     ]
 )

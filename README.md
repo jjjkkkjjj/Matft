@@ -308,8 +308,12 @@ Note that use `a[0~<]` instead of `a[:]` to get all elements along axis.
 
 - You can use boolean indexing.
 
-  Caution! I don't check performance, so this boolean indexing may be slow
+  <strike>Caution! I don't check performance, so this boolean indexing may be slow</strike>
 
+  Unfortunately, Matft is too slower than numpy...
+  
+  (numpy is 1ms, Matft is 7ms...)
+  
   ```swift
   let img = MfArray([[1, 2, 3],
                                  [4, 5, 6],
@@ -319,11 +323,11 @@ Note that use `a[0~<]` instead of `a[:]` to get all elements along axis.
   /*
   mfarray = 
   [[	1,		2,		3],
-  [	10,		10,		10],
+[	10,		10,		10],
   [	10,		10,		10]], type=UInt8, shape=[3, 3]
   */
   ```
-
+  
   
 
 #### View
