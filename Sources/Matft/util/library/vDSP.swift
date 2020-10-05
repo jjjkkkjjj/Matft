@@ -450,3 +450,55 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
     
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
+
+
+internal typealias vDSP_vgathr_func<T: MfStorable> = (UnsafePointer<T>, UnsafePointer<vDSP_Length>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+internal func fancyget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, _ vDSP_func: vDSP_vgathr_func<T>) -> MfArray{
+    assert(indices.mftype == .Int, "must be int")
+    
+    // fancy indexing
+    // note that if not assignment, returned copy value not view.
+    /*
+     >>> a = np.arange(9).reshape(3,3)
+     >>> a
+     array([[0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8]])
+     >>> a[[1,2],[2,2]].base
+     None
+     */
+    // boolean indexing
+    // note that if not assignment, returned copy value not view.
+    /*
+     a = np.arange(5)
+     >>> a[a==1]
+     array([1])
+     >>> a[a==1].base
+     None
+     */
+    /*
+     var a = [0.0, 2.0, 3.0, 1.0]
+     var c = [0.0, 0, 0]
+     var bb: [UInt] = [1, 1, 3]
+     vDSP_vgathrD(&a, &bb, vDSP_Stride(1), &c, vDSP_Stride(1), vDSP_Length(c.count))
+     print(c)
+     //[0.0, 0.0, 3.0]
+     */
+    if mfarray.ndim == 1{
+        let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: indices.size){
+            dstptr in
+            let dstptrT = dstptr.bindMemory(to: T.self, capacity: indices.size)
+            let _ = mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+                srcptr in
+                var offsets = (indices.data as! [Int]).map{ UInt(get_index($0, dim: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
+                vDSP_func(srcptr.baseAddress!, &offsets, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(indices.size))
+            }
+        }
+        let newmfstructure = copy_mfstructure(indices.mfstructure)
+        return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+    }
+    else{
+        preconditionFailure()
+    }
+}

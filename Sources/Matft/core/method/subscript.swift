@@ -343,26 +343,6 @@ extension MfArray: MfSubscriptable{
         }
     }
     
-    // fancy indexing
-    // note that if not assignment, returned copy value not view.
-    /*
-     >>> a = np.arange(9).reshape(3,3)
-     >>> a
-     array([[0, 1, 2],
-            [3, 4, 5],
-            [6, 7, 8]])
-     >>> a[[1,2],[2,2]].base
-     None
-     */
-    // boolean indexing
-    // note that if not assignment, returned copy value not view.
-    /*
-     a = np.arange(5)
-     >>> a[a==1]
-     array([1])
-     >>> a[a==1].base
-     None
-     */
     
     private func _get_mfarray(indices: MfArray) -> MfArray{
         
@@ -377,9 +357,59 @@ extension MfArray: MfSubscriptable{
             
         case .Float, .Double:
             preconditionFailure("indices must be bool or interger, but got \(indices.mftype)")
-        default:
-            preconditionFailure("fancy indexing is not supported")
+        case .Int:
+            // fancy indexing
+            // note that if not assignment, returned copy value not view.
             /*
+             >>> a = np.arange(9).reshape(3,3)
+             >>> a
+             array([[0, 1, 2],
+                    [3, 4, 5],
+                    [6, 7, 8]])
+             >>> a[[1,2],[2,2]].base
+             None
+             */
+            // boolean indexing
+            // note that if not assignment, returned copy value not view.
+            /*
+             a = np.arange(5)
+             >>> a[a==1]
+             array([1])
+             >>> a[a==1].base
+             None
+             */
+            switch self.storedType {
+            case .Float:
+                return fancyget_by_vDSP(self, indices, vDSP_vgathr)
+            case .Double:
+                return fancyget_by_vDSP(self, indices, vDSP_vgathrD)
+            }
+            /*
+            if self.ndim == 1{
+                let newdata = withDummyDataMRPtr(self.mftype, storedSize: indices.size){
+                    dstptr in
+                    var dstptrT = dstptr.bindMemory(to: Float.self, capacity: indices.size)
+                    let _ = self.withDataUnsafeMBPtrT(datatype: Float.self){
+                        srcptr in
+                        indices.scalarFlatMap(datatype: Int.self){
+                            let offset = get_index($0, dim: self.size, axis: 0) * self.strides[0]
+                            dstptrT.pointee = srcptr[offset]
+                            dstptrT += 1
+                        }
+                    }
+                }
+                let newmfstructure = copy_mfstructure(indices.mfstructure)
+                return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+                
+                
+            }
+            else{
+                preconditionFailure()
+            }*/
+            
+            /*
+            preconditionFailure("fancy indexing is not supported")
+            
 
              // same as get_index function
              let ind = (-indices.sign()).clip(min: 0) * MfArray(Array(self.shape.prefix(indices.ndim))) // get_index
@@ -401,6 +431,8 @@ extension MfArray: MfSubscriptable{
              orig_axis += 1 // not move
              new_axis += 0
              */
+        default:
+            preconditionFailure("fancy indexing must be Int only, but got \(indices.mftype)")
         }
         
         
