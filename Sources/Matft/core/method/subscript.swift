@@ -52,6 +52,30 @@ extension MfArray: MfSubscriptable{
             return self._set_mfarray(indices: indices, assignedMfarray: newValue)
         }
     }
+    
+    /*
+    // for fancy indexing
+    public subscript(indices: [Int]...) -> MfArray {
+        get{
+            var indices = indices
+            return self._get_mfarray(indices: &indices)
+        }
+        set(newValue){
+            var indices = indices
+            self._set_mfarray(indices: &indices, newValue: newValue)
+        }
+    }
+    public subscript(indices: MfArray...) -> MfArray {
+        get{
+            var indices = indices
+            return self._get_mfarray(indices: &indices)
+        }
+        set(newValue){
+            var indices = indices
+            self._set_mfarray(indices: &indices, newValue: newValue)
+        }
+    }*/
+    
     //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
     public subscript(indices: Any...) -> MfArray{
         get{
@@ -64,104 +88,6 @@ extension MfArray: MfSubscriptable{
         }
     }
     
-    /*
-    public subscript(indices: [Int]) -> Any{
-        
-        get{
-            var indices = indices
-            precondition(indices.count == self.ndim, "cannot return value because given indices were invalid")
-            let flattenIndex = self.withStridesUnsafeMBPtr{
-                stridesptr in
-                indices.withUnsafeMutableBufferPointer{
-                    _inner_product($0, stridesptr)
-                }
-            }
-
-            precondition(flattenIndex < self.size, "indices \(indices) is out of bounds")
-            if self.mftype == .Double{
-                return self.data[flattenIndex]
-            }
-            else{
-                return self.data[flattenIndex]
-            }
-        }
-        set(newValue){
-            var indices = indices
-            precondition(indices.count == self.ndim, "cannot return value because given indices were invalid")
-            let flattenIndex = self.withStridesUnsafeMBPtr{
-                stridesptr in
-                indices.withUnsafeMutableBufferPointer{
-                    _inner_product($0, stridesptr)
-                }
-            }
-            
-            precondition(flattenIndex < self.size, "indices \(indices) is out of bounds")
-            if let newValue = newValue as? Double{
-                self.withDataUnsafeMBPtrT(datatype: Double.self){
-                    $0[flattenIndex] = newValue
-                }
-            }
-            else if let newValue = newValue as? UInt8{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? UInt16{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? UInt32{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? UInt64{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? UInt{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? Int8{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? Int16{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? Int32{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? Int64{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? Int{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else if let newValue = newValue as? Float{
-                self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    $0[flattenIndex] = Float(newValue)
-                }
-            }
-            else{
-                fatalError("Unsupported type was input")
-            }
-        }
-        
-    }*/
     //Use opaque?
     internal func _get_mfarray(indices: inout [Any]) -> MfArray{
         precondition(indices.count <= self.ndim, "cannot return value because given indices were too many")
@@ -358,79 +284,13 @@ extension MfArray: MfSubscriptable{
         case .Float, .Double:
             preconditionFailure("indices must be bool or interger, but got \(indices.mftype)")
         case .Int:
-            // fancy indexing
-            // note that if not assignment, returned copy value not view.
-            /*
-             >>> a = np.arange(9).reshape(3,3)
-             >>> a
-             array([[0, 1, 2],
-                    [3, 4, 5],
-                    [6, 7, 8]])
-             >>> a[[1,2],[2,2]].base
-             None
-             */
-            // boolean indexing
-            // note that if not assignment, returned copy value not view.
-            /*
-             a = np.arange(5)
-             >>> a[a==1]
-             array([1])
-             >>> a[a==1].base
-             None
-             */
             switch self.storedType {
             case .Float:
-                return fancyget_by_vDSP(self, indices, vDSP_vgathr)
+                return fancyget_by_vDSP_and_cblas(self, indices, vDSP_vgathr, cblas_scopy)
             case .Double:
-                return fancyget_by_vDSP(self, indices, vDSP_vgathrD)
+                return fancyget_by_vDSP_and_cblas(self, indices, vDSP_vgathrD, cblas_dcopy)
             }
-            /*
-            if self.ndim == 1{
-                let newdata = withDummyDataMRPtr(self.mftype, storedSize: indices.size){
-                    dstptr in
-                    var dstptrT = dstptr.bindMemory(to: Float.self, capacity: indices.size)
-                    let _ = self.withDataUnsafeMBPtrT(datatype: Float.self){
-                        srcptr in
-                        indices.scalarFlatMap(datatype: Int.self){
-                            let offset = get_index($0, dim: self.size, axis: 0) * self.strides[0]
-                            dstptrT.pointee = srcptr[offset]
-                            dstptrT += 1
-                        }
-                    }
-                }
-                let newmfstructure = copy_mfstructure(indices.mfstructure)
-                return MfArray(mfdata: newdata, mfstructure: newmfstructure)
-                
-                
-            }
-            else{
-                preconditionFailure()
-            }*/
-            
-            /*
-            preconditionFailure("fancy indexing is not supported")
-            
 
-             // same as get_index function
-             let ind = (-indices.sign()).clip(min: 0) * MfArray(Array(self.shape.prefix(indices.ndim))) // get_index
-             let offset = (ind * MfArray(Array(self.strides.prefix(indices.ndim)))).sum(axis: -1, keepDims: true) // index * orig_stridesptr[orig_axis]
-             
-
-             
-             var orig_axis = 0
-             let orig_shape = self.shape
-             let orig_strides = self.strides
-             
-             for _ in 0..<indices.ndim{
-                 
-             }
-             
-             let index = get_index(_index, dim: orig_shapeptr[orig_axis], axis: orig_axis)
-
-             offset += index * orig_stridesptr[orig_axis]
-             orig_axis += 1 // not move
-             new_axis += 0
-             */
         default:
             preconditionFailure("fancy indexing must be Int only, but got \(indices.mftype)")
         }

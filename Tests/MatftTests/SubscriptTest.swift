@@ -602,17 +602,66 @@ final class SubscriptTests: XCTestCase {
             XCTAssertEqual(a[d], MfArray([[ 2,  1,  0, 25],
                                           [25,  1, 26,  1]]))
         }
-        /*
-        do{
-            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3, 3, 3]).astype(.Double)
-            let b = MfArray([true, false, true]).broadcast_to(shape: [3, 3, 3])
-            
-            XCTAssertEqual(a[b], MfArray([ 0,  2,  3,  5,  6,  8,  9, 11, 12, 14, 15, 17, 18, 20, 21, 23, 24, 26], mftype: .Double))
-            
-            let c = MfArray([false, false, true]).broadcast_to(shape: [3, 3, 3])
-            XCTAssertEqual(a[c], MfArray([ 2,  5,  8, 11, 14, 17, 20, 23, 26], mftype: .Double))
-        }
         
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3, 3, 3])
+            let b = MfArray([[2,1],
+                             [-2,1]])
+            
+            XCTAssertEqual(a[b], MfArray([[[[18, 19, 20],
+                                            [21, 22, 23],
+                                            [24, 25, 26]],
+
+                                           [[ 9, 10, 11],
+                                            [12, 13, 14],
+                                            [15, 16, 17]]],
+
+
+                                          [[[ 9, 10, 11],
+                                            [12, 13, 14],
+                                            [15, 16, 17]],
+
+                                           [[ 9, 10, 11],
+                                            [12, 13, 14],
+                                            [15, 16, 17]]]]))
+            
+            let c = MfArray([[1,-1,2,2],[2,-2,-1,0]])
+            
+            XCTAssertEqual(a[c], MfArray([[[[ 9, 10, 11],
+                                            [12, 13, 14],
+                                            [15, 16, 17]],
+
+                                           [[18, 19, 20],
+                                            [21, 22, 23],
+                                            [24, 25, 26]],
+
+                                           [[18, 19, 20],
+                                            [21, 22, 23],
+                                            [24, 25, 26]],
+
+                                           [[18, 19, 20],
+                                            [21, 22, 23],
+                                            [24, 25, 26]]],
+
+
+                                          [[[18, 19, 20],
+                                            [21, 22, 23],
+                                            [24, 25, 26]],
+
+                                           [[ 9, 10, 11],
+                                            [12, 13, 14],
+                                            [15, 16, 17]],
+
+                                           [[18, 19, 20],
+                                            [21, 22, 23],
+                                            [24, 25, 26]],
+
+                                           [[ 0,  1,  2],
+                                            [ 3,  4,  5],
+                                            [ 6,  7,  8]]]]))
+            
+        }
+        /*
         do{
             let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
             let b = MfArray([true, false, true])
@@ -624,6 +673,11 @@ final class SubscriptTests: XCTestCase {
                                           [[18, 19, 20],
                                            [21, 22, 23],
                                            [24, 25, 26]]]))
+         
+         
+            XCTAssertEqual(a[[-2,1,0], [0,1,0]], MfArray([[ 9, 10, 11],
+                                                          [12, 13, 14],
+                                                          [ 0,  1,  2]]))
         }
         
         do{

@@ -454,7 +454,10 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
 
 internal typealias vDSP_vgathr_func<T: MfStorable> = (UnsafePointer<T>, UnsafePointer<vDSP_Length>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
-internal func fancyget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, _ vDSP_func: vDSP_vgathr_func<T>) -> MfArray{
+/**
+    - Important: this function is for fancy indexing
+ */
+internal func fancyget_by_vDSP_and_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, _ vDSP_func: vDSP_vgathr_func<T>, _ cblas_func: cblas_convorder_func<T>) -> MfArray{
     assert(indices.mftype == .Int, "must be int")
     
     // fancy indexing
@@ -499,6 +502,30 @@ internal func fancyget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfA
         return MfArray(mfdata: newdata, mfstructure: newmfstructure)
     }
     else{
-        preconditionFailure()
+        var restShape = Array(mfarray.shape.suffix(from: 1))
+        var retShape = indices.shape + restShape
+        let retSize = shape2size(&retShape)
+        
+        let indices = check_contiguous(indices, .Row)
+        let mfarray = check_contiguous(mfarray, .Row)
+        
+        let restSize = shape2size(&restShape)
+        
+        let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: retSize){
+            dstptr in
+            var dstptrT = dstptr.bindMemory(to: T.self, capacity: retSize)
+            let _ = mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+                [unowned mfarray](srcptr) in
+                
+                let offsets = (indices.data as! [Int]).map{ get_index($0, dim: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
+                for offset in offsets{
+                    copy_unsafeptrT(restSize, srcptr.baseAddress! + offset, 1, dstptrT, 1, cblas_func)
+                    dstptrT += restSize
+                }
+            }
+        }
+        let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+        
+        return MfArray(mfdata: newdata, mfstructure: newmfstructure)
     }
 }
