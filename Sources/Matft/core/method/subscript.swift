@@ -58,7 +58,7 @@ extension MfArray: MfSubscriptable{
     public subscript(indices: MfArray...) -> MfArray {
         get{
             var indices = indices
-            return self._fancyget_mfarray(indices: &indices)
+            return self._fancygetall_mfarray(indices: &indices)
         }
         /*
         set(newValue){
@@ -277,9 +277,9 @@ extension MfArray: MfSubscriptable{
         case .Int:
             switch self.storedType {
             case .Float:
-                return fancyget_by_vDSP_and_cblas(self, indices, vDSP_vgathr, cblas_scopy)
+                return self.ndim == 1 ? fancy1dgetcol_by_vDSP(self, indices, vDSP_vgathr) : fancyndgetcol_by_cblas(self, indices, cblas_scopy)
             case .Double:
-                return fancyget_by_vDSP_and_cblas(self, indices, vDSP_vgathrD, cblas_dcopy)
+                return self.ndim == 1 ? fancy1dgetcol_by_vDSP(self, indices, vDSP_vgathrD) : fancyndgetcol_by_cblas(self, indices, cblas_dcopy)
             }
 
         default:
@@ -290,12 +290,12 @@ extension MfArray: MfSubscriptable{
     }
     
     
-    private func _fancyget_mfarray(indices: inout [MfArray]) -> MfArray{
+    private func _fancygetall_mfarray(indices: inout [MfArray]) -> MfArray{
         switch self.storedType {
         case .Float:
-            return fancyget_by_vDSP_and_cblas(self, &indices, vDSP_vgathr, cblas_scopy)
+            return fancygetall_by_cblas(self, &indices, cblas_scopy)
         case .Double:
-            return fancyget_by_vDSP_and_cblas(self, &indices, vDSP_vgathrD, cblas_dcopy)
+            return fancygetall_by_cblas(self, &indices, cblas_dcopy)
         }
         
     }
