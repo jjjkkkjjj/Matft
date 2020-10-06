@@ -529,3 +529,56 @@ internal func fancyget_by_vDSP_and_cblas<T: MfStorable>(_ mfarray: MfArray, _ in
         return MfArray(mfdata: newdata, mfstructure: newmfstructure)
     }
 }
+
+internal func fancyget_by_vDSP_and_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: inout [MfArray], _ vDSP_func: vDSP_vgathr_func<T>, _ cblas_func: cblas_convorder_func<T>) -> MfArray{
+    // check proper indices
+    assert(indices.count >= 2)
+    precondition(indices.count <= mfarray.ndim, "too many indices for array: array is \(mfarray.ndim)-dimensional, but \(indices.count) were indexed")
+
+    var indShape = indices.reduce(indices[0]){ biop_broadcast_to($0, $1).r }.shape
+    let indSize = shape2size(&indShape)
+    // note that all of mfarraies should have same size thanks to this process
+    let mfarray = check_contiguous(mfarray, .Row)
+    var offsets = Array(repeating: 0, count: indSize)
+    for (axis, inds) in indices.enumerated(){
+        precondition(inds.mftype == .Int, "fancy indexing must be Int only, but got \(inds.mftype)")
+        let rowInd = inds.broadcast_to(shape: indShape).conv_order(mforder: .Row)
+        for (i, ind) in (rowInd.data as! [Int]).enumerated(){
+            offsets[i] += get_index(ind, dim: mfarray.shape[axis], axis: axis) * mfarray.strides[axis]
+        }
+    }
+    
+    var restShape = Array(mfarray.shape.suffix(from: indices.count))
+    var retShape = indShape + restShape
+    let retSize = shape2size(&retShape)
+    let restSize = restShape.count > 0 ? shape2size(&restShape) : 1
+    /*
+     >>> a = np.arange(27).reshape(3,3,3)
+     >>> a[[[-2,1,0]], [[0,1,0]]]
+     array([[[ 9, 10, 11],
+             [12, 13, 14],
+             [ 0,  1,  2]]])
+     >>> a[-2,0]
+     array([ 9, 10, 11])
+     >>> a[1,1]
+     array([12, 13, 14])
+     >>> a[0,0]
+     array([0, 1, 2])
+     */
+    
+    let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: retSize){
+        dstptr in
+        var dstptrT = dstptr.bindMemory(to: T.self, capacity: retSize)
+        let _ = mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            srcptr in
+            
+            for offset in offsets{
+                copy_unsafeptrT(restSize, srcptr.baseAddress! + offset, 1, dstptrT, 1, cblas_func)
+                dstptrT += restSize
+            }
+        }
+    }
+    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+    
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+}

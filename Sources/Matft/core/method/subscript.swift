@@ -53,28 +53,19 @@ extension MfArray: MfSubscriptable{
         }
     }
     
-    /*
+    
     // for fancy indexing
-    public subscript(indices: [Int]...) -> MfArray {
-        get{
-            var indices = indices
-            return self._get_mfarray(indices: &indices)
-        }
-        set(newValue){
-            var indices = indices
-            self._set_mfarray(indices: &indices, newValue: newValue)
-        }
-    }
     public subscript(indices: MfArray...) -> MfArray {
         get{
             var indices = indices
-            return self._get_mfarray(indices: &indices)
+            return self._fancyget_mfarray(indices: &indices)
         }
+        /*
         set(newValue){
             var indices = indices
             self._set_mfarray(indices: &indices, newValue: newValue)
-        }
-    }*/
+        }*/
+    }
     
     //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
     public subscript(indices: Any...) -> MfArray{
@@ -295,6 +286,17 @@ extension MfArray: MfSubscriptable{
             preconditionFailure("fancy indexing must be Int only, but got \(indices.mftype)")
         }
         
+        
+    }
+    
+    
+    private func _fancyget_mfarray(indices: inout [MfArray]) -> MfArray{
+        switch self.storedType {
+        case .Float:
+            return fancyget_by_vDSP_and_cblas(self, &indices, vDSP_vgathr, cblas_scopy)
+        case .Double:
+            return fancyget_by_vDSP_and_cblas(self, &indices, vDSP_vgathrD, cblas_dcopy)
+        }
         
     }
     
