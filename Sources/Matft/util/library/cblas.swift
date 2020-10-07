@@ -244,19 +244,10 @@ internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
     // check proper indices
     assert(indices.count >= 2)
     precondition(indices.count <= mfarray.ndim, "too many indices for array: array is \(mfarray.ndim)-dimensional, but \(indices.count) were indexed")
-
-    var indShape = indices.reduce(indices[0]){ biop_broadcast_to($0, $1).r }.shape
-    let indSize = shape2size(&indShape)
-    // note that all of mfarraies should have same size thanks to this process
+    
     let mfarray = check_contiguous(mfarray, .Row)
-    var offsets = Array(repeating: 0, count: indSize)
-    for (axis, inds) in indices.enumerated(){
-        precondition(inds.mftype == .Int, "fancy indexing must be Int only, but got \(inds.mftype)")
-        let rowInd = inds.broadcast_to(shape: indShape).conv_order(mforder: .Row)
-        for (i, ind) in (rowInd.data as! [Int]).enumerated(){
-            offsets[i] += get_index(ind, dim: mfarray.shape[axis], axis: axis) * mfarray.strides[axis]
-        }
-    }
+    
+    let (offsets, indShape, _) = get_offsets_from_indices(mfarray, &indices)
     
     var workShape = Array(mfarray.shape.suffix(from: indices.count))
     var retShape = indShape + workShape
@@ -325,7 +316,8 @@ internal func fancysetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
                 [unowned assignedMfarray](srcptr) in
                 
                 let workMfarrayStrides = Array(mfarray.strides.suffix(from: 1))
-                for cblasParams in OptOffsetParams_raw(shape: workShape, bigger_strides: Array(assignedMfarray.strides.suffix(from: indices.ndim)), smaller_strides: workMfarrayStrides){
+                let workAssignedMfarrayStrides = Array(assignedMfarray.strides.suffix(from: indices.ndim))
+                for cblasParams in OptOffsetParams_raw(shape: workShape, bigger_strides: workAssignedMfarrayStrides, smaller_strides: workMfarrayStrides){
                     for (i, offset) in offsets.enumerated(){
                         copy_unsafeptrT(cblasParams.blocksize, srcptr.baseAddress! + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr.baseAddress! + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
                     }
@@ -342,4 +334,54 @@ internal func fancysetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
         }
     }
 
+}
+
+
+internal func fancysetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: inout [MfArray], _ assignedMfarray: MfArray, _ cblas_func: cblas_convorder_func<T>) -> Void{
+    // check proper indices
+    assert(indices.count >= 2)
+    precondition(indices.count <= mfarray.ndim, "too many indices for array: array is \(mfarray.ndim)-dimensional, but \(indices.count) were indexed")
+
+    let (offsets, indShape, _) = get_offsets_from_indices(mfarray, &indices)
+    
+    var workShape = Array(mfarray.shape.suffix(from: indices.count))
+    let retShape = indShape + workShape
+    let workSize = workShape.count > 0 ? shape2size(&workShape) : 1
+    
+    let assignedMfarray = check_contiguous(assignedMfarray.broadcast_to(shape: retShape), .Row).astype(mfarray.mftype)
+    /*
+     >>> a = np.arange(27).reshape(3,3,3)
+     >>> a[[[-2,1,0]], [[0,1,0]]]
+     array([[[ 9, 10, 11],
+             [12, 13, 14],
+             [ 0,  1,  2]]])
+     >>> a[-2,0]
+     array([ 9, 10, 11])
+     >>> a[1,1]
+     array([12, 13, 14])
+     >>> a[0,0]
+     array([0, 1, 2])
+     */
+    let _ = mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        [unowned mfarray](dstptr) in
+        let _ = assignedMfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            [unowned assignedMfarray](srcptr) in
+            if workShape.count == 0{// indices.count == mfarray.ndim
+                for (i, offset) in offsets.enumerated(){
+                    (dstptr.baseAddress! + offset).assign(from: srcptr.baseAddress! + i, count: 1)
+                }
+            }
+            else{
+                let workMfarrayStrides = Array(mfarray.strides.suffix(from: indices.count))
+                let workAssignedMfarrayStrides = Array(assignedMfarray.strides.suffix(workShape.count))
+                for cblasParams in OptOffsetParams_raw(shape: workShape, bigger_strides: workAssignedMfarrayStrides, smaller_strides: workMfarrayStrides){
+                    for (i, offset) in offsets.enumerated(){
+                        copy_unsafeptrT(cblasParams.blocksize, srcptr.baseAddress! + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr.baseAddress! + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
+                    }
+                }
+            }
+            
+        }
+    }
+    
 }

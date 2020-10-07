@@ -60,11 +60,10 @@ extension MfArray: MfSubscriptable{
             var indices = indices
             return self._fancygetall_mfarray(indices: &indices)
         }
-        /*
         set(newValue){
             var indices = indices
-            self._set_mfarray(indices: &indices, newValue: newValue)
-        }*/
+            self._fancysetall_mfarray(indices: &indices, assignedMfarray: newValue)
+        }
     }
     
     //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
@@ -296,6 +295,16 @@ extension MfArray: MfSubscriptable{
             return fancygetall_by_cblas(self, &indices, cblas_scopy)
         case .Double:
             return fancygetall_by_cblas(self, &indices, cblas_dcopy)
+        }
+        
+    }
+    
+    private func _fancysetall_mfarray(indices: inout [MfArray], assignedMfarray: MfArray) -> Void{
+        switch self.storedType {
+        case .Float:
+            fancysetall_by_cblas(self, &indices, assignedMfarray, cblas_scopy)
+        case .Double:
+            fancysetall_by_cblas(self, &indices, assignedMfarray, cblas_dcopy)
         }
         
     }
