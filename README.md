@@ -15,6 +15,7 @@
       - [Slicing](#slicing)
       - [Negative Indexing](#negative-indexing)
       - [Boolean Indexing](#boolean-indexing)
+      - [Fancy Indexing](#boolean-indexing)
       - [View](#view)
   * [Function List](#function-list)
   * [Performance](#performance)
@@ -36,6 +37,7 @@ Note: You can use [Protocol version(beta version)](https://github.com/jjjkkkjjj/
   - Positive
   - Negative
   - **Boolean**
+  - **Fancy**
 
 - Slicing
 
@@ -328,7 +330,32 @@ Note that use `a[0~<]` instead of `a[:]` to get all elements along axis.
   */
   ```
   
-  
+
+#### Fancy Indexing
+
+- You can use fancy indexing!!!
+
+  ```swift
+  let a = MfArray([[1, 2], [3, 4], [5, 6]])
+              
+  a[MfArray([0, 1, 2]), MfArray([0, -1, 0])] = MfArray([999,888,777])
+  print(a)
+  /*
+  mfarray = 
+  [[	999,		2],
+  [	3,		888],
+  [	777,		6]], type=Int, shape=[3, 2]
+  */
+              
+  a.T[MfArray([0, 1, -1]), MfArray([0, 1, 0])] = MfArray([-999,-888,-777])
+  print(a)
+  /*
+  mfarray = 
+  [[	-999,		-777],
+  [	3,		-888],
+  [	777,		6]], type=Int, shape=[3, 2]
+  */
+  ```
 
 #### View
 
