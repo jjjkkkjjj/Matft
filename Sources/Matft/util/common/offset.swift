@@ -8,13 +8,28 @@
 
 import Foundation
 
-internal struct OptOffsetParams: Sequence{
+internal struct OptOffsetParams_mfarray: Sequence{
     let bigger_mfarray: MfArray
     let smaller_mfarray: MfArray
     
     public init(bigger_mfarray: MfArray, smaller_mfarray: MfArray){
         self.bigger_mfarray = bigger_mfarray
         self.smaller_mfarray = smaller_mfarray
+    }
+    
+    func makeIterator() -> OptOffsetParamIterator {
+        return OptOffsetParamIterator(optParams: self)
+    }
+}
+
+internal struct OptOffsetParams_raw: Sequence{
+    let shape: [Int]
+    let strides: (b: [Int], s: [Int])
+    
+    public init(shape: [Int], bigger_strides: [Int], smaller_strides: [Int]){
+        self.shape = shape
+        self.strides.b = bigger_strides
+        self.strides.s = smaller_strides
     }
     
     func makeIterator() -> OptOffsetParamIterator {
@@ -32,10 +47,39 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
     var indicesOfAxes: [Int]
     var offset: (b: Int, s: Int)? = (0, 0)
     
-    public init(optParams: OptOffsetParams){
+    public init(optParams: OptOffsetParams_mfarray){
         var shape = optParams.bigger_mfarray.shape
         var b_strides = optParams.bigger_mfarray.strides
         var s_strides = optParams.smaller_mfarray.strides
+        
+        let (axis, blocksize, iterAxes) =
+        
+            _optStrides(shape: &shape, l_strides: &b_strides, r_strides: &s_strides)
+        
+        
+        self.stride.b = b_strides[axis]
+        self.stride.s = s_strides[axis]
+        self.blocksize = blocksize
+        
+        self.itershapes = iterAxes.map{ shape[$0] }
+        self.iter_strides.b = iterAxes.map{ b_strides[$0] }
+        self.iter_strides.s = iterAxes.map{ s_strides[$0] }
+        
+        
+        if self.itershapes.isEmpty{
+            self.upaxis = -1
+            self.indicesOfAxes = []
+        }
+        else{
+            self.upaxis = 0
+            self.indicesOfAxes = Array(repeating: 0, count: self.itershapes.count)
+        }
+    }
+    
+    public init(optParams: OptOffsetParams_raw){
+        var shape = optParams.shape
+        var b_strides = optParams.strides.b
+        var s_strides = optParams.strides.s
         
         let (axis, blocksize, iterAxes) =
         

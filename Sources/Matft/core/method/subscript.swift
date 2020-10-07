@@ -312,9 +312,17 @@ extension MfArray: MfSubscriptable{
             }
             
         case .Float, .Double:
-            fatalError("indices must be bool or interger, but got \(indices.mftype)")
+            preconditionFailure("indices must be bool or interger, but got \(indices.mftype)")
+        case .Int:
+            switch self.storedType {
+            case .Float:
+                fancysetcol_by_cblas(self, indices, assignedMfarray, cblas_scopy)
+            case .Double:
+                fancysetcol_by_cblas(self, indices, assignedMfarray, cblas_dcopy)
+            }
+            
         default:
-            fatalError("fancy indexing is not supported")
+            preconditionFailure("fancy indexing must be Int only, but got \(indices.mftype)")
         }
     }
 }

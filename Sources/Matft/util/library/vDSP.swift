@@ -121,7 +121,7 @@ internal func biop_vv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: 
                 //print(l_mfarray.storedSize, r_mfarray.storedSize)
                 //print(biggerL)
                 if biggerL{// l is bigger
-                    for vDSPPrams in OptOffsetParams(bigger_mfarray: l_mfarray, smaller_mfarray: r_mfarray){
+                    for vDSPPrams in OptOffsetParams_mfarray(bigger_mfarray: l_mfarray, smaller_mfarray: r_mfarray){
                         /*
                         let bptr = bptr.baseAddress! + vDSPPrams.b_offset
                         let sptr = sptr.baseAddress! + vDSPPrams.s_offset
@@ -131,7 +131,7 @@ internal func biop_vv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: 
                     }
                 }
                 else{// r is bigger
-                    for vDSPPrams in OptOffsetParams(bigger_mfarray: r_mfarray, smaller_mfarray: l_mfarray){
+                    for vDSPPrams in OptOffsetParams_mfarray(bigger_mfarray: r_mfarray, smaller_mfarray: l_mfarray){
                         _run_biop_vv(lptr: lptr.baseAddress! + vDSPPrams.s_offset, vDSPPrams.s_stride, rptr: rptr.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptr: dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSPPrams.blocksize, vDSP_func)
                         //print(vDSPPrams.blocksize, vDSPPrams.b_offset,vDSPPrams.b_stride,vDSPPrams.s_offset, vDSPPrams.s_stride)
                     }

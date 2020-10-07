@@ -712,4 +712,89 @@ final class SubscriptTests: XCTestCase {
             XCTAssertEqual(a.T[MfArray([0, 1, -1]), MfArray([0, 1, 0])], MfArray([1, 4, 2]))
         }
     }
+    
+    func testFancyIndexingSet(){
+        
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1)
+            let b = MfArray([3, 7, 2])
+            a[b] = MfArray([10])
+            XCTAssertEqual(a, MfArray([ 0,  1, 10, 10,  4,  5,  6, 10,  8,  9, 10, 11, 12, 13, 14, 15, 16,
+                                        17, 18, 19, 20, 21, 22, 23, 24, 25, 26]))
+            
+            let c = MfArray([[2, 1],
+                             [-2, 1]])
+            a[c] = MfArray([999, -999])
+            XCTAssertEqual(a, MfArray([   0, -999,  999,   10,    4,    5,    6,   10,    8,    9,   10,
+                                             11,   12,   13,   14,   15,   16,   17,   18,   19,   20,   21,
+                                             22,   23,   24,  999,   26]))
+            
+
+        }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3, 3, 3])
+            let b = MfArray([[2,1],
+                             [-2,1]])
+            
+            a[b] = Matft.arange(start: -36, to: 0, by: 1, shape: [2,2,3,3])
+            XCTAssertEqual(a, MfArray([[[  0,   1,   2],
+                                       [  3,   4,   5],
+                                       [  6,   7,   8]],
+
+                                      [[ -9,  -8,  -7],
+                                       [ -6,  -5,  -4],
+                                       [ -3,  -2,  -1]],
+
+                                      [[-36, -35, -34],
+                                       [-33, -32, -31],
+                                       [-30, -29, -28]]]))
+            
+            let c = Matft.arange(start: 0, to: 27, by: 1, shape: [3, 3, 3])
+            
+            c.T[MfArray([[1,-1],[2,-2]])] = MfArray([-999])
+            XCTAssertEqual(c, MfArray([[[   0, -999, -999],
+                                        [   3, -999, -999],
+                                        [   6, -999, -999]],
+
+                                       [[   9, -999, -999],
+                                        [  12, -999, -999],
+                                        [  15, -999, -999]],
+
+                                       [[  18, -999, -999],
+                                        [  21, -999, -999],
+                                        [  24, -999, -999]]]))
+            
+            c[MfArray([[1,-1],[2,-2]])] = Matft.arange(start: 80, to: 116, by: 1, shape: [2,2,3,3])
+            XCTAssertEqual(c, MfArray([[[   0, -999, -999],
+                                           [   3, -999, -999],
+                                           [   6, -999, -999]],
+
+                                          [[ 107,  108,  109],
+                                           [ 110,  111,  112],
+                                           [ 113,  114,  115]],
+
+                                          [[  98,   99,  100],
+                                           [ 101,  102,  103],
+                                           [ 104,  105,  106]]]))
+            
+        }
+        /*
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
+
+            XCTAssertEqual(a[MfArray([-2,1,0]), MfArray([0,1,0])], MfArray([[ 9, 10, 11],
+                                                                            [12, 13, 14],
+                                                                            [ 0,  1,  2]]))
+            
+            XCTAssertEqual(a[MfArray([-2,1,0]), MfArray([0,1,0]), MfArray([2,2,2])], MfArray([11, 14,  2]))
+        }
+        
+        do{
+            let a = MfArray([[1, 2], [3, 4], [5, 6]])
+            
+            XCTAssertEqual(a[MfArray([0, 1, 2]), MfArray([0, 1, 0])], MfArray([1, 4, 5]))
+            XCTAssertEqual(a.T[MfArray([0, 1, -1]), MfArray([0, 1, 0])], MfArray([1, 4, 2]))
+        }*/
+    }
 }
