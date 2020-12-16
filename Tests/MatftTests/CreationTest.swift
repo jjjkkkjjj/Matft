@@ -4,6 +4,22 @@ import Matft
 
 final class CreationTests: XCTestCase {
     
+    func testAppend() {
+        do {
+            let x = MfArray([1,2,3])
+            let y = MfArray([[4,5,6],[7,8,9]])
+            XCTAssertEqual(Matft.append(mfarray: x, values: y), MfArray([1,2,3,4,5,6,7,8,9]))
+        }
+        
+        do {
+            let x = MfArray([[1,2,3],[4,5,6]])
+            let y = MfArray([[7,8,9]])
+            XCTAssertEqual(Matft.append(mfarray: x, values: y, axis: 0), MfArray([[1, 2, 3],
+                                                                                    [4, 5, 6],
+                                                                                    [7, 8, 9]]))
+        }
+    }
+    
     
     func testDiag() {
         do{

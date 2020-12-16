@@ -424,6 +424,29 @@ extension Matft{
         
         return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
+    
+    /**
+       Append values to the end of an array.
+       - parameters:
+            - mfarrays: the array of MfArray.
+            - values: appended mfarray
+            - axis: the axis to concatenate
+    */
+    static public func append(mfarray: MfArray, values: MfArray, axis: Int? = nil) -> MfArray{
+        //https://github.com/numpy/numpy/blob/v1.19.0/numpy/lib/function_base.py#L4616-L4671
+        let mfarr: MfArray, vals: MfArray, ax: Int
+        if let axis = axis{
+            mfarr = mfarray
+            vals = values
+            ax = axis
+        }
+        else{
+            mfarr = mfarray.ndim != 1 ? mfarray.flatten() : mfarray
+            vals = values.flatten()
+            ax = mfarr.ndim - 1
+        }
+        return Matft.concatenate([mfarr, vals], axis: ax)
+    }
 }
 /*
 extension Matft.mfdata{
