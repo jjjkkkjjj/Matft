@@ -130,20 +130,37 @@ extension Matft{
        Create diagonal matrix. The size is (dim, dim)
        - parameters:
             - v: the diagonal values, returned mfarray's shape is (dim, dim), whose dim is length of v
+            - k: Int. Diagonal position.
             - mftype: (Optional) the type of mfarray
             - order: (Optional) order, default is nil, which means close to row major
     */
-    static public func diag<T: MfTypable>(v: [T], mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
-        let dim = v.count
+    static public func diag<T: MfTypable>(v: [T], k: Int = 0, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
+        let dim = v.count + abs(k)
         var d = Array(repeating: Array(repeating: T.zero, count: dim), count: dim)
-        for i in 0..<dim{
-            d[i][i] = v[i]
+        if k >= 0{
+            for i in 0..<v.count{
+                d[i][i+k] = v[i]
+            }
         }
+        else{
+            for i in 0..<v.count{
+                d[i-k][i] = v[i]
+            }
+        }
+        
         return MfArray(d, mftype: mftype, mforder: mforder)
     }
-    static public func diag(v: MfArray, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
+    /**
+       Create diagonal matrix. The size is (dim, dim)
+       - parameters:
+            - v: the diagonal values, returned mfarray's shape is (dim, dim), whose dim is length of v
+            - k: Int. Diagonal position.
+            - mftype: (Optional) the type of mfarray
+            - order: (Optional) order, default is nil, which means close to row major
+    */
+    static public func diag(v: MfArray, k: Int = 0, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
         precondition(v.ndim == 1, "must be 1d")
-        let dim = v.size
+        let dim = v.size + abs(k)
         let size = dim*dim
         let retmftype = mftype ?? v.mftype
         var shape = [dim, dim]
@@ -155,8 +172,15 @@ extension Matft{
                 let ptrF = ptr.bindMemory(to: Float.self, capacity: size)
                 var d = Array(repeating: Float.zero, count: size)
                 v.withDataUnsafeMBPtrT(datatype: Float.self){
-                    for i in 0..<dim{
-                        d[i*dim+i] = $0[i]
+                    if k >= 0{
+                        for i in 0..<v.size{
+                            d[i*dim+i+k] = $0[i]
+                        }
+                    }
+                    else{
+                        for i in 0..<v.size{
+                            d[(i-k)*dim+i] = $0[i]
+                        }
                     }
                 }
                 d.withUnsafeMutableBufferPointer{
@@ -166,8 +190,15 @@ extension Matft{
                 let ptrD = ptr.bindMemory(to: Double.self, capacity: size)
                 var d = Array(repeating: Double.zero, count: size)
                 v.withDataUnsafeMBPtrT(datatype: Double.self){
-                    for i in 0..<dim{
-                        d[i*dim+i] = $0[i]
+                    if k >= 0{
+                        for i in 0..<v.size{
+                            d[i*dim+i+k] = $0[i]
+                        }
+                    }
+                    else{
+                        for i in 0..<v.size{
+                            d[(i-k)*dim+i] = $0[i]
+                        }
                     }
                 }
                 d.withUnsafeMutableBufferPointer{
