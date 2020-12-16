@@ -26,7 +26,7 @@ internal func get_axis_for_expand_dims(_ axis: Int, ndim: Int) -> Int{
         ret_axis = 0
     }
     else{
-        preconditionFailure("Invalid axis was passed. must not be -mfarray.ndim - 1 <= axis <= mfarray.ndim")
+        preconditionFailure("Invalid axis was passed. must not be \(-ndim - 1) <= axis(\(axis)) <= \(ndim)")
     }
     
     return ret_axis
@@ -35,6 +35,25 @@ internal func get_axis_for_expand_dims(_ axis: Int, ndim: Int) -> Int{
 internal func get_index(_ index: Int, dim: Int, axis: Int) -> Int{
     let ret_index = index >= 0 ? index : index + dim
     precondition(0 <= ret_index && ret_index < dim, "\(index) is out of bounds for axis \(axis) with \(dim)")
+    
+    return ret_index
+}
+
+internal func get_index_for_insert(_ index: Int, dim: Int, axis: Int) -> Int{
+
+    let ret_index: Int
+    if index < dim && index > -dim - 1{
+        ret_index = get_index(index, dim: dim, axis: axis)
+    }
+    else if index == dim{
+        ret_index = index
+    }
+    else if index == -dim - 1{
+        ret_index = 0
+    }
+    else{
+        preconditionFailure("Invalid index was passed. must not be \(-dim - 1) <= index(\(index)) <= \(dim) for axis \(axis)")
+    }
     
     return ret_index
 }

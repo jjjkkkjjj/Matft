@@ -54,6 +54,40 @@ final class CreationTests: XCTestCase {
         }
     }
     
+    func testInsert() {
+        do {
+            let a = MfArray([[1, 1], [2, 2], [3, 3]])
+            
+            XCTAssertEqual(Matft.insert(a, indices: [1], value: 5), MfArray([1, 5, 1, 2, 2, 3, 3]))
+            
+            XCTAssertEqual(Matft.insert(a, indices: [1], value: 5, axis: 1), MfArray([[1, 5, 1],
+                                                                                                            [2, 5, 2],
+                                                                                                            [3, 5, 3]]))
+            
+            
+            XCTAssertEqual(Matft.insert(a, indices: [1], values: MfArray([1,2,3]), axis: 1), MfArray([[1, 1, 1],
+            [2, 2, 2],
+            [3, 3, 3]]))
+            
+            XCTAssertEqual(Matft.insert(a, indices: [1], values: MfArray([[1],[2],[3]]), axis: 1), MfArray([[1, 1, 1],
+                                                                                                                    [2, 2, 2],
+                                                                                                                    [3, 3, 3]]))
+        }
+        
+        do {
+            let a = Matft.arange(start: 0, to: 8, by: 1, shape: [2,4])
+            XCTAssertEqual(Matft.insert(a, indices: [1,3], value: 999, axis: 1), MfArray([[  0, 999,   1,   2, 999,   3],
+                                                                                          [  4, 999,   5,   6, 999,   7]]))
+            
+            XCTAssertEqual(Matft.insert(a, indices: [1,-1], value: 999, axis: 1), MfArray([[  0, 999,   1,   2, 999,   3],
+                                                                                        [  4, 999,   5,   6, 999,   7]]))
+            
+            XCTAssertEqual(Matft.insert(a, indices: [1,4], value: 999, axis: 1), MfArray([[  0, 999,   1,   2,  3, 999],
+                                                                                          [  4, 999,   5,   6,   7, 999]]))
+        }
+       
+    }
+    
     func testDiag() {
         do{
             XCTAssertEqual(Matft.diag(v: [3, -19, -22, 4]), MfArray([[  3,   0,   0,   0],

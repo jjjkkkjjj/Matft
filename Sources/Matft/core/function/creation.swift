@@ -468,42 +468,60 @@ extension Matft{
             - values: appended mfarray
             - axis: the axis to insert
     */
-    /*
-    static public func insert(mfarray: MfArray, indices: [Int], values: MfArray, axis: Int? = nil) -> MfArray{
-        let axis = axis ?? 0
-        let insertedNum = mfarray.shape[axis]//Inserted values number for each index
-        var retShape = mfarray.shape
-        retShape[axis] += insertedNum * indices.count
-        let offset = retShape.suffix(from: axis).reduce(1){ $0 * $1 }
+    static public func insert(_ mfarray: MfArray, indices: [Int], values: MfArray, axis: Int? = nil) -> MfArray{
+        //https://github.com/numpy/numpy/blob/v1.19.0/numpy/lib/function_base.py#L4421-L4609
+        // convert corrext index, sort index and then remove duplicated index
+        var mfarr: MfArray, vals: MfArray, ax: Int
+        if let axis = axis{
+            mfarr = mfarray
+            ax = get_axis(axis, ndim: mfarr.ndim)
+        }
+        else{
+            mfarr = mfarray.ndim != 1 ? mfarray.flatten() : mfarray
+            ax = mfarr.ndim - 1
+        }
+        vals = values.squeeze()
+    
+        let dim = mfarr.shape[ax] //Inserted values number for each index
+        var retShape = mfarr.shape
+        retShape[ax] += indices.count
+        let sortedIndices = Array(Set(indices.map{ get_index_for_insert($0, dim: dim, axis: ax) }).sorted(by: <))
+
+        var ret = Matft.nums(0, shape: retShape, mftype: mfarr.mftype)
         
-        let sortedIndices = indices.sorted(by: <)
-        let mfarray = mfarray.ndim != 1 ? mfarray.flatten() : mfarray
-        let values = values.ndim != 1 ? values.flatten() : values
+        // swap axis to use fancy indexing for first axis
+        ret = Matft.swapaxes(ret, axis1: 0, axis2: ax)
+        mfarr = Matft.swapaxes(mfarr, axis1: 0, axis2: ax)
         
-        
-        var ret = Matft.nums(0, shape: retShape, mftype: mfarray.mftype)
-        
-        switch mfarray.storedType {
-        case .Float:
-            var retVals = Array(repeating: Float.zero, count: shape2size(&retShape))
-            retVals.withUnsafeMutableBufferPointer{
-                var startInd = 0
-                for ind in indices{
-                    
-                }
-            }
+        var startInd = 0
+        for (n, ind) in sortedIndices.enumerated(){
+            // fill mfarray first
+            ret[(startInd+n)~<(ind+n)] = mfarr[startInd~<ind]
+            // fill inserted value next
+            ret[ind+n] = vals
             
-        case .Double:
-            let retVals = Array(repeating: Double.zero, count: shape2size(&retShape))
+            // update start index
+            startInd = ind
+        }
+        if startInd < mfarr.shape[0]{
+            // assign rest mfarray
+            ret[(startInd + sortedIndices.count)~<] = mfarr[startInd~<]
         }
         
-        
-        
-        
-        
-        
-        return Matft.concatenate([mfarr, vals], axis: ax)
-    }*/
+        // revert axis
+        return Matft.swapaxes(ret, axis1: ax, axis2: 0)
+    }
+    /**
+       Insert values along the given axis before the given indices.
+       - parameters:
+            - mfarrays: the array of MfArray.
+            - indices: Index sequence
+            - value: mftypable value
+            - axis: the axis to insert
+    */
+    static public func insert<T: MfTypable>(_ mfarray: MfArray, indices: [Int], value: T, axis: Int? = nil) -> MfArray{
+        return Matft.insert(mfarray, indices: indices, values: MfArray([value]), axis: axis)
+    }
 }
 /*
 extension Matft.mfdata{
