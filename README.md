@@ -414,6 +414,8 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.vstack       | numpy.vstack      |
 | Matft.hstack       | numpy.hstack      |
 | Matft.concatenate  | numpy.concatenate |
+| *Matft.append  | numpy.append |
+| *Matft.take  | numpy.take |
 
 
 - Conversion

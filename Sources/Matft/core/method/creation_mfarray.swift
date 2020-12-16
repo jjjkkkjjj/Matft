@@ -34,6 +34,26 @@ extension MfArray{
     public func flatten(_ mforder: MfOrder = .Row) -> MfArray{
         return Matft.flatten(self, mforder: mforder)
     }
+    
+    /**
+       Append values to the end of an array.
+       - parameters:
+            - values: appended mfarray
+            - axis: the axis to append
+    */
+    public func append(values: MfArray, axis: Int? = nil) -> MfArray{
+        return Matft.append(self, values: values, axis: axis)
+    }
+    
+    /**
+       Take elements from an array along an axis.
+       - parameters:
+            - indices: indices mfarray
+            - axis: the axis to append
+    */
+    public func take(indices: MfArray, axis: Int? = nil) -> MfArray{
+        return Matft.take(self, indices: indices, axis: axis)
+    }
 }
  /*
 extension MfData{

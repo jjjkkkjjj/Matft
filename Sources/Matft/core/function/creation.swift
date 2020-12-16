@@ -430,9 +430,9 @@ extension Matft{
        - parameters:
             - mfarrays: the array of MfArray.
             - values: appended mfarray
-            - axis: the axis to concatenate
+            - axis: the axis to append
     */
-    static public func append(mfarray: MfArray, values: MfArray, axis: Int? = nil) -> MfArray{
+    static public func append(_ mfarray: MfArray, values: MfArray, axis: Int? = nil) -> MfArray{
         //https://github.com/numpy/numpy/blob/v1.19.0/numpy/lib/function_base.py#L4616-L4671
         let mfarr: MfArray, vals: MfArray, ax: Int
         if let axis = axis{
@@ -447,6 +447,63 @@ extension Matft{
         }
         return Matft.concatenate([mfarr, vals], axis: ax)
     }
+    
+    /**
+       Take elements from an array along an axis.
+       - parameters:
+            - mfarrays: the array of MfArray.
+            - indices: indices mfarray
+            - axis: the axis to append
+    */
+    static public func take(_ mfarray: MfArray, indices: MfArray, axis: Int? = nil) -> MfArray{
+        let axis = axis ?? 0
+        return Matft.swapaxes(mfarray, axis1: axis, axis2: 0)[indices].swapaxes(axis1: 0, axis2: axis)
+    }
+    
+    /**
+       Insert values along the given axis before the given indices.
+       - parameters:
+            - mfarrays: the array of MfArray.
+            - indices: Index sequence
+            - values: appended mfarray
+            - axis: the axis to insert
+    */
+    /*
+    static public func insert(mfarray: MfArray, indices: [Int], values: MfArray, axis: Int? = nil) -> MfArray{
+        let axis = axis ?? 0
+        let insertedNum = mfarray.shape[axis]//Inserted values number for each index
+        var retShape = mfarray.shape
+        retShape[axis] += insertedNum * indices.count
+        let offset = retShape.suffix(from: axis).reduce(1){ $0 * $1 }
+        
+        let sortedIndices = indices.sorted(by: <)
+        let mfarray = mfarray.ndim != 1 ? mfarray.flatten() : mfarray
+        let values = values.ndim != 1 ? values.flatten() : values
+        
+        
+        var ret = Matft.nums(0, shape: retShape, mftype: mfarray.mftype)
+        
+        switch mfarray.storedType {
+        case .Float:
+            var retVals = Array(repeating: Float.zero, count: shape2size(&retShape))
+            retVals.withUnsafeMutableBufferPointer{
+                var startInd = 0
+                for ind in indices{
+                    
+                }
+            }
+            
+        case .Double:
+            let retVals = Array(repeating: Double.zero, count: shape2size(&retShape))
+        }
+        
+        
+        
+        
+        
+        
+        return Matft.concatenate([mfarr, vals], axis: ax)
+    }*/
 }
 /*
 extension Matft.mfdata{

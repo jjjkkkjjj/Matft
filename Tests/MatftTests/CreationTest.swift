@@ -8,18 +8,51 @@ final class CreationTests: XCTestCase {
         do {
             let x = MfArray([1,2,3])
             let y = MfArray([[4,5,6],[7,8,9]])
-            XCTAssertEqual(Matft.append(mfarray: x, values: y), MfArray([1,2,3,4,5,6,7,8,9]))
+            XCTAssertEqual(Matft.append(x, values: y), MfArray([1,2,3,4,5,6,7,8,9]))
         }
         
         do {
             let x = MfArray([[1,2,3],[4,5,6]])
             let y = MfArray([[7,8,9]])
-            XCTAssertEqual(Matft.append(mfarray: x, values: y, axis: 0), MfArray([[1, 2, 3],
-                                                                                    [4, 5, 6],
-                                                                                    [7, 8, 9]]))
+            XCTAssertEqual(Matft.append(x, values: y, axis: 0), MfArray([[1, 2, 3],
+                                                                        [4, 5, 6],
+                                                                        [7, 8, 9]]))
         }
     }
     
+    func testTake() {
+        do {
+            let a = Matft.arange(start: 0, to: 20, by: 1, shape: [2,2,5])
+            let b = MfArray([1,0])
+            
+            XCTAssertEqual(Matft.take(a, indices: b), MfArray([[[10, 11, 12, 13, 14],
+                                                         [15, 16, 17, 18, 19]],
+
+                                                        [[ 0,  1,  2,  3,  4],
+                                                         [ 5,  6,  7,  8,  9]]]))
+            
+            XCTAssertEqual(Matft.take(a, indices: b, axis: 1), MfArray([[[ 5,  6,  7,  8,  9],
+                                                                 [ 0,  1,  2,  3,  4]],
+
+                                                                [[15, 16, 17, 18, 19],
+                                                                 [10, 11, 12, 13, 14]]]))
+            
+            XCTAssertEqual(Matft.take(a, indices: b, axis: -1), MfArray([[[ 1,  0],
+                                                                     [ 6,  5]],
+
+                                                                    [[11, 10],
+                                                                     [16, 15]]]))
+        }
+        
+        do {
+            let a = MfArray([4, 3, 5, 7, 6, 8])
+            let b = MfArray([0,1,4])
+            XCTAssertEqual(Matft.take(a, indices: b), MfArray([4,3,6]))
+            
+            XCTAssertEqual(Matft.take(a, indices: MfArray([[0,1],[2,3]])), MfArray([[4, 3],
+                                                                                    [5, 7]]))
+        }
+    }
     
     func testDiag() {
         do{
