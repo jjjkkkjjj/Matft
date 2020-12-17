@@ -31,6 +31,11 @@ public class Matft{
     public class file{}
     
     /**
+       Interpolation
+     */
+    public class interp1d{}
+    
+    /**
        The kernel of mfarray.
     */
     //internal class mfdata{}
