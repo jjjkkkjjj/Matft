@@ -447,6 +447,16 @@ extension Matft{
         }
         return Matft.concatenate([mfarr, vals], axis: ax)
     }
+    /**
+       Append values to the end of an array.
+       - parameters:
+            - mfarrays: the array of MfArray.
+            - value: appended value
+            - axis: the axis to append
+    */
+    static public func append<T: MfTypable>(_ mfarray: MfArray, value: T, axis: Int? = nil) -> MfArray{
+        return Matft.append(mfarray, values: MfArray([value]), axis: axis)
+    }
     
     /**
        Take elements from an array along an axis.

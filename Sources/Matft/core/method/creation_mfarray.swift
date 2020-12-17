@@ -44,6 +44,15 @@ extension MfArray{
     public func append(values: MfArray, axis: Int? = nil) -> MfArray{
         return Matft.append(self, values: values, axis: axis)
     }
+    /**
+       Append values to the end of an array.
+       - parameters:
+            - value: appended value
+            - axis: the axis to append
+    */
+    public func append<T: MfTypable>(value: T, axis: Int? = nil) -> MfArray{
+        return Matft.append(self, values: MfArray([value]), axis: axis)
+    }
     
     /**
        Take elements from an array along an axis.
