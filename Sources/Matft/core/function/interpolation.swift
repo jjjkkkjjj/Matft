@@ -15,10 +15,11 @@ extension Matft.interp1d{
             - y: mfarray
             - axis: Int. Default is -1.
             - assume_sorted: Bool
+            - bc_type: Boundary condition type. Natural is supported only.
     */
-    public static func cubicSpline(x: MfArray, y: MfArray, axis: Int = -1, assume_sorted: Bool = true) -> CubicSpline{
+    public static func cubicSpline(x: MfArray, y: MfArray, axis: Int = -1, assume_sorted: Bool = true, bc_type: CubicSpline.BoundaryCondition = .natural) -> CubicSpline{
         let input = _preprocessing_interp(x, y, axis, assume_sorted)
-        var spline = CubicSpline(orig_x: input.orig_x, orig_y: input.orig_y, axis: input.axis, assume_sorted: assume_sorted)
+        var spline = CubicSpline(orig_x: input.orig_x, orig_y: input.orig_y, axis: input.axis, assume_sorted: assume_sorted, bc_type: bc_type)
         return spline.fit()
     }
 }
@@ -54,6 +55,7 @@ public struct CubicSpline: MfInterpProtocol{
     internal var orig_y: MfArray
     internal var axis: Int
     internal var assume_sorted: Bool
+    internal var bc_type: BoundaryCondition
     
     public struct CubicSplineParams: MfInterpParamsProtocol{
         let a: [Float]
@@ -68,6 +70,11 @@ public struct CubicSpline: MfInterpProtocol{
             self.c = c
             self.d = d
         }
+    }
+    
+    public enum BoundaryCondition: Int{
+        case natural
+        
     }
     
     internal mutating func fit() -> CubicSpline {

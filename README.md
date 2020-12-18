@@ -415,6 +415,7 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.hstack       | numpy.hstack      |
 | Matft.concatenate  | numpy.concatenate |
 | *Matft.append  | numpy.append |
+| *Matft.insert  | numpy.insert |
 | *Matft.take  | numpy.take |
 
 
@@ -540,6 +541,14 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.linalg.normlp_vec | scipy.linalg.norm |
 | Matft.linalg.normfro_mat | scipy.linalg.norm |
 | Matft.linalg.normnuc_mat | scipy.linalg.norm |
+
+- Interpolation
+
+Matft supports only natural cubic spline. I'll implement other boundary condition later.
+
+| Matft                            | Numpy              |
+| -------------------------------- | ----------------- |
+| Matft.interp1d.cubicSpline       | scipy.interpolation.CubicSpline |
 
 ## Performance
 
