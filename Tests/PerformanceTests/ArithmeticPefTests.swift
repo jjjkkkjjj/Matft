@@ -13,8 +13,8 @@ final class ArithmeticPefTests: XCTestCase {
                 let _ = a+b
             }
             /*
-             '-[MatftTests.ArithmeticPefTests testPefAdd1]' measured [Time, seconds] average: 0.001, relative standard deviation: 23.418%, values: [0.001707, 0.001141, 0.000999, 0.000969, 0.001029, 0.000979, 0.001031, 0.000986, 0.000963, 0.001631]
-            1.14ms
+             '-[PerformanceTests.ArithmeticPefTests testPeformanceAdd1]' measured [Time, seconds] average: 0.001, relative standard deviation: 20.535%, values: [0.001553, 0.001149, 0.000915, 0.000818, 0.000968, 0.001011, 0.000988, 0.000873, 0.000793, 0.001095]
+            1.01ms
              */
         }
     }
@@ -29,8 +29,8 @@ final class ArithmeticPefTests: XCTestCase {
                 let _ = b+c
             }
             /*
-             '-[MatftTests.ArithmeticPefTests testPefAdd2]' measured [Time, seconds] average: 0.004, relative standard deviation: 5.842%, values: [0.004680, 0.003993, 0.004159, 0.004564, 0.003955, 0.004200, 0.003998, 0.004317, 0.003919, 0.004248]
-            4.20ms
+             '-[PerformanceTests.ArithmeticPefTests testPeformanceAdd2]' measured [Time, seconds] average: 0.005, relative standard deviation: 10.173%, values: [0.006353, 0.006614, 0.005028, 0.005030, 0.005173, 0.005078, 0.005270, 0.005182, 0.005163, 0.005109]
+            5.40ms
              */
         }
     }
@@ -45,8 +45,8 @@ final class ArithmeticPefTests: XCTestCase {
                 let _ = b+c
             }
             /*
-             '-[MatftTests.ArithmeticPefTests testPefAdd3]' measured [Time, seconds] average: 0.004, relative standard deviation: 16.815%, values: [0.004906, 0.003785, 0.003702, 0.005981, 0.004261, 0.003665, 0.004083, 0.003654, 0.003836, 0.003874]
-            4.17ms
+             '-[PerformanceTests.ArithmeticPefTests testPeformanceAdd3]' measured [Time, seconds] average: 0.005, relative standard deviation: 13.939%, values: [0.007165, 0.005703, 0.005128, 0.004764, 0.004865, 0.006081, 0.005096, 0.004979, 0.004849, 0.004653],
+            5.32ms
              */
         }
     }

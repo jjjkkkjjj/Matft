@@ -13,12 +13,22 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
          <TestableReference
-            skipped = "NO">
+            skipped = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "MatftTests"
                BuildableName = "MatftTests"
                BlueprintName = "MatftTests"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "PerformanceTests"
+               BuildableName = "PerformanceTests"
+               BlueprintName = "PerformanceTests"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>
