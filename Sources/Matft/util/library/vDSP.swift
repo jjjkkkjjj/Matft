@@ -420,11 +420,11 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
     let indicesT: MfArray
     switch mfarray.storedType {
     case .Float:
-        indicesT = check_contiguous(indices.astype(.Float), .Row)
+        indicesT = indices // indices must have float raw values
     case .Double:
-        indicesT = check_contiguous(indices.astype(.Double), .Row)
+        indicesT = indices.astype(.Double)
     }
-    let mfarray = check_contiguous(mfarray, .Row)
+    //let mfarray = check_contiguous(mfarray, .Row)
     
     
     let lastShape = Array(mfarray.shape.suffix(mfarray.ndim - orig_ind_dim))
@@ -436,11 +436,16 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
         let dstptrT = dstptr.bindMemory(to: T.self, capacity: retSize)
         
         indicesT.withDataUnsafeMBPtrT(datatype: T.self){
-            [unowned indicesT](indptr) in
+            //[unowned indicesT](indptr) in
+            indptr in
             // note that indices and mfarray is row contiguous
             mfarray.withDataUnsafeMBPtrT(datatype: T.self){
                 srcptr in
-                vDSP_func(srcptr.baseAddress!, vDSP_Stride(1), indptr.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(indicesT.size))
+                
+                for vDSPPrams in OptOffsetParams_mfarray(bigger_mfarray: indicesT, smaller_mfarray: mfarray){
+                    vDSP_func(srcptr.baseAddress! + vDSPPrams.s_offset, vDSP_Stride(vDSPPrams.s_stride), indptr.baseAddress! + vDSPPrams.b_offset, vDSP_Stride(vDSPPrams.b_stride), dstptrT + vDSPPrams.b_offset, vDSP_Stride(vDSPPrams.b_stride), vDSP_Length(vDSPPrams.blocksize))
+                }
+                //vDSP_func(srcptr.baseAddress!, vDSP_Stride(1), indptr.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(indicesT.size))
             }
         }
     }

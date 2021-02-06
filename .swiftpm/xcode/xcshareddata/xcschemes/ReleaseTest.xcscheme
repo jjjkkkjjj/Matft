@@ -21,6 +21,63 @@
                BlueprintName = "MatftTests"
                ReferencedContainer = "container:">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "CollectionTests">
+               </Test>
+               <Test
+                  Identifier = "ConversionTests">
+               </Test>
+               <Test
+                  Identifier = "CreationTests">
+               </Test>
+               <Test
+                  Identifier = "FileTests">
+               </Test>
+               <Test
+                  Identifier = "InterpolationTests">
+               </Test>
+               <Test
+                  Identifier = "LinAlgTests">
+               </Test>
+               <Test
+                  Identifier = "MatMulTests">
+               </Test>
+               <Test
+                  Identifier = "MatftTests">
+               </Test>
+               <Test
+                  Identifier = "MathTests">
+               </Test>
+               <Test
+                  Identifier = "PreOpTests">
+               </Test>
+               <Test
+                  Identifier = "PrintTests">
+               </Test>
+               <Test
+                  Identifier = "ProductTests">
+               </Test>
+               <Test
+                  Identifier = "ReduceTests">
+               </Test>
+               <Test
+                  Identifier = "StackTests">
+               </Test>
+               <Test
+                  Identifier = "StatsTests">
+               </Test>
+            </SkippedTests>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "PerformanceTests"
+               BuildableName = "PerformanceTests"
+               BlueprintName = "PerformanceTests"
+               ReferencedContainer = "container:">
+            </BuildableReference>
          </TestableReference>
       </Testables>
    </TestAction>
