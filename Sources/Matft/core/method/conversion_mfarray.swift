@@ -52,6 +52,31 @@ extension MfArray{
     }
     
     /**
+       Convert MfArray to flatten swift's array.
+        - Parameters:
+            - datatype: MfTypable Type. This must be same as corresponding MfType
+        - Important:
+            If you want flatten array, use `a.flatten().data as! [T]`
+     */
+    public func toFlattenArray<T: MfTypable, R>(datatype: T.Type, _ body: (T) throws -> R) rethrows -> [R]{
+        precondition(MfType.mftype(value: T.zero) == self.mftype, "datatype must be '\(self.mftype).self', but got '\(T.self)'")
+        
+        var ret: [R] = []
+        switch self.storedType {
+        case .Float:
+            try self.withContiguousDataUnsafeMPtrT(datatype: Float.self){
+                ret.append(try body(T.from($0.pointee)))
+            }
+        case .Double:
+            try self.withContiguousDataUnsafeMPtrT(datatype: Double.self){
+                ret.append(try body(T.from($0.pointee)))
+            }
+        }
+        
+        return ret
+    }
+    
+    /**
        Create broadcasted mfarray.
        - parameters:
             - shape: shape

@@ -211,14 +211,14 @@ extension Matft.linalg{
         case .Float:
             let smax = s.max().scalar(Float.self)!
             let condition = rcond * smax
-            let spinv_array = s.scalarFlatMap(datatype: Float.self){ $0 <= condition ? Float.zero : 1/$0 }
+            let spinv_array = s.toFlattenArray(datatype: Float.self){ $0 <= condition ? Float.zero : 1/$0 }
             let spinv = MfArray(spinv_array)
             return rt.swapaxes(axis1: -1, axis2: -2) *& (spinv.expand_dims(axis: 1) * v.swapaxes(axis1: -1, axis2: -2))
             
         case .Double:
             let smax = s.max().scalar(Double.self)!
             let condition = Double(rcond) * smax
-            let spinv_array = s.scalarFlatMap(datatype: Double.self){ $0 <= condition ? Double.zero : 1/$0 }
+            let spinv_array = s.toFlattenArray(datatype: Double.self){ $0 <= condition ? Double.zero : 1/$0 }
             let spinv = MfArray(spinv_array)
             return rt.swapaxes(axis1: -1, axis2: -2) *& (spinv.expand_dims(axis: 1) * v.swapaxes(axis1: -1, axis2: -2))
         }
