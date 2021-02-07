@@ -44,6 +44,27 @@ extension MfArray{
         return self.size == 1 ? self.scalarFirst! as? T : nil
     }
     
+    /**
+       Map function for contiguous array.
+        - Parameters:
+            - datatype: MfTypable Type. This must be same as corresponding MfType
+        - Important:
+            If you want flatten array, use `a.flatten().data as! [T]`
+     */
+    /*
+    public func scalarFlatMap<T: MfTypable, R>(datatype: T.Type, _ body: (T) throws -> R) rethrows -> R{
+        switch self.storedType{
+            case .Float:
+                try self.withContiguousDataUnsafeMPtrT(datatype: Float.self){
+                    return body(T.from($0.pointee))
+                }
+            case .Double:
+                try self.withContiguousDataUnsafeMPtrT(datatype: Double.self){
+                    try body(T.from($0.pointee))
+                }
+        }
+        
+    }*/
 }
 
 

@@ -413,21 +413,14 @@ extension Matft{
            - r_scalar: right scalar conformed to MfTypable
     */
     public static func greater<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
-        /* too slow, average is 1.1s...
+        /* too slow, average is 0.03s...
         switch l_mfarray.storedType {
         case .Float:
-            let scalarF = Float.from(r_scalar)
-            let bool = l_mfarray.scalarFlatMap(datatype: T.self){ Float.from($0) < scalarF ? Float(1) : Float.zero }
-            let ret = MfArray(bool, mftype: .Bool, shape: l_mfarray.shape)
-            //ret.mfdata._mftype = .Bool
-            return ret
+            return to_Bool_ms_op(l_mfarray: l_mfarray, r_scalar: Float.from(r_scalar), op: >)
         case .Double:
-            let scalarD = Double.from(r_scalar)
-            let bool = l_mfarray.scalarFlatMap(datatype: Double.self){ $0 < scalarD ? Float(1) : Float.zero }
-            let ret = MfArray(bool, mftype: .Bool, shape: l_mfarray.shape)
-            ret.mfdata._mftype = .Bool
-            return ret
-        }*/
+            return to_Bool_ms_op(l_mfarray: l_mfarray, r_scalar: Double.from(r_scalar), op: >)
+        }
+        */
         let diff = l_mfarray - r_scalar
         return to_Bool(diff.clip(min: 0, max: nil))
     }

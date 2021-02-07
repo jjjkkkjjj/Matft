@@ -28,7 +28,56 @@ internal func to_Bool(_ mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: 
     ret.mfdata._mftype = .Bool
     return ret
 }
-
+/*
+internal func to_Bool_mm_op<U: MfStorable>(l_mfarray: MfArray, r_mfarray: MfArray, op: (U, U) -> Bool) -> MfArray{
+    assert(l_mfarray.shape == r_mfarray.shape, "call biop_broadcast_to first!")
+    var retShape = l_mfarray.shape
+    var i = 0
+    let newdata = withDummyDataMRPtr(.Bool, storedSize: l_mfarray.size){
+        dstptr in
+        let dstptrT = dstptr.bindMemory(to: Float.self, capacity: l_mfarray.size)
+        withDataMBPtr_multi(datatype: U.self, l_mfarray, r_mfarray){
+            lptr, rptr in
+            var val = op(lptr.baseAddress!.pointee, rptr.baseAddress!.pointee) ? Float(1) : Float.zero
+            (dstptrT + i).assign(from: &val, count: 1)
+            i += 1
+        }
+    }
+    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+    
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+}
+internal func to_Bool_ms_op<U: MfStorable>(l_mfarray: MfArray, r_scalar: U, op: (U, U) -> Bool) -> MfArray{
+    let r_scalar = Float.from(r_scalar)
+    let ret = l_mfarray.astype(.Float)
+    ret.withDataUnsafeMBPtrT(datatype: Float.self){
+        [unowned ret] (dataptr) in
+        var newptr = dataptr.map{ $0 > r_scalar ? Float.zero : Float(1) }
+        newptr.withUnsafeMutableBufferPointer{
+            dataptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: ret.storedSize)
+        }
+    }
+    ret.mfdata._mftype = .Bool
+    return ret
+}
+internal func to_Bool_sm_op<U: MfStorable>(l_scalar: U, r_mfarray: MfArray, op: (U, U) -> Bool) -> MfArray{
+    var retShape = r_mfarray.shape
+    var i = 0
+    let newdata = withDummyDataMRPtr(.Bool, storedSize: r_mfarray.size){
+        dstptr in
+        let dstptrT = dstptr.bindMemory(to: Float.self, capacity: r_mfarray.size)
+        r_mfarray.withContiguousDataUnsafeMPtrT(datatype: U.self){
+            rptr in
+            var val = op(l_scalar, rptr.pointee) ? Float(1) : Float.zero
+            (dstptrT + i).assign(from: &val, count: 1)
+            i += 1
+        }
+    }
+    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+    
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+}
+*/
 /**
    - Important: this function creates copy bool mfarray, not view!
  */

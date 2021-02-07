@@ -140,3 +140,20 @@ internal func withDataMBPtr_multi<T, R>(datatype: T.Type, _ a: MfArray, _ b: MfA
         }
     }
 }
+
+internal func withContiguousDataUnsafeMPtrT_multi<T>(datatype: T.Type, _ a: MfArray, _ b: MfArray, _ body: (UnsafeMutablePointer<T>, UnsafeMutablePointer<T>) throws -> Void) rethrows -> Void{
+    assert(a.size == b.size, "must have same size. call biop_broadcast_to first.")
+    var a_shape = a.shape
+    var a_strides = a.strides
+    var b_shape = b.shape
+    var b_strides = b.strides
+    try a.withDataUnsafeMBPtrT(datatype: T.self){
+        a_ptr in
+        try b.withDataUnsafeMBPtrT(datatype: T.self){
+            b_ptr in
+            for (a_ind, b_ind) in zip(FlattenIndSequence(shape: &a_shape, strides: &a_strides), FlattenIndSequence(shape: &b_shape, strides: &b_strides)){
+                try body(a_ptr.baseAddress! + a_ind.flattenIndex, b_ptr.baseAddress! + b_ind.flattenIndex)
+            }
+        }
+    }
+}
