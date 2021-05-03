@@ -20,19 +20,46 @@ extension MfArray{
             flattenIndex += strides[axis] >= 0 ? 0 : -strides[axis]*shape[axis] + strides[axis]
         }
         
+        func _T2U2Any<T: BinaryFloatingPoint>(_ type: T.Type) -> AnyObject{
+            let valueT = self.withDataUnsafeMBPtrT(datatype: T.self){
+                dataptr in
+                dataptr[flattenIndex]
+            }
+            switch self.mftype {
+                case .Int8:
+                    return Int8(exactly: valueT) as AnyObject
+                case .Int16:
+                    return Int16(exactly: valueT) as AnyObject
+                case .Int32:
+                    return Int32(exactly: valueT) as AnyObject
+                case .Int64:
+                    return Int64(exactly: valueT) as AnyObject
+                case .Int:
+                    return Int(exactly: valueT) as AnyObject
+                case .UInt8:
+                    return UInt8(exactly: valueT) as AnyObject
+                case .UInt16:
+                    return UInt16(exactly: valueT) as AnyObject
+                case .UInt32:
+                    return UInt32(exactly: valueT) as AnyObject
+                case .UInt64:
+                    return UInt64(exactly: valueT) as AnyObject
+                case .UInt:
+                    return UInt(exactly: valueT) as AnyObject
+                case .Float:
+                    return Float(exactly: valueT) as AnyObject
+                case .Double:
+                    return Double(exactly: valueT) as AnyObject
+                default:
+                    fatalError("Unexpected type was detected")
+            }
+        }
+        
         switch self.storedType {
         case .Float:
-            let valueF = self.withDataUnsafeMBPtrT(datatype: Float.self){
-                dataptr in
-                dataptr[flattenIndex]
-            }
-            return _T2U2Any(valueF, mftype: self.mftype)
+            return _T2U2Any(Float.self)
         case .Double:
-            let valueD = self.withDataUnsafeMBPtrT(datatype: Double.self){
-                dataptr in
-                dataptr[flattenIndex]
-            }
-            return _T2U2Any(valueD, mftype: self.mftype)
+            return _T2U2Any(Double.self)
         }
     }
     
@@ -65,36 +92,4 @@ extension MfArray{
         }
         
     }*/
-}
-
-
-fileprivate func _T2U2Any<T: BinaryFloatingPoint>(_ value: T, mftype: MfType) -> AnyObject{
-    switch mftype {
-        case .Int8:
-            return Int8(exactly: value) as AnyObject
-        case .Int16:
-            return Int16(exactly: value) as AnyObject
-        case .Int32:
-            return Int32(exactly: value) as AnyObject
-        case .Int64:
-            return Int64(exactly: value) as AnyObject
-        case .Int:
-            return Int(exactly: value) as AnyObject
-        case .UInt8:
-            return UInt8(exactly: value) as AnyObject
-        case .UInt16:
-            return UInt16(exactly: value) as AnyObject
-        case .UInt32:
-            return UInt32(exactly: value) as AnyObject
-        case .UInt64:
-            return UInt64(exactly: value) as AnyObject
-        case .UInt:
-            return UInt(exactly: value) as AnyObject
-        case .Float:
-            return Float(exactly: value) as AnyObject
-        case .Double:
-            return Double(exactly: value) as AnyObject
-        default:
-            fatalError("Unexpected type was detected")
-    }
 }

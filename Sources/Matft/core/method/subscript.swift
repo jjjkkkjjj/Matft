@@ -229,21 +229,19 @@ extension MfArray: MfSubscriptable{
         }
         //TODO: refactor
         if (array.size == newValue.size && array.size == 1){
+            func _setscalar<T: MfStorable>(_ type: T.Type){
+                array.withDataUnsafeMBPtrT(datatype: T.self){
+                    dstptr in
+                    newValue.withDataUnsafeMBPtrT(datatype: T.self){
+                        dstptr.baseAddress!.pointee = $0.baseAddress!.pointee
+                    }
+                }
+            }
             switch array.storedType {
             case .Float:
-                array.withDataUnsafeMBPtrT(datatype: Float.self){
-                    dstptr in
-                    newValue.withDataUnsafeMBPtrT(datatype: Float.self){
-                        dstptr.baseAddress!.pointee = $0.baseAddress!.pointee
-                    }
-                }
+                _setscalar(Float.self)
             case .Double:
-                array.withDataUnsafeMBPtrT(datatype: Double.self){
-                    dstptr in
-                    newValue.withDataUnsafeMBPtrT(datatype: Double.self){
-                        dstptr.baseAddress!.pointee = $0.baseAddress!.pointee
-                    }
-                }
+                _setscalar(Double.self)
             }
             return
         }

@@ -65,24 +65,19 @@ extension Matft.linalg{
         }
                 
         let returnedType = StoredType.priority(coef.storedType, b.storedType)
-        
+        func _solve<T: MfStorable>(_ mftype: MfType, _ lapack_func: lapack_solve<T>) throws -> MfArray{
+            let coefT = coef.astype(mftype) //even if original one is float, create copy
+            let bT = b.astype(mftype)
+            
+            return try solve_by_lapack(coefT, bT, coefShape[0], dstColNum, lapack_func)
+        }
 
         switch returnedType{
         case .Float:
-            let coefF = coef.astype(.Float) //even if original one is float, create copy
-            let bF = b.astype(.Float)
-            
-            let ret = try solve_by_lapack(coefF, bF, coefShape[0], dstColNum, sgesv_)
-            
-            return ret
+            return try _solve(.Float, sgesv_)
             
         case .Double:
-            let coefD = coef.astype(.Double) //even if original one is float, create copy
-            let bD = b.astype(.Double) //even if original one is float, create copy
-            
-            let ret = try solve_by_lapack(coefD, bD, coefShape[0], dstColNum, dgesv_)
-            
-            return ret
+            return try _solve(.Double, dgesv_)
         }
     }
     
@@ -207,20 +202,19 @@ extension Matft.linalg{
         // rt.shape = (...,Y,M)
         let (v, s, rt) = try Matft.linalg.svd(mfarray, full_matrices: false)
         
+        func _pinv<T: MfStorable>(_ type: T.Type) -> MfArray{
+            let smax = s.max().scalar(T.self)!
+            let condition = T.from(rcond) * smax
+            let spinv_array = s.toFlattenArray(datatype: T.self){ $0 <= condition ? T.zero : 1/$0 }
+            let spinv = MfArray(spinv_array)
+            return rt.swapaxes(axis1: -1, axis2: -2) *& (spinv.expand_dims(axis: 1) * v.swapaxes(axis1: -1, axis2: -2))
+        }
         switch mfarray.storedType {
         case .Float:
-            let smax = s.max().scalar(Float.self)!
-            let condition = rcond * smax
-            let spinv_array = s.toFlattenArray(datatype: Float.self){ $0 <= condition ? Float.zero : 1/$0 }
-            let spinv = MfArray(spinv_array)
-            return rt.swapaxes(axis1: -1, axis2: -2) *& (spinv.expand_dims(axis: 1) * v.swapaxes(axis1: -1, axis2: -2))
+            return _pinv(Float.self)
             
         case .Double:
-            let smax = s.max().scalar(Double.self)!
-            let condition = Double(rcond) * smax
-            let spinv_array = s.toFlattenArray(datatype: Double.self){ $0 <= condition ? Double.zero : 1/$0 }
-            let spinv = MfArray(spinv_array)
-            return rt.swapaxes(axis1: -1, axis2: -2) *& (spinv.expand_dims(axis: 1) * v.swapaxes(axis1: -1, axis2: -2))
+            return _pinv(Double.self)
         }
         
         

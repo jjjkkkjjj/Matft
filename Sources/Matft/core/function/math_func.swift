@@ -512,27 +512,22 @@ extension Matft.math{//use vDSP
     */
     public static func sign(_ mfarray: MfArray) -> MfArray{
         let ret = mfarray.deepcopy()
+        func _sign<T: MfStorable>(low: T, high: T) -> MfArray{
+            ret.withContiguousDataUnsafeMPtrT(datatype: T.self){
+                if $0.pointee > .zero{
+                    $0.pointee = high
+                }
+                else if $0.pointee < .zero{
+                    $0.pointee = low
+                }
+            }
+            return ret
+        }
         switch mfarray.storedType {
         case .Float:
-            ret.withContiguousDataUnsafeMPtrT(datatype: Float.self){
-                if $0.pointee > .zero{
-                    $0.pointee = Float.num(1)
-                }
-                else if $0.pointee < .zero{
-                    $0.pointee = -Float.num(1)
-                }
-            }
-            return ret
+            return _sign(low: Float(-1), high: Float(1))
         case .Double:
-            ret.withContiguousDataUnsafeMPtrT(datatype: Double.self){
-                if $0.pointee > .zero{
-                    $0.pointee = Double.num(1)
-                }
-                else if $0.pointee < .zero{
-                    $0.pointee = -Double.num(1)
-                }
-            }
-            return ret
+            return _sign(low: Double(-1), high: Double(1))
         }
     }
 }

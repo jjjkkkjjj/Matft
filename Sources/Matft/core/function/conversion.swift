@@ -38,28 +38,24 @@ extension Matft{
         }
         newmfstructure = copy_mfstructure(mfarray.mfstructure)
         
+        func _T2U<T: MfStorable, U: MfStorable>(_ vDSP_func: vDSP_convert_func<T, U>) -> MfArray{
+            let newdata = withDummyDataMRPtr(mftype, storedSize: mfarray.storedSize){
+                let dstptr = $0.bindMemory(to:  U.self, capacity: mfarray.storedSize)
+                mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+                    [unowned mfarray] in
+                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_func, mfarray.storedSize)
+                }
+            }
+            
+            return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+        }
+        
         switch newStoredType{
         case .Float://double to float
-            let newdata = withDummyDataMRPtr(mftype, storedSize: mfarray.storedSize){
-                let dstptr = $0.bindMemory(to:  Float.self, capacity: mfarray.storedSize)
-                mfarray.withDataUnsafeMBPtrT(datatype: Double.self){
-                    [unowned mfarray] in
-                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vdpsp, mfarray.storedSize)
-                }
-            }
-            
-            return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+            return _T2U(vDSP_vdpsp)
             
         case .Double://float to double
-            let newdata = withDummyDataMRPtr(mftype, storedSize: mfarray.storedSize){
-                let dstptr = $0.bindMemory(to:  Double.self, capacity: mfarray.storedSize)
-                mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
-                    [unowned mfarray] in
-                     unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vspdp, mfarray.storedSize)
-                }
-            }
-            
-            return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+            return _T2U(vDSP_vspdp)
         }
     }
     /**
@@ -377,15 +373,17 @@ extension Matft{
             - max: (optional) Maximum value. If nil is passed, handled as inf
     */
     public static func clip<T: MfTypable>(_ mfarray: MfArray, min: T? = nil, max: T? = nil) -> MfArray{
+        func _clip<T: MfStorable>(_ vDSP_func: vDSP_clip_func<T>) -> MfArray{
+            let min = min == nil ? -T.infinity : T.from(min!)
+            let max = max == nil ? T.infinity : T.from(max!)
+            return clip_by_vDSP(mfarray, min, max, vDSP_func)
+        }
+        
         switch mfarray.storedType {
         case .Float:
-            let min = min == nil ? -Float.infinity : Float.from(min!)
-            let max = max == nil ? Float.infinity : Float.from(max!)
-            return clip_by_vDSP(mfarray, min, max, vDSP_vclipc)
+           return  _clip(vDSP_vclipc)
         case .Double:
-            let min = min == nil ? -Double.infinity : Double.from(min!)
-            let max = max == nil ? Double.infinity : Double.from(max!)
-            return clip_by_vDSP(mfarray, min, max, vDSP_vclipcD)
+            return _clip(vDSP_vclipcD)
         }
     }
     

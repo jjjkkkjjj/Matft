@@ -70,15 +70,16 @@ public class MfData{
     
     deinit {
         if !self._isView{
+            func _deallocate<T: MfStorable>(_ type: T.Type){
+                let dataptr = self._data.bindMemory(to: T.self, capacity: self._storedSize)
+                dataptr.deinitialize(count: self._storedSize)
+                dataptr.deallocate()
+            }
             switch self._storedType {
             case .Float:
-                let dataptr = self._data.bindMemory(to: Float.self, capacity: self._storedSize)
-                dataptr.deinitialize(count: self._storedSize)
-                dataptr.deallocate()
+                _deallocate(Float.self)
             case .Double:
-                let dataptr = self._data.bindMemory(to: Double.self, capacity: self._storedSize)
-                dataptr.deinitialize(count: self._storedSize)
-                dataptr.deallocate()
+                _deallocate(Double.self)
             }
             //self._data.deallocate()
         }
