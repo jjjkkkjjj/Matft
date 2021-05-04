@@ -505,3 +505,17 @@ internal func fancy1dgetcol_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices
     let newmfstructure = copy_mfstructure(indices.mfstructure)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
+
+
+internal typealias vDSP_vlim_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+internal func lim_by_vDSP<T: MfStorable>(_ mfarray: MfArray, point: T, to: T, _ vDSP_func: vDSP_vlim_func<T>){
+    let mfarray = check_contiguous(mfarray)
+    var point = point
+    var to = to
+    
+    mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        [unowned mfarray] dataptr in
+        vDSP_func(dataptr.baseAddress!, vDSP_Stride(1), &point, &to, dataptr.baseAddress!, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
+    }
+}
