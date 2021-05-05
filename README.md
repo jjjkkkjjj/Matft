@@ -553,94 +553,68 @@ Matft supports only natural cubic spline. I'll implement other boundary conditio
 
 ## Performance
 
-I use ``Accelerate``, so all of MfArray operation may keep high performance.
+I use `Accelerate` framework, so all of MfArray operation may keep high performance.
 
 ```swift
-func testPefAdd1() {
-        do{
-            let a = Matft.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
-            let b = Matft.arange(start: 0, to: -10*10*10*10*10*10, by: -1, shape: [10,10,10,10,10,10])
-            
-            self.measure {
-                let _ = a+b
-            }
-            /*
-             '-[MatftTests.ArithmeticPefTests testPefAdd1]' measured [Time, seconds] average: 0.001, relative standard deviation: 23.418%, values: [0.001707, 0.001141, 0.000999, 0.000969, 0.001029, 0.000979, 0.001031, 0.000986, 0.000963, 0.001631]
-            1.14ms
-             */
-        }
-    }
-    
-    func testPefAdd2(){
-        do{
-            let a = Matft.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
-            let b = a.transpose(axes: [0,3,4,2,1,5])
-            let c = a.T
-            
-            self.measure {
-                let _ = b+c
-            }
-            /*
-             '-[MatftTests.ArithmeticPefTests testPefAdd2]' measured [Time, seconds] average: 0.004, relative standard deviation: 5.842%, values: [0.004680, 0.003993, 0.004159, 0.004564, 0.003955, 0.004200, 0.003998, 0.004317, 0.003919, 0.004248]
-            4.20ms
-             */
-        }
-    }
-
-    func testPefAdd3(){
-        do{
-            let a = Matft.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
-            let b = a.transpose(axes: [1,2,3,4,5,0])
-            let c = a.T
-            
-            self.measure {
-                let _ = b+c
-            }
-            /*
-             '-[MatftTests.ArithmeticPefTests testPefAdd3]' measured [Time, seconds] average: 0.004, relative standard deviation: 16.815%, values: [0.004906, 0.003785, 0.003702, 0.005981, 0.004261, 0.003665, 0.004083, 0.003654, 0.003836, 0.003874]
-            4.17ms
-             */
-        }
+let a = Matft.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
+let aneg = Matft.arange(start: 0, to: -10*10*10*10*10*10, by: -1, shape: [10,10,10,10,10,10])
+let aT = a.T
+let b = a.transpose(axes: [0,3,4,2,1,5])
+let c = a.transpose(axes: [1,2,3,4,5,0])
+let posb = a > 0
 ```
+
+```python
+import numpy as np
+
+a = np.arange(10**6).reshape((10,10,10,10,10,10))
+aneg = np.arange(0, -10**6, -1).reshape((10,10,10,10,10,10))
+aT = a.T
+b = a.transpose((0,3,4,2,1,5))
+c = a.transpose((1,2,3,4,5,0))
+posb = a > 0
+```
+
+- Arithmetic test
+
+| Matft                          |     time               | Numpy            |   time               |
+| ------------------------ | ----------------- | ----------------- |----------------- |
+|   `let _ = a+aneg`   |    `863μs`         |     `a+aneg`    |   `1.04ms`         |
+|   `let _ = b+aT`   |    `4.47ms`         |     `b+aT`    |   `4.31ms`         |
+|   `let _ = c+aT`   |    `5.30ms`         |     `c+aT`    |   `2.92ms`         |
+
+- Math test
+
+| Matft                          |     time               | Numpy            |   time               |
+| ------------------------ | ----------------- | ----------------- |----------------- |
+|   `let _ = Matft.math.sin(a)`   |    `1.80ms`         |     `np.sin(a)`    |   `14.7ms`         |
+|   `let _ = Matft.math.sin(b)`   |    `8.24ms`         |     `np.sin(b)`    |   `15.8ms`         |
+|   `let _ = Matft.math.sign(a)`   |    `30.4ms`         |     `np.sign(a)`    |   `1.37ms`         |
+|   `let _ = Matft.math.sign(b)`   |    `35.6ms`         |     `np.sign(b)`    |   `1.42ms`         |
+
+- Bool test
+
+| Matft                          |     time               | Numpy            |   time               |
+| ------------------------ | ----------------- | ----------------- |----------------- |
+|   `let _ = a > 0`   |    `7.27ms`         |     `a > 0`    |   `855μs`         |
+|   `let _ = a > b`   |    `13.3ms`         |     `a > b`    |   `1.83ms`         |
+|   `let _ = a === 0`   |    `9.91ms`         |     `a == 0`    |   `603μs`         |
+|   `let _ = a === b`   |    `22.3ms`         |     `a == b`    |   `1.78ms`         |
+
+- Indexing test
+
+| Matft                          |     time               | Numpy            |   time               |
+| ------------------------ | ----------------- | ----------------- |----------------- |
+|   `let _ = a[posb]`   |    `1.07ms`         |     `a[posb]`    |   `1.29ms`         |
+
+
 Matft achieved almost same performance as Numpy!!!
 
 ※Swift's performance test was conducted in release mode
 
-My codes have several overhead and redundant part so this performance could be better than now.
+However, as you can see the above table, Matft's boolean operation is toooooooo slow...([Issue #18](https://github.com/jjjkkkjjj/Matft/issues/18))
 
-```python
-import numpy as np
-#import timeit
-
-a = np.arange(10**6).reshape((10,10,10,10,10,10))
-b = np.arange(0, -10**6, -1).reshape((10,10,10,10,10,10))
-
-#timeit.timeit("b+c", repeat=10, globals=globals())
-%timeit -n 10 a+b
-"""
-962 µs ± 273 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
-"""
-
-a = np.arange(10**6).reshape((10,10,10,10,10,10))
-b = a.transpose((0,3,4,2,1,5))
-c = a.T
-#timeit.timeit("b+c", repeat=10, globals=globals())
-%timeit -n 10 b+c
-"""
-5.68 ms ± 1.45 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
-"""
-
-a = np.arange(10**6).reshape((10,10,10,10,10,10))
-b = a.transpose((1,2,3,4,5,0))
-c = a.T
-#timeit.timeit("b+c", repeat=10, globals=globals())
-%timeit -n 10 b+c
-"""
-3.92 ms ± 897 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
-"""
-```
-
-
+So, a pull request is very welcome!!
 
 ## Installation
 
@@ -686,5 +660,3 @@ c = a.T
   ```bash
   pod install
   ```
-
-  

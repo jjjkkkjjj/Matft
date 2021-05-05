@@ -7,14 +7,14 @@ final class ArithmeticPefTests: XCTestCase {
     func testPeformanceAdd1() {
         do{
             let a = Matft.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
-            let b = Matft.arange(start: 0, to: -10*10*10*10*10*10, by: -1, shape: [10,10,10,10,10,10])
+            let aneg = Matft.arange(start: 0, to: -10*10*10*10*10*10, by: -1, shape: [10,10,10,10,10,10])
             
             self.measure {
-                let _ = a+b
+                let _ = a+aneg
             }
             /*
-             '-[MatftTests.ArithmeticPefTests testPefAdd1]' measured [Time, seconds] average: 0.001, relative standard deviation: 23.418%, values: [0.001707, 0.001141, 0.000999, 0.000969, 0.001029, 0.000979, 0.001031, 0.000986, 0.000963, 0.001631]
-            1.14ms
+             '-[MatftTests.ArithmeticPefTests testPefAdd1]' measured [Time, seconds] average: 0.001, relative standard deviation: 28.260%, values: [0.001494, 0.000943, 0.000886, 0.000997, 0.000728, 0.000799, 0.000710, 0.000830, 0.000708, 0.000543]
+            863μs
              */
         }
     }
@@ -22,15 +22,15 @@ final class ArithmeticPefTests: XCTestCase {
     func testPeformanceAdd2(){
         do{
             let a = Matft.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
+            let aT = a.T
             let b = a.transpose(axes: [0,3,4,2,1,5])
-            let c = a.T
             
             self.measure {
-                let _ = b+c
+                let _ = b+aT
             }
             /*
-             '-[MatftTests.ArithmeticPefTests testPefAdd2]' measured [Time, seconds] average: 0.004, relative standard deviation: 5.842%, values: [0.004680, 0.003993, 0.004159, 0.004564, 0.003955, 0.004200, 0.003998, 0.004317, 0.003919, 0.004248]
-            4.20ms
+             '-[MatftTests.ArithmeticPefTests testPefAdd2]' measured [Time, seconds] average: 0.004, relative standard deviation: 16.601%, values: [0.005048, 0.004253, 0.004364, 0.004945, 0.003621, 0.003685, 0.003902, 0.005843, 0.005326, 0.003692],
+            4.47ms
              */
         }
     }
@@ -38,15 +38,15 @@ final class ArithmeticPefTests: XCTestCase {
     func testPeformanceAdd3(){
         do{
             let a = Matft.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
-            let b = a.transpose(axes: [1,2,3,4,5,0])
-            let c = a.T
+            let aT = a.T
+            let c = a.transpose(axes: [1,2,3,4,5,0])
             
             self.measure {
-                let _ = b+c
+                let _ = c+aT
             }
             /*
-             '-[MatftTests.ArithmeticPefTests testPefAdd3]' measured [Time, seconds] average: 0.004, relative standard deviation: 16.815%, values: [0.004906, 0.003785, 0.003702, 0.005981, 0.004261, 0.003665, 0.004083, 0.003654, 0.003836, 0.003874]
-            4.17ms
+             average: 0.005, relative standard deviation: 17.583%, values: [0.007990, 0.005514, 0.004973, 0.004960, 0.004900, 0.004848, 0.005003, 0.005239, 0.005113, 0.004468]
+            5.30ms
              */
         }
     }
