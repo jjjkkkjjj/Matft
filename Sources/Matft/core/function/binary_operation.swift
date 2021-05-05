@@ -405,6 +405,13 @@ extension Matft{
     public static func greater(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         let diff = l_mfarray - r_mfarray
         return to_Bool(diff.clip(min: 0, max: nil))
+        /*
+        switch diff.storedType{
+        case .Float:
+            return _greater(l_mfarray: diff, val: Float.from(0))
+        case .Double:
+            return _greater(l_mfarray: diff, val: Double.from(0))
+        }*/
     }
     /**
         Check left scalar is greater than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
@@ -413,16 +420,15 @@ extension Matft{
            - r_scalar: right scalar conformed to MfTypable
     */
     public static func greater<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
-        /* too slow, average is 0.03s...
-        switch l_mfarray.storedType {
-        case .Float:
-            return to_Bool_ms_op(l_mfarray: l_mfarray, r_scalar: Float.from(r_scalar), op: >)
-        case .Double:
-            return to_Bool_ms_op(l_mfarray: l_mfarray, r_scalar: Double.from(r_scalar), op: >)
-        }
-        */
         let diff = l_mfarray - r_scalar
         return to_Bool(diff.clip(min: 0, max: nil))
+        /*
+        switch l_mfarray.storedType {
+        case .Float:
+            return _greater(l_mfarray: l_mfarray, val: Float.from(r_scalar))
+        case .Double:
+            return _greater(l_mfarray: l_mfarray, val: Double.from(r_scalar))
+        }*/
     }
     /**
         Check left scalar is greater than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
@@ -766,4 +772,22 @@ fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray,
         }
     }
     
+}
+
+// using argument like op: (T, T) -> Bool is too slow...
+fileprivate func _greater<T: MfStorable>(l_mfarray: MfArray, val: T) -> MfArray{
+    let newdata = withDummyDataMRPtr(.Bool, storedSize: l_mfarray.storedSize){
+        dstptr in
+        let dstptrT = dstptr.bindMemory(to: Float.self, capacity: l_mfarray.storedSize)
+        l_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            [unowned l_mfarray] ptr in
+            var retarr = ptr.map{ $0 > val ? Float.num(1) : Float.zero}
+            retarr.withUnsafeMutableBufferPointer{
+                dstptrT.moveAssign(from: $0.baseAddress!, count: l_mfarray.storedSize)
+            }
+        }
+    }
+    
+    let newmfstructure = copy_mfstructure(l_mfarray.mfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }

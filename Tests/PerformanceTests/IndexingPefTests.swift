@@ -12,8 +12,8 @@ final class IndexingPefTests: XCTestCase {
                 let _ = a[a>0]
             }
             /*
-             '-[PerformanceTests.IndexingPefTests testPeformanceBooleanIndexing1]' measured [Time, seconds] average: 0.005, relative standard deviation: 37.720%, values: [0.010294, 0.004666, 0.004402, 0.004150, 0.004102, 0.004048, 0.004186, 0.004013, 0.004319, 0.004240]
-            4.84ms
+             '-[PerformanceTests.IndexingPefTests testPeformanceBooleanIndexing1]' measured [Time, seconds] average: 0.003, relative standard deviation: 36.534%, values: [0.006049, 0.003468, 0.002757, 0.002517, 0.002827, 0.002821, 0.002513, 0.002312, 0.002275, 0.002172]
+            2.97ms
              */
         }
     }
