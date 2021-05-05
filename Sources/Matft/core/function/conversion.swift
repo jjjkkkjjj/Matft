@@ -373,7 +373,7 @@ extension Matft{
             - max: (optional) Maximum value. If nil is passed, handled as inf
     */
     public static func clip<T: MfTypable>(_ mfarray: MfArray, min: T? = nil, max: T? = nil) -> MfArray{
-        func _clip<T: MfStorable>(_ vDSP_func: vDSP_clip_func<T>) -> MfArray{
+        func _clip<T: MfStorable>(_ vDSP_func: vDSP_clipcount_func<T>) -> MfArray{
             let min = min == nil ? -T.infinity : T.from(min!)
             let max = max == nil ? T.infinity : T.from(max!)
             return clip_by_vDSP(mfarray, min, max, vDSP_func)

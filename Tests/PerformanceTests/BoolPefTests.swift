@@ -19,8 +19,8 @@ final class BoolPefTests: XCTestCase {
                 let _ = a > 0
             }
             /*
-             average: 0.007, relative standard deviation: 42.315%, values: [0.015937, 0.005105, 0.005490, 0.006968, 0.006461, 0.005805, 0.006472, 0.005748, 0.009101, 0.005661]
-            7.27ms
+             average: 0.005, relative standard deviation: 29.541%, values: [0.010153, 0.005457, 0.004667, 0.004294, 0.004840, 0.004900, 0.004404, 0.004938, 0.005424, 0.005643]
+            5.47ms
              */
         }
     }

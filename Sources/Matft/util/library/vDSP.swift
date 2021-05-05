@@ -339,8 +339,8 @@ internal func sort_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int,
     
 }
 
-internal typealias vDSP_clip_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length, UnsafeMutablePointer<vDSP_Length>, UnsafeMutablePointer<vDSP_Length>) -> Void
-fileprivate func _run_clip<T: MfStorable>(_ srcptr: UnsafePointer<T>, dstptr: UnsafeMutablePointer<T>, count: Int, _ min: T, _ max: T, _ vDSP_func: vDSP_clip_func<T>){
+internal typealias vDSP_clipcount_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length, UnsafeMutablePointer<vDSP_Length>, UnsafeMutablePointer<vDSP_Length>) -> Void
+fileprivate func _run_clip<T: MfStorable>(_ srcptr: UnsafePointer<T>, dstptr: UnsafeMutablePointer<T>, count: Int, _ min: T, _ max: T, _ vDSP_func: vDSP_clipcount_func<T>){
     var min = min
     var max = max
     
@@ -349,7 +349,7 @@ fileprivate func _run_clip<T: MfStorable>(_ srcptr: UnsafePointer<T>, dstptr: Un
     
     vDSP_func(srcptr, vDSP_Stride(1), &min, &max, dstptr, vDSP_Stride(1), vDSP_Length(count), &mincount, &maxcount)
 }
-internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ min: T, _ max: T, _ vDSP_func: vDSP_clip_func<T>) -> MfArray{
+internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ min: T, _ max: T, _ vDSP_func: vDSP_clipcount_func<T>) -> MfArray{
     //return mfarray must be either row or column major
     var mfarray = mfarray
     //print(mfarray)
@@ -369,6 +369,63 @@ internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ min: T, _ max: T
     let newmfstructure = copy_mfstructure(mfarray.mfstructure)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
+
+/*
+internal typealias vDSP_venvlp_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+internal typealias vDSP_clip_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>,  UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, low: T, high: T){
+    var low = low
+    var high = high
+    
+    let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.storedSize){
+        dstptr in
+        let dstptrT = dstptr.bindMemory(to: T.self, capacity: mfarray.storedSize)
+        mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            [unowned mfarray] in
+            // if low <=
+            vDSP_venvlp_func(&high, vDSP_Stride(0), &low, vDSP_Stride(0), $0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
+        }
+    }
+    
+    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    
+    vDSP_venvlp(<#T##__A: UnsafePointer<Float>##UnsafePointer<Float>#>, <#T##__IA: vDSP_Stride##vDSP_Stride#>, <#T##__B: UnsafePointer<Float>##UnsafePointer<Float>#>, <#T##__IB: vDSP_Stride##vDSP_Stride#>, <#T##__C: UnsafePointer<Float>##UnsafePointer<Float>#>, <#T##__IC: vDSP_Stride##vDSP_Stride#>, <#T##__D: UnsafeMutablePointer<Float>##UnsafeMutablePointer<Float>#>, <#T##__ID: vDSP_Stride##vDSP_Stride#>, <#T##__N: vDSP_Length##vDSP_Length#>)
+    vDSP_vclip(<#T##__A: UnsafePointer<Float>##UnsafePointer<Float>#>, <#T##__IA: vDSP_Stride##vDSP_Stride#>, <#T##__B: UnsafePointer<Float>##UnsafePointer<Float>#>, <#T##__C: UnsafePointer<Float>##UnsafePointer<Float>#>, <#T##__D: UnsafeMutablePointer<Float>##UnsafeMutablePointer<Float>#>, <#T##__ID: vDSP_Stride##vDSP_Stride#>, <#T##__N: vDSP_Length##vDSP_Length#>)
+}*/
+
+internal typealias vDSP_vminmg_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+internal typealias vDSP_vthres_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+internal func toBool_by_vDSP(_ mfarray: MfArray) -> MfArray{
+    assert(mfarray.storedType == .Float, "Must be bool")
+    
+    let size = mfarray.storedSize
+    let newdata = withDummyDataMRPtr(.Bool, storedSize: size){
+        dstptr in
+        let dstptrT = dstptr.bindMemory(to: Float.self, capacity: size)
+        mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+            srcptr in
+            var zero = Float.zero
+            var one = Float.from(1)
+            // if |src| <= 1  => dst = |src|
+            //    |src| > 1   => dst = 1
+            // Note that the 0<= dst <= 1
+            vDSP_vminmg(srcptr.baseAddress!, vDSP_Stride(1), &one, vDSP_Stride(0), dstptrT, vDSP_Stride(1), vDSP_Length(size))
+            
+            one = Float.from(1)
+            // if src <= 0, 1 <= src   => dst = src
+            //    0 < src <= 1         => dst = 1
+            vDSP_viclip(dstptrT, vDSP_Stride(1), &zero, &one, dstptrT, vDSP_Stride(1), vDSP_Length(size))
+            //vDSP_vthres(dstptrT, vDSP_Stride(1), &one, dstptrT, vDSP_Stride(1), vDSP_Length(size))
+        }
+    }
+    
+    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+}
+
 // generate(arange)
 /*
 internal typealias vDSP_arange_func<T> = (UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void

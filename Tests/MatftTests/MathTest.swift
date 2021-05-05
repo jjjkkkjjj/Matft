@@ -26,8 +26,8 @@ final class MathTests: XCTestCase {
                              [3, 1, 4, -5]], mftype: .Float)
 
             let aret = MfArray([[1.4142135, 1.0        ,    -Float.nan, 0.0        ],
-                                [1.732050, 1.0        , 2.0        ,     -Float.nan]], mftype: .Float)
-            let aTret = MfArray([[1.4142135, 1.732050],
+                                [1.7320508, 1.0        , 2.0        ,     -Float.nan]], mftype: .Float)
+            let aTret = MfArray([[1.4142135, 1.7320508],
                                  [1.0        , 1.0        ],
                                  [   -Float.nan, 2.0        ],
                                  [0.0        ,    -Float.nan]], mftype: .Float)
