@@ -775,7 +775,7 @@ fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray,
 }
 
 // using argument like op: (T, T) -> Bool is too slow...
-fileprivate func _greater<T: MfStorable>(l_mfarray: MfArray, val: T) -> MfArray{
+fileprivate func _greater<T: MfStoredAcceleratable>(l_mfarray: MfArray, val: T) -> MfArray{
     let newdata = withDummyDataMRPtr(.Bool, storedSize: l_mfarray.storedSize){
         dstptr in
         let dstptrT = dstptr.bindMemory(to: Float.self, capacity: l_mfarray.storedSize)

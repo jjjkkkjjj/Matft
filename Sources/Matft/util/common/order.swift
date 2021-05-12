@@ -166,6 +166,8 @@ internal func to_row_major(_ mfarray: MfArray) -> MfArray{
     }
     
     switch mfarray.storedType {
+    case .Bool:
+        return copy_by_cblas(mfarray.astype(.Float), mforder: .Row, cblas_func: cblas_scopy).astype(.Bool)
     case .Float:
         return copy_by_cblas(mfarray, mforder: .Row, cblas_func: cblas_scopy)
     case .Double:
@@ -180,6 +182,8 @@ internal func to_column_major(_ mfarray: MfArray) -> MfArray{
     }
     
     switch mfarray.storedType {
+    case .Bool:
+        return copy_by_cblas(mfarray.astype(.Float), mforder: .Column, cblas_func: cblas_scopy).astype(.Bool)
     case .Float:
         return copy_by_cblas(mfarray, mforder: .Column, cblas_func: cblas_scopy)
     case .Double:

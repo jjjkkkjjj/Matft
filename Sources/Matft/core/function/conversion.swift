@@ -38,7 +38,7 @@ extension Matft{
         }
         newmfstructure = copy_mfstructure(mfarray.mfstructure)
         
-        func _T2U<T: MfStorable, U: MfStorable>(_ vDSP_func: vDSP_convert_func<T, U>) -> MfArray{
+        func _T2U<T: MfStoredAcceleratable, U: MfStoredAcceleratable>(_ vDSP_func: vDSP_convert_func<T, U>) -> MfArray{
             let newdata = withDummyDataMRPtr(mftype, storedSize: mfarray.storedSize){
                 let dstptr = $0.bindMemory(to:  U.self, capacity: mfarray.storedSize)
                 mfarray.withDataUnsafeMBPtrT(datatype: T.self){
@@ -373,7 +373,7 @@ extension Matft{
             - max: (optional) Maximum value. If nil is passed, handled as inf
     */
     public static func clip<T: MfTypable>(_ mfarray: MfArray, min: T? = nil, max: T? = nil) -> MfArray{
-        func _clip<T: MfStorable>(_ vDSP_func: vDSP_clipcount_func<T>) -> MfArray{
+        func _clip<T: MfStoredAcceleratable>(_ vDSP_func: vDSP_clipcount_func<T>) -> MfArray{
             let min = min == nil ? -T.infinity : T.from(min!)
             let max = max == nil ? T.infinity : T.from(max!)
             return clip_by_vDSP(mfarray, min, max, vDSP_func)

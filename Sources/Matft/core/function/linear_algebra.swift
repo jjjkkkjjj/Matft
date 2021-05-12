@@ -65,7 +65,7 @@ extension Matft.linalg{
         }
                 
         let returnedType = StoredType.priority(coef.storedType, b.storedType)
-        func _solve<T: MfStorable>(_ mftype: MfType, _ lapack_func: lapack_solve<T>) throws -> MfArray{
+        func _solve<T: MfStoredAcceleratable>(_ mftype: MfType, _ lapack_func: lapack_solve<T>) throws -> MfArray{
             let coefT = coef.astype(mftype) //even if original one is float, create copy
             let bT = b.astype(mftype)
             
@@ -73,7 +73,7 @@ extension Matft.linalg{
         }
 
         switch returnedType{
-        case .Float:
+        case .Bool, .Float:
             return try _solve(.Float, sgesv_)
             
         case .Double:
@@ -202,7 +202,7 @@ extension Matft.linalg{
         // rt.shape = (...,Y,M)
         let (v, s, rt) = try Matft.linalg.svd(mfarray, full_matrices: false)
         
-        func _pinv<T: MfStorable>(_ type: T.Type) -> MfArray{
+        func _pinv<T: MfStoredAcceleratable>(_ type: T.Type) -> MfArray{
             let smax = s.max().scalar(T.self)!
             let condition = T.from(rcond) * smax
             let spinv_array = s.toFlattenArray(datatype: T.self){ $0 <= condition ? T.zero : 1/$0 }

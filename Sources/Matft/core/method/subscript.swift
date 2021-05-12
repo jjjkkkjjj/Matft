@@ -238,6 +238,8 @@ extension MfArray: MfSubscriptable{
                 }
             }
             switch array.storedType {
+            case .Bool:
+                _setscalar(Bool.self)
             case .Float:
                 _setscalar(Float.self)
             case .Double:
@@ -335,7 +337,7 @@ extension MfArray: MfSubscriptable{
 }
 
 
-fileprivate func _setter<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, assignMfArray: MfArray, type: T.Type){
+fileprivate func _setter<T: MfStoredAcceleratable>(_ mfarray: MfArray, _ indices: MfArray, assignMfArray: MfArray, type: T.Type){
     let true_num = Float.toInt(indices.sum().scalar(Float.self)!)
     let orig_ind_dim = indices.ndim
     

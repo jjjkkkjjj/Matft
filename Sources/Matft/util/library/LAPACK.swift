@@ -12,7 +12,7 @@ import Accelerate
 internal typealias lapack_solve<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
 //ref: http://www.netlib.org/lapack/explore-html/d7/d3b/group__double_g_esolve_ga5ee879032a8365897c3ba91e3dc8d512.html
-fileprivate func _run_lapack<T: MfStorable>(copiedCoefPtr: UnsafeMutablePointer<T>, _ eqNum: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstColNum: Int, _ lapack_func: lapack_solve<T>) throws {
+fileprivate func _run_lapack<T: MfStoredAcceleratable>(copiedCoefPtr: UnsafeMutablePointer<T>, _ eqNum: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstColNum: Int, _ lapack_func: lapack_solve<T>) throws {
     // row number of coefficients matrix
     var N = __CLPK_integer(eqNum)
     var LDA = __CLPK_integer(eqNum)// leading dimension >= max(1, N)
@@ -38,7 +38,7 @@ fileprivate func _run_lapack<T: MfStorable>(copiedCoefPtr: UnsafeMutablePointer<
         throw MfError.LinAlgError.singularMatrix("The factorization has been completed, but the factor U(of A=PLU) is exactly singular, so the solution could not be computed.")
     }
 }
-internal func solve_by_lapack<T: MfStorable>(_ coef: MfArray, _ b: MfArray, _ eqNum: Int, _ dstColNum: Int, _ lapack_func: lapack_solve<T>) throws -> MfArray{
+internal func solve_by_lapack<T: MfStoredAcceleratable>(_ coef: MfArray, _ b: MfArray, _ eqNum: Int, _ dstColNum: Int, _ lapack_func: lapack_solve<T>) throws -> MfArray{
     assert(coef.storedType == b.storedType, "must be same storedType")
     
     //get column flatten
@@ -61,7 +61,7 @@ internal func solve_by_lapack<T: MfStorable>(_ coef: MfArray, _ b: MfArray, _ eq
 internal typealias lapack_LU<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
 //ref: http://www.netlib.org/lapack/explore-html/d8/ddc/group__real_g_ecomputational_ga8d99c11b94db3d5eac75cac46a0f2e17.html
-fileprivate func _run_lu<T: MfStorable>(_ rowNum: Int, _ colNum: Int, srcdstptr: UnsafeMutablePointer<T>, lapack_func: lapack_LU<T>) throws -> [__CLPK_integer] {
+fileprivate func _run_lu<T: MfStoredAcceleratable>(_ rowNum: Int, _ colNum: Int, srcdstptr: UnsafeMutablePointer<T>, lapack_func: lapack_LU<T>) throws -> [__CLPK_integer] {
     var M = __CLPK_integer(rowNum)
     var N = __CLPK_integer(colNum)
     var LDA = __CLPK_integer(rowNum)
@@ -92,7 +92,7 @@ internal typealias lapack_inv<T> = (UnsafeMutablePointer<__CLPK_integer>, Unsafe
 //Note that
 //The pivot indices from SGETRF; for 1<=i<=N, row i of the
 //matrix was interchanged with row IPIV(i)
-fileprivate func _run_inv<T: MfStorable>(_ squaredSize: Int, srcdstptr: UnsafeMutablePointer<T>, _ IPIV: UnsafeMutablePointer<__CLPK_integer>, lapack_func: lapack_inv<T>) throws {
+fileprivate func _run_inv<T: MfStoredAcceleratable>(_ squaredSize: Int, srcdstptr: UnsafeMutablePointer<T>, _ IPIV: UnsafeMutablePointer<__CLPK_integer>, lapack_func: lapack_inv<T>) throws {
     var N = __CLPK_integer(squaredSize)
     var LDA = __CLPK_integer(squaredSize)
     
@@ -116,7 +116,7 @@ fileprivate func _run_inv<T: MfStorable>(_ squaredSize: Int, srcdstptr: UnsafeMu
     }
 }
 
-internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func: lapack_LU<T>, _ inv_lapack_func: lapack_inv<T>, _ retMfType: MfType) throws -> MfArray{
+internal func inv_by_lapack<T: MfStoredAcceleratable>(_ mfarray: MfArray, _ lu_lapack_func: lapack_LU<T>, _ inv_lapack_func: lapack_inv<T>, _ retMfType: MfType) throws -> MfArray{
     
     let newmfdata = try withDummyDataMRPtr(retMfType, storedSize: mfarray.size){
         dstptr in
@@ -142,7 +142,7 @@ internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func:
 }
 
 
-internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func: lapack_LU<T>, _ retMfType: MfType, _ retSize: Int) throws -> MfArray{
+internal func det_by_lapack<T: MfStoredAcceleratable>(_ mfarray: MfArray, _ lu_lapack_func: lapack_LU<T>, _ retMfType: MfType, _ retSize: Int) throws -> MfArray{
     let newmfdata = try withDummyDataMRPtr(retMfType, storedSize: retSize){
         dstptr in
         let dstptrF = dstptr.bindMemory(to: T.self, capacity: retSize)
@@ -183,7 +183,7 @@ internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func:
 internal typealias lapack_eigen<T> = (UnsafeMutablePointer<Int8>, UnsafeMutablePointer<Int8>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 //ref: http://www.netlib.org/lapack/explore-html/d3/dfb/group__real_g_eeigen_ga104525b749278774f7b7f57195aa6798.html
 //ref: https://stackoverflow.com/questions/27887215/trouble-with-the-accelerate-framework-in-swift
-fileprivate func _run_eigen<T: MfStorable>(_ squaredSize: Int, copiedSrcPtr: UnsafeMutablePointer<T>, _ dstLVecRePtr: UnsafeMutablePointer<T>, _ dstLVecImPtr: UnsafeMutablePointer<T>, _ dstRVecRePtr: UnsafeMutablePointer<T>, _ dstRVecImPtr: UnsafeMutablePointer<T>, _ dstValRePtr: UnsafeMutablePointer<T>, _ dstValImPtr: UnsafeMutablePointer<T>, lapack_func: lapack_eigen<T>) throws {
+fileprivate func _run_eigen<T: MfStoredAcceleratable>(_ squaredSize: Int, copiedSrcPtr: UnsafeMutablePointer<T>, _ dstLVecRePtr: UnsafeMutablePointer<T>, _ dstLVecImPtr: UnsafeMutablePointer<T>, _ dstRVecRePtr: UnsafeMutablePointer<T>, _ dstRVecImPtr: UnsafeMutablePointer<T>, _ dstValRePtr: UnsafeMutablePointer<T>, _ dstValImPtr: UnsafeMutablePointer<T>, lapack_func: lapack_eigen<T>) throws {
     let JOBVL = UnsafeMutablePointer(mutating: ("V" as NSString).utf8String)!
     let JOBVR = UnsafeMutablePointer(mutating: ("V" as NSString).utf8String)!
     
@@ -352,7 +352,7 @@ fileprivate func _run_eigen<T: MfStorable>(_ squaredSize: Int, copiedSrcPtr: Uns
     }
 }
 
-internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfType, _ lapack_func: lapack_eigen<T>) throws -> (valRe: MfArray, valIm: MfArray, lvecRe: MfArray, lvecIm: MfArray, rvecRe: MfArray, rvecIm: MfArray){
+internal func eigen_by_lapack<T: MfStoredAcceleratable>(_ mfarray: MfArray, _ retMfType: MfType, _ lapack_func: lapack_eigen<T>) throws -> (valRe: MfArray, valIm: MfArray, lvecRe: MfArray, lvecIm: MfArray, rvecRe: MfArray, rvecIm: MfArray){
     let shape = mfarray.shape
     let squaredSize = shape[mfarray.ndim - 1]
     //let eigValNum = mfarray.size / (squaredSize * squaredSize)
@@ -420,7 +420,7 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: Mf
 
 internal typealias lapack_svd<T> = (UnsafeMutablePointer<Int8>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>,UnsafeMutablePointer<__CLPK_integer>) -> Int32
 // ref: https://www.netlib.org/lapack/explore-html/d4/dca/group__real_g_esing_gac2cd4f1079370ac908186d77efcd5ea8.html
-fileprivate func _run_svd<T: MfStorable>(_ rowNum: Int, _ colNum: Int, _ srcptr: UnsafeMutablePointer<T>, _ vptr: UnsafeMutablePointer<T>, _ sptr: UnsafeMutablePointer<T>, _ rtptr: UnsafeMutablePointer<T>, _ full_matrices: Bool, lapack_func: lapack_svd<T>) throws{
+fileprivate func _run_svd<T: MfStoredAcceleratable>(_ rowNum: Int, _ colNum: Int, _ srcptr: UnsafeMutablePointer<T>, _ vptr: UnsafeMutablePointer<T>, _ sptr: UnsafeMutablePointer<T>, _ rtptr: UnsafeMutablePointer<T>, _ full_matrices: Bool, lapack_func: lapack_svd<T>) throws{
     let JOBZ: UnsafeMutablePointer<Int8>
     
     var M = __CLPK_integer(rowNum)
@@ -493,7 +493,7 @@ fileprivate func _run_svd<T: MfStorable>(_ rowNum: Int, _ colNum: Int, _ srcptr:
     }
 }
 
-internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfType, _ full_matrices: Bool, _ lapack_func: lapack_svd<T>) throws -> (v: MfArray, s: MfArray, rt: MfArray){
+internal func svd_by_lapack<T: MfStoredAcceleratable>(_ mfarray: MfArray, _ retMfType: MfType, _ full_matrices: Bool, _ lapack_func: lapack_svd<T>) throws -> (v: MfArray, s: MfArray, rt: MfArray){
     let shape = mfarray.shape
     let M = shape[mfarray.ndim - 2]
     let N = shape[mfarray.ndim - 1]
@@ -550,7 +550,7 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfTy
 /**
     - Important: This function for last shape is NxN
  */
-fileprivate func _withNNStackedMajorPtr<T: MfStorable>(mfarray: MfArray, type: T.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<T>, Int, Int) throws -> Void) rethrows -> Void{
+fileprivate func _withNNStackedMajorPtr<T: MfStoredAcceleratable>(mfarray: MfArray, type: T.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<T>, Int, Int) throws -> Void) rethrows -> Void{
     let shape = mfarray.shape
     let squaredSize = shape[mfarray.ndim - 1]
     let matricesNum = mfarray.size / (squaredSize * squaredSize)
@@ -571,7 +571,7 @@ fileprivate func _withNNStackedMajorPtr<T: MfStorable>(mfarray: MfArray, type: T
 /**
     - Important: This function for last shape is MxN
  */
-fileprivate func _withMNStackedMajorPtr<T: MfStorable>(mfarray: MfArray, type: T.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<T>, Int, Int, Int) throws -> Void) rethrows -> Void{
+fileprivate func _withMNStackedMajorPtr<T: MfStoredAcceleratable>(mfarray: MfArray, type: T.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<T>, Int, Int, Int) throws -> Void) rethrows -> Void{
     let shape = mfarray.shape
     let M = shape[mfarray.ndim - 2]
     let N = shape[mfarray.ndim - 1]

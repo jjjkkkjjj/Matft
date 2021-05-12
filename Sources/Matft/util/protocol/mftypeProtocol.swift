@@ -177,6 +177,18 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric {
     }
 }
 
+public protocol MfStorable: MfTypable{
+    static func from<T: MfTypable>(_ value: T) -> Self
+    static func from(_ str: String) -> Self?
+    static func from(_ str: String.SubSequence) -> Self?
+}
+
+public protocol MfStoredAcceleratable: MfStorable, FloatingPoint{
+
+    static func num(_ number: Int) -> Self
+    static func toInt(_ number: Self) -> Int
+}
+
 extension Bool: MfBinary, StoredFloat {
     public static func from<T>(_ value: T) -> Bool where T : MfNumeric, T : BinaryInteger {
         return value != T.zero
@@ -192,16 +204,8 @@ extension Bool: MfBinary, StoredFloat {
     }
 }
 
-public protocol MfStorable: MfTypable, FloatingPoint{
 
-    static func num(_ number: Int) -> Self
-    static func from<T: MfTypable>(_ value: T) -> Self
-    static func from(_ str: String) -> Self?
-    static func from(_ str: String.SubSequence) -> Self?
-    static func toInt(_ number: Self) -> Int
-}
-
-extension Float: MfStorable{
+extension Float: MfStoredAcceleratable{
     
     public static func num(_ number: Int) -> Float {
         return Float(number)
@@ -246,7 +250,7 @@ extension Float: MfStorable{
         return Int(number)
     }
 }
-extension Double: MfStorable{
+extension Double: MfStoredAcceleratable{
     
     public static func num(_ number: Int) -> Double {
         return Double(number)

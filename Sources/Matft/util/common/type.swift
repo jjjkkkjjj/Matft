@@ -12,6 +12,8 @@ internal func to_Bool(_ mfarray: MfArray) -> MfArray{
 
     // TODO: use vDSP_vthr?
     switch mfarray.storedType {
+    case .Bool:
+        return mfarray.deepcopy()
     case .Float:
         let ret = toBool_by_vDSP(mfarray, vDSP_vminmg_func: vDSP_vminmg, vDSP_viclip_func: vDSP_viclip, vDSP_convert_func: vDSP_vfixu8)
         return ret

@@ -63,6 +63,10 @@ extension MfArray{
         
         var ret: [R] = []
         switch self.storedType {
+        case .Bool:
+            try self.withContiguousDataUnsafeMPtrT(datatype: Bool.self){
+                ret.append(try body(T.from($0.pointee)))
+            }
         case .Float:
             try self.withContiguousDataUnsafeMPtrT(datatype: Float.self){
                 ret.append(try body(T.from($0.pointee)))

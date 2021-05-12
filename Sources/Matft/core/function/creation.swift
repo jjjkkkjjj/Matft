@@ -70,7 +70,7 @@ extension Matft{
         let retmftype = mftype ?? MfType.mftype(value: T.zero)
         let newmfdata = withDummyDataMRPtr(retmftype, storedSize: size){
             ptr in
-            func _create<U: MfStorable>(_ converted_value: U){
+            func _create<U: MfStoredAcceleratable>(_ converted_value: U){
                 var arr = Array(repeating: converted_value, count: size)
                 let ptrU = ptr.bindMemory(to: U.self, capacity: size)
                 arr.withUnsafeMutableBufferPointer{
@@ -167,7 +167,7 @@ extension Matft{
         
         let newmfdata = withDummyDataMRPtr(retmftype, storedSize: size){
             ptr in
-            func _create<T: MfStorable>(_ type: T.Type){
+            func _create<T: MfStoredAcceleratable>(_ type: T.Type){
                 let ptrT = ptr.bindMemory(to: T.self, capacity: size)
                 var d = Array(repeating: T.zero, count: size)
                 v.withDataUnsafeMBPtrT(datatype: T.self){
@@ -231,7 +231,7 @@ extension Matft{
         
         let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
             dstptr in
-            func _stack<T: MfStorable>(_ cblas_func: cblas_convorder_func<T>){
+            func _stack<T: MfStoredAcceleratable>(_ cblas_func: cblas_convorder_func<T>){
                 let dstptrT = dstptr.bindMemory(to: T.self, capacity: retSize)
                 var offset = 0
                 for array in rmajorArrays{
@@ -286,7 +286,7 @@ extension Matft{
         
         let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
             dstptr in
-            func _stack<T: MfStorable>(_ cblas_func: cblas_convorder_func<T>){
+            func _stack<T: MfStoredAcceleratable>(_ cblas_func: cblas_convorder_func<T>){
                 let dstptrT = dstptr.bindMemory(to: T.self, capacity: retSize)
                 var offset = 0
                 for array in cmajorArrays{
@@ -365,7 +365,7 @@ extension Matft{
         
         let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
             dstptr in
-            func _concat<T: MfStorable>(_ cblas_func: cblas_convorder_func<T>){
+            func _concat<T: MfStoredAcceleratable>(_ cblas_func: cblas_convorder_func<T>){
                 let dstptrT = dstptr.bindMemory(to: T.self, capacity: retSize)
     
                 var dst_offset = 0

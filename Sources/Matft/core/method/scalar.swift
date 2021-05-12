@@ -20,11 +20,8 @@ extension MfArray{
             flattenIndex += strides[axis] >= 0 ? 0 : -strides[axis]*shape[axis] + strides[axis]
         }
         
-        func _T2U2Any<T: BinaryFloatingPoint>(_ type: T.Type) -> AnyObject{
-            let valueT = self.withDataUnsafeMBPtrT(datatype: T.self){
-                dataptr in
-                dataptr[flattenIndex]
-            }
+        func _T2U2Any<T: BinaryFloatingPoint>(_ valueT: T) -> AnyObject{
+            
             switch self.mftype {
                 case .Int8:
                     return Int8(exactly: valueT) as AnyObject
@@ -56,10 +53,24 @@ extension MfArray{
         }
         
         switch self.storedType {
+        case .Bool:
+            let valueT = self.withDataUnsafeMBPtrT(datatype: Bool.self){
+                dataptr in
+                dataptr[flattenIndex]
+            }
+            return valueT as AnyObject
         case .Float:
-            return _T2U2Any(Float.self)
+            let valueT = self.withDataUnsafeMBPtrT(datatype: Float.self){
+                dataptr in
+                dataptr[flattenIndex]
+            }
+            return _T2U2Any(valueT)
         case .Double:
-            return _T2U2Any(Double.self)
+            let valueT = self.withDataUnsafeMBPtrT(datatype: Double.self){
+                dataptr in
+                dataptr[flattenIndex]
+            }
+            return _T2U2Any(valueT)
         }
     }
     

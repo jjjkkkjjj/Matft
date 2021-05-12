@@ -57,7 +57,7 @@ public enum MfType: Int{
             return .Object
         }
     }
-    static internal func mftype<T: MfStorable>(value: T) -> MfType{
+    static internal func mftype<T: MfStoredAcceleratable>(value: T) -> MfType{
         return MfType.mftype(value: value as Any)
     }
     
@@ -93,6 +93,7 @@ public enum MfType: Int{
 }
 
 public enum StoredType: Int{
+    case Bool
     case Float
     case Double
     

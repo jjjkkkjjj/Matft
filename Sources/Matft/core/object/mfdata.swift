@@ -19,6 +19,8 @@ public class MfData{
     public let _storedSize: Int
     public var _storedByteSize: Int{
         switch self._storedType {
+        case .Bool:
+            return self._storedSize * MemoryLayout<Bool>.size
         case .Float:
             return self._storedSize * MemoryLayout<Float>.size
         case .Double:
@@ -34,6 +36,8 @@ public class MfData{
     public var _byteOffset: Int{
         get{
             switch self._storedType {
+            case .Bool:
+                return self._offset * MemoryLayout<Bool>.size
             case .Float:
                 return self._offset * MemoryLayout<Float>.size
             case .Double:
@@ -70,12 +74,14 @@ public class MfData{
     
     deinit {
         if !self._isView{
-            func _deallocate<T: MfStorable>(_ type: T.Type){
+            func _deallocate<T: MfStoredAcceleratable>(_ type: T.Type){
                 let dataptr = self._data.bindMemory(to: T.self, capacity: self._storedSize)
                 dataptr.deinitialize(count: self._storedSize)
                 dataptr.deallocate()
             }
             switch self._storedType {
+            case .Bool:
+                _deallocate(Bool.self)
             case .Float:
                 _deallocate(Float.self)
             case .Double:

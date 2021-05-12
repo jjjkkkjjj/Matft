@@ -67,6 +67,8 @@ public class MfArray{
     }
     public var byteSize: Int{
         switch self.storedType {
+        case .Bool:
+            return self.size * MemoryLayout<Bool>.size
         case .Float:
             return self.size * MemoryLayout<Float>.size
         case .Double:

@@ -16,7 +16,7 @@ internal func copy_unsafeptrT<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcS
     cblas_func(Int32(size), srcptr, Int32(srcStride), dstptr, Int32(dstStride))
 }
 
-internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfArray, cblas_func: cblas_convorder_func<T>) -> MfArray{
+internal func copy_mfarray<T: MfStoredAcceleratable>(_ mfarray: MfArray, dsttmpMfarray: MfArray, cblas_func: cblas_convorder_func<T>) -> MfArray{
     
     
     dsttmpMfarray.withDataUnsafeMBPtrT(datatype: T.self){
@@ -61,7 +61,7 @@ internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfA
     return dsttmpMfarray
 }
 
-internal func copy_by_cblas<T: MfStorable>(_ mfarray: MfArray, mforder: MfOrder, cblas_func: cblas_convorder_func<T>) -> MfArray{
+internal func copy_by_cblas<T: MfStoredAcceleratable>(_ mfarray: MfArray, mforder: MfOrder, cblas_func: cblas_convorder_func<T>) -> MfArray{
     let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.size){_ in}//dummy
     var shape = mfarray.shape
     
@@ -74,7 +74,7 @@ internal func copy_by_cblas<T: MfStorable>(_ mfarray: MfArray, mforder: MfOrder,
 //matrix multiplication
 internal typealias cblas_matmul_func<T> = (CBLAS_ORDER, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, Int32, Int32, Int32, T, UnsafePointer<T>, Int32, UnsafePointer<T>, Int32, T, UnsafeMutablePointer<T>, Int32) -> Void
 
-fileprivate func _run_matmul<T: MfStorable>(_ mforder: MfOrder, _ lrow: Int, _ lcol: Int, _ lptr: UnsafePointer<T>, _ rrow: Int, _ rcol: Int, _ rptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ cblas_func: cblas_matmul_func<T>){
+fileprivate func _run_matmul<T: MfStoredAcceleratable>(_ mforder: MfOrder, _ lrow: Int, _ lcol: Int, _ lptr: UnsafePointer<T>, _ rrow: Int, _ rcol: Int, _ rptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ cblas_func: cblas_matmul_func<T>){
     let M = Int32(lrow)
     let N = Int32(rcol)
     let K = Int32(lcol)
@@ -95,7 +95,7 @@ fileprivate func _run_matmul<T: MfStorable>(_ mforder: MfOrder, _ lrow: Int, _ l
     }
 }
 
-internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray, cblas_func: cblas_matmul_func<T>) -> MfArray{
+internal func matmul_by_cblas<T: MfStoredAcceleratable>(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray, cblas_func: cblas_matmul_func<T>) -> MfArray{
     let lshape = lmfarray.shape
     let rshape = rmfarray.shape
     var retshape = lmfarray.shape
@@ -182,7 +182,7 @@ fileprivate func _matmul_convorder(_ lmfarray: inout MfArray, _ rmfarray: inout 
 }
 
 
-internal func fancyndgetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, _ cblas_func: cblas_convorder_func<T>) -> MfArray{
+internal func fancyndgetcol_by_cblas<T: MfStoredAcceleratable>(_ mfarray: MfArray, _ indices: MfArray, _ cblas_func: cblas_convorder_func<T>) -> MfArray{
     assert(indices.mftype == .Int, "must be int")
     assert(mfarray.ndim > 1, "must be more than 2d")
     // fancy indexing
@@ -240,7 +240,7 @@ internal func fancyndgetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indice
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 
-internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: inout [MfArray], _ cblas_func: cblas_convorder_func<T>) -> MfArray{
+internal func fancygetall_by_cblas<T: MfStoredAcceleratable>(_ mfarray: MfArray, _ indices: inout [MfArray], _ cblas_func: cblas_convorder_func<T>) -> MfArray{
     // check proper indices
     assert(indices.count >= 2)
     precondition(indices.count <= mfarray.ndim, "too many indices for array: array is \(mfarray.ndim)-dimensional, but \(indices.count) were indexed")
@@ -285,7 +285,7 @@ internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
 }
 
 
-internal func fancysetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, _ assignedMfarray: MfArray, _ cblas_func: cblas_convorder_func<T>) -> Void{
+internal func fancysetcol_by_cblas<T: MfStoredAcceleratable>(_ mfarray: MfArray, _ indices: MfArray, _ assignedMfarray: MfArray, _ cblas_func: cblas_convorder_func<T>) -> Void{
     assert(indices.mftype == .Int, "must be int")
     
     var workShape = Array(mfarray.shape.suffix(from: 1))
@@ -337,7 +337,7 @@ internal func fancysetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
 }
 
 
-internal func fancysetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: inout [MfArray], _ assignedMfarray: MfArray, _ cblas_func: cblas_convorder_func<T>) -> Void{
+internal func fancysetall_by_cblas<T: MfStoredAcceleratable>(_ mfarray: MfArray, _ indices: inout [MfArray], _ assignedMfarray: MfArray, _ cblas_func: cblas_convorder_func<T>) -> Void{
     // check proper indices
     assert(indices.count >= 2)
     precondition(indices.count <= mfarray.ndim, "too many indices for array: array is \(mfarray.ndim)-dimensional, but \(indices.count) were indexed")

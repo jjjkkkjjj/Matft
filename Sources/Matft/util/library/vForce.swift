@@ -11,7 +11,7 @@ import Accelerate
 
 internal typealias vForce_vv_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
 
-internal func math_vv_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: vForce_vv_func<T>) -> MfArray{
+internal func math_vv_by_vForce<T: MfStoredAcceleratable>(_ mfarray: MfArray, _ vForce_func: vForce_vv_func<T>) -> MfArray{
     var mfarray = mfarray
     mfarray = check_contiguous(mfarray)
     
@@ -31,7 +31,7 @@ internal func math_vv_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func
 
 internal typealias vForce_biop_vv_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
 
-internal func math_biop_vv_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ vForce_func: vForce_biop_vv_func<T>) -> MfArray{
+internal func math_biop_vv_by_vForce<T: MfStoredAcceleratable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ vForce_func: vForce_biop_vv_func<T>) -> MfArray{
     let l_mfarray = to_row_major(l_mfarray)
     let r_mfarray = to_row_major(r_mfarray)
     
