@@ -8,16 +8,16 @@
 import Foundation
 import Accelerate
 
-internal func to_Bool(_ mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray{
-    //convert float and contiguous
-    let ret = mfarray.astype(.Float)
+internal func to_Bool(_ mfarray: MfArray) -> MfArray{
+
     // TODO: use vDSP_vthr?
-    switch ret.storedType {
+    switch mfarray.storedType {
     case .Float:
-        let ret = toBool_by_vDSP(ret)
+        let ret = toBool_by_vDSP(mfarray, vDSP_vminmg_func: vDSP_vminmg, vDSP_viclip_func: vDSP_viclip, vDSP_convert_func: vDSP_vfixu8)
         return ret
     case .Double:
-        fatalError("Bug was occurred. Bool's storedType is not double.")
+        let ret = toBool_by_vDSP(mfarray, vDSP_vminmg_func: vDSP_vminmgD, vDSP_viclip_func: vDSP_viclipD, vDSP_convert_func: vDSP_vfixu8D)
+        return ret
     }
 }
 /*

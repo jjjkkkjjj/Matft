@@ -398,27 +398,34 @@ internal typealias vDSP_vminmg_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Str
 
 internal typealias vDSP_vthres_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
-internal func toBool_by_vDSP(_ mfarray: MfArray) -> MfArray{
-    assert(mfarray.storedType == .Float, "Must be bool")
+internal typealias vDSP_viclip_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+internal func toBool_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_vminmg_func: vDSP_vminmg_func<T>, vDSP_viclip_func: vDSP_viclip_func<T>, vDSP_convert_func: vDSP_convert_func<T, UInt8>) -> MfArray{
     
     let size = mfarray.storedSize
     let newdata = withDummyDataMRPtr(.Bool, storedSize: size){
         dstptr in
-        let dstptrT = dstptr.bindMemory(to: Float.self, capacity: size)
-        mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+        let dstptrT = dstptr.bindMemory(to: UInt8.self, capacity: size)
+        mfarray.withDataUnsafeMBPtrT(datatype: T.self){
             srcptr in
-            var zero = Float.zero
-            var one = Float.from(1)
+            var tmp = Array<T>(repeating: T.zero, count: size)
+            var zero = T.zero
+            var one = T.from(1)
             // if |src| <= 1  => dst = |src|
             //    |src| > 1   => dst = 1
             // Note that the 0<= dst <= 1
-            vDSP_vminmg(srcptr.baseAddress!, vDSP_Stride(1), &one, vDSP_Stride(0), dstptrT, vDSP_Stride(1), vDSP_Length(size))
+            vDSP_vminmg_func(srcptr.baseAddress!, vDSP_Stride(1), &one, vDSP_Stride(0), &tmp, vDSP_Stride(1), vDSP_Length(size))
             
-            one = Float.from(1)
+            one = T.from(1)
             // if src <= 0, 1 <= src   => dst = src
             //    0 < src <= 1         => dst = 1
-            vDSP_viclip(dstptrT, vDSP_Stride(1), &zero, &one, dstptrT, vDSP_Stride(1), vDSP_Length(size))
+            tmp.withUnsafeMutableBufferPointer{
+                vDSP_viclip_func($0.baseAddress!, vDSP_Stride(1), &zero, &one, $0.baseAddress!, vDSP_Stride(1), vDSP_Length(size))
+            }
+            
             //vDSP_vthres(dstptrT, vDSP_Stride(1), &one, dstptrT, vDSP_Stride(1), vDSP_Length(size))
+            
+            vDSP_convert_func(&tmp, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(size))
         }
     }
     
