@@ -527,6 +527,12 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.stats.squaresum | n/a |
 | *Matft.stats.cumsum | *numpy.cumsum |
 
+- Random function
+
+| Matft                       | Numpy         |
+| --------------------------- | ------------ |
+| Matft.random.rand   | numpy.random.rand   |
+| Matft.random.randint    | numpy.random.randint    |
 
 - Linear algebra
 

@@ -26,6 +26,11 @@ public class Matft{
     public class stats{}
     
     /**
+       MfArray Infomation
+    */
+    public class random{}
+    
+    /**
        File Manager
      */
     public class file{}
