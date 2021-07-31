@@ -201,4 +201,14 @@ extension MfArray{
     public func argsort(axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray{
         return Matft.argsort(self, axis: axis, order: order)
     }
+    
+    /**
+       Get ordered unique mfarray  along given axis
+       - parameters:
+            - mfarray: mfarray
+            - axis: (Optional) axis, if not given, get summation for all elements
+    */
+    public func orderedUnique(axis: Int? = nil) -> MfArray{
+        return Matft.orderedUnique(self, axis: axis)
+    }
 }

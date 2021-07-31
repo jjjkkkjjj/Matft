@@ -430,4 +430,49 @@ final class ConversionTests: XCTestCase {
                                                                   [2, -4, -1]])
         }
     }
+    
+    func testOrderedUnique(){
+        do{
+            let a = MfArray([0, 0, 30, 10, 10, 20])
+            XCTAssertEqual(a.orderedUnique(), MfArray([0, 30, 10, 20]))
+        }
+        
+        do{
+            let a = MfArray([[20, 20, 10, 10],
+                             [0, 0, 10, 30],
+                             [20, 20, 10, 10]])
+            
+            XCTAssertEqual(a.orderedUnique(), MfArray([20, 10, 0, 30]))
+            XCTAssertEqual(a.orderedUnique(axis: 0), MfArray([[20, 20, 10, 10],
+                        [ 0, 0, 10, 30]]))
+            XCTAssertEqual(a.orderedUnique(axis: 1), MfArray([[20, 10, 10],
+                                                              [0, 10, 30],
+                                                              [20, 10, 10]]))
+        }
+        do{
+            let a = MfArray([[20, 20, 10, 10],
+                             [0, 0, 10, 30],
+                             [20, 20, 10, 10]])
+            
+            XCTAssertEqual(a.T.orderedUnique(axis: 0), MfArray([[20,  0, 20],
+                                                                [10, 10, 10],
+                                                                [10, 30, 10]]))
+            XCTAssertEqual(a.T.orderedUnique(axis: -1), MfArray([[20,  0],
+                                                                 [20,  0],
+                                                                 [10, 10],
+                                                                 [10, 30]]))
+        }
+        
+        do{
+            let a = MfArray([[1.0, 0.0, 0.0],
+                             [1.0, 0.0, 0.0],
+                             [2.0, 3.0, 4.0],
+                             [5.2, 0.1, 3.3]])
+            
+            XCTAssertEqual(a.orderedUnique(), MfArray([1.0, 0.0, 2.0, 3.0, 4.0, 5.2, 0.1, 3.3]))
+            XCTAssertEqual(a.orderedUnique(axis: 0), MfArray([[1.0, 0.0, 0.0],
+                                                              [2.0, 3.0, 4.0],
+                                                              [5.2, 0.1, 3.3]]))
+        }
+    }
 }

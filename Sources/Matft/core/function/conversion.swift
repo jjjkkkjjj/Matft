@@ -8,6 +8,7 @@
 
 import Foundation
 import Accelerate
+import Collections
 
 extension Matft{
     /**
@@ -504,7 +505,95 @@ extension Matft{
             return sort_index_by_vDSP(_dst, _axis, order, vDSP_vsortiD)
         }
     }
+    
+    /**
+       Get ordered unique mfarray  along given axis
+       - parameters:
+            - mfarray: mfarray
+            - axis: (Optional) axis, if not given, get summation for all elements
+    */
+    public static func orderedUnique(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
+        // get stride to calculate unique array
+        let stride: Int
+        var srcmfarray: MfArray
+        var restShape: [Int]
+        if let axis = axis{
+            srcmfarray = mfarray.moveaxis(src: axis, dst: 0)
+            if srcmfarray.ndim == 1{
+                stride = 1
+                restShape = []
+            }
+            else{
+                restShape = Array(srcmfarray.shape[1..<srcmfarray.ndim])
+                stride = shape2size(&restShape)
+            }
+            srcmfarray = srcmfarray.flatten()
+        }
+        else{
+            srcmfarray = mfarray
+            stride = 1
+            restShape = []
+        }
+        
+        
+        switch mfarray.storedType {
+        case .Float:
+            var flattendata: [Float]
+            
+            flattendata = srcmfarray.storedData as! [Float]
+            return _unique(&flattendata, restShape: &restShape, mftype: mfarray.mftype, stride: stride, axis: axis)
+
+            
+        case .Double:
+            var flattendata: [Double]
+            flattendata = srcmfarray.storedData as! [Double]
+            return _unique(&flattendata, restShape: &restShape, mftype: mfarray.mftype, stride: stride, axis: axis)
+        }
+    }
 }
+
+fileprivate func _unique<T: MfStorable>(_ flattendata: inout [T], restShape: inout [Int], mftype: MfType, stride: Int, axis: Int?) -> MfArray{
+    
+    var uniquearray: [T]
+    if stride == 1{// flatten array
+        uniquearray = Array(OrderedSet(flattendata))
+    }
+    else{
+        assert(axis != nil)
+        
+        var axisarray: [[T]] = []
+        for i in 0..<(flattendata.count/stride){
+            axisarray += [Array(flattendata[i*stride..<(i+1)*stride])]
+        }
+
+        uniquearray = OrderedSet(axisarray).flatMap{ $0 }
+    }
+    
+    let newsize = uniquearray.count
+    let newdata = withDummyDataMRPtr(mftype, storedSize: newsize){
+        dstptr in
+        let dstptrT = dstptr.bindMemory(to: T.self, capacity: flattendata.count)
+        uniquearray.withUnsafeMutableBufferPointer{
+            dstptrT.moveAssign(from: $0.baseAddress!, count: newsize)
+        }
+    }
+    restShape.insert(newsize / stride, at: 0)
+    let newmfstructure = create_mfstructure(&restShape, mforder: .Row)
+    
+    let ret = MfArray(mfdata: newdata, mfstructure: newmfstructure)
+    
+    
+    if let axis = axis{
+        return ret.moveaxis(src: axis, dst: 0)
+    }
+    else{
+        return ret
+    }
+
+}
+
+
+
 
 /*
 extension Matft.mfdata{
