@@ -625,6 +625,8 @@ So, a pull request is very welcome!!
 
 ## Installation
 
+**Caution**: I strongly recommend to use SwiftPM!!
+
 ### SwiftPM
 
 - Import
