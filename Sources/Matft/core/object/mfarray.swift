@@ -33,6 +33,23 @@ public class MfArray{
             }
         }
     }
+    internal var storedData: [Any]{
+        if let base = self.base{
+            return base.storedData
+        }
+        else{
+            switch self.storedType {
+            case .Float:
+                return self.withDataUnsafeMBPtrT(datatype: Float.self){
+                    Array($0) as [Any]
+                }
+            case .Double:
+                return self.withDataUnsafeMBPtrT(datatype: Double.self){
+                    Array($0) as [Any]
+                }
+            }
+        }
+    }
     
     public var mftype: MfType{
         return self.mfdata._mftype
