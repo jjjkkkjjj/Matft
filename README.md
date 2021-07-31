@@ -442,13 +442,12 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.orderedUnique | numpy.unique |
 
 - File
-  
-  save function has not developed yet.
 
 | Matft                         | Numpy            |
 | ----------------------------- | :--------------- |
 | Matft.file.loadtxt    | numpy.loadtxt    |
 | Matft.file.genfromtxt | numpy.genfromtxt |
+| Matft.file.savetxt | numpy.savetxt |
 
 - Operation
 

@@ -11,7 +11,15 @@ extension Matft.file{
     /**
         Load file from given path and create mfarray. If the file is not loaded, return nil.
        - parameters:
+           - url: URL
            - mfarray: mfarray
+           - delimiter:  The character separating columns
+           - mftype: MfType
+           - skiprows: (Optional) The row number to slip
+           - use_cols: (Optional) [Int] The column number to parse
+           - encoding:  Encoding format
+           - max_rows: (Optional) The maximum row number
+           - removeBlank: Whether to remove blank
     */
     public static func loadtxt(url: URL, delimiter: Character, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
 
@@ -25,6 +33,20 @@ extension Matft.file{
             return _load(parser: parser, type: Double.self, mftype, skiprows, use_cols, max_rows)
         }
     }
+    
+    /**
+        Load file from given path and create mfarray. If the file is not loaded, return nil.
+       - parameters:
+           - path: The file path to load
+           - mfarray: mfarray
+           - delimiter:  The character separating columns
+           - mftype: MfType
+           - skiprows: (Optional) The row number to slip
+           - use_cols: (Optional) [Int] The column number to parse
+           - encoding:  Encoding format
+           - max_rows: (Optional) The maximum row number
+           - removeBlank: Whether to remove blank
+    */
     public static func loadtxt(path: String, delimiter: Character, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
         
         guard let parser = _TxtParser(path, delimiter, encoding, removeBlank) else { return nil }
@@ -38,6 +60,19 @@ extension Matft.file{
         }
     }
     
+    /**
+        Load file with missing values from given path and create mfarray. If the file is not loaded, return nil.
+       - parameters:
+           - url: URL
+           - mfarray: mfarray
+           - delimiter:  The character separating columns
+           - mftype: MfType
+           - skiprows: (Optional) The row number to slip
+           - use_cols: (Optional) [Int] The column number to parse
+           - encoding:  Encoding format
+           - max_rows: (Optional) The maximum row number
+           - removeBlank: Whether to remove blank
+    */
     public static func genfromtxt<T: MfStorable>(url: URL, delimiter: Character, fillnan: T, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
         
         guard let parser = _TxtParser(url, delimiter, encoding, removeBlank) else { return nil }
@@ -50,6 +85,20 @@ extension Matft.file{
             return _gen(parser: parser, fillnan: Double.from(fillnan), mftype, skiprows, use_cols, max_rows)
         }
     }
+    
+    /**
+        Load file with missing values from given path and create mfarray. If the file is not loaded, return nil.
+       - parameters:
+           - url: URL
+           - mfarray: mfarray
+           - delimiter:  The character separating columns
+           - mftype: MfType
+           - skiprows: (Optional) The row number to slip
+           - use_cols: (Optional) [Int] The column number to parse
+           - encoding:  Encoding format
+           - max_rows: (Optional) The maximum row number
+           - removeBlank: Whether to remove blank
+    */
     public static func genfromtxt(url: URL, delimiter: Character, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
         
         guard let parser = _TxtParser(url, delimiter, encoding, removeBlank) else { return nil }
@@ -62,6 +111,20 @@ extension Matft.file{
             return _gen(parser: parser, fillnan: Double.nan, mftype, skiprows, use_cols, max_rows)
         }
     }
+    
+    /**
+        Load file with missing values from given path and create mfarray. If the file is not loaded, return nil.
+       - parameters:
+           - path: The file path to load
+           - mfarray: mfarray
+           - delimiter:  The character separating columns
+           - mftype: MfType
+           - skiprows: (Optional) The row number to slip
+           - use_cols: (Optional) [Int] The column number to parse
+           - encoding:  Encoding format
+           - max_rows: (Optional) The maximum row number
+           - removeBlank: Whether to remove blank
+    */
     public static func genfromtxt<T: MfStorable>(path: String, delimiter: Character, fillnan: T, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
         
         guard let parser = _TxtParser(path, delimiter, encoding, removeBlank) else { return nil }
@@ -74,6 +137,20 @@ extension Matft.file{
             return _gen(parser: parser, fillnan: Double.from(fillnan), mftype, skiprows, use_cols, max_rows)
         }
     }
+    
+    /**
+        Load file with missing values from given path and create mfarray. If the file is not loaded, return nil.
+       - parameters:
+           - path: The file path to load
+           - mfarray: mfarray
+           - delimiter:  The character separating columns
+           - mftype: MfType
+           - skiprows: (Optional) The row number to slip
+           - use_cols: (Optional) [Int] The column number to parse
+           - encoding:  Encoding format
+           - max_rows: (Optional) The maximum row number
+           - removeBlank: Whether to remove blank
+    */
     public static func genfromtxt(path: String, delimiter: Character, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
         
         guard let parser = _TxtParser(path, delimiter, encoding, removeBlank) else { return nil }
@@ -86,7 +163,33 @@ extension Matft.file{
             return _gen(parser: parser, fillnan: Double.nan, mftype, skiprows, use_cols, max_rows)
         }
     }
-
+    
+    /**
+        Save file to a given url
+       - parameters:
+           - url: The file URL to save
+           - mfarray: mfarray
+           - delimiter:  The character separating columns
+           - newline:  The newline character
+           - encoding:  Encoding format
+    */
+    public static func savetxt(url: URL, mfarray: MfArray, delimiter: Character, newline: Character = "\n", encoding: String.Encoding = .utf8){
+        _save(url: url, mfarray: mfarray, delimiter: delimiter, newline: newline, encoding: encoding)
+    }
+    
+    /**
+        Save file to a given path
+       - parameters:
+           - path: The file path to save
+           - mfarray: mfarray
+           - delimiter:  The character separating columns
+           - newline:  The newline character
+           - encoding:  Encoding format
+    */
+    public static func savetxt(path: String, mfarray: MfArray, delimiter: Character, newline: Character = "\n", encoding: String.Encoding = .utf8){
+        let url = URL(fileURLWithPath: path)
+        _save(url: url, mfarray: mfarray, delimiter: delimiter, newline: newline, encoding: encoding)
+    }
 }
 
 fileprivate func _load<T: MfStorable>(parser: _TxtParser, type: T.Type, _ mftype: MfType = .Float, _ skiprows: [Int]? = nil, _ use_cols: [Int]? = nil, _ max_rows: Int? = nil) -> MfArray?{
@@ -211,6 +314,51 @@ fileprivate func _gen<T: MfStorable>(parser: _TxtParser, fillnan: T, _ mftype: M
     return MfArray(ret, mftype: mftype).squeeze()
 }
 
+fileprivate func _save(url: URL, mfarray: MfArray, delimiter: Character, newline: Character = "\n", encoding: String.Encoding = .utf8){
+    precondition(mfarray.ndim <= 2, "mfarray must be 1d or 2d, but got \(mfarray.ndim)d")
+    let mfarray = mfarray.ndim == 1 ? mfarray.expand_dims(axis: 0) : mfarray
+    
+    let delimiter = String(delimiter)
+    let stride = mfarray.shape[1]
+    let contents: [String]
+    switch mfarray.mftype {
+    case .Bool:
+        contents = (mfarray.flatten().data as! [Bool]).map{ String($0) }
+    case .UInt8:
+        contents = (mfarray.flatten().data as! [UInt8]).map{ String($0) }
+    case .UInt16:
+        contents = (mfarray.flatten().data as! [UInt16]).map{ String($0) }
+    case .UInt32:
+        contents = (mfarray.flatten().data as! [UInt32]).map{ String($0) }
+    case .UInt64:
+        contents = (mfarray.flatten().data as! [UInt64]).map{ String($0) }
+    case .UInt:
+        contents = (mfarray.flatten().data as! [UInt]).map{ String($0) }
+    case .Int8:
+        contents = (mfarray.flatten().data as! [Int8]).map{ String($0) }
+    case .Int16:
+        contents = (mfarray.flatten().data as! [Int16]).map{ String($0) }
+    case .Int32:
+        contents = (mfarray.flatten().data as! [Int32]).map{ String($0) }
+    case .Int64:
+        contents = (mfarray.flatten().data as! [Int64]).map{ String($0) }
+    case .Int:
+        contents = (mfarray.flatten().data as! [Int]).map{ String($0) }
+    case .Float:
+        contents = (mfarray.flatten().data as! [Float]).map{ String($0) }
+    case .Double:
+        contents = (mfarray.flatten().data as! [Double]).map{ String($0) }
+    default:
+        preconditionFailure("Unsupported types: \(mfarray.mftype)")
+    }
+    
+    var contentString = ""
+    for i in 0..<(mfarray.size / stride){
+        contentString += contents[i*stride..<(i+1)*stride].joined(separator: delimiter) + String(newline)
+    }
+
+    try? contentString.write(to: url, atomically: false, encoding: encoding)
+}
 
 fileprivate class _TxtParser{
     let url: URL
@@ -274,9 +422,5 @@ fileprivate class _TxtParser{
         lines = lines.filter{ !$0.isEmpty }
         
         return lines
-    }
-    
-    func export(){
-        
     }
 }

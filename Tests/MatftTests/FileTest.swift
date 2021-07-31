@@ -123,4 +123,39 @@ final class FileTests: XCTestCase {
         }
 
     }
+    
+    func test_savetxt(){
+        do{
+            let a = MfArray([[1, 0, 0, 6],
+                             [3, 4, 2, 8],
+                             [2, 3, 4, 1]])
+            let test_w1 = self.get_url(filename: "test_w1.csv")
+            Matft.file.savetxt(url: test_w1, mfarray: a, delimiter: ",")
+            
+            let arr1 = Matft.file.loadtxt(url: test_w1, delimiter: ",", mftype: .Int)
+            XCTAssertEqual(a, arr1)
+        }
+        
+        do{
+            let a = MfArray([2.3, 2.0, -0.3, 7.1, -9.1, 3.3, 2.5])
+            let test_w2 = self.get_url(filename: "test_w2.csv")
+            Matft.file.savetxt(url: test_w2, mfarray: a, delimiter: ",")
+            
+            let arr2 = Matft.file.loadtxt(url: test_w2, delimiter: ",", mftype: .Double)
+            XCTAssertEqual(a, arr2)
+        }
+        
+        do{
+            let a = MfArray([[0.48119989, 0.43105108, 0.31772771, 0.43124228, 0.7316661 ],
+                             [0.06785366, 0.92990358, 0.36221086, 0.21251478, 0.58757896],
+                             [0.90790159, 0.53436599, 0.26298621, 0.1055088 , 0.76278012],
+                             [0.63767623, 0.21296142, 0.89174772, 0.34907663, 0.55014662],
+                             [0.05292474, 0.25471397, 0.66266674, 0.46161502, 0.79784103]], mftype: .Float)
+            let test_w3 = self.get_url(filename: "test_w3.csv")
+            Matft.file.savetxt(url: test_w3, mfarray: a, delimiter: ",")
+            
+            let arr3 = Matft.file.loadtxt(url: test_w3, delimiter: ",", mftype: .Float)
+            XCTAssertEqual(a, arr3)
+        }
+    }
 }
