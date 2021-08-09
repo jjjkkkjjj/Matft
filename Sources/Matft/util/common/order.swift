@@ -204,35 +204,35 @@ internal func check_contiguous(_ mfarray: MfArray, _ mforder: MfOrder? = nil) ->
         }
     }
 }
-internal func check_biop_contiguous(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ mforder: MfOrder = .Row, convertL: Bool = true) -> (l: MfArray, r: MfArray, biggerL: Bool, retstoredSize: Int){
+internal func check_biop_contiguous(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ mforder: MfOrder = .Row, convertL: Bool = true) -> (l: MfArray, r: MfArray, biggerL: Bool, retsize: Int){
     let l: MfArray, r: MfArray
     let biggerL: Bool
-    let retstoredSize: Int
+    let retsize: Int
     if r_mfarray.mfflags.column_contiguous || r_mfarray.mfflags.row_contiguous{
         l = l_mfarray
         r = r_mfarray
         biggerL = false
-        retstoredSize = r_mfarray.storedSize
+        retsize = r_mfarray.size
     }
     else if l_mfarray.mfflags.column_contiguous || l_mfarray.mfflags.row_contiguous{
         l = l_mfarray
         r = r_mfarray
         biggerL = true
-        retstoredSize = l_mfarray.storedSize
+        retsize = l_mfarray.size
     }
     else{
         if convertL{
             l = Matft.conv_order(l_mfarray, mforder: mforder)
             r = r_mfarray
             biggerL = true
-            retstoredSize = l.storedSize
+            retsize = l.size
         }
         else{
             l = l_mfarray
             r = Matft.conv_order(r_mfarray, mforder: mforder)
             biggerL = false
-            retstoredSize = r.storedSize
+            retsize = r.size
         }
     }
-    return (l, r, biggerL, retstoredSize)
+    return (l, r, biggerL, retsize)
 }

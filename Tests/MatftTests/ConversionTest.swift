@@ -413,6 +413,11 @@ final class ConversionTests: XCTestCase {
                                                          [ 5, -1]])
         }
         
+        do {
+            let a = Matft.arange(start: 0, to: 11, by: 1)
+            XCTAssertEqual(a.ufuncReduce(Matft.add).toArray() as! [Int], [55])
+        }
+        
         do{
             let a = MfArray([[1, 3, 5],
                              [2, -4, -1]])

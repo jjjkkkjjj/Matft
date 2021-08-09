@@ -106,12 +106,12 @@ fileprivate func _run_biop_vv<T: MfStorable>(lptr: UnsafePointer<T>, _ lstride: 
 internal func biop_vv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, vDSP_func: vDSP_biop_vv_func<T>) -> MfArray{
     // biggerL: flag whether l is bigger than r
     //return mfarray must be either row or column major
-    let (l_mfarray, r_mfarray, biggerL, retstoredSize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
+    let (l_mfarray, r_mfarray, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
     
     
-    let newdata = withDummyDataMRPtr(l_mfarray.mftype, storedSize: retstoredSize){
+    let newdata = withDummyDataMRPtr(l_mfarray.mftype, storedSize: retsize){
         dstptr in
-        let dstptrT = dstptr.bindMemory(to: T.self, capacity: retstoredSize)
+        let dstptrT = dstptr.bindMemory(to: T.self, capacity: retsize)
         
         l_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
             [unowned l_mfarray] (lptr) in
