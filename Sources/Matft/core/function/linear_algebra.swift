@@ -287,8 +287,8 @@ extension Matft.linalg{
             return Matft.math.abs(mfarray).min(axis: axis, keepDims: keepDims)
         }
         if ord != 0{
-            let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponent: ord)
-            return Matft.math.power(bases: abspow.sum(axis: axis, keepDims: keepDims), exponent: 1/ord)
+            let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponents: ord)
+            return Matft.math.power(bases: abspow.sum(axis: axis, keepDims: keepDims), exponents: 1/ord)
         }
         else{
             // remove mfarray == 0, and count up non-zero
@@ -361,9 +361,9 @@ extension Matft.linalg{
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
         
-        let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponent: 2)
+        let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponents: 2)
         
-        var ret = Matft.math.power(bases: abspow.sum(axis: max(axes.row, axes.col), keepDims: false).sum(axis: min(axes.row, axes.col), keepDims: false), exponent: 1/2)
+        var ret = Matft.math.power(bases: abspow.sum(axis: max(axes.row, axes.col), keepDims: false).sum(axis: min(axes.row, axes.col), keepDims: false), exponents: 1/2)
         
         if keepDims{
             var retShape = mfarray.shape

@@ -227,7 +227,7 @@ final class MathTests: XCTestCase {
     func testPower(){
         do{
             let a = Matft.arange(start: 0, to: 16, by: 1, shape: [2,2,2,2])
-            XCTAssertEqual(Matft.math.power(base: 2, exponents: a), MfArray([[[[    1.0,        2.0],
+            XCTAssertEqual(Matft.math.power(bases: 2, exponents: a), MfArray([[[[    1.0,        2.0],
                                                                                [    4.0,        8.0]],
 
                                                                               [[    16.0,        32.0],
@@ -252,7 +252,7 @@ final class MathTests: XCTestCase {
 
                                                                               [[    4096.0,        8192.0],
                                                                                [    16384.0,        32768.0]]]]))
-            XCTAssertEqual(Matft.math.power(bases: a, exponent: 2).round(decimals: 4),
+            XCTAssertEqual(Matft.math.power(bases: a, exponents: 2).round(decimals: 4),
                            MfArray([[[[  0,   1],
                                       [  4,   9]],
 

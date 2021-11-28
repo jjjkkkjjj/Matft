@@ -453,20 +453,20 @@ extension Matft.math{//use math_vv_by_vecLib
     /**
        Calculate power of each element
        - parameters:
-            - base: Float
+            - bases: Float
             - exponents: mfarray
     */
-    public static func power(base: Float, exponents: MfArray) -> MfArray{
-        return Matft.math.power(bases: Matft.nums(base, shape: [1]), exponents: exponents)
+    public static func power(bases: Float, exponents: MfArray) -> MfArray{
+        return Matft.math.power(bases: Matft.nums(bases, shape: [1]), exponents: exponents)
     }
     /**
        Calculate power of each element
        - parameters:
             - bases: mfarray
-            - exponent: Float
+            - exponents: Float
     */
-    public static func power(bases: MfArray, exponent: Float) -> MfArray{
-        return Matft.math.power(bases: bases, exponents: Matft.nums(exponent, shape: [1]))
+    public static func power(bases: MfArray, exponents: Float) -> MfArray{
+        return Matft.math.power(bases: bases, exponents: Matft.nums(exponents, shape: [1]))
     }
     /**
        Calculate power of each element
