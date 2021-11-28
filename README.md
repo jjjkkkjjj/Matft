@@ -102,7 +102,7 @@ See [Function List](#Function-List) for all functions.
 - You can pass **MfType** as MfArray's argument ``mftype: .Hoge ``. It is similar to  `dtype`.
   
   ※Note that stored data type will be Float or Double only even if you set MfType.Int.
-So, if you input big number to MfArray, it may be cause to overflow or strange results in any calculation (+, -, *, /,...  etc.). But I believe this is not problem in practical use.
+  So, if you input big number to MfArray, it may be cause to overflow or strange results in any calculation (+, -, *, /,...  etc.). But I believe this is not problem in practical use.
   
 - MfType's list is below
   
@@ -217,11 +217,11 @@ You can set **MfSlice** (see below's list) to subscript.
   [[[	0,		1,		2],
   [	3,		4,		5],
   [	6,		7,		8]],
-
+  
   [[	9,		10,		11],
   [	12,		13,		14],
   [	15,		16,		17]],
-
+  
   [[	18,		19,		20],
   [	21,		22,		23],
   [	24,		25,		26]]], type=Int, shape=[3, 3, 3]
@@ -233,7 +233,7 @@ You can set **MfSlice** (see below's list) to subscript.
   #### Slicing
 
 - If you replace ``:`` with ``~<``, you can get sliced mfarray.
-Note that use `a[0~<]` instead of `a[:]` to get all elements along axis.
+  Note that use `a[0~<]` instead of `a[:]` to get all elements along axis.
   
   ```swift
   print(a[~<1])  //same as a[:1] for numpy
@@ -634,6 +634,8 @@ So, a pull request is very welcome!!
 - Update
   - File >Swift Packages >Update to Latest Package versions
     ![update](https://user-images.githubusercontent.com/16914891/77145225-4367c180-6acb-11ea-98ea-8d7a5a2a669f.png)
+
+**Important!!!** the below installation is outdated. Please install Matft via swiftPM!!!
 
 ### Carthage
 
