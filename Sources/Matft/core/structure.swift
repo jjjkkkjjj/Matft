@@ -14,19 +14,29 @@ public enum MfOrder: Int{
 
 
 public class MfStructure{
-    public var shape: [Int]
-    public var strides: [Int]
+    internal var shape: [Int]
+    internal var strides: [Int]
     
-    public var row_contiguous: Bool
-    public var column_contiguous: Bool
+    internal var row_contiguous: Bool
+    internal var column_contiguous: Bool
     
     
+    /// Initialization from shape array and order
+    /// - Parameters:
+    ///   - shape: A shape array
+    ///   - mforder: Order
     public init(shape: [Int], mforder: MfOrder){
         self.shape = shape
         self.strides = shape2strides(&self.shape, mforder: mforder)
         
         (self.row_contiguous, self.column_contiguous) = _check_contiguous(shape: &self.shape, strides: &self.strides)
     }
+    
+    
+    /// Initialization from shape and strides array
+    /// - Parameters:
+    ///   - shape: A shape array
+    ///   - strides: A strides array
     public init(shape: [Int], strides: [Int]){
         assert(shape.count == strides.count, "must have same size!")
         self.shape = shape

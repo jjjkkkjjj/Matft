@@ -142,6 +142,7 @@ extension Int32: MfNumeric, StoredFloat, MfSignedNumeric {
         return value != T.zero ? Int32(1) : Int32.zero
     }
 }
+/*
 extension Int64: MfNumeric, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int64 where T : MfInterger {
         return Int64(value)
@@ -164,6 +165,7 @@ extension Int: MfNumeric, StoredFloat, MfSignedNumeric {
         return value != T.zero ? Int(1) : Int.zero
     }
 }
+*/
 
 extension Float: MfNumeric, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Float where T : MfInterger {

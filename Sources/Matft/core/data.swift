@@ -12,20 +12,20 @@ public class MfData<T: MfTypeUsable>{
     public typealias MfArrayStoredType = T.StoredType
     
     private var _refdata: MfData?
-    public var _isView: Bool{
+    internal var _isView: Bool{
         return self._refdata != nil
     }
     
     /// The stored data's pointer
-    public internal(set) var storedPtr: UnsafeMutableBufferPointer<MfArrayStoredType>
+    internal var storedPtr: UnsafeMutableBufferPointer<MfArrayStoredType>
     
     /// The size of the stored data
-    public var storedSize: Int {
+    internal var storedSize: Int {
         return self.storedPtr.count
     }
     
     /// The offset value
-    public let offset: Int
+    internal let offset: Int
     
     
     /// Initialization from flatten array. Allocate memories with stored type's size, which will store a given flatten array
