@@ -37,6 +37,10 @@ public class MfArray<T: MfTypeUsable>{
     public var storedSize: Int{
         return self.mfdata.storedSize
     }
+    /// The offset index for data
+    public var offsetIndex: Int{
+        return self.mfdata.offset
+    }
     /// data
     public var data: [MfArrayType]{
         if let base = self.base{

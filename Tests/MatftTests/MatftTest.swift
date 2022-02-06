@@ -22,5 +22,8 @@ final class MatftTests: XCTestCase {
         print(a.mfdata.storedPtr[0])
         print(a.shape)
         print(a.strides)
+        print(a)
+        print(a.mfdata)
+        print(a.mfstructure)
     }
 }
