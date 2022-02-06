@@ -48,7 +48,8 @@ public class Matft{
     /**
        Using in subscript, expand dimension
     */
+    /*
     public static var newaxis: SubscriptOps{
         return .newaxis
-    }
+    }*/
 }
