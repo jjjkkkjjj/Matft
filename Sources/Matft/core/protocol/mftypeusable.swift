@@ -1,16 +1,16 @@
 //
-//  protocol.swift
+//  type.swift
 //  
 //
 //  Created by Junnosuke Kado on 2022/02/05.
 //
 
 import Foundation
-
+import Accelerate
 
 /// The type comformed to this protocol can use MfArray
 public protocol MfTypeUsable: Equatable{
-    associatedtype StoredType: MfTypeUsable
+    associatedtype StoredType: MfStoredTypeUsable
     
     /// Return zero with this type
     static var zero: Self { get }
@@ -142,7 +142,7 @@ extension Int32: MfNumeric, StoredFloat, MfSignedNumeric {
         return value != T.zero ? Int32(1) : Int32.zero
     }
 }
-/*
+
 extension Int64: MfNumeric, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int64 where T : MfInterger {
         return Int64(value)
@@ -165,9 +165,13 @@ extension Int: MfNumeric, StoredFloat, MfSignedNumeric {
         return value != T.zero ? Int(1) : Int.zero
     }
 }
-*/
 
-extension Float: MfNumeric, StoredFloat, MfSignedNumeric {
+
+extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
+    public static var vDSP_vcmprs_func: vDSP_vcmprs_func<Float> = vDSP_vcmprs
+    
+    public static var cblas_copy_func: cblas_copy_func<Float> = cblas_scopy
+    
     public static func from<T>(_ value: T) -> Float where T : MfInterger {
         return Float(value)
     }
@@ -178,7 +182,11 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric {
         return value != T.zero ? Float(1) : Float.zero
     }
 }
-extension Double: MfNumeric, StoredDouble, MfSignedNumeric {
+extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
+    public static var vDSP_vcmprs_func: vDSP_vcmprs_func<Double> = vDSP_vcmprsD
+    
+    public static var cblas_copy_func: cblas_copy_func<Double> = cblas_dcopy
+    
     public static func from<T>(_ value: T) -> Double where T : MfInterger {
         return Double(value)
     }

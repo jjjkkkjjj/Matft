@@ -105,21 +105,24 @@ extension ArrayConversionToOriginalType: TypeConversionProtocol where PostType: 
                 }else{
                     // Invalid!
                     // negative value must be -1!
-                    fatalError("Unsupported Int!")
                     /*
                     dst.withMemoryRebound(to: Int32.self, capacity: size*2){
                         vDSP_vfix32(src, vDSP_Stride(1), $0, vDSP_Stride(2), vDSP_Length(size))
                     }*/
+
+                    let srcarr = Array(UnsafeBufferPointer(start: src, count: size))
+                    let i64 = srcarr.map{ Int64($0) }
+                    _ = i64.withUnsafeBufferPointer{
+                        memcpy(dst, $0.baseAddress, size*MemoryLayout<Int64>.size)
+                    }
                 }
             }
             else if let dst = dst as? UnsafeMutablePointer<Int64>{
-                // Invalid!
-                // negative value must be -1!
-                fatalError("Unsupported Int!")
-                /*
-                dst.withMemoryRebound(to: Int32.self, capacity: size*2){
-                    vDSP_vfix32(src, vDSP_Stride(1), $0, vDSP_Stride(2), vDSP_Length(size))
-                }*/
+                let srcarr = Array(UnsafeBufferPointer(start: src, count: size))
+                let i64 = srcarr.map{ Int64($0) }
+                _ = i64.withUnsafeBufferPointer{
+                    memcpy(dst, $0.baseAddress, size*MemoryLayout<Int64>.size)
+                }
             }
             
             else{
@@ -180,23 +183,19 @@ extension ArrayConversionToOriginalType: TypeConversionProtocol where PostType: 
                     }
                     
                 }else{
-                    // Invalid!
-                    // negative value must be -1!
-                    fatalError("Unsupported Int!")
-                    /*
-                    dst.withMemoryRebound(to: Int32.self, capacity: size*2){
-                        vDSP_vfix32D(src, vDSP_Stride(1), $0, vDSP_Stride(2), vDSP_Length(size))
-                    }*/
+                    let srcarr = Array(UnsafeBufferPointer(start: src, count: size))
+                    let i64 = srcarr.map{ Int64($0) }
+                    _ = i64.withUnsafeBufferPointer{
+                        memcpy(dst, $0.baseAddress, size*MemoryLayout<Int64>.size)
+                    }
                 }
             }
             else if let dst = dst as? UnsafeMutablePointer<Int64>{
-                // Invalid!
-                // negative value must be -1!
-                fatalError("Unsupported Int!")
-                /*
-                dst.withMemoryRebound(to: Int32.self, capacity: size*2){
-                    vDSP_vfix32D(src, vDSP_Stride(1), $0, vDSP_Stride(2), vDSP_Length(size))
-                }*/
+                let srcarr = Array(UnsafeBufferPointer(start: src, count: size))
+                let i64 = srcarr.map{ Int64($0) }
+                _ = i64.withUnsafeBufferPointer{
+                    memcpy(dst, $0.baseAddress, size*MemoryLayout<Int64>.size)
+                }
             }
             else{
                 fatalError("Unsupported Type: \(OriginalType.self)!")

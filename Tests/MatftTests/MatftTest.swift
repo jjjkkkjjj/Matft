@@ -11,11 +11,11 @@ import XCTest
 final class MatftTests: XCTestCase {
     
     func testCreation(){
-        let a = MfArray<Int32>([[[ Int32(-8),  -7,  -6,  -5],
-                                  [ -4,  -3,  -2,  -1]],
-                        
-                                 [[ 0,  1,  2,  3],
-                                  [ 4,  5,  6,  7]]])
+        let a = MfArray<Int>([[[ -8,  -7,  -6,  -5],
+                              [ -4,  -3,  -2,  -1]],
+                    
+                             [[ 0,  1,  2,  3],
+                              [ 4,  5,  6,  7]]])
         
 
         print(a.data)
