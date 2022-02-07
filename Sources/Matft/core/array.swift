@@ -10,6 +10,7 @@ import Accelerate
 
 public class MfArray<T: MfTypeUsable>{
     public typealias MfArrayType = T
+    internal typealias MfArrayStoredType = T.StoredType
     
     public internal(set) var mfdata: MfData<MfArrayType>
     public internal(set) var mfstructure: MfStructure
@@ -73,6 +74,18 @@ public class MfArray<T: MfTypeUsable>{
         self.mfdata = MfData(flattenArray: &flatten)
         self.mfstructure = MfStructure(shape: shape, mforder: mforder)
     }
+    
+    
+    /// Create a MfArray with VIEW based on base mfarray
+    /// - Parameters:
+    ///   - base: The base mfarray
+    ///   - mfstructure: New structure
+    ///   - offset: The offset value from base's data
+    public init (base: MfArray, mfstructure: MfStructure, offset: Int){
+            self.base = base
+            self.mfdata = MfData(base: base.mfdata, offset: offset)
+            self.mfstructure = mfstructure//mfstructure will be copied because mfstructure is struct
+        }
     
     deinit {
         self.base = nil

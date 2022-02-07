@@ -8,6 +8,20 @@
 import Foundation
 
 
+/// Get a positive index from a given index
+/// - Parameters:
+///   - index: An index. Negative index will be converted into positive one as return value
+///   - dim: Dimension
+///   - axis: An axis
+/// - Returns: A positive index
+internal func get_positive_index(_ index: Int, dim: Int, axis: Int) -> Int{
+    let ret_index = index >= 0 ? index : index + dim
+    precondition(0 <= ret_index && ret_index < dim, "\(index) is out of bounds for axis \(axis) with \(dim)")
+    
+    return ret_index
+}
+
+
 /// Index sequence for a flatten array
 internal struct FlattenIndSequence: Sequence{
     let shape: [Int]

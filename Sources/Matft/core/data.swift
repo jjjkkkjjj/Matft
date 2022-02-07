@@ -9,11 +9,11 @@ import Foundation
 
 public class MfData<T: MfTypeUsable>{
     public typealias MfArrayType = T
-    public typealias MfArrayStoredType = T.StoredType
+    internal typealias MfArrayStoredType = T.StoredType
     
-    private var _refdata: MfData?
+    private var _base: MfData?
     internal var _isView: Bool{
-        return self._refdata != nil
+        return self._base != nil
     }
     
     /// The stored data's pointer
@@ -45,13 +45,25 @@ public class MfData<T: MfTypeUsable>{
         self.offset = 0
     }
     
+    
+    /// Create a MfData with VIEW based on base mfdata
+    /// - Parameters:
+    ///   - base: The base mfdata
+    ///   - offset: The offset value from base's data
+    public init(base: MfData, offset: Int){
+        self._base = base
+        // Note that this storedPtr will not be freed in this MfData!
+        self.storedPtr = base.storedPtr
+        self.offset = offset
+    }
+    
     deinit {
         if !self._isView{
             // deallocate
             self.storedPtr.deallocate()
         }
         
-        self._refdata = nil
+        self._base = nil
     }
 }
 
