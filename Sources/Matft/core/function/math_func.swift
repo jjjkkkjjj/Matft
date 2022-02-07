@@ -533,9 +533,9 @@ extension Matft.math{//use vDSP
         
         switch mfarray.storedType {
         case .Float:
-            return sign_by_evDSP(mfarray, lower: Float(-1), upper: Float(1), evDSP_sign)
+            return sign_by_vDSP(mfarray, vDSP_vminmg_func: vDSP_vminmg, vDSP_viclip_func: vDSP_viclip, vForce_copysign_func: vvcopysignf)
         case .Double:
-            return sign_by_evDSP(mfarray, lower: Double(-1), upper: Double(1), evDSP_signD)
+            return sign_by_vDSP(mfarray, vDSP_vminmg_func: vDSP_vminmgD, vDSP_viclip_func: vDSP_viclipD, vForce_copysign_func: vvcopysign)
         }
     }
 }

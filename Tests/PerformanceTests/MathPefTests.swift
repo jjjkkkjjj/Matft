@@ -47,8 +47,8 @@ final class MathPefTests: XCTestCase {
                 let _ = Matft.math.sign(a)
             }
             /*
-             average: 0.030, relative standard deviation: 7.006%, values: [0.030391, 0.028586, 0.026669, 0.027902, 0.031177, 0.029743, 0.032523, 0.034133, 0.031864, 0.030903]
-            30.4ms
+             average: 0.003, relative standard deviation: 24.007%, values: [0.005204, 0.003871, 0.003393, 0.003030, 0.003063, 0.002735, 0.002716, 0.002659, 0.002650, 0.002658]
+            3.20ms
              */
         }
     }
@@ -61,8 +61,8 @@ final class MathPefTests: XCTestCase {
                 let _ = Matft.math.sign(b)
             }
             /*
-             average: 0.036, relative standard deviation: 12.528%, values: [0.035343, 0.033219, 0.037924, 0.044944, 0.042078, 0.032277, 0.032339, 0.034491, 0.032207, 0.030740]
-            35.6ms
+             average: 0.003, relative standard deviation: 20.959%, values: [0.004195, 0.003275, 0.003214, 0.002595, 0.002604, 0.002686, 0.002267, 0.002244, 0.002492, 0.002268]
+            2.78ms
              */
         }
     }

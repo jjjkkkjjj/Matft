@@ -596,17 +596,17 @@ posb = a > 0
 | ------------------------ | ----------------- | ----------------- |----------------- |
 |   `let _ = Matft.math.sin(a)`   |    `1.80ms`         |     `np.sin(a)`    |   `14.7ms`         |
 |   `let _ = Matft.math.sin(b)`   |    `8.24ms`         |     `np.sin(b)`    |   `15.8ms`         |
-|   `let _ = Matft.math.sign(a)`   |    `30.4ms`         |     `np.sign(a)`    |   `1.37ms`         |
-|   `let _ = Matft.math.sign(b)`   |    `35.6ms`         |     `np.sign(b)`    |   `1.42ms`         |
+|   `let _ = Matft.math.sign(a)`   |    `3.20ms`         |     `np.sign(a)`    |   `1.37ms`         |
+|   `let _ = Matft.math.sign(b)`   |    `2.78ms`         |     `np.sign(b)`    |   `1.42ms`         |
 
 - Bool test
 
 | Matft                          |     time               | Numpy            |   time               |
 | ------------------------ | ----------------- | ----------------- |----------------- |
-|   `let _ = a > 0`   |    `7.27ms`         |     `a > 0`    |   `855μs`         |
+|   `let _ = a > 0`   |    `5.01ms`         |     `a > 0`    |   `855μs`         |
 |   `let _ = a > b`   |    `13.3ms`         |     `a > b`    |   `1.83ms`         |
 |   `let _ = a === 0`   |    `9.91ms`         |     `a == 0`    |   `603μs`         |
-|   `let _ = a === b`   |    `22.3ms`         |     `a == b`    |   `1.78ms`         |
+|   `let _ = a === b`   |    `17.9ms`         |     `a == b`    |   `1.78ms`         |
 
 - Indexing test
 

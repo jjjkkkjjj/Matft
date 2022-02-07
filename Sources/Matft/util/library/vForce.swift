@@ -51,3 +51,5 @@ internal func math_biop_vv_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mf
     let newmfstructure = copy_mfstructure(l_mfarray.mfstructure)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
+
+internal typealias vForce_copysign_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void

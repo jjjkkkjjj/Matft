@@ -19,8 +19,8 @@ final class BoolPefTests: XCTestCase {
                 let _ = a > 0
             }
             /*
-             average: 0.005, relative standard deviation: 29.541%, values: [0.010153, 0.005457, 0.004667, 0.004294, 0.004840, 0.004900, 0.004404, 0.004938, 0.005424, 0.005643]
-            5.47ms
+             average: 0.005, relative standard deviation: 21.157%, values: [0.008025, 0.005333, 0.004917, 0.005099, 0.004411, 0.004362, 0.004531, 0.004916, 0.004222, 0.004360]
+            5.01ms
              */
         }
     }
@@ -61,7 +61,7 @@ final class BoolPefTests: XCTestCase {
                 let _ = a === b
             }
             /*
-             average: 0.022, relative standard deviation: 13.122%, values: [0.030443, 0.023247, 0.023287, 0.020883, 0.021200, 0.020453, 0.019885, 0.020128, 0.022114, 0.021631]
+             average: 0.018, relative standard deviation: 4.942%, values: [0.019387, 0.017090, 0.019169, 0.017611, 0.017275, 0.018815, 0.016749, 0.017909, 0.018322, 0.017130]
             22.3ms
              */
         }
