@@ -57,6 +57,19 @@ public class MfData<T: MfTypeUsable>{
         self.offset = offset
     }
     
+    
+    /// Create a zero padded MfData
+    /// - Parameter size: A size
+    public init(size: Int){
+        // dynamic allocation
+        typealias ptr = UnsafeMutableBufferPointer<MfArrayStoredType>
+        let storedPtr = ptr.allocate(capacity: size)
+        storedPtr.initialize(repeating: MfArrayStoredType.zero)
+        
+        self.storedPtr = storedPtr
+        self.offset = 0
+    }
+    
     deinit {
         if !self._isView{
             // deallocate

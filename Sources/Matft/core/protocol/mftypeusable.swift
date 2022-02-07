@@ -10,7 +10,7 @@ import Accelerate
 
 /// The type comformed to this protocol can use MfArray
 public protocol MfTypeUsable: Equatable{
-    associatedtype StoredType: MfStoredTypeUsable
+    associatedtype StoredType: MfStoredTypeUsable, MfTypeUsable
     
     /// Return zero with this type
     static var zero: Self { get }

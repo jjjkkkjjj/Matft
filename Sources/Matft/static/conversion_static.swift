@@ -55,4 +55,14 @@ extension Matft{
         //return newarray
         return MfArray(base: mfarray, mfstructure: newstructure, offset: mfarray.offsetIndex)
     }
+    
+    
+    /// Convert a given mfarray into a contiguous one
+    /// - Parameters:
+    ///   - mfarray: The source mfarray
+    ///   - mforder: An order
+    /// - Returns: The contiguous mfarray
+    public static func to_contiguous<T: MfTypeUsable>(_ mfarray: MfArray<T>, mforder: MfOrder) -> MfArray<T>{
+        return contiguous_by_cblas(mfarray, cblas_func: T.StoredType.cblas_copy_func, mforder: mforder)
+    }
 }

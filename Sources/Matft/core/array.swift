@@ -82,10 +82,20 @@ public class MfArray<T: MfTypeUsable>{
     ///   - mfstructure: New structure
     ///   - offset: The offset value from base's data
     public init (base: MfArray, mfstructure: MfStructure, offset: Int){
-            self.base = base
-            self.mfdata = MfData(base: base.mfdata, offset: offset)
-            self.mfstructure = mfstructure//mfstructure will be copied because mfstructure is struct
-        }
+        self.base = base
+        self.mfdata = MfData(base: base.mfdata, offset: offset)
+        self.mfstructure = mfstructure//mfstructure will be copied because mfstructure is struct
+    }
+    
+    
+    /// Create a MfArray from mfdata and mfstructure
+    /// - Parameters:
+    ///   - mfdata: New data
+    ///   - mfstructure: New structure
+    public init (mfdata: MfData<MfArrayType>, mfstructure: MfStructure){
+        self.mfdata = mfdata
+        self.mfstructure = mfstructure
+    }
     
     deinit {
         self.base = nil

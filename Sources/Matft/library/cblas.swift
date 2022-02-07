@@ -26,7 +26,13 @@ internal func wrap_cblas_copy<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcS
     cblas_func(Int32(size), srcptr, Int32(srcStride), dstptr, Int32(dstStride))
 }
 
-internal func copy_by_cblas<T: MfTypeUsable>(_ src_mfarray: MfArray<T>, _ dst_mfarray: MfArray<T>, cblas_func: cblas_copy_func<T.StoredType>) -> MfArray<T>{
+
+/// Copy mfarray by cblas
+/// - Parameters:
+///   - src_mfarray: The source mfarray
+///   - dst_mfarray: The destination mfarray
+///   - cblas_func: cblas_copy_function
+internal func copy_by_cblas<T: MfTypeUsable>(_ src_mfarray: MfArray<T>, _ dst_mfarray: MfArray<T>, cblas_func: cblas_copy_func<T.StoredType>) -> Void{
     
     let shape = dst_mfarray.shape
     let bigger_strides = dst_mfarray.strides
@@ -69,6 +75,36 @@ internal func copy_by_cblas<T: MfTypeUsable>(_ src_mfarray: MfArray<T>, _ dst_mf
             }
         }
     }
+    
+    return
+}
+
+
+/// Convert contiguous mfarray
+/// - Parameters:
+///   - src_mfarray: The source mfarray
+///   - cblas_func: cblas_copy_function
+///   - mforder: The order
+/// - Returns: Contiguous mfarray
+internal func contiguous_by_cblas<T: MfTypeUsable>(_ src_mfarray: MfArray<T>, cblas_func: cblas_copy_func<T.StoredType>, mforder: MfOrder) -> MfArray<T>{
+        
+    switch mforder {
+    case .Row:
+        if src_mfarray.mfstructure.row_contiguous{
+            return copy_all_mfarray(src_mfarray)
+        }
+    case .Column:
+        if src_mfarray.mfstructure.column_contiguous{
+            return copy_all_mfarray(src_mfarray)
+        }
+    }
+    
+    let newsize = src_mfarray.size
+    let newdata: MfData<T> = MfData(size: newsize)
+    let newstructure = MfStructure(shape: src_mfarray.shape, mforder: mforder)
+    let dst_mfarray = MfArray(mfdata: newdata, mfstructure: newstructure)
+    
+    copy_by_cblas(src_mfarray, dst_mfarray, cblas_func: T.StoredType.cblas_copy_func)
     
     return dst_mfarray
 }

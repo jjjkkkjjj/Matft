@@ -212,7 +212,7 @@ extension MfArray: MfSubscriptable{
             new_array = new_array.broadcast_to(shape: dst_array.shape)
         }
         
-        _ = copy_by_cblas(new_array, dst_array, cblas_func: MfArrayStoredType.cblas_copy_func)
+        copy_by_cblas(new_array, dst_array, cblas_func: MfArrayStoredType.cblas_copy_func)
     }
     
     // fancy indexing
