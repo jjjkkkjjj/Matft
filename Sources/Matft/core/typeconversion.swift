@@ -125,11 +125,16 @@ extension ArrayConversionToOriginalType: TypeConversionProtocol where PostType: 
                 }
             }
             else if let dst = dst as? UnsafeMutablePointer<Bool>{
+                // I think type is assured due to generics, so below code is valid
+                dst.withMemoryRebound(to: UInt8.self, capacity: size){
+                    vDSP_vfixu8(src, vDSP_Stride(1), $0, vDSP_Stride(1), vDSP_Length(size))
+                }
+                /*
                 let srcarr = Array(UnsafeBufferPointer(start: src, count: size))
                 let bool = srcarr.map{ $0 != 0 }
                 _ = bool.withUnsafeBufferPointer{
                     memcpy(dst, $0.baseAddress, size*MemoryLayout<Bool>.size)
-                }
+                }*/
             }
             
             else{
@@ -205,11 +210,15 @@ extension ArrayConversionToOriginalType: TypeConversionProtocol where PostType: 
                 }
             }
             else if let dst = dst as? UnsafeMutablePointer<Bool>{
+                dst.withMemoryRebound(to: UInt8.self, capacity: size){
+                    vDSP_vfixu8D(src, vDSP_Stride(1), $0, vDSP_Stride(1), vDSP_Length(size))
+                }
+                /*
                 let srcarr = Array(UnsafeBufferPointer(start: src, count: size))
                 let bool = srcarr.map{ $0 != 0 }
                 _ = bool.withUnsafeBufferPointer{
                     memcpy(dst, $0.baseAddress, size*MemoryLayout<Bool>.size)
-                }
+                }*/
             }
             else{
                 fatalError("Unsupported Type: \(OriginalType.self)!")
