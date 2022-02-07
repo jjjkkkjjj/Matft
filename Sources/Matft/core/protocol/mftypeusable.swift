@@ -168,6 +168,7 @@ extension Int: MfNumeric, StoredFloat, MfSignedNumeric {
 
 
 extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
+    public static var vDSP_preop_func: vDSP_convert_func<Float, Float> = vDSP_vneg
     public static var vDSP_vcmprs_func: vDSP_vcmprs_func<Float> = vDSP_vcmprs
     
     public static var cblas_copy_func: cblas_copy_func<Float> = cblas_scopy
@@ -215,6 +216,7 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
 
 }
 extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
+    public static var vDSP_preop_func: vDSP_convert_func<Double, Double> = vDSP_vnegD
     public static var vDSP_vcmprs_func: vDSP_vcmprs_func<Double> = vDSP_vcmprsD
     
     public static var cblas_copy_func: cblas_copy_func<Double> = cblas_dcopy

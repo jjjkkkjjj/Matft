@@ -81,7 +81,7 @@ final class BoolTests: XCTestCase {
         }
     }
     
-    /*
+    
     func testLogicalNot(){
         do{
             let a = MfArray<Bool>([true, false])
@@ -89,7 +89,7 @@ final class BoolTests: XCTestCase {
         }
         
         do{
-            let a = MfArray<Double>([2, 1, -3, 0])
+            let a = MfArray<Double>([2.0, 1.0, -3.0, 0.0])
             let b = MfArray<Double>([2.0, 1.01, -3.0, 0.0])
             
             XCTAssertEqual(a === b, MfArray<Bool>([true, false, true, true]))
@@ -128,7 +128,7 @@ final class BoolTests: XCTestCase {
         }
         
         do{
-            let a = MfArray<Double>([2, 1, -3, 0])
+            let a = MfArray<Double>([2.0, 1.0, -3.0, 0.0])
             let b = MfArray<Double>([2.0, 1.01, -3.0, 0.0])
             
             XCTAssertEqual(a === b, MfArray<Bool>([true, false, true, true]))
@@ -161,7 +161,7 @@ final class BoolTests: XCTestCase {
                                                     [true,true]]]))
         }
     }
-    
+    /*
     func testLess(){
         do{
             let a = MfArray<Int>([[24, 15,  8, 65, 82],

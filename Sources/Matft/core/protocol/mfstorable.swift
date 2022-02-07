@@ -13,6 +13,7 @@ public protocol MfStoredTypeUsable{
     
     //======= vDSP ========//
     static var vDSP_vcmprs_func: vDSP_vcmprs_func<Self>{ get }
+    static var vDSP_preop_func: vDSP_convert_func<Self, Self>{ get }
     
     //======= cblas ========//
     static var cblas_copy_func: cblas_copy_func<Self>{ get }
