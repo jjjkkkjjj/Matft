@@ -18,7 +18,9 @@ public class MfData<T: MfTypeUsable>{
     
     /// The stored data's pointer
     internal var storedPtr: UnsafeMutableBufferPointer<MfArrayStoredType>
-    
+    internal var storedData: [MfArrayStoredType]{
+        return Array<MfArrayStoredType>(self.storedPtr)
+    }
     /// The size of the stored data
     internal var storedSize: Int {
         return self.storedPtr.count
@@ -39,6 +41,24 @@ public class MfData<T: MfTypeUsable>{
         // type conversion
         _ = flattenArray.withUnsafeBufferPointer{
             ArrayConversionToStoredType(src: $0.baseAddress!, dst: storedPtr.baseAddress!, size: flattenArray.count)
+        }
+        
+        self.storedPtr = storedPtr
+        self.offset = 0
+    }
+    
+    
+    /// Initialization from stored flatten array.
+    /// - Parameters:
+    ///   - orig_type: The original type
+    ///   - storedFlattenArray: An input stored flatten array
+    public init(_ orig_type: MfArrayType.Type, storedFlattenArray: inout [MfArrayType.StoredType]){
+        // dynamic allocation
+        typealias ptr = UnsafeMutableBufferPointer<MfArrayStoredType>
+        let storedPtr = ptr.allocate(capacity: storedFlattenArray.count)
+        
+        _ = storedFlattenArray.withUnsafeBufferPointer{
+            memcpy(storedPtr.baseAddress!, $0.baseAddress!, storedFlattenArray.count*MemoryLayout<MfArrayStoredType>.size)
         }
         
         self.storedPtr = storedPtr

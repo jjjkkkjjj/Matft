@@ -99,6 +99,17 @@ internal func contiguous_by_cblas<T: MfTypeUsable>(_ src_mfarray: MfArray<T>, cb
         }
     }
     
+    return samesize_by_cblas(src_mfarray, cblas_func: cblas_func, mforder: mforder)
+}
+
+
+/// Convert mfarray with same size as an internal stored data size
+/// - Parameters:
+///   - src_mfarray: The source mfarray
+///   - cblas_func: cblas_copy_func
+///   - mforder: An order
+/// - Returns: The destination mfarray with same size as an internal stored data size
+internal func samesize_by_cblas<T: MfTypeUsable>(_ src_mfarray: MfArray<T>, cblas_func: cblas_copy_func<T.StoredType>, mforder: MfOrder) -> MfArray<T>{
     let newsize = src_mfarray.size
     let newdata: MfData<T> = MfData(size: newsize)
     let newstructure = MfStructure(shape: src_mfarray.shape, mforder: mforder)

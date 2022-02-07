@@ -96,7 +96,7 @@ extension MfData: CustomStringConvertible{
         ret += "Original Type\t: \(MfArrayType.self)\n"
         ret += "Stored Type\t\t: \(MfArrayStoredType.self)\n"
         ret += "Raw Data:\n"
-        ret += "\(Array(self.storedPtr))\n"
+        ret += "\(self.storedData)\n"
         
         ret += "\n"
         
