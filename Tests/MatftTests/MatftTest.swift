@@ -26,4 +26,17 @@ final class MatftTests: XCTestCase {
         print(a.mfdata)
         print(a.mfstructure)
     }
+    
+    func testCreation2(){
+        let a = MfArray<Bool>([true, false, false, true])
+        
+
+        print(a.data)
+        print(a.mfdata.storedPtr[0])
+        print(a.shape)
+        print(a.strides)
+        print(a)
+        print(a.mfdata)
+        print(a.mfstructure)
+    }
 }

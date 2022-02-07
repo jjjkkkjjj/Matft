@@ -124,6 +124,13 @@ extension ArrayConversionToOriginalType: TypeConversionProtocol where PostType: 
                     memcpy(dst, $0.baseAddress, size*MemoryLayout<Int64>.size)
                 }
             }
+            else if let dst = dst as? UnsafeMutablePointer<Bool>{
+                let srcarr = Array(UnsafeBufferPointer(start: src, count: size))
+                let bool = srcarr.map{ $0 != 0 }
+                _ = bool.withUnsafeBufferPointer{
+                    memcpy(dst, $0.baseAddress, size*MemoryLayout<Bool>.size)
+                }
+            }
             
             else{
                 fatalError("Unsupported Type: \(OriginalType.self)!")
@@ -195,6 +202,13 @@ extension ArrayConversionToOriginalType: TypeConversionProtocol where PostType: 
                 let i64 = srcarr.map{ Int64($0) }
                 _ = i64.withUnsafeBufferPointer{
                     memcpy(dst, $0.baseAddress, size*MemoryLayout<Int64>.size)
+                }
+            }
+            else if let dst = dst as? UnsafeMutablePointer<Bool>{
+                let srcarr = Array(UnsafeBufferPointer(start: src, count: size))
+                let bool = srcarr.map{ $0 != 0 }
+                _ = bool.withUnsafeBufferPointer{
+                    memcpy(dst, $0.baseAddress, size*MemoryLayout<Bool>.size)
                 }
             }
             else{
@@ -284,6 +298,13 @@ extension ArrayConversionToStoredType: TypeConversionProtocol where PreType: MfT
                     vDSP_vflt32($0, vDSP_Stride(2), dst, vDSP_Stride(1), vDSP_Length(size))
                 }
             }
+            else if let src = src as? UnsafePointer<Bool>{
+                // tricky method!!
+                // deal with Bool as UInt8
+                src.withMemoryRebound(to: UInt8.self, capacity: size){
+                    vDSP_vfltu8($0, vDSP_Stride(1), dst, vDSP_Stride(1), vDSP_Length(size))
+                }
+            }
             else{
                 fatalError("Unsupported Type: \(OriginalType.self)!")
             }
@@ -354,6 +375,13 @@ extension ArrayConversionToStoredType: TypeConversionProtocol where PreType: MfT
                 // note that
                 src.withMemoryRebound(to: Int32.self, capacity: size*2){
                     vDSP_vflt32D($0, vDSP_Stride(2), dst, vDSP_Stride(1), vDSP_Length(size))
+                }
+            }
+            else if let src = src as? UnsafePointer<Bool>{
+                // tricky method!!
+                // deal with Bool as UInt8
+                src.withMemoryRebound(to: UInt8.self, capacity: size){
+                    vDSP_vfltu8D($0, vDSP_Stride(1), dst, vDSP_Stride(1), vDSP_Length(size))
                 }
             }
             else{
