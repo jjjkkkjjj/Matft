@@ -6,6 +6,7 @@
 //
 
 import XCTest
+/*
 @testable import Matft
 
 final class MatftTests: XCTestCase {
@@ -51,3 +52,4 @@ final class MatftTests: XCTestCase {
         print(Matft.equal(a, a))
     }
 }
+*/

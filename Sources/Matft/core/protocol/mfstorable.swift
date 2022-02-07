@@ -9,6 +9,8 @@ import Foundation
 
 /// The type comformed to this protocol can use MfArray
 public protocol MfStoredTypeUsable{
+    static func from<T: MfTypeUsable>(_ value: T) -> Self
+    
     //======= vDSP ========//
     static var vDSP_vcmprs_func: vDSP_vcmprs_func<Self>{ get }
     

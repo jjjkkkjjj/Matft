@@ -82,7 +82,7 @@ extension MfArray: MfSubscriptable{
         //Indexing ref: https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
         while orig_axis < self.ndim {
             if let _index = indices[orig_axis] as? Int { // normal indexing
-                let index = get_positive_index(_index, dim: orig_shape[orig_axis], axis: orig_axis)
+                let index = get_positive_index(_index, axissize: orig_shape[orig_axis], axis: orig_axis)
 
                 offset += index * orig_strides[orig_axis]
                 orig_axis += 1 // not move

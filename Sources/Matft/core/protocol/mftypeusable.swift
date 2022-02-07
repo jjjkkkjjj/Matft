@@ -181,6 +181,38 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     public static func from<T>(_ value: T) -> Float where T : MfBinary {
         return value != T.zero ? Float(1) : Float.zero
     }
+    
+    public static func from<T: MfTypeUsable>(_ value: T) -> Float{
+        switch value {
+        case is UInt8:
+            return Float(value as! UInt8)
+        case is UInt16:
+            return Float(value as! UInt16)
+        case is UInt32:
+            return Float(value as! UInt32)
+        case is UInt64:
+            return Float(value as! UInt64)
+        case is UInt:
+            return Float(value as! UInt)
+        case is Int8:
+            return Float(value as! Int8)
+        case is Int16:
+            return Float(value as! Int16)
+        case is Int32:
+            return Float(value as! Int32)
+        case is Int64:
+            return Float(value as! Int64)
+        case is Int:
+            return Float(value as! Int)
+        case is Float:
+            return value as! Float
+        case is Double:
+            return Float(value as! Double)
+        default:
+            fatalError("cannot convert value to Float")
+        }
+    }
+
 }
 extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     public static var vDSP_vcmprs_func: vDSP_vcmprs_func<Double> = vDSP_vcmprsD
@@ -195,6 +227,36 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     }
     public static func from<T>(_ value: T) -> Double where T : MfBinary {
         return value != T.zero ? Double(1) : Double.zero
+    }
+    public static func from<T: MfTypeUsable>(_ value: T) -> Double{
+        switch value {
+        case is UInt8:
+            return Double(value as! UInt8)
+        case is UInt16:
+            return Double(value as! UInt16)
+        case is UInt32:
+            return Double(value as! UInt32)
+        case is UInt64:
+            return Double(value as! UInt64)
+        case is UInt:
+            return Double(value as! UInt)
+        case is Int8:
+            return Double(value as! Int8)
+        case is Int16:
+            return Double(value as! Int16)
+        case is Int32:
+            return Double(value as! Int32)
+        case is Int64:
+            return Double(value as! Int64)
+        case is Int:
+            return Double(value as! Int)
+        case is Float:
+            return Double(value as! Float)
+        case is Double:
+            return value as! Double
+        default:
+            fatalError("cannot convert value to Double")
+        }
     }
 }
 

@@ -1,5 +1,5 @@
 //
-//  math_method.swift
+//  math+method.swift
 //  
 //
 //  Created by Junnosuke Kado on 2022/02/06.

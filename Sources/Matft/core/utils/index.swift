@@ -11,16 +11,28 @@ import Foundation
 /// Get a positive index from a given index
 /// - Parameters:
 ///   - index: An index. Negative index will be converted into positive one as return value
-///   - dim: Dimension
+///   - axissize: The axis size of a given index
 ///   - axis: An axis
 /// - Returns: A positive index
-internal func get_positive_index(_ index: Int, dim: Int, axis: Int) -> Int{
-    let ret_index = index >= 0 ? index : index + dim
-    precondition(0 <= ret_index && ret_index < dim, "\(index) is out of bounds for axis \(axis) with \(dim)")
+internal func get_positive_index(_ index: Int, axissize: Int, axis: Int) -> Int{
+    let ret_index = index >= 0 ? index : index + axissize
+    precondition(0 <= ret_index && ret_index < axissize, "\(index) is out of bounds for axis \(axis) with \(axissize)")
     
     return ret_index
 }
 
+
+/// Get a positive axis from a given axis
+/// - Parameters:
+///   - axis: An axis index. Negative axis will be converted into positive one as return value
+///   - ndim: The dimension
+/// - Returns: A positive axis
+internal func get_positive_axis(_ axis: Int, ndim: Int) -> Int{
+    let ret_axis = axis >= 0 ? axis : axis + ndim
+    precondition(0 <= ret_axis && ret_axis < ndim, "\(axis) is out of bounds")
+    
+    return ret_axis
+}
 
 /// Index sequence for a flatten array
 internal struct FlattenIndSequence: Sequence{

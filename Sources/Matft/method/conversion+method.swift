@@ -1,5 +1,5 @@
 //
-//  conversion_method.swift
+//  conversion+method.swift
 //  
 //
 //  Created by Junnosuke Kado on 2022/02/06.
@@ -8,6 +8,14 @@
 import Foundation
 
 extension MfArray{
+    
+    /// Create any ordered transposed mfarray. Created mfarray will be sharing data with original one
+    /// - Parameters:
+    ///   - axes: (Optional) the indices of shape. In case this is left out, get transposed mfarray
+    /// - Returns: A transposed mfarray
+    public func transpose(axes: [Int]? = nil) -> MfArray<T>{
+        return Matft.transpose(self, axes: axes)
+    }
     
     /// Create broadcasted mfarray.
     /// - Parameters:
