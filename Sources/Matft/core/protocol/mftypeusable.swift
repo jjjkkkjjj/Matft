@@ -10,7 +10,7 @@ import Accelerate
 
 /// The type comformed to this protocol can use MfArray
 public protocol MfTypeUsable: Equatable{
-    associatedtype StoredType: MfStoredTypeUsable, MfTypeUsable
+    associatedtype StoredType: MfStoredTypeUsable
     
     /// Return zero with this type
     static var zero: Self { get }
@@ -170,6 +170,8 @@ extension Int: MfNumeric, StoredFloat, MfSignedNumeric {
 extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     public static var vDSP_preop_func: vDSP_convert_func<Float, Float> = vDSP_vneg
     public static var vDSP_vcmprs_func: vDSP_vcmprs_func<Float> = vDSP_vcmprs
+    public static var vDSP_vminmg_func: vDSP_vminmg_func<Float> = vDSP_vminmg
+    public static var vDSP_viclip_func: vDSP_viclip_func<Float> = vDSP_viclip
     
     public static var cblas_copy_func: cblas_copy_func<Float> = cblas_scopy
     
@@ -218,6 +220,8 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
 extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     public static var vDSP_preop_func: vDSP_convert_func<Double, Double> = vDSP_vnegD
     public static var vDSP_vcmprs_func: vDSP_vcmprs_func<Double> = vDSP_vcmprsD
+    public static var vDSP_vminmg_func: vDSP_vminmg_func<Double> = vDSP_vminmgD
+    public static var vDSP_viclip_func: vDSP_viclip_func<Double> = vDSP_viclipD
     
     public static var cblas_copy_func: cblas_copy_func<Double> = cblas_dcopy
     

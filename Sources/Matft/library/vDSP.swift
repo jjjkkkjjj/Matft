@@ -12,6 +12,11 @@ public typealias vDSP_convert_func<T, U> = (UnsafePointer<T>, vDSP_Stride, Unsaf
 
 public typealias vDSP_vcmprs_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
+public typealias vDSP_vminmg_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+public typealias vDSP_viclip_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>,  UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+
 /// Wrapper of vDSP conversion function
 /// - Parameters:
 ///   - size: A size to be copied
@@ -23,6 +28,28 @@ public typealias vDSP_vcmprs_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePoi
 @inline(__always)
 internal func wrap_vDSP_convert<T, U>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafeMutablePointer<U>, _ dstStride: Int, _ vDSP_func: vDSP_convert_func<T, U>){
     vDSP_func(srcptr, vDSP_Stride(srcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
+}
+
+/// Wrapper of vDSP boolean conversion function
+/// - Parameters:
+///   - size: A size to be converted
+///   - srcptr: A source pointer
+///   - dstptr: A destination pointer
+///   - vDSP_vminmg_func: The vDSP vminmg function
+///   - vDSP_viclip_func: The vDSP viclip function
+@inline(__always)
+internal func wrap_vDSP_toBool<T: MfStoredTypeUsable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_vminmg_func: vDSP_vminmg_func<T>, _ vDSP_viclip_func: vDSP_viclip_func<T>){
+    // if |src| <= 1  => dst = |src|
+    //    |src| > 1   => dst = 1
+    // Note that the 0<= dst <= 1
+    var one = T.from(1)
+    vDSP_vminmg_func(srcptr, vDSP_Stride(1), &one, vDSP_Stride(0), dstptr, vDSP_Stride(1), vDSP_Length(size))
+    
+    var zero = T.zero
+    one = T.from(1)
+    // if src <= 0, 1 <= src   => dst = src
+    //    0 < src <= 1         => dst = 1
+    vDSP_viclip_func(dstptr, vDSP_Stride(1), &zero, &one, dstptr, vDSP_Stride(1), vDSP_Length(size))
 }
 
 
@@ -46,6 +73,34 @@ internal func preop_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ vDSP_func:
     let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
+
+
+/// Boolean conversion by vDSP
+/// - Parameter mfarray: An inpu mfarray
+/// - Returns: Converted mfarray
+internal func toBool_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Bool> where T.StoredType == Float{
+    
+    let size = mfarray.storedSize
+    let newdata: MfData<Bool> = MfData(size: mfarray.storedSize)
+    wrap_vDSP_toBool(size, mfarray.mfdata.storedPtr.baseAddress!, newdata.storedPtr.baseAddress!, Bool.StoredType.vDSP_vminmg_func, Bool.StoredType.vDSP_viclip_func)
+    
+    let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+}
+/*
+/// Boolean conversion by vDSP
+/// - Parameter mfarray: An inpu mfarray
+/// - Returns: Converted mfarray
+internal func toBool_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Bool> where T.StoredType == Double{
+    //let mfarray = mfarray.astype(Float.self)
+    let size = mfarray.storedSize
+    let newdata: MfData<Bool> = MfData(size: mfarray.storedSize)
+    wrap_vDSP_toBool(size, mfarray.mfdata.storedPtr.baseAddress!, newdata.storedPtr.baseAddress!, Bool.StoredType.vDSP_vminmg_func, Bool.StoredType.vDSP_viclip_func)
+    
+    let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+}
+*/
 
 /*
 internal func boolget_by_vDSP<T: MfTypeUsable>(_ src_mfarray: MfArray<T>, _ indices: MfArray<Bool>, _ vDSP_func: vDSP_vcmprs_func<T.StoredType>) -> MfArray<T>{
