@@ -12,6 +12,10 @@ public typealias vDSP_convert_func<T, U> = (UnsafePointer<T>, vDSP_Stride, Unsaf
 
 public typealias vDSP_biopvv_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
+public typealias vDSP_biopvs_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+public typealias vDSP_biopsv_func<T> = (UnsafePointer<T>, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
 public typealias vDSP_vcmprs_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
 public typealias vDSP_vminmg_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
@@ -44,6 +48,35 @@ internal func wrap_vDSP_convert<T, U>(_ size: Int, _ srcptr: UnsafePointer<T>, _
 @inline(__always)
 internal func wrap_vDSP_biopvv<T>(_ size: Int, _ lsrcptr: UnsafePointer<T>, _ lsrcStride: Int, _ rsrcptr: UnsafePointer<T>, _ rsrcStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_biopvv_func<T>){
     vDSP_func(rsrcptr, vDSP_Stride(rsrcStride), lsrcptr, vDSP_Stride(lsrcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
+}
+
+
+/// Wrapper of vDSP binary operation function
+/// - Parameters:
+///   - size: A size
+///   - srcptr: A source pointer
+///   - srcStride: A source stride
+///   - scalar: A source scalar pointer
+///   - dstptr: A destination pointer
+///   - dstStride: A destination stride
+///   - vDSP_func: The vDSP conversion function
+@inline(__always)
+internal func wrap_vDSP_biopvs<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ scalar: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_biopvs_func<T>){
+    vDSP_func(srcptr, vDSP_Stride(srcStride), scalar, dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
+}
+
+/// Wrapper of vDSP binary operation function
+/// - Parameters:
+///   - size: A size
+///   - scalar: A source scalar pointer
+///   - srcptr: A source pointer
+///   - srcStride: A source stride
+///   - dstptr: A destination pointer
+///   - dstStride: A destination stride
+///   - vDSP_func: The vDSP conversion function
+@inline(__always)
+internal func wrap_vDSP_biopsv<T>(_ size: Int, _ scalar: UnsafePointer<T>, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_biopsv_func<T>){
+    vDSP_func(scalar, srcptr, vDSP_Stride(srcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
 }
 
 /// Wrapper of vDSP boolean conversion function
@@ -123,6 +156,7 @@ internal func toBool_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<
 /// - Parameters:
 ///   - l_mfarray: The left mfarray
 ///   - r_mfarray: The right mfarray
+///   - vDSP_func: The vDSP biop function
 /// - Returns: The result mfarray
 internal func biopvv_by_vDSP<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, vDSP_func: vDSP_biopvv_func<T.StoredType>) -> MfArray<T>{
     // biggerL: flag whether l is bigger than r
@@ -154,6 +188,49 @@ internal func biopvv_by_vDSP<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray:
     else{
         newstructure = MfStructure(shape: r_mfarray.shape, strides: r_mfarray.strides)
     }
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+
+/// Binary operation by vDSP
+/// - Parameters:
+///   - l_mfarray: The left mfarray
+///   - r_scalr: The right scalar
+///   - vDSP_func: The vDSP biop function
+/// - Returns: The result mfarray
+internal func biopvs_by_vDSP<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T.StoredType, vDSP_func: vDSP_biopvs_func<T.StoredType>) -> MfArray<T>{
+    let l_mfarray = check_contiguous(l_mfarray)
+    var r_scalar = r_scalar
+    
+    let newdata: MfData<T> = MfData(size: l_mfarray.storedSize)
+    l_mfarray.withUnsafeMutableStartPointer{
+        [unowned l_mfarray] in
+        wrap_vDSP_biopvs(l_mfarray.storedSize, $0, 1, &r_scalar, newdata.storedPtr.baseAddress!, 1, vDSP_func)
+    }
+    
+    let newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// Binary operation by vDSP
+/// - Parameters:
+///   - l_scalar: The left scalar
+///   - r_mfarray: The right mfarray
+///   - vDSP_func: The vDSP biop function
+/// - Returns: The result mfarray
+internal func biopsv_by_vDSP<T: MfNumeric>(_ l_scalar: T.StoredType, _ r_mfarray: MfArray<T>, vDSP_func: vDSP_biopsv_func<T.StoredType>) -> MfArray<T>{
+    let r_mfarray = check_contiguous(r_mfarray)
+    var l_scalar = l_scalar
+    
+    let newdata: MfData<T> = MfData(size: r_mfarray.storedSize)
+    r_mfarray.withUnsafeMutableStartPointer{
+        [unowned r_mfarray] in
+        wrap_vDSP_biopsv(r_mfarray.storedSize, &l_scalar, $0, 1, newdata.storedPtr.baseAddress!, 1, vDSP_func)
+    }
+    
+    let newstructure = MfStructure(shape: r_mfarray.shape, strides: r_mfarray.strides)
+    
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 

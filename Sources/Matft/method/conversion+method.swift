@@ -16,6 +16,12 @@ extension MfArray{
     public func transpose(axes: [Int]? = nil) -> MfArray<T>{
         return Matft.transpose(self, axes: axes)
     }
+    /// Create any ordered transposed mfarray. Created mfarray will be sharing data with original one
+    /// - Parameters:
+    /// - Returns: A transposed mfarray
+    public var T: MfArray<T>{
+        return Matft.transpose(self)
+    }
     
     /// Create broadcasted mfarray.
     /// - Parameters:

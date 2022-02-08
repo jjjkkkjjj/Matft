@@ -15,7 +15,7 @@ extension Matft{
     /// - Parameters:
     ///   - l_mfarray: The left mfarray
     ///   - r_mfarray: The right mfarray
-    /// - Returns: The added mfarray
+    /// - Returns: The result mfarray
     public static func add<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: T.StoredType.vDSP_addvv_func)
@@ -24,7 +24,7 @@ extension Matft{
     /// - Parameters:
     ///   - l_mfarray: The left mfarray
     ///   - r_mfarray: The right mfarray
-    /// - Returns: The added mfarray
+    /// - Returns: The result mfarray
     public static func sub<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: T.StoredType.vDSP_subvv_func)
@@ -33,7 +33,7 @@ extension Matft{
     /// - Parameters:
     ///   - l_mfarray: The left mfarray
     ///   - r_mfarray: The right mfarray
-    /// - Returns: The added mfarray
+    /// - Returns: The result mfarray
     public static func mul<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: T.StoredType.vDSP_mulvv_func)
@@ -42,7 +42,7 @@ extension Matft{
     /// - Parameters:
     ///   - l_mfarray: The left mfarray
     ///   - r_mfarray: The right mfarray
-    /// - Returns: The added mfarray
+    /// - Returns: The result mfarray
     public static func div<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: T.StoredType.vDSP_divvv_func)
@@ -82,6 +82,38 @@ extension Matft{
     
     //============= left mfarray, right scalar operation =============//
     
+    /// Element-wise addition of  two mfarray
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_scalar: The right scalar
+    /// - Returns: The result mfarray
+    public static func add<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
+        return biopvs_by_vDSP(l_mfarray, T.StoredType.from(r_scalar), vDSP_func: T.StoredType.vDSP_addvs_func)
+    }
+    /// Element-wise subtraction of  two mfarray
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_scalar: The right scalar
+    /// - Returns: The result mfarray
+    public static func sub<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
+        return biopvs_by_vDSP(l_mfarray, -T.StoredType.from(r_scalar), vDSP_func: T.StoredType.vDSP_addvs_func)
+    }
+    /// Element-wise multiplication of  two mfarray
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_scalar: The right scalar
+    /// - Returns: The result mfarray
+    public static func mul<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
+        return biopvs_by_vDSP(l_mfarray, T.StoredType.from(r_scalar), vDSP_func: T.StoredType.vDSP_mulvs_func)
+    }
+    /// Element-wise division of  two mfarray
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_scalar: The right scalar
+    /// - Returns: The result mfarray
+    public static func div<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
+        return biopvs_by_vDSP(l_mfarray, T.StoredType.from(r_scalar), vDSP_func: T.StoredType.vDSP_divvs_func)
+    }
     /// Check equality in element-wise. Returned mfarray's type will be bool.
     /// - Parameters:
     ///   - l_mfarray: The left mfarray
@@ -114,6 +146,38 @@ extension Matft{
     
     //============= right mfarray, left scalar operation =============//
     
+    /// Element-wise addition of  two mfarray
+    /// - Parameters:
+    ///   - l_scalar: The left scalar
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The result mfarray
+    public static func add<T: MfNumeric>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+        return biopvs_by_vDSP(r_mfarray, T.StoredType.from(l_scalar), vDSP_func: T.StoredType.vDSP_addvs_func)
+    }
+    /// Element-wise addition of  two mfarray
+    /// - Parameters:
+    ///   - l_scalar: The left scalar
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The result mfarray
+    public static func sub<T: MfNumeric>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+        return biopvs_by_vDSP(-r_mfarray, T.StoredType.from(l_scalar), vDSP_func: T.StoredType.vDSP_addvs_func)
+    }
+    /// Element-wise addition of  two mfarray
+    /// - Parameters:
+    ///   - l_scalar: The left scalar
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The result mfarray
+    public static func mul<T: MfNumeric>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+        return biopvs_by_vDSP(r_mfarray, T.StoredType.from(l_scalar), vDSP_func: T.StoredType.vDSP_mulvs_func)
+    }
+    /// Element-wise addition of  two mfarray
+    /// - Parameters:
+    ///   - l_scalar: The left scalar
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The result mfarray
+    public static func div<T: MfNumeric>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+        return biopsv_by_vDSP(T.StoredType.from(l_scalar), r_mfarray, vDSP_func: T.StoredType.vDSP_divsv_func)
+    }
     /// Check equality in element-wise. Returned mfarray's type will be bool.
     /// - Parameters:
     ///   - l_scalar: The left scalar

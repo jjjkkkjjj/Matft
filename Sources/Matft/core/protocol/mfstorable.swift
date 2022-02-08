@@ -8,7 +8,7 @@
 import Foundation
 
 /// The type comformed to this protocol can use MfArray
-public protocol MfStoredTypeUsable: MfTypeUsable{
+public protocol MfStoredTypeUsable: MfTypeUsable, FloatingPoint{
     static func from<T: MfTypeUsable>(_ value: T) -> Self
     static func nealy_equal(_ lhs: Self, _ rhs: Self) -> Bool
     
@@ -19,6 +19,11 @@ public protocol MfStoredTypeUsable: MfTypeUsable{
     static var vDSP_subvv_func: vDSP_biopvv_func<Self>{ get }
     static var vDSP_mulvv_func: vDSP_biopvv_func<Self>{ get }
     static var vDSP_divvv_func: vDSP_biopvv_func<Self>{ get }
+    
+    static var vDSP_addvs_func: vDSP_biopvs_func<Self>{ get }
+    static var vDSP_mulvs_func: vDSP_biopvs_func<Self>{ get }
+    static var vDSP_divvs_func: vDSP_biopvs_func<Self>{ get }
+    static var vDSP_divsv_func: vDSP_biopsv_func<Self>{ get }
     
     static var vDSP_vcmprs_func: vDSP_vcmprs_func<Self>{ get }
     

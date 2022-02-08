@@ -175,6 +175,11 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     public static var vDSP_mulvv_func: vDSP_biopvv_func<Float> = vDSP_vmul
     public static var vDSP_divvv_func: vDSP_biopvv_func<Float> = vDSP_vdiv
     
+    public static var vDSP_addvs_func: vDSP_biopvs_func<Float> = vDSP_vsadd
+    public static var vDSP_mulvs_func: vDSP_biopvs_func<Float> = vDSP_vsmul
+    public static var vDSP_divvs_func: vDSP_biopvs_func<Float> = vDSP_vsdiv
+    public static var vDSP_divsv_func: vDSP_biopsv_func<Float> = vDSP_svdiv
+    
     public static var vDSP_vcmprs_func: vDSP_vcmprs_func<Float> = vDSP_vcmprs
     
     public static var vDSP_vminmg_func: vDSP_vminmg_func<Float> = vDSP_vminmg
@@ -234,6 +239,11 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     public static var vDSP_subvv_func: vDSP_biopvv_func<Double> = vDSP_vsubD
     public static var vDSP_mulvv_func: vDSP_biopvv_func<Double> = vDSP_vmulD
     public static var vDSP_divvv_func: vDSP_biopvv_func<Double> = vDSP_vdivD
+    
+    public static var vDSP_addvs_func: vDSP_biopvs_func<Double> = vDSP_vsaddD
+    public static var vDSP_mulvs_func: vDSP_biopvs_func<Double> = vDSP_vsmulD
+    public static var vDSP_divvs_func: vDSP_biopvs_func<Double> = vDSP_vsdivD
+    public static var vDSP_divsv_func: vDSP_biopsv_func<Double> = vDSP_svdivD
     
     public static var vDSP_vcmprs_func: vDSP_vcmprs_func<Double> = vDSP_vcmprsD
     public static var vDSP_vminmg_func: vDSP_vminmg_func<Double> = vDSP_vminmgD
