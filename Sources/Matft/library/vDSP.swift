@@ -101,6 +101,32 @@ internal func wrap_vDSP_toBool<T: MfStoredTypeUsable>(_ size: Int, _ srcptr: Uns
     vDSP_viclip_func(dstptr, vDSP_Stride(1), &zero, &one, dstptr, vDSP_Stride(1), vDSP_Length(size))
 }
 
+/// Wrapper of vDSP sign generation function
+/// - Parameters:
+///   - size: A size to be converted
+///   - srcptr: A source pointer
+///   - dstptr: A destination pointer
+///   - vDSP_vminmg_func: The vDSP vminmg function
+///   - vDSP_viclip_func: The vDSP viclip function
+///   - vForce_copysign_func: The vForce copysign function
+@inline(__always)
+internal func wrap_vDSP_sign<T: MfStoredTypeUsable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_vminmg_func: vDSP_vminmg_func<T>, _ vDSP_viclip_func: vDSP_viclip_func<T>, _ vForce_copysign_func: vForce_copysign_func<T>){
+    var i32size = Int32(size)
+    
+    // if |src| <= 1  => dst = |src|
+    //    |src| > 1   => dst = 1
+    // Note that the 0<= dst <= 1
+    var one = T.from(1)
+    vDSP_vminmg_func(srcptr, vDSP_Stride(1), &one, vDSP_Stride(0), dstptr, vDSP_Stride(1), vDSP_Length(size))
+    
+    var zero = T.zero
+    one = T.from(1)
+    // if src <= 0, 1 <= src   => dst = src
+    //    0 < src <= 1         => dst = 1
+    vDSP_viclip_func(dstptr, vDSP_Stride(1), &zero, &one, dstptr, vDSP_Stride(1), vDSP_Length(size))
+    vForce_copysign_func(dstptr, dstptr, srcptr, &i32size)
+}
+
 
 /// Pre operation mfarray by vDSP
 /// - Parameters:
@@ -125,31 +151,49 @@ internal func preop_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ vDSP_func:
 
 
 /// Boolean conversion by vDSP
-/// - Parameter mfarray: An input    mfarray
+/// - Parameter mfarray: An input mfarray
 /// - Returns: Converted mfarray
 internal func toBool_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Bool> where T.StoredType == Float{
     
     let size = mfarray.storedSize
     let newdata: MfData<Bool> = MfData(size: mfarray.storedSize)
+
     wrap_vDSP_toBool(size, mfarray.mfdata.storedPtr.baseAddress!, newdata.storedPtr.baseAddress!, Bool.StoredType.vDSP_vminmg_func, Bool.StoredType.vDSP_viclip_func)
     
     let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
-/*
+
 /// Boolean conversion by vDSP
-/// - Parameter mfarray: An inpu mfarray
+/// - Parameter mfarray: An input mfarray
 /// - Returns: Converted mfarray
 internal func toBool_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Bool> where T.StoredType == Double{
     //let mfarray = mfarray.astype(Float.self)
+    
     let size = mfarray.storedSize
     let newdata: MfData<Bool> = MfData(size: mfarray.storedSize)
-    wrap_vDSP_toBool(size, mfarray.mfdata.storedPtr.baseAddress!, newdata.storedPtr.baseAddress!, Bool.StoredType.vDSP_vminmg_func, Bool.StoredType.vDSP_viclip_func)
+    // Double to Float
+    wrap_vDSP_convert(mfarray.storedSize, mfarray.mfdata.storedPtr.baseAddress!, 1, newdata.storedPtr.baseAddress!, 1, vDSP_vdpsp)
+    wrap_vDSP_toBool(size, newdata.storedPtr.baseAddress!, newdata.storedPtr.baseAddress!, Bool.StoredType.vDSP_vminmg_func, Bool.StoredType.vDSP_viclip_func)
     
     let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
-*/
+
+/// Generate sign by vDSP
+/// - Parameter mfarray: An input mfarray
+/// - Returns: Converted mfarray
+internal func sign_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<T>{
+    let mfarray = check_contiguous(mfarray)
+    
+    let size = mfarray.storedSize
+    let newdata: MfData<T> = MfData(size: mfarray.storedSize)
+    wrap_vDSP_sign(size, mfarray.mfdata.storedPtr.baseAddress!, newdata.storedPtr.baseAddress!, T.StoredType.vDSP_vminmg_func, T.StoredType.vDSP_viclip_func,
+        T.StoredType.vForce_copysign_func)
+    
+    let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+}
 
 
 /// Binary operation by vDSP

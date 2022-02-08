@@ -168,6 +168,7 @@ extension Int: MfNumeric, StoredFloat, MfSignedNumeric {
 
 
 extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
+    //======= vDSP ========//
     public static var vDSP_neg_func: vDSP_convert_func<Float, Float> = vDSP_vneg
     
     public static var vDSP_addvv_func: vDSP_biopvv_func<Float> = vDSP_vadd
@@ -185,7 +186,11 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     public static var vDSP_vminmg_func: vDSP_vminmg_func<Float> = vDSP_vminmg
     public static var vDSP_viclip_func: vDSP_viclip_func<Float> = vDSP_viclip
     
+    //======= cblas ========//
     public static var cblas_copy_func: cblas_copy_func<Float> = cblas_scopy
+    
+    //======= vForce ========//
+    public static var vForce_copysign_func: vForce_copysign_func<Float> = vvcopysignf
     
     public static func from<T>(_ value: T) -> Float where T : MfInterger {
         return Float(value)
@@ -233,6 +238,7 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     }
 }
 extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
+    //======= vDSP ========//
     public static var vDSP_neg_func: vDSP_convert_func<Double, Double> = vDSP_vnegD
     
     public static var vDSP_addvv_func: vDSP_biopvv_func<Double> = vDSP_vaddD
@@ -249,7 +255,11 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     public static var vDSP_vminmg_func: vDSP_vminmg_func<Double> = vDSP_vminmgD
     public static var vDSP_viclip_func: vDSP_viclip_func<Double> = vDSP_viclipD
     
+    //======= cblas ========//
     public static var cblas_copy_func: cblas_copy_func<Double> = cblas_dcopy
+    
+    //======= vForce ========//
+    public static var vForce_copysign_func: vForce_copysign_func<Double> = vvcopysign
     
     public static func from<T>(_ value: T) -> Double where T : MfInterger {
         return Double(value)

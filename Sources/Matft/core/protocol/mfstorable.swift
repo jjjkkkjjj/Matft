@@ -8,7 +8,7 @@
 import Foundation
 
 /// The type comformed to this protocol can use MfArray
-public protocol MfStoredTypeUsable: MfTypeUsable, FloatingPoint{
+public protocol MfStoredTypeUsable: FloatingPoint{
     static func from<T: MfTypeUsable>(_ value: T) -> Self
     static func nealy_equal(_ lhs: Self, _ rhs: Self) -> Bool
     
@@ -32,4 +32,7 @@ public protocol MfStoredTypeUsable: MfTypeUsable, FloatingPoint{
     
     //======= cblas ========//
     static var cblas_copy_func: cblas_copy_func<Self>{ get }
+    
+    //======= vForce ========//
+    static var vForce_copysign_func: vForce_copysign_func<Self>{ get }
 }

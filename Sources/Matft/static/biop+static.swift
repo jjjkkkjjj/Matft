@@ -60,7 +60,7 @@ extension Matft{
         var ret = zip(l_mfarray.mfdata.storedData, r_mfarray.mfdata.storedData).map{ T.StoredType.nealy_equal($0, $1) ? Bool.StoredType(1) : Bool.StoredType.zero }
         let newdata = MfData(Bool.self, storedFlattenArray: &ret)
         let newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
-        
+        //toBool_by_vDSP(l_mfarray - r_mfarray)
         return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     /// Check NOT equality in element-wise. Returned mfarray's type will be bool.

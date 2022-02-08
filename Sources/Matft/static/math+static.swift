@@ -7,7 +7,12 @@
 
 import Foundation
 
-extension Matft{
+extension Matft.math{
 
-    
+    /// Calculate sign of mfarray
+    /// - Parameter mfarray: An input mfarray
+    /// - Returns: The result mfarray
+    public static func sign<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<T>{
+        return sign_by_vDSP(mfarray)
+    }
 }

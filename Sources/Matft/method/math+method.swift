@@ -10,4 +10,9 @@ import Foundation
 extension MfArray{
     
     
+    /// Calculate sign of mfarray
+    /// - Returns: The result mfarray
+    public func sign() -> MfArray<MfArrayType>{
+        return Matft.math.sign(self)
+    }
 }
