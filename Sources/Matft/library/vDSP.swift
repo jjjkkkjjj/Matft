@@ -10,12 +10,13 @@ import Accelerate
 
 public typealias vDSP_convert_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<U>, vDSP_Stride, vDSP_Length) -> Void
 
+public typealias vDSP_biopvv_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
 public typealias vDSP_vcmprs_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
 public typealias vDSP_vminmg_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
 public typealias vDSP_viclip_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>,  UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
-
 
 /// Wrapper of vDSP conversion function
 /// - Parameters:
@@ -28,6 +29,21 @@ public typealias vDSP_viclip_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePoi
 @inline(__always)
 internal func wrap_vDSP_convert<T, U>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafeMutablePointer<U>, _ dstStride: Int, _ vDSP_func: vDSP_convert_func<T, U>){
     vDSP_func(srcptr, vDSP_Stride(srcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
+}
+
+/// Wrapper of vDSP binary operation function
+/// - Parameters:
+///   - size: A size
+///   - lsrcptr: A left  source pointer
+///   - lsrcStride: A left source stride
+///   - rsrcptr: A right source pointer
+///   - rsrcStride: A right source stride
+///   - dstptr: A destination pointer
+///   - dstStride: A destination stride
+///   - vDSP_func: The vDSP conversion function
+@inline(__always)
+internal func wrap_vDSP_biopvv<T>(_ size: Int, _ lsrcptr: UnsafePointer<T>, _ lsrcStride: Int, _ rsrcptr: UnsafePointer<T>, _ rsrcStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_biopvv_func<T>){
+    vDSP_func(rsrcptr, vDSP_Stride(rsrcStride), lsrcptr, vDSP_Stride(lsrcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
 }
 
 /// Wrapper of vDSP boolean conversion function
@@ -67,7 +83,7 @@ internal func preop_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ vDSP_func:
     //print(mfarray.strides)
     
     let newdata: MfData<T> = MfData(size: mfarray.storedSize)
-    wrap_vDSP_convert(mfarray.storedSize, mfarray.mfdata.storedPtr.baseAddress!, 1, newdata.storedPtr.baseAddress!, 1, T.StoredType.vDSP_preop_func)
+    wrap_vDSP_convert(mfarray.storedSize, mfarray.mfdata.storedPtr.baseAddress!, 1, newdata.storedPtr.baseAddress!, 1, T.StoredType.vDSP_neg_func)
     
     
     let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
@@ -76,7 +92,7 @@ internal func preop_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ vDSP_func:
 
 
 /// Boolean conversion by vDSP
-/// - Parameter mfarray: An inpu mfarray
+/// - Parameter mfarray: An input    mfarray
 /// - Returns: Converted mfarray
 internal func toBool_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Bool> where T.StoredType == Float{
     
@@ -101,6 +117,45 @@ internal func toBool_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 */
+
+
+/// Binary operation by vDSP
+/// - Parameters:
+///   - l_mfarray: The left mfarray
+///   - r_mfarray: The right mfarray
+/// - Returns: The result mfarray
+internal func biopvv_by_vDSP<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, vDSP_func: vDSP_biopvv_func<T.StoredType>) -> MfArray<T>{
+    // biggerL: flag whether l is bigger than r
+    // return mfarray must be either row or column major
+    let (l_mfarray, r_mfarray, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
+    
+    let newdata: MfData<T> = MfData(size: retsize)
+    l_mfarray.withUnsafeMutableStartPointer{
+        [unowned l_mfarray] (lptr) in
+        r_mfarray.withUnsafeMutableStartPointer{
+            [unowned r_mfarray] (rptr) in
+            if biggerL{ // l is bigger
+                for vDSPPrams in OptOffsetParamsSequence(shape: l_mfarray.shape, bigger_strides: l_mfarray.strides, smaller_strides: r_mfarray.strides){
+                    wrap_vDSP_biopvv(vDSPPrams.blocksize, lptr + vDSPPrams.b_offset, vDSPPrams.b_stride, rptr + vDSPPrams.s_offset, vDSPPrams.s_stride, newdata.storedPtr.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                }
+            }
+            else{ // r is bigger
+                for vDSPPrams in OptOffsetParamsSequence(shape: r_mfarray.shape, bigger_strides: r_mfarray.strides, smaller_strides: l_mfarray.strides){
+                    wrap_vDSP_biopvv(vDSPPrams.blocksize, lptr + vDSPPrams.s_offset, vDSPPrams.s_stride, rptr + vDSPPrams.b_offset, vDSPPrams.b_stride, newdata.storedPtr.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                }
+            }
+        }
+    }
+    
+    let newstructure: MfStructure
+    if biggerL{
+        newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
+    }
+    else{
+        newstructure = MfStructure(shape: r_mfarray.shape, strides: r_mfarray.strides)
+    }
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
 
 /*
 internal func boolget_by_vDSP<T: MfTypeUsable>(_ src_mfarray: MfArray<T>, _ indices: MfArray<Bool>, _ vDSP_func: vDSP_vcmprs_func<T.StoredType>) -> MfArray<T>{

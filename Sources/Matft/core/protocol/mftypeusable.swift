@@ -168,8 +168,15 @@ extension Int: MfNumeric, StoredFloat, MfSignedNumeric {
 
 
 extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
-    public static var vDSP_preop_func: vDSP_convert_func<Float, Float> = vDSP_vneg
+    public static var vDSP_neg_func: vDSP_convert_func<Float, Float> = vDSP_vneg
+    
+    public static var vDSP_addvv_func: vDSP_biopvv_func<Float> = vDSP_vadd
+    public static var vDSP_subvv_func: vDSP_biopvv_func<Float> = vDSP_vsub
+    public static var vDSP_mulvv_func: vDSP_biopvv_func<Float> = vDSP_vmul
+    public static var vDSP_divvv_func: vDSP_biopvv_func<Float> = vDSP_vdiv
+    
     public static var vDSP_vcmprs_func: vDSP_vcmprs_func<Float> = vDSP_vcmprs
+    
     public static var vDSP_vminmg_func: vDSP_vminmg_func<Float> = vDSP_vminmg
     public static var vDSP_viclip_func: vDSP_viclip_func<Float> = vDSP_viclip
     
@@ -215,10 +222,19 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
             fatalError("cannot convert value to Float")
         }
     }
-
+    
+    public static func nealy_equal(_ lhs: Float, _ rhs: Float) -> Bool{
+        return fabsf(lhs - rhs) < 1e-5
+    }
 }
 extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
-    public static var vDSP_preop_func: vDSP_convert_func<Double, Double> = vDSP_vnegD
+    public static var vDSP_neg_func: vDSP_convert_func<Double, Double> = vDSP_vnegD
+    
+    public static var vDSP_addvv_func: vDSP_biopvv_func<Double> = vDSP_vaddD
+    public static var vDSP_subvv_func: vDSP_biopvv_func<Double> = vDSP_vsubD
+    public static var vDSP_mulvv_func: vDSP_biopvv_func<Double> = vDSP_vmulD
+    public static var vDSP_divvv_func: vDSP_biopvv_func<Double> = vDSP_vdivD
+    
     public static var vDSP_vcmprs_func: vDSP_vcmprs_func<Double> = vDSP_vcmprsD
     public static var vDSP_vminmg_func: vDSP_vminmg_func<Double> = vDSP_vminmgD
     public static var vDSP_viclip_func: vDSP_viclip_func<Double> = vDSP_viclipD
@@ -263,6 +279,10 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
         default:
             fatalError("cannot convert value to Double")
         }
+    }
+    
+    public static func nealy_equal(_ lhs: Double, _ rhs: Double) -> Bool{
+        return fabs(lhs - rhs) < 1e-10
     }
 }
 

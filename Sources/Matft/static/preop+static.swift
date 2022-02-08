@@ -13,7 +13,7 @@ extension Matft{
     /// - Parameter mfarray: An input mfarray
     /// - Returns: Negated mfarray
     public static func neg<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<T>{
-        return preop_by_vDSP(mfarray, T.StoredType.vDSP_preop_func)
+        return preop_by_vDSP(mfarray, T.StoredType.vDSP_neg_func)
     }
     
     
