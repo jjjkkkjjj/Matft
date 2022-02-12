@@ -156,7 +156,7 @@ extension Matft{
     /// Create mfarray removed for 1-dimension
     /// - Parameters:
     ///   - mfarray: An input mfarray
-    ///   - axis: (Optional) the removed axis
+    ///   - axis: (Optional) the axis index to be squeezed
     /// - Returns: The squeezed mfarray
     public static func squeeze<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int? = nil) -> MfArray<T>{
         var new_shape = mfarray.shape
@@ -191,7 +191,7 @@ extension Matft{
     /// Create mfarray removed for 1-dimension
     /// - Parameters:
     ///   - mfarray: An input mfarray
-    ///   - axes: (Optional) the removed axes array
+    ///   - axes: (Optional) the axes array to be squeezed
     /// - Returns: The squeezed mfarray
     public static func squeeze<T: MfTypeUsable>(_ mfarray: MfArray<T>, axes: [Int]) -> MfArray<T>{
         // reoder descending
@@ -280,4 +280,36 @@ extension Matft{
         
         return ret
     }
+    
+    /// Reverse the mfarray order along given axis
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - axis: (Optional) the axis index to be reversed
+    /// - Returns: The flipped mfarray
+    public static func flip<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int? = nil) -> MfArray<T>{
+        if let axis = axis{
+            let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+            var slices: [Any] = Array<MfSlice>(repeating: MfSlice(start: nil, to: nil, by: 1), count: mfarray.ndim)
+            slices[axis] = MfSlice(start: nil, to: nil, by: -1)
+            return mfarray._get_mfarray(indices: &slices)
+        }
+        else{
+            return Matft.flip(mfarray, axes: Array(stride(from: 0, to: mfarray.ndim, by: 1)))
+        }
+    }
+    
+    /// Reverse the mfarray order along given axis
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - axes: (Optional) the axes array to be reversed
+    /// - Returns: The flipped mfarray
+    public static func flip<T: MfTypeUsable>(_ mfarray: MfArray<T>, axes: [Int]) -> MfArray<T>{
+
+        var slices: [Any] = Array<MfSlice>(repeating: MfSlice(start: 0, to: nil, by: 1), count: mfarray.ndim)
+        for axis in axes{
+           let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+           slices[axis] = MfSlice(start: nil, to: nil, by: -1)
+        }
+        return mfarray._get_mfarray(indices: &slices)
+   }
 }

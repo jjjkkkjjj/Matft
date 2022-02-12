@@ -127,4 +127,23 @@ final class ConversionTest: XCTestCase {
                            MfArray<Int>([ 1,  5, -2,  2, -7,  0]))
         }
     }
+    
+    func testFlip(){
+        let a = MfArray<Int>([[[ 1,  3]],
+                              
+                              [[ 5,  2]],
+
+                              [[-4, -1]]])
+
+        XCTAssertEqual(a.flip(), MfArray<Int>(([[[-1, -4]],
+                                                
+                                                [[ 2,  5]],
+
+                                                [[ 3,  1]]])))
+        XCTAssertEqual(a.flip(axis: 1), MfArray<Int>(([[[ 1,  3]],
+                                                      
+                                                      [[ 5,  2]],
+
+                                                      [[-4, -1]]])))
+    }
 }

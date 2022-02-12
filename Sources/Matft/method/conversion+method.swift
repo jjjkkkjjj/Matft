@@ -94,4 +94,20 @@ extension MfArray{
     public func flatten(mforder: MfOrder = .Row) -> MfArray<T>{
         return Matft.flatten(self, mforder: mforder)
     }
+    
+    /// Reverse the mfarray order along given axis
+    /// - Parameters:
+    ///   - axis: (Optional) the axis index to be reversed
+    /// - Returns: The flipped mfarray
+    public func flip(axis: Int? = nil) -> MfArray<T>{
+        return Matft.flip(self, axis: axis)
+    }
+    
+    /// Reverse the mfarray order along given axis
+    /// - Parameters:
+    ///   - axes: (Optional) the axes array to be reversed
+    /// - Returns: The flipped mfarray
+    public func flip(axes: [Int]) -> MfArray<T>{
+        return Matft.flip(self, axes: axes)
+    }
 }
