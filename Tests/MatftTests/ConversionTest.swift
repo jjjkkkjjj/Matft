@@ -390,4 +390,53 @@ final class ConversionTest: XCTestCase {
                                          [3, 0, 1, 2]] as [[UInt]]))
         }
     }
+
+    func testOrderedUnique(){
+        do{
+            let a = MfArray<Int>([0, 0, 30, 10, 10, 20])
+            XCTAssertEqual(a.orderedUnique(), MfArray<Int>([0, 30, 10, 20]))
+        }
+        
+        do{
+            let a = MfArray<Int>([[20, 20, 10, 10],
+                             [0, 0, 10, 30],
+                             [20, 20, 10, 10]])
+            
+            XCTAssertEqual(a.orderedUnique(),
+                           MfArray<Int>([20, 10, 0, 30]))
+            XCTAssertEqual(a.orderedUnique(axis: 0),
+                           MfArray<Int>([[20, 20, 10, 10],
+                                         [ 0, 0, 10, 30]]))
+            XCTAssertEqual(a.orderedUnique(axis: 1),
+                           MfArray<Int>([[20, 10, 10],
+                                          [0, 10, 30],
+                                          [20, 10, 10]]))
+        }
+        do{
+            let a = MfArray<Int>([[20, 20, 10, 10],
+                             [0, 0, 10, 30],
+                             [20, 20, 10, 10]])
+            
+            XCTAssertEqual(a.T.orderedUnique(axis: 0), MfArray<Int>([[20,  0, 20],
+                            [10, 10, 10],
+                            [10, 30, 10]]))
+            XCTAssertEqual(a.T.orderedUnique(axis: -1), MfArray<Int>([[20,  0],
+                             [20,  0],
+                             [10, 10],
+                             [10, 30]]))
+        }
+        
+        do{
+            let a = MfArray<Double>([[1.0, 0.0, 0.0],
+                             [1.0, 0.0, 0.0],
+                             [2.0, 3.0, 4.0],
+                             [5.2, 0.1, 3.3]])
+            
+            XCTAssertEqual(a.orderedUnique(),
+                MfArray<Double>([1.0, 0.0, 2.0, 3.0, 4.0, 5.2, 0.1, 3.3]))
+            XCTAssertEqual(a.orderedUnique(axis: 0), MfArray<Double>([[1.0, 0.0, 0.0],
+                              [2.0, 3.0, 4.0],
+                              [5.2, 0.1, 3.3]]))
+        }
+    }
 }

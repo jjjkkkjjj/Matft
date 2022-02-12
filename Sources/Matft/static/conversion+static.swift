@@ -434,4 +434,36 @@ extension Matft{
         
         return argsort_by_vDSP(_dst, axis: _axis, order: order, vDSP_func: T.StoredType.vDSP_argsort_func)
     }
+    
+    
+    /// Get ordered unique mfarray  along given axis
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - axis: (Optional) The axis index
+    /// - Returns: The ordered unique mfarray
+    public static func orderedUnique<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int? = nil) -> MfArray<T>{
+        // get stride to calculate unique array
+        let stride: Int
+        var src_mfarray: MfArray<T>
+        var rest_shape: [Int]
+        if let axis = axis{
+            src_mfarray = mfarray.moveaxis(src: axis, dst: 0)
+            if src_mfarray.ndim == 1{
+                stride = 1
+                rest_shape = []
+            }
+            else{
+                rest_shape = Array(src_mfarray.shape[1..<src_mfarray.ndim])
+                stride = shape2size(&rest_shape)
+            }
+            src_mfarray = src_mfarray.flatten()
+        }
+        else{
+            src_mfarray = mfarray
+            stride = 1
+            rest_shape = []
+        }
+        var src_flatten_array = src_mfarray.mfdata.storedData
+        return orderedUnique_by_swcoll(&src_flatten_array, rest_shape: &rest_shape, stride: stride, axis: axis)
+    }
 }
