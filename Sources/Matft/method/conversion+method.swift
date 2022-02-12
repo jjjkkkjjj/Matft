@@ -137,4 +137,13 @@ extension MfArray{
     public func moveaxis(src: Int, dst: Int) -> MfArray<T>{
         return Matft.moveaxis(self, src: src, dst: dst)
     }
+    
+    /// Move from given axis to dstination axis
+    /// - Parameters:
+    ///   - src: The source axis array
+    ///   - dst: The destination axis array
+    /// - Returns: The moved mfarray
+    public func moveaxis(src: [Int], dst: [Int]) -> MfArray<T>{
+        return Matft.moveaxis(self, src: src, dst: dst)
+    }
 }
