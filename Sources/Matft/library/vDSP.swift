@@ -24,6 +24,8 @@ public typealias vDSP_viclip_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePoi
 
 public typealias vDSP_clip_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length, UnsafeMutablePointer<vDSP_Length>, UnsafeMutablePointer<vDSP_Length>) -> Void
 
+public typealias vDSP_sort_func<T> = (UnsafeMutablePointer<T>, vDSP_Length, Int32) -> Void
+
 /// Wrapper of vDSP conversion function
 /// - Parameters:
 ///   - size: A size to be copied
@@ -170,6 +172,17 @@ internal func wrap_vDSP_clip<T: MfStoredTypeUsable>(_ size: Int, _ srcptr: Unsaf
     var maxcount = vDSP_Length(0)
     
     vDSP_clip_func(srcptr, vDSP_Stride(1), minptr, maxptr, dstptr, vDSP_Stride(1), vDSP_Length(size), &mincount, &maxcount)
+}
+
+/// Wrapper of vDSP sort function
+/// - Parameters:
+///   - size: A size to be copied
+///   - srcdstptr: A source pointer
+///   - order: MfSortOrder
+///   - vDSP_func: The vDSP conversion function
+@inline(__always)
+internal func wrap_vDSP_sort<T>(_ size: Int, _ srcdstptr: UnsafeMutablePointer<T>, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_func<T>){
+    vDSP_func(srcdstptr, vDSP_Length(size), order.rawValue)
 }
 
 /// Pre operation mfarray by vDSP
@@ -357,6 +370,32 @@ internal func clip_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ minval: T.S
     let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     
     return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// Sort operation by vDSP
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - axis; An axis index
+///   - order: MfSortOrder
+///   - vDSP_func: The vDSP sort function
+/// - Returns: The sorted mfarray
+internal func sort_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int, order: MfSortOrder, vDSP_func: vDSP_sort_func<T.StoredType>) -> MfArray<T>{
+    let ret_ndim = mfarray.ndim
+    let count = mfarray.shape[axis]
+    
+    let last_axis = ret_ndim - 1
+    // move lastaxis and given axis and align order
+    let srcdst_mfarray = mfarray.moveaxis(src: axis, dst: last_axis).to_contiguous(mforder: .Row)
+
+    var offset = 0
+    
+    for _ in 0..<mfarray.storedSize / count{
+        wrap_vDSP_sort(count, srcdst_mfarray.mfdata.storedPtr.baseAddress! + offset, order, vDSP_func)
+        offset += count
+    }
+    
+    // re-move axis and lastaxis
+    return srcdst_mfarray.moveaxis(src: last_axis, dst: axis)
 }
 
 /*

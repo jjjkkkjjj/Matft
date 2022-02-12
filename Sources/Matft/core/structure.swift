@@ -7,11 +7,6 @@
 
 import Foundation
 
-public enum MfOrder: Int{
-    case Row
-    case Column
-}
-
 
 public class MfStructure{
     internal var shape: [Int]

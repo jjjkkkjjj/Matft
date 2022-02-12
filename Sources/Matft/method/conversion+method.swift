@@ -146,4 +146,13 @@ extension MfArray{
     public func moveaxis(src: [Int], dst: [Int]) -> MfArray<T>{
         return Matft.moveaxis(self, src: src, dst: dst)
     }
+    
+    /// Sort mfarray along a given axis
+    /// - Parameters:
+    ///   - axis: The axis index
+    ///   - order: The order to be sorted
+    /// - Returns: The sorted mfarray
+    public func sort(axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray<T>{
+        return Matft.sort(self, axis: axis, order: order)
+    }
 }

@@ -301,5 +301,65 @@ final class ConversionTest: XCTestCase {
         }
     }
     
+    func testBroadcast(){
+        do{
+            let a = MfArray<Int>([[1, 3, 5],
+                                  [2, -4, -1]], mforder: .Column)
+            
+            XCTAssertEqual(a.broadcast_to(shape: [3,2,3]), MfArray<Int>([[[ 1,  3,  5],
+                              [ 2, -4, -1]],
 
+                             [[ 1,  3,  5],
+                              [ 2, -4, -1]],
+
+                             [[ 1,  3,  5],
+                              [ 2, -4, -1]]]))
+            let b = MfArray<Int>([[1, 2]])
+            XCTAssertEqual(b.broadcast_to(shape: [2,2]), MfArray<Int>([[1,2],
+                               [1,2]]))
+        }
+        do{
+            let a = MfArray<Int>([[2, -7, 0],
+                                  [1, 5, -2]]).reshape([2,1,1,3])
+            
+            XCTAssertEqual(a.broadcast_to(shape: [2,2,2,3]), MfArray<Int>([[[[ 2, -7,  0],
+                             [ 2, -7,  0]],
+
+                            [[ 2, -7,  0],
+                             [ 2, -7,  0]]],
+                          
+
+                           [[[ 1,  5, -2],
+                             [ 1,  5, -2]],
+
+                            [[ 1,  5, -2],
+                             [ 1,  5, -2]]]]))
+        }
+    }
+    
+    func testSort(){
+        do{
+            let a = MfArray<Int>([[2, -7, 0],
+                                  [1, 5, -2]])
+            XCTAssertEqual(a.sort(axis: nil),
+                           MfArray<Int>([-7, -2,  0,  1,  2,  5]))
+            XCTAssertEqual(a.sort(axis: -1),
+                           MfArray<Int>([[-7,  0,  2],
+                                       [-2,  1,  5]]))
+            XCTAssertEqual(a.sort(axis: 0), MfArray<Int>([[ 1, -7, -2],
+                                                          [ 2,  5,  0]]))
+        }
+        
+        do{
+            let a = MfArray<Double>([[-0.87, 1.2, 5.5134, -8.78],
+                                     [-0.0002, 2, 3.4, -5]], mforder: .Column)
+            XCTAssertEqual(a.sort(axis: nil, order: .Descending), MfArray<Double>([ 5.5134e+00,  3.4000e+00,  2.0000e+00,  1.2000e+00, -2.0000e-04,
+            -8.7000e-01, -5.0000e+00, -8.7800e+00]))
+            XCTAssertEqual(a.sort(axis: -1, order: .Descending), MfArray<Double>([[ 5.5134e+00,  1.2000e+00, -8.7000e-01, -8.7800e+00],
+                              [ 3.4000e+00,  2.0000e+00, -2.0000e-04, -5.0000e+00]]))
+            XCTAssertEqual(a.sort(),
+                MfArray<Double>([[-8.7800e+00, -8.7000e-01,  1.2000e+00,  5.5134e+00],
+                              [-5.0000e+00, -2.0000e-04,  2.0000e+00,  3.4000e+00]]))
+        }
+    }
 }
