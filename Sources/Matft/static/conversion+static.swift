@@ -92,7 +92,21 @@ extension Matft{
         return MfArray(base: mfarray, mfstructure: newstructure, offset: mfarray.offsetIndex)
     }
     
-    
+    /// Convert into new shaped mfarray
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - new_shape: A new shape
+    ///   - mforder: (Optional) order
+    /// - Returns: The broadcasted mfarray
+    public static func reshape<T: MfTypeUsable>(_ mfarray: MfArray<T>, new_shape: [Int], mforder: MfOrder = .Row) -> MfArray<T>{
+        var new_shape = get_positive_shape(new_shape, size: mfarray.size)
+        precondition(mfarray.size == shape2size(&new_shape), "new shape's size:\(shape2size(&new_shape)) must be same as mfarray's size:\(mfarray.size)")
+        
+        var flatten_array = mfarray.flatten(mforder: mforder).mfdata.storedData
+        let newdata = MfData(T.self, storedFlattenArray: &flatten_array)
+        let newstructure = MfStructure(shape: new_shape, mforder: mforder)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
+    }
     
     /// Create broadcasted mfarray.
     /// - Parameters:

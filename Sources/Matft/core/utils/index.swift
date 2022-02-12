@@ -34,6 +34,24 @@ internal func get_positive_axis(_ axis: Int, ndim: Int) -> Int{
     return ret_axis
 }
 
+/// Get a positive shape from a given size
+/// - Parameters:
+///   - shape: A shape array. Negative axis will be converted into positive one as return value
+///   - size: The size
+/// - Returns: A positive shape array
+internal func get_positive_shape(_ shape: [Int], size: Int) -> [Int]{
+    let other_size = shape.filter{ $0 != -1 }.reduce(1, *)
+    return shape.map{
+        if $0 != -1{
+            return $0
+        }
+        else{
+            return size / other_size
+        }
+    }
+}
+
+
 /// Index sequence for a flatten array
 internal struct FlattenIndSequence: Sequence{
     let shape: [Int]

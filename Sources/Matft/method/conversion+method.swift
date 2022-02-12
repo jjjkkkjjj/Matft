@@ -32,6 +32,15 @@ extension MfArray{
         return Matft.transpose(self)
     }
     
+    /// Convert into new shaped mfarray
+    /// - Parameters:
+    ///   - new_shape: A new shape
+    ///   - mforder: (Optional) order
+    /// - Returns: The broadcasted mfarray
+    public func reshape(_ new_shape: [Int], mforder: MfOrder = .Row) -> MfArray<T>{
+        return Matft.reshape(self, new_shape: new_shape, mforder: mforder)
+    }
+    
     /// Create broadcasted mfarray.
     /// - Parameters:
     ///   - shape: A new shape
