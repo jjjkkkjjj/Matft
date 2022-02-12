@@ -16,9 +16,9 @@ extension MfArray{
     
     /// Create deep copy of mfarray. Deep means copied mfarray will be different object from original one
     /// - Parameters:
-    ///   - order: (Optional) order, default is nil, which means close to either row or column major if possibe.
+    ///   - mforder: (Optional) order, default is nil, which means close to either row or column major if possibe.
     /// - Returns: Copied mfarray
-    public func deepcopy(order: MfOrder? = nil) -> MfArray<MfArrayType>{
-        return Matft.deepcopy(self, order: order)
+    public func deepcopy(mforder: MfOrder? = nil) -> MfArray<MfArrayType>{
+        return Matft.deepcopy(self, mforder: mforder)
     }
 }

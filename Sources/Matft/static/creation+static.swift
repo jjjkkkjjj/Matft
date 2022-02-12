@@ -57,7 +57,7 @@ extension Matft{
         let newdata = MfData(flattenArray: &new_flattenarray)
         let newstructure = MfStructure(shape: shape, mforder: mforder)
         
-        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     
     /// Create a mfarray padded with a given value, and same structure as a given mfarray
@@ -86,5 +86,19 @@ extension Matft{
         let newstructure = MfStructure(shape: shape ?? [new_flattenarray.count], mforder: mforder)
         
         return MfArray(mfdata: newdata, mfstructure: newstructure)
+    }
+    
+    
+    /// Create identity matrix. The size is (dim, dim)
+    /// - Parameters:
+    ///   - dim: The dimension, returned mfarray's shape is (dim, dim)
+    ///   - mforder: (Optional) The order, default is nil, which means close to row major
+    /// - Returns: The created mfarray
+    static public func eye<T: MfNumeric>(dim: Int, mforder: MfOrder = .Row) -> MfArray<T>{
+        var eye = Array(repeating: Array(repeating: 0, count: dim), count: dim)
+        for i in 0..<dim{
+            eye[i][i] = 1
+        }
+        return MfArray(eye, mforder: mforder)
     }
 }
