@@ -55,6 +55,22 @@ extension MfArray{
         return Matft.expand_dims(self, axes: axes)
     }
     
+    /// Create mfarray removed for 1-dimension
+    /// - Parameters:
+    ///   - axis: (Optional) the removed axis
+    /// - Returns: The squeezed mfarray
+    public func squeeze(axis: Int? = nil) -> MfArray<T>{
+        return Matft.squeeze(self, axis: axis)
+    }
+    
+    /// Create mfarray removed for 1-dimension
+    /// - Parameters:
+    ///   - axes: (Optional) the removed axes array
+    /// - Returns: The squeezed mfarray
+    public func squeeze(axes: [Int]) -> MfArray<T>{
+        return Matft.squeeze(self, axes: axes)
+    }
+    
     /// Create broadcasted mfarray.
     /// - Parameters:
     ///   - shape: A new shape

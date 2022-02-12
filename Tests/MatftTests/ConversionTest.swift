@@ -103,6 +103,17 @@ final class ConversionTest: XCTestCase {
         }
     }
     
+    func testSqueeze(){
+        let a = MfArray<Int>([[[ 1,  3]],
+                              
+                              [[ 5,  2]],
+
+                              [[-4, -1]]])
+        XCTAssertEqual(a.squeeze(), MfArray<Int>([[ 1,  3],
+                                                  [ 5,  2],
+                                                  [-4, -1]]))
+    }
+    
     func testFlatten(){
         do{
             let a = MfArray<Int>([[2, -7, 0],

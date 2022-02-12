@@ -153,6 +153,64 @@ extension Matft{
         return new_mfarray
     }
     
+    /// Create mfarray removed for 1-dimension
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - axis: (Optional) the removed axis
+    /// - Returns: The squeezed mfarray
+    public static func squeeze<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int? = nil) -> MfArray<T>{
+        var new_shape = mfarray.shape
+        var new_strides = mfarray.strides
+        
+        if let axis = axis{
+            let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+            precondition(new_shape.remove(at: axis) == 1, "cannot select an axis to squeeze out which has size not equal to one")
+            new_strides.remove(at: axis)
+        }
+        else{
+            var axes: [Int] = []
+            
+            for i in 0..<mfarray.ndim{
+                if new_shape[i] == 1{
+                    axes.append(i)
+                }
+            }
+            
+            for ax in axes.reversed(){// remove all 1-dimension from array
+                new_shape.remove(at: ax)
+                new_strides.remove(at: ax)
+            }
+        }
+        
+        let new_mfarray = mfarray.shallowcopy()
+        let newstructure = MfStructure(shape: new_shape, strides: new_strides)
+        new_mfarray.mfstructure = newstructure
+        return new_mfarray
+    }
+    
+    /// Create mfarray removed for 1-dimension
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - axes: (Optional) the removed axes array
+    /// - Returns: The squeezed mfarray
+    public static func squeeze<T: MfTypeUsable>(_ mfarray: MfArray<T>, axes: [Int]) -> MfArray<T>{
+        // reoder descending
+        let axes = axes.sorted{ $0 > $1 }
+        var new_shape = mfarray.shape
+        var new_strides = mfarray.strides
+        for axis in axes{
+            let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+            precondition(new_shape.remove(at: axis) == 1, "cannot select an axis to squeeze out which has size not equal to one")
+            new_strides.remove(at: axis)
+        }
+        
+        
+        let new_mfarray = mfarray.shallowcopy()
+        let newstructure = MfStructure(shape: new_shape, strides: new_strides)
+        new_mfarray.mfstructure = newstructure
+        return new_mfarray
+    }
+    
     /// Create broadcasted mfarray.
     /// - Parameters:
     ///   - mfarray: An input mfarray
