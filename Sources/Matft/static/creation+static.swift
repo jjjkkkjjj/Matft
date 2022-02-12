@@ -164,17 +164,17 @@ extension Matft{
         }
         
         var ret_shape = mfarrays.first!.shape // shape except for given axis first, return shape later
-        var concatDim = ret_shape.remove(at: 0)
+        var concat_dim = ret_shape.remove(at: 0)
         
         //check if argument is valid or not
         for i in 1..<mfarrays.count{
             var shapeExceptAxis = mfarrays[i].shape
-            concatDim += shapeExceptAxis.remove(at: 0)
+            concat_dim += shapeExceptAxis.remove(at: 0)
             
             precondition(ret_shape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
         }
         
-        ret_shape.insert(concatDim, at: 0)// return shape
+        ret_shape.insert(concat_dim, at: 0)// return shape
 
         return stack_by_cblas(mfarrays, ret_shape: ret_shape, mforder: .Row)
     }
@@ -189,18 +189,53 @@ extension Matft{
         }
         
         var ret_shape = mfarrays.first!.shape // shape except for given axis first, return shape later
-        var concatDim = ret_shape.remove(at: ret_shape.count - 1)
+        var concat_dim = ret_shape.remove(at: ret_shape.count - 1)
         
         //check if argument is valid or not
         for i in 1..<mfarrays.count{
             var shapeExceptAxis = mfarrays[i].shape
-            concatDim += shapeExceptAxis.remove(at: shapeExceptAxis.count - 1)
+            concat_dim += shapeExceptAxis.remove(at: shapeExceptAxis.count - 1)
             
             precondition(ret_shape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
         }
         
-        ret_shape.insert(concatDim, at: ret_shape.endIndex)// return shape
+        ret_shape.insert(concat_dim, at: ret_shape.endIndex)// return shape
 
         return stack_by_cblas(mfarrays, ret_shape: ret_shape, mforder: .Column)
+    }
+    
+    /// Concatenate mfarrays along with a given axis
+    /// - Parameters:
+    ///   - mfarrays: The mfarray array
+    ///   - axis: An axis index
+    /// - Returns: The concatenated mfarray
+    static public func concatenate<T: MfTypeUsable>(_ mfarrays: [MfArray<T>], axis: Int = 0) -> MfArray<T>{
+        if mfarrays.count == 1{
+            return mfarrays[0].deepcopy()
+        }
+        var ret_shape = mfarrays.first!.shape // shape except for given axis first, return shape later
+        let ret_ndim = mfarrays.first!.ndim
+        let axis = get_positive_axis(axis, ndim: ret_ndim)
+
+        if axis == 0{// vstack is faster than this function
+           return Matft.vstack(mfarrays)
+        }
+        else if axis == ret_ndim - 1{// hstack is faster than this function
+           return Matft.hstack(mfarrays)
+        }
+
+        var concat_dim = ret_shape.remove(at: axis)
+        
+        //check if argument is valid or not
+        for i in 1..<mfarrays.count{
+            var shapeExceptAxis = mfarrays[i].shape
+            concat_dim += shapeExceptAxis.remove(at: axis)
+            
+            precondition(ret_shape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
+        }
+        
+        ret_shape.insert(concat_dim, at: axis)// return shape
+        
+        return concat_by_cblas(mfarrays, ret_shape: ret_shape, axis: axis)
     }
 }

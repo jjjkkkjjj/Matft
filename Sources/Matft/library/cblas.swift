@@ -143,3 +143,39 @@ internal func stack_by_cblas<T: MfTypeUsable>(_ mfarrays: [MfArray<T>], ret_shap
     
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
+
+/// Concatenate mfarrays along with a given axis
+/// - Parameters:
+///   - mfarrays: The mfarray array
+///   - ret_shape: The return shape array
+///   - axis: An axis index
+/// - Returns: The concatenated mfarray
+internal func concat_by_cblas<T: MfTypeUsable>(_ mfarrays: [MfArray<T>], ret_shape: [Int], axis: Int) -> MfArray<T>{
+    var ret_shape = ret_shape
+    var column_shape = ret_shape // the left side shape splited by axis, must have more than one elements
+    column_shape.removeSubrange(axis..<ret_shape.count)
+    let column_size = shape2size(&column_shape)
+    var row_shape = ret_shape// the right side shape splited by axis, must have more than one elements
+    row_shape.removeSubrange(0...axis)
+    let row_size = shape2size(&row_shape)
+    
+    let faster_order = row_size >= column_size ? MfOrder.Row : MfOrder.Column
+    let fasterBlockSize = row_size >= column_size ? row_size : column_size
+    let slowerBlockSize = row_size >= column_size ? column_size : row_size
+    
+    let majorArrays = mfarrays.map{ Matft.to_contiguous($0, mforder: faster_order) }
+    let ret_size = shape2size(&ret_shape)
+    
+    let newdata: MfData<T> = MfData(size: ret_size)
+    var offset = 0
+    for sb in 0..<slowerBlockSize{
+        for mfarray in majorArrays {
+            let concat_size = mfarray.shape[axis]
+            wrap_cblas_copy(fasterBlockSize*concat_size, mfarray.mfdata.storedPtr.baseAddress! + sb*fasterBlockSize*concat_size, 1, newdata.storedPtr.baseAddress! + offset, 1, T.StoredType.cblas_copy_func)
+            offset += fasterBlockSize*concat_size
+        }
+    }
+    let newstructure = MfStructure(shape: ret_shape, mforder: faster_order)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
