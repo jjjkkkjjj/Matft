@@ -21,4 +21,22 @@ extension MfArray{
     public func deepcopy(mforder: MfOrder? = nil) -> MfArray<MfArrayType>{
         return Matft.deepcopy(self, mforder: mforder)
     }
+    
+    /// Append values to the end of an array.
+    /// - Parameters:
+    ///   - values: The mfarray to be appended
+    ///   - axis: (Optional) An axis index
+    /// - Returns: The appended mfarray
+    public func append(values: MfArray<T>, axis: Int? = nil) -> MfArray<T>{
+        return Matft.append(self, values: values, axis: axis)
+    }
+    
+    // Append values to the end of an array.
+    /// - Parameters:
+    ///   - value: The value to be appended
+    ///   - axis: (Optional) An axis index
+    /// - Returns: The appended mfarray
+    public func append(value: T, axis: Int? = nil) -> MfArray<T>{
+        return Matft.append(self, value: value, axis: axis)
+    }
 }

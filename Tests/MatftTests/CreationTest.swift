@@ -226,4 +226,20 @@ final class CreationTest: XCTestCase {
                                          11, 14, 17, 20, 23, 26, 29, 32, 35, 38, 41, 44]] as [[Int]]))
         }
     }
+    
+    func testAppend() {
+        do {
+            let x = MfArray<Int>([1,2,3])
+            let y = MfArray<Int>([[4,5,6],[7,8,9]])
+            XCTAssertEqual(Matft.append(x, values: y), MfArray<Int>([1,2,3,4,5,6,7,8,9]))
+        }
+        
+        do {
+            let x = MfArray<Int>([[1,2,3],[4,5,6]])
+            let y = MfArray<Int>([[7,8,9]])
+            XCTAssertEqual(Matft.append(x, values: y, axis: 0), MfArray<Int>([[1, 2, 3],
+                            [4, 5, 6],
+                            [7, 8, 9]]))
+        }
+    }
 }

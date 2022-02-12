@@ -238,4 +238,37 @@ extension Matft{
         
         return concat_by_cblas(mfarrays, ret_shape: ret_shape, axis: axis)
     }
+    
+    
+    /// Append values to the end of an array.
+    /// - Parameters:
+    ///   - mfarrays: The mfarray array
+    ///   - values: The mfarray to be appended
+    ///   - axis: (Optional) An axis index
+    /// - Returns: The appended mfarray
+    static public func append<T: MfTypeUsable>(_ mfarray: MfArray<T>, values: MfArray<T>, axis: Int? = nil) -> MfArray<T>{
+        //https://github.com/numpy/numpy/blob/v1.19.0/numpy/lib/function_base.py#L4616-L4671
+        let mfarr: MfArray<T>, vals: MfArray<T>, ax: Int
+        if let axis = axis{
+            mfarr = mfarray
+            vals = values
+            ax = axis
+        }
+        else{
+            mfarr = mfarray.ndim != 1 ? mfarray.flatten() : mfarray
+            vals = values.flatten()
+            ax = mfarr.ndim - 1
+        }
+        return Matft.concatenate([mfarr, vals], axis: ax)
+    }
+    
+    /// Append values to the end of an array.
+    /// - Parameters:
+    ///   - mfarrays: The mfarray array
+    ///   - value: The value to be appended
+    ///   - axis: (Optional) An axis index
+    /// - Returns: The appended mfarray
+    static public func append<T: MfTypeUsable>(_ mfarray: MfArray<T>, value: T, axis: Int? = nil) -> MfArray<T>{
+        return Matft.append(mfarray, values: MfArray([value]), axis: axis)
+    }
 }
