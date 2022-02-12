@@ -119,4 +119,13 @@ extension MfArray{
     public func clip(minval: T? = nil, maxval: T? = nil) -> MfArray<T>{
         return Matft.clip(self, minval: minval, maxval: maxval)
     }
+    
+    /// Swap given axis1 and axis2
+    /// - Parameters:
+    ///   - axis1: The axis index to be swapped
+    ///   - axis2: The axis index to be swapped
+    /// - Returns: The swapped mfarray
+    public func swapaxes(axis1: Int, axis2: Int) -> MfArray<T>{
+        return Matft.swapaxes(self, axis1: axis1, axis2: axis2)
+    }
 }

@@ -325,4 +325,22 @@ extension Matft{
         
         return clip_by_vDSP(mfarray, minval, maxval, vDSP_func: T.StoredType.vDSP_clip_func)
     }
+    
+    
+    /// Swap given axis1 and axis2
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - axis1: The axis index to be swapped
+    ///   - axis2: The axis index to be swapped
+    /// - Returns: The swapped mfarray
+    public static func swapaxes<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis1: Int, axis2: Int) -> MfArray<T>{
+        let axis1 = get_positive_axis(axis1, ndim: mfarray.ndim)
+        let axis2 = get_positive_axis(axis2, ndim: mfarray.ndim)
+        
+        var axes = Array(stride(from: 0, to: mfarray.ndim, by: 1))
+        //swap
+        axes.swapAt(axis1, axis2)
+        
+        return mfarray.transpose(axes: axes)
+    }
 }

@@ -173,4 +173,66 @@ final class ConversionTest: XCTestCase {
                                [-0.0002, 2, 3.4, -0.2]]))
         }
     }
+    
+    func testSwapaxes() {
+        do{
+
+            let a = MfArray<Int>([[3, -19],
+                                  [-22, 4]])
+            let b = MfArray<Int>([[2, 1177],
+                                  [5, -43]])
+            
+            XCTAssertEqual(a.swapaxes(axis1: 0, axis2: 1), MfArray<Int>([[3, -22],
+                             [-19, 4]]))
+            XCTAssertEqual(a.swapaxes(axis1: -1, axis2: -2), MfArray<Int>([[3, -22],
+                           [-19, 4]]))
+            
+            XCTAssertEqual(b.swapaxes(axis1: 0, axis2: 1), MfArray<Int>([[2, 5],
+                             [1177, -43]]))
+            XCTAssertEqual(b.swapaxes(axis1: -1, axis2: -2), MfArray<Int>([[2, 5],
+                               [1177, -43]]))
+        }
+
+        
+        do{
+            let a = Matft.arange(start: 0, to: 2*2*2*2, by: 1, shape: [2,2,2,2])
+            XCTAssertEqual(a.swapaxes(axis1: 0, axis2: 2), MfArray<Int>([[[[ 0,  1],
+                               [ 8,  9]],
+
+                              [[ 4,  5],
+                               [12, 13]]],
+
+
+                             [[[ 2,  3],
+                               [10, 11]],
+
+                              [[ 6,  7],
+                               [14, 15]]]]))
+            XCTAssertEqual(a.swapaxes(axis1: 0, axis2: -2), MfArray<Int>([[[[ 0,  1],
+                                [ 8,  9]],
+
+                               [[ 4,  5],
+                                [12, 13]]],
+
+                         
+                              [[[ 2,  3],
+                                [10, 11]],
+
+                               [[ 6,  7],
+                                [14, 15]]]]))
+            
+            XCTAssertEqual(a.swapaxes(axis1: -1, axis2: 0), MfArray<Int>([[[[ 0,  8],
+                                [ 2, 10]],
+
+                               [[ 4, 12],
+                                [ 6, 14]]],
+
+                         
+                              [[[ 1,  9],
+                                [ 3, 11]],
+
+                               [[ 5, 13],
+                                [ 7, 15]]]]))
+        }
+    }
 }
