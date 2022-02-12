@@ -26,6 +26,8 @@ public typealias vDSP_clip_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePoint
 
 public typealias vDSP_sort_func<T> = (UnsafeMutablePointer<T>, vDSP_Length, Int32) -> Void
 
+public typealias vDSP_argsort_func<T> = (UnsafePointer<T>, UnsafeMutablePointer<vDSP_Length>, UnsafeMutablePointer<vDSP_Length>, vDSP_Length, Int32) -> Void
+
 /// Wrapper of vDSP conversion function
 /// - Parameters:
 ///   - size: A size to be copied
@@ -179,10 +181,23 @@ internal func wrap_vDSP_clip<T: MfStoredTypeUsable>(_ size: Int, _ srcptr: Unsaf
 ///   - size: A size to be copied
 ///   - srcdstptr: A source pointer
 ///   - order: MfSortOrder
-///   - vDSP_func: The vDSP conversion function
+///   - vDSP_func: The vDSP sort function
 @inline(__always)
 internal func wrap_vDSP_sort<T>(_ size: Int, _ srcdstptr: UnsafeMutablePointer<T>, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_func<T>){
     vDSP_func(srcdstptr, vDSP_Length(size), order.rawValue)
+}
+
+/// Wrapper of vDSP argsort function
+/// - Parameters:
+///   - size: A size to be copied
+///   - srcptr: A source pointer
+///   - dstptr: A destination pointer
+///   - order: MfSortOrder
+///   - vDSP_func: The vDSP argsort function
+@inline(__always)
+internal func wrap_vDSP_argsort<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<UInt>, _ order: MfSortOrder, _ vDSP_func: vDSP_argsort_func<T>){
+    var tmp = Array<vDSP_Length>(repeating: 0, count: size)
+    vDSP_func(srcptr, dstptr, &tmp, vDSP_Length(size), order.rawValue)
 }
 
 /// Pre operation mfarray by vDSP
@@ -396,6 +411,47 @@ internal func sort_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int, or
     
     // re-move axis and lastaxis
     return srcdst_mfarray.moveaxis(src: last_axis, dst: axis)
+}
+
+/// Argsort operation by vDSP
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - axis; An axis index
+///   - order: MfSortOrder
+///   - vDSP_func: The vDSP sort function
+/// - Returns: The sorted mfarray
+internal func argsort_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int, order: MfSortOrder, vDSP_func: vDSP_argsort_func<T.StoredType>) -> MfArray<UInt>{
+    let count = mfarray.shape[axis]
+        
+    let last_axis = mfarray.ndim - 1
+    // move lastaxis and given axis and align order
+    let src_mfarray = mfarray.moveaxis(src: axis, dst: last_axis).to_contiguous(mforder: .Row)
+    var ret_shape = src_mfarray.shape
+    
+    var offset = 0
+
+    let ret_size = shape2size(&ret_shape)
+    
+    let newdata: MfData<UInt> = MfData(size: ret_size)
+    
+    for _ in 0..<mfarray.storedSize / count{
+        var uiarray = Array<UInt>(stride(from: 0, to: UInt(count), by: 1))
+
+        wrap_vDSP_argsort(count, src_mfarray.mfdata.storedPtr.baseAddress! + offset, &uiarray, order, T.StoredType.vDSP_argsort_func)
+        
+        //convert dataptr(int) to float
+        _ = ArrayConversionToStoredType<UInt, UInt.StoredType>(src: &uiarray, dst: newdata.storedPtr.baseAddress! + offset, size: count)
+        
+        offset += count
+    }
+    
+    
+    let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+    
+    let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
+    
+    // re-move axis and lastaxis
+    return ret.moveaxis(src: last_axis, dst: axis)
 }
 
 /*

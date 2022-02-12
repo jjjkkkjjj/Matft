@@ -412,4 +412,26 @@ extension Matft{
         
         return sort_by_vDSP(_dst, axis: _axis, order: order, vDSP_func: T.StoredType.vDSP_sort_func)
     }
+    
+    /// Get indexes of sorted mfarray along a given axis
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - axis: The axis index
+    ///   - order: The order to be sorted
+    /// - Returns: The sorted mfarray
+    public static func argsort<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray<UInt>{
+        
+        let _axis: Int
+        let _dst: MfArray<T>
+        if axis != nil && mfarray.ndim > 1{// for given axis
+            _axis = get_positive_axis(axis!, ndim: mfarray.ndim)
+            _dst = mfarray.deepcopy()
+        }
+        else{// for all elements
+            _axis = 0
+            _dst = mfarray.flatten()
+        }
+        
+        return argsort_by_vDSP(_dst, axis: _axis, order: order, vDSP_func: T.StoredType.vDSP_argsort_func)
+    }
 }

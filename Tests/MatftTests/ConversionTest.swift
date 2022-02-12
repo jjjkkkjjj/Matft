@@ -362,4 +362,32 @@ final class ConversionTest: XCTestCase {
                               [-5.0000e+00, -2.0000e-04,  2.0000e+00,  3.4000e+00]]))
         }
     }
+    
+    func testArgSort(){
+        do{
+            let a = MfArray<Int>([[2, -7, 0],
+                                  [1, 5, -2]])
+            XCTAssertEqual(a.argsort(axis: nil),
+                           MfArray<UInt>([1, 5, 2, 3, 0, 4] as [UInt]))
+            XCTAssertEqual(a.argsort(axis: -1),
+                           MfArray<UInt>([[1, 2, 0],
+                                          [2, 0, 1]] as [[UInt]]))
+            XCTAssertEqual(a.argsort(axis: 0),
+                           MfArray<UInt>([[1, 0, 1],
+                                         [0, 1, 0]] as [[UInt]]))
+        }
+        
+        do{
+            let a = MfArray<Double>([[-0.87, 1.2, 5.5134, -8.78],
+                                     [-0.0002, 2, 3.4, -5]], mforder: .Column)
+            XCTAssertEqual(a.argsort(axis: nil, order: .Descending),
+                           MfArray<UInt>([2, 6, 5, 1, 4, 0, 7, 3] as [UInt]))
+            XCTAssertEqual(a.argsort(axis: -1, order: .Descending),
+                           MfArray<UInt>([[2, 1, 0, 3],
+                                         [2, 1, 0, 3]] as [[UInt]]))
+            XCTAssertEqual(a.argsort(),
+                           MfArray<UInt>([[3, 0, 1, 2],
+                                         [3, 0, 1, 2]] as [[UInt]]))
+        }
+    }
 }
