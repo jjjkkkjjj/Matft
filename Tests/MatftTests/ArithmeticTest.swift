@@ -44,14 +44,14 @@ final class ArithmeticTests: XCTestCase {
 
         do{
             
-            let a = MfArray<Float>([[Float(2.0), 1, -3, 0],
-                                    [3, 1, 4, -5]], mforder: .Column)
+            let a = MfArray<Float>([[2.0, 1, -3, 0],
+                                    [3, 1, 4, -5]] as [[Float]], mforder: .Column)
 
 
-            XCTAssertEqual(a+2.0, MfArray<Float>([[ Float(4.0),  3.0, -1.0,  2.0],
-                                                  [ 5.0,  3.0,  6.0, -3.0]]))
-            XCTAssertEqual(a-3.2, MfArray<Float>([[Float(-1.2), -2.2, -6.2, -3.2],
-                                                  [-0.2, -2.2,  0.8, -8.2]]))
+            XCTAssertEqual(a+2.0, MfArray<Float>([[ 4.0,  3.0, -1.0,  2.0],
+                                                  [ 5.0,  3.0,  6.0, -3.0]] as [[Float]]))
+            XCTAssertEqual(a-3.2, MfArray<Float>([[-1.2, -2.2, -6.2, -3.2],
+                                                  [-0.2, -2.2,  0.8, -8.2]] as [[Float]]))
 
 
             
@@ -66,13 +66,13 @@ final class ArithmeticTests: XCTestCase {
     func testSameShape() {
         do{
             
-            let a = MfArray<Float>([[Float(3), -19],
-                             [-22, 4]])
-            let b = MfArray<Float>([[Float(0.2), 1.177],
-                             [5, -4.3]])
+            let a = MfArray<Float>([[3, -19],
+                             [-22, 4]] as [[Float]])
+            let b = MfArray<Float>([[0.2, 1.177],
+                             [5, -4.3]] as [[Float]])
             
-            XCTAssertEqual(a + b, MfArray<Float>([[  Float(3.2)  , -17.823],
-                                           [-17.0   ,  -0.3  ]]))
+            XCTAssertEqual(a + b, MfArray<Float>([[  3.2  , -17.823],
+                                           [-17.0   ,  -0.3  ]] as [[Float]]))
             let c = MfArray<Int>([[3, -19],
                                   [-22, 4]])
             let d = MfArray<Int>([[2, 1177],
@@ -114,61 +114,61 @@ final class ArithmeticTests: XCTestCase {
         
         do{
             let a = Matft.arange(start: UInt8(0), to: 4*4, by: 1, shape: [4,4]).T
-            let b = MfArray<UInt8>([[UInt8(251), 3, 2, 4],
+            let b = MfArray<UInt8>([[251, 3, 2, 4],
                                     [247, 3, 1, 1],
                                     [22, 17, 0, 254],
-                                    [1, 249, 3, 3]], mforder: .Column)
-            XCTAssertEqual(a+b, MfArray<UInt8>([[UInt8(251),   7,  10,  16],
+                                    [1, 249, 3, 3]] as [[UInt8]], mforder: .Column)
+            XCTAssertEqual(a+b, MfArray<UInt8>([[251,   7,  10,  16],
                                                 [248,   8,  10,  14],
                                                 [ 24,  23,  10,  12],
-                                                [  4,   0,  14,  18]]))
-            XCTAssertEqual(a-b, MfArray<UInt8>([[ UInt8(5),   1,   6,   8],
+                                                [  4,   0,  14,  18]]  as [[UInt8]]))
+            XCTAssertEqual(a-b, MfArray<UInt8>([[ 5,   1,   6,   8],
                                                 [ 10,   2,   8,  12],
                                                 [236, 245,  10,  16],
-                                                [  2,  14,   8,  12]]))
-            XCTAssertEqual(a*b, MfArray<UInt8>([[  UInt8(0),  12,  16,  48],
+                                                [  2,  14,   8,  12]] as [[UInt8]]))
+            XCTAssertEqual(a*b, MfArray<UInt8>([[ 0,  12,  16,  48],
                                                 [247,  15,   9,  13],
                                                 [ 44, 102,   0, 228],
-                                                [  3, 207,  33,  45]]))
+                                                [  3, 207,  33,  45]] as [[UInt8]]))
 
-            XCTAssertEqual(a/b, MfArray<UInt8>([[    UInt8(0),        1,        3,        2],
+            XCTAssertEqual(a/b, MfArray<UInt8>([[ 0,        1,        3,        2],
                                                 [    0,        1,        8,        12],
                                                 [    0,        0,        0,        0],
-                                                [    2,        0,        3,        4]]))
+                                                [    2,        0,        3,        4]] as [[UInt8]]))
         }
     }
     
      
     func testBroadcast(){
         do{
-            let a = MfArray<Int64>([[Int64(1), 3, 5],
-                                    [2, -4, -1]])
+            let a = MfArray<Int64>([[1, 3, 5],
+                                    [2, -4, -1]] as [[Int64]])
             let b = Matft.arange(start: Int64.zero, to: 2*3*3, by: 1, shape: [3, 2, 3])
             
-            XCTAssertEqual(a+b, MfArray<Int64>([[[ Int64(1),  4,  7],
+            XCTAssertEqual(a+b, MfArray<Int64>([[[ 1,  4,  7],
                                           [ 5,  0,  4]],
 
                                          [[ 7, 10, 13],
                                           [11,  6, 10]],
 
                                          [[13, 16, 19],
-                                          [17, 12, 16]]]))
-            XCTAssertEqual(a-b, MfArray<Int64>([[[  Int64(1),   2,   3],
+                                          [17, 12, 16]]] as [[[Int64]]]))
+            XCTAssertEqual(a-b, MfArray<Int64>([[[ 1,   2,   3],
                                           [ -1,  -8,  -6]],
 
                                          [[ -5,  -4,  -3],
                                           [ -7, -14, -12]],
 
                                          [[-11, -10,  -9],
-                                          [-13, -20, -18]]]))
-            XCTAssertEqual(a*b, MfArray<Int64>([[[  Int64(0),   3,  10],
+                                          [-13, -20, -18]]] as [[[Int64]]]))
+            XCTAssertEqual(a*b, MfArray<Int64>([[[  0,   3,  10],
                                           [  6, -16,  -5]],
 
                                          [[  6,  21,  40],
                                           [ 18, -40, -11]],
 
                                          [[ 12,  39,  70],
-                                          [ 30, -64, -17]]]))
+                                          [ 30, -64, -17]]] as [[[Int64]]]))
             /*
             XCTAssertEqual(b/a, MfArray([[[  0.0        ,   0.33333333,   0.4       ],
                                           [  1.5       ,  -1.0        ,  -5.0        ]],

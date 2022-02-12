@@ -47,12 +47,12 @@ final class BoolPefTests: XCTestCase {
                 let _ = a === 0
             }
             /*
-             'average: 0.010, relative standard deviation: 28.372%, values: [0.018112, 0.008027, 0.009588, 0.008938, 0.009636, 0.008126, 0.009601, 0.008486, 0.010103, 0.008544]
-            9.91ms
+             average: 0.007, relative standard deviation: 34.558%, values: [0.012823, 0.006521, 0.006329, 0.004909, 0.005088, 0.004256, 0.005424, 0.006592, 0.007469, 0.006347]
+            6.57ms
              */
         }
     }
-    /*
+    
     func testPeformanceEqual2() {
         do{
             let a = Matft.arange(start: -10*10*10*10*10*5, to: 10*10*10*10*10*5, by: 1, shape: [10,10,10,10,10,10])
@@ -65,5 +65,5 @@ final class BoolPefTests: XCTestCase {
             22.3ms
              */
         }
-    }*/
+    }
 }

@@ -101,6 +101,35 @@ internal func wrap_vDSP_toBool<T: MfStoredTypeUsable>(_ size: Int, _ srcptr: Uns
     vDSP_viclip_func(dstptr, vDSP_Stride(1), &zero, &one, dstptr, vDSP_Stride(1), vDSP_Length(size))
 }
 
+/// Wrapper of vDSP boolean conversion function
+/// - Parameters:
+///   - size: A size to be converted
+///   - srcptr: A source pointer
+///   - dstptr: A destination pointer
+///   - vDSP_vminmg_func: The vDSP vminmg function
+///   - vDSP_viclip_func: The vDSP viclip function
+@inline(__always)
+internal func wrap_vDSP_toIBool<T: MfStoredTypeUsable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_vminmg_func: vDSP_vminmg_func<T>, _ vDSP_viclip_func: vDSP_viclip_func<T>, _ vDSP_addvs_func: vDSP_biopvs_func<T>, _ vForce_abs_func: vForce_math_func<T>){
+    var i32size = Int32(size)
+    // if |src| <= 1  => dst = |src|
+    //    |src| > 1   => dst = 1
+    // Note that the 0<= dst <= 1
+    var one = T.from(1)
+    vDSP_vminmg_func(srcptr, vDSP_Stride(1), &one, vDSP_Stride(0), dstptr, vDSP_Stride(1), vDSP_Length(size))
+    
+    var zero = T.zero
+    one = T.from(1)
+    // if src <= 0, 1 <= src   => dst = src
+    //    0 < src <= 1         => dst = 1
+    vDSP_viclip_func(dstptr, vDSP_Stride(1), &zero, &one, dstptr, vDSP_Stride(1), vDSP_Length(size))
+    
+    one = T.from(-1)
+    vDSP_addvs_func(dstptr, vDSP_Stride(1), &one, dstptr, vDSP_Stride(1), vDSP_Length(size))
+    
+    vForce_abs_func(dstptr, dstptr, &i32size)
+}
+
+
 /// Wrapper of vDSP sign generation function
 /// - Parameters:
 ///   - size: A size to be converted
@@ -153,12 +182,19 @@ internal func preop_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ vDSP_func:
 /// Boolean conversion by vDSP
 /// - Parameter mfarray: An input mfarray
 /// - Returns: Converted mfarray
-internal func toBool_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Bool> where T.StoredType == Float{
+internal func toBool_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Bool>{
     
     let size = mfarray.storedSize
     let newdata: MfData<Bool> = MfData(size: mfarray.storedSize)
-
-    wrap_vDSP_toBool(size, mfarray.mfdata.storedPtr.baseAddress!, newdata.storedPtr.baseAddress!, Bool.StoredType.vDSP_vminmg_func, Bool.StoredType.vDSP_viclip_func)
+    
+    if let srcptr = mfarray.mfdata.storedPtr.baseAddress! as? UnsafeMutablePointer<Float>{
+        wrap_vDSP_toBool(size, srcptr, newdata.storedPtr.baseAddress!, Bool.StoredType.vDSP_vminmg_func, Bool.StoredType.vDSP_viclip_func)
+    }
+    else if let srcptr = mfarray.mfdata.storedPtr.baseAddress! as? UnsafeMutablePointer<Double>{
+        // Double to Float
+        wrap_vDSP_convert(mfarray.storedSize, srcptr, 1, newdata.storedPtr.baseAddress!, 1, vDSP_vdpsp)
+        wrap_vDSP_toBool(size, newdata.storedPtr.baseAddress!, newdata.storedPtr.baseAddress!, Bool.StoredType.vDSP_vminmg_func, Bool.StoredType.vDSP_viclip_func)
+    }
     
     let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
@@ -167,14 +203,23 @@ internal func toBool_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<
 /// Boolean conversion by vDSP
 /// - Parameter mfarray: An input mfarray
 /// - Returns: Converted mfarray
-internal func toBool_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Bool> where T.StoredType == Double{
-    //let mfarray = mfarray.astype(Float.self)
+internal func toIBool_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Bool>{
     
     let size = mfarray.storedSize
     let newdata: MfData<Bool> = MfData(size: mfarray.storedSize)
-    // Double to Float
-    wrap_vDSP_convert(mfarray.storedSize, mfarray.mfdata.storedPtr.baseAddress!, 1, newdata.storedPtr.baseAddress!, 1, vDSP_vdpsp)
-    wrap_vDSP_toBool(size, newdata.storedPtr.baseAddress!, newdata.storedPtr.baseAddress!, Bool.StoredType.vDSP_vminmg_func, Bool.StoredType.vDSP_viclip_func)
+    
+    if let srcptr = mfarray.mfdata.storedPtr.baseAddress! as? UnsafeMutablePointer<Float>{
+        wrap_vDSP_toIBool(size, srcptr, newdata.storedPtr.baseAddress!, Bool.StoredType.vDSP_vminmg_func, Bool.StoredType.vDSP_viclip_func,
+            Bool.StoredType.vDSP_addvs_func,
+            Bool.StoredType.vForce_abs_func)
+    }
+    else if let srcptr = mfarray.mfdata.storedPtr.baseAddress! as? UnsafeMutablePointer<Double>{
+        // Double to Float
+        wrap_vDSP_convert(mfarray.storedSize, srcptr, 1, newdata.storedPtr.baseAddress!, 1, vDSP_vdpsp)
+        wrap_vDSP_toIBool(size, newdata.storedPtr.baseAddress!, newdata.storedPtr.baseAddress!, Bool.StoredType.vDSP_vminmg_func, Bool.StoredType.vDSP_viclip_func,
+            Bool.StoredType.vDSP_addvs_func,
+            Bool.StoredType.vForce_abs_func)
+    }
     
     let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
@@ -202,7 +247,7 @@ internal func sign_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<T>
 ///   - r_mfarray: The right mfarray
 ///   - vDSP_func: The vDSP biop function
 /// - Returns: The result mfarray
-internal func biopvv_by_vDSP<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, vDSP_func: vDSP_biopvv_func<T.StoredType>) -> MfArray<T>{
+internal func biopvv_by_vDSP<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, vDSP_func: vDSP_biopvv_func<T.StoredType>) -> MfArray<T>{
     // biggerL: flag whether l is bigger than r
     // return mfarray must be either row or column major
     let (l_mfarray, r_mfarray, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
@@ -242,7 +287,7 @@ internal func biopvv_by_vDSP<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray:
 ///   - r_scalr: The right scalar
 ///   - vDSP_func: The vDSP biop function
 /// - Returns: The result mfarray
-internal func biopvs_by_vDSP<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T.StoredType, vDSP_func: vDSP_biopvs_func<T.StoredType>) -> MfArray<T>{
+internal func biopvs_by_vDSP<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_scalar: T.StoredType, vDSP_func: vDSP_biopvs_func<T.StoredType>) -> MfArray<T>{
     let l_mfarray = check_contiguous(l_mfarray)
     var r_scalar = r_scalar
     
@@ -263,7 +308,7 @@ internal func biopvs_by_vDSP<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: 
 ///   - r_mfarray: The right mfarray
 ///   - vDSP_func: The vDSP biop function
 /// - Returns: The result mfarray
-internal func biopsv_by_vDSP<T: MfNumeric>(_ l_scalar: T.StoredType, _ r_mfarray: MfArray<T>, vDSP_func: vDSP_biopsv_func<T.StoredType>) -> MfArray<T>{
+internal func biopsv_by_vDSP<T: MfTypeUsable>(_ l_scalar: T.StoredType, _ r_mfarray: MfArray<T>, vDSP_func: vDSP_biopsv_func<T.StoredType>) -> MfArray<T>{
     let r_mfarray = check_contiguous(r_mfarray)
     var l_scalar = l_scalar
     

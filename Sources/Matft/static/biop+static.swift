@@ -16,7 +16,7 @@ extension Matft{
     ///   - l_mfarray: The left mfarray
     ///   - r_mfarray: The right mfarray
     /// - Returns: The result mfarray
-    public static func add<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func add<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: T.StoredType.vDSP_addvv_func)
     }
@@ -25,7 +25,7 @@ extension Matft{
     ///   - l_mfarray: The left mfarray
     ///   - r_mfarray: The right mfarray
     /// - Returns: The result mfarray
-    public static func sub<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func sub<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: T.StoredType.vDSP_subvv_func)
     }
@@ -34,7 +34,7 @@ extension Matft{
     ///   - l_mfarray: The left mfarray
     ///   - r_mfarray: The right mfarray
     /// - Returns: The result mfarray
-    public static func mul<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func mul<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: T.StoredType.vDSP_mulvv_func)
     }
@@ -43,7 +43,7 @@ extension Matft{
     ///   - l_mfarray: The left mfarray
     ///   - r_mfarray: The right mfarray
     /// - Returns: The result mfarray
-    public static func div<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func div<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: T.StoredType.vDSP_divvv_func)
     }
@@ -54,6 +54,7 @@ extension Matft{
     ///   - r_mfarray: The right mfarray
     /// - Returns: The bool mfarray
     public static func equal<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        /*
         var (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         (l_mfarray, r_mfarray) = to_samestructure(l_mfarray, r_mfarray)
         
@@ -61,7 +62,8 @@ extension Matft{
         let newdata = MfData(Bool.self, storedFlattenArray: &ret)
         let newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
         //toBool_by_vDSP(l_mfarray - r_mfarray)
-        return MfArray(mfdata: newdata, mfstructure: newstructure)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)*/
+        return toIBool_by_vDSP(l_mfarray - r_mfarray)
     }
     /// Check NOT equality in element-wise. Returned mfarray's type will be bool.
     /// - Parameters:
@@ -69,6 +71,7 @@ extension Matft{
     ///   - r_mfarray: The right mfarray
     /// - Returns: The bool mfarray
     public static func not_equal<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        /*
         var (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         (l_mfarray, r_mfarray) = to_samestructure(l_mfarray, r_mfarray)
         
@@ -77,7 +80,8 @@ extension Matft{
         let newdata = MfData(Bool.self, storedFlattenArray: &ret)
         let newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
         
-        return MfArray(mfdata: newdata, mfstructure: newstructure)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)*/
+        return toBool_by_vDSP(l_mfarray - r_mfarray)
     }
     
     //============= left mfarray, right scalar operation =============//
@@ -87,7 +91,7 @@ extension Matft{
     ///   - l_mfarray: The left mfarray
     ///   - r_scalar: The right scalar
     /// - Returns: The result mfarray
-    public static func add<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
+    public static func add<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
         return biopvs_by_vDSP(l_mfarray, T.StoredType.from(r_scalar), vDSP_func: T.StoredType.vDSP_addvs_func)
     }
     /// Element-wise subtraction of  two mfarray
@@ -95,7 +99,7 @@ extension Matft{
     ///   - l_mfarray: The left mfarray
     ///   - r_scalar: The right scalar
     /// - Returns: The result mfarray
-    public static func sub<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
+    public static func sub<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
         return biopvs_by_vDSP(l_mfarray, -T.StoredType.from(r_scalar), vDSP_func: T.StoredType.vDSP_addvs_func)
     }
     /// Element-wise multiplication of  two mfarray
@@ -103,7 +107,7 @@ extension Matft{
     ///   - l_mfarray: The left mfarray
     ///   - r_scalar: The right scalar
     /// - Returns: The result mfarray
-    public static func mul<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
+    public static func mul<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
         return biopvs_by_vDSP(l_mfarray, T.StoredType.from(r_scalar), vDSP_func: T.StoredType.vDSP_mulvs_func)
     }
     /// Element-wise division of  two mfarray
@@ -111,7 +115,7 @@ extension Matft{
     ///   - l_mfarray: The left mfarray
     ///   - r_scalar: The right scalar
     /// - Returns: The result mfarray
-    public static func div<T: MfNumeric>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
+    public static func div<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<T>{
         return biopvs_by_vDSP(l_mfarray, T.StoredType.from(r_scalar), vDSP_func: T.StoredType.vDSP_divvs_func)
     }
     /// Check equality in element-wise. Returned mfarray's type will be bool.
@@ -120,13 +124,14 @@ extension Matft{
     ///   - r_scalar: The right scalar
     /// - Returns: The bool mfarray
     public static func equal<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<Bool>{
-        let r_scalar = T.StoredType.from(r_scalar)
-        
+        //let r_scalar = T.StoredType.from(r_scalar)
+        /*
         var ret = l_mfarray.mfdata.storedData.map{ T.StoredType.nealy_equal($0, r_scalar) ? Bool.StoredType(1) : Bool.StoredType.zero }
         let newdata = MfData(Bool.self, storedFlattenArray: &ret)
         let newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
         
-        return MfArray(mfdata: newdata, mfstructure: newstructure)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)*/
+        return toIBool_by_vDSP(l_mfarray - r_scalar)
     }
     /// Check NOT equality in element-wise. Returned mfarray's type will be bool.
     /// - Parameters:
@@ -134,13 +139,15 @@ extension Matft{
     ///   - r_scalar: The right scalar
     /// - Returns: The bool mfarray
     public static func not_equal<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<Bool>{
+        /*
         let r_scalar = T.StoredType.from(r_scalar)
         
         var ret = l_mfarray.mfdata.storedData.map{ !T.StoredType.nealy_equal($0, r_scalar) ? Bool.StoredType(1) : Bool.StoredType.zero }
         let newdata = MfData(Bool.self, storedFlattenArray: &ret)
         let newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
         
-        return MfArray(mfdata: newdata, mfstructure: newstructure)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)*/
+        return toBool_by_vDSP(l_mfarray - r_scalar)
     }
     
     
@@ -151,7 +158,7 @@ extension Matft{
     ///   - l_scalar: The left scalar
     ///   - r_mfarray: The right mfarray
     /// - Returns: The result mfarray
-    public static func add<T: MfNumeric>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func add<T: MfTypeUsable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         return biopvs_by_vDSP(r_mfarray, T.StoredType.from(l_scalar), vDSP_func: T.StoredType.vDSP_addvs_func)
     }
     /// Element-wise addition of  two mfarray
@@ -159,7 +166,7 @@ extension Matft{
     ///   - l_scalar: The left scalar
     ///   - r_mfarray: The right mfarray
     /// - Returns: The result mfarray
-    public static func sub<T: MfNumeric>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func sub<T: MfTypeUsable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         return biopvs_by_vDSP(-r_mfarray, T.StoredType.from(l_scalar), vDSP_func: T.StoredType.vDSP_addvs_func)
     }
     /// Element-wise addition of  two mfarray
@@ -167,7 +174,7 @@ extension Matft{
     ///   - l_scalar: The left scalar
     ///   - r_mfarray: The right mfarray
     /// - Returns: The result mfarray
-    public static func mul<T: MfNumeric>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func mul<T: MfTypeUsable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         return biopvs_by_vDSP(r_mfarray, T.StoredType.from(l_scalar), vDSP_func: T.StoredType.vDSP_mulvs_func)
     }
     /// Element-wise addition of  two mfarray
@@ -175,7 +182,7 @@ extension Matft{
     ///   - l_scalar: The left scalar
     ///   - r_mfarray: The right mfarray
     /// - Returns: The result mfarray
-    public static func div<T: MfNumeric>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+    public static func div<T: MfTypeUsable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<T>{
         return biopsv_by_vDSP(T.StoredType.from(l_scalar), r_mfarray, vDSP_func: T.StoredType.vDSP_divsv_func)
     }
     /// Check equality in element-wise. Returned mfarray's type will be bool.
@@ -184,13 +191,15 @@ extension Matft{
     ///   - r_mfarray: The right mfarray
     /// - Returns: The bool mfarray
     public static func equal<T: MfTypeUsable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        /*
         let l_scalar = T.StoredType.from(l_scalar)
         
         var ret = r_mfarray.mfdata.storedData.map{ T.StoredType.nealy_equal($0, l_scalar) ? Bool.StoredType(1) : Bool.StoredType.zero }
         let newdata = MfData(Bool.self, storedFlattenArray: &ret)
         let newstructure = MfStructure(shape: r_mfarray.shape, strides: r_mfarray.strides)
         
-        return MfArray(mfdata: newdata, mfstructure: newstructure)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)*/
+        return toIBool_by_vDSP(l_scalar - r_mfarray)
     }
     /// Check NOT equality in element-wise. Returned mfarray's type will be bool.
     /// - Parameters:
@@ -198,13 +207,15 @@ extension Matft{
     ///   - r_mfarray: The right mfarray
     /// - Returns: The bool mfarray
     public static func not_equal<T: MfTypeUsable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        /*
         let l_scalar = T.StoredType.from(l_scalar)
         
         var ret = r_mfarray.mfdata.storedData.map{ !T.StoredType.nealy_equal($0, l_scalar) ? Bool.StoredType(1) : Bool.StoredType.zero }
         let newdata = MfData(Bool.self, storedFlattenArray: &ret)
         let newstructure = MfStructure(shape: r_mfarray.shape, strides: r_mfarray.strides)
         
-        return MfArray(mfdata: newdata, mfstructure: newstructure)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)*/
+        return toBool_by_vDSP(l_scalar - r_mfarray)
     }
     
     

@@ -35,4 +35,5 @@ public protocol MfStoredTypeUsable: FloatingPoint{
     
     //======= vForce ========//
     static var vForce_copysign_func: vForce_copysign_func<Self>{ get }
+    static var vForce_abs_func: vForce_math_func<Self>{ get }
 }
