@@ -94,11 +94,63 @@ extension Matft{
     ///   - dim: The dimension, returned mfarray's shape is (dim, dim)
     ///   - mforder: (Optional) The order, default is nil, which means close to row major
     /// - Returns: The created mfarray
-    static public func eye<T: MfNumeric>(dim: Int, mforder: MfOrder = .Row) -> MfArray<T>{
-        var eye = Array(repeating: Array(repeating: 0, count: dim), count: dim)
+    static public func eye<T: MfTypeUsable>(dim: Int, mforder: MfOrder = .Row) -> MfArray<T>{
+        var eye = Array(repeating: T.StoredType.zero, count: dim*dim)
         for i in 0..<dim{
-            eye[i][i] = 1
+            eye[i*dim+i] = T.StoredType.from(1)
         }
-        return MfArray(eye, mforder: mforder)
+        let newdata = MfData(T.self, storedFlattenArray: &eye)
+        let newstructure = MfStructure(shape: [dim, dim], mforder: mforder)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
+    }
+    
+    /// Create diagonal matrix. The size is (dim, dim)
+    /// - Parameters:
+    ///   - v: the diagonal values, returned mfarray's shape is (dim, dim), whose dim is length of v
+    ///   - k: Diagonal position.
+    ///   - mforder: (Optional) The order, default is nil, which means close to row major
+    /// - Returns: The created mfarray
+    static public func diag<T: MfTypeUsable>(v: [T], k: Int = 0, mforder: MfOrder = .Row) -> MfArray<T>{
+        let dim = v.count + abs(k)
+        var d = Array(repeating: T.zero, count: dim*dim)
+        if k >= 0{
+            for i in 0..<v.count{
+                d[i*dim+(i+k)] = v[i]
+            }
+        }
+        else{
+            for i in 0..<v.count{
+                d[(i-k)*dim+i] = v[i]
+            }
+        }
+        
+        return MfArray(d, shape: [dim, dim], mforder: mforder)
+    }
+    
+    /// Create diagonal matrix. The size is (dim, dim)
+    /// - Parameters:
+    ///   - v: the diagonal values, returned mfarray's shape is (dim, dim), whose dim is length of v
+    ///   - k: Diagonal position.
+    ///   - mforder: (Optional) The order, default is nil, which means close to row major
+    /// - Returns: The created mfarray
+    static public func diag<T: MfTypeUsable>(v: MfArray<T>, k: Int = 0, mforder: MfOrder = .Row) -> MfArray<T>{
+        let dim = v.size + abs(k)
+        var d = Array(repeating: T.StoredType.zero, count: dim*dim)
+        let _v = v.mfdata.storedData
+        if k >= 0{
+            for i in 0..<_v.count{
+                d[i*dim+(i+k)] = _v[i]
+            }
+        }
+        else{
+            for i in 0..<_v.count{
+                d[(i-k)*dim+i] = _v[i]
+            }
+        }
+        
+        let newdata = MfData(T.self, storedFlattenArray: &d)
+        let newstructure = MfStructure(shape: [dim, dim], mforder: mforder)
+        
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
 }
