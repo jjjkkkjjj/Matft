@@ -9,6 +9,15 @@ import Foundation
 
 extension MfArray{
     
+    /// Create another typed mfarray. Created mfarray will be different object from original one
+    /// - Parameters:
+    ///   - newtype: A new type
+    ///   - mforder: (Optional) An order
+    /// - Returns: New typed mfarray
+    public func astype<U: MfTypeUsable>(newtype: U.Type, mforder: MfOrder = .Row) -> MfArray<U>{
+        return Matft.astype(self, newtype: newtype, mforder: mforder)
+    }
+    
     /// Create any ordered transposed mfarray. Created mfarray will be sharing data with original one
     /// - Parameters:
     ///   - axes: (Optional) the indices of shape. In case this is left out, get transposed mfarray

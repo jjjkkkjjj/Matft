@@ -301,9 +301,6 @@ final class ArithmeticTests: XCTestCase {
             //print(d)
             //print(36/23) = c[0,0,0] / d[0]
             //Note that 36 / 23 > 1.5, but got 1
-            print(c)
-            print(d)
-            print(c/d)
             let k = c/d
             XCTAssertEqual(k, MfArray<Int>([[[    1,        1,        1],
                                                [    1,        2,        2],

@@ -6,9 +6,50 @@
 //
 
 import Foundation
+import Accelerate
 
 extension Matft{
     
+    
+    /// Create another typed mfarray. Created mfarray will be different object from original one
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - newtype: A new type
+    ///   - mforder: (Optional) An order
+    /// - Returns: New typed mfarray
+    public static func astype<T: MfTypeUsable, U: MfTypeUsable>(_ mfarray: MfArray<T>, newtype: U.Type, mforder: MfOrder = .Row) -> MfArray<U>{
+
+        if U.self is Bool.Type{
+           return toBool_by_vDSP(mfarray) as! MfArray<U>
+        }
+        
+        if U.self is T.Type{
+            return mfarray.deepcopy() as! MfArray<U>
+        }
+        
+        let mfarray = check_contiguous(mfarray, mforder)
+        let ret_size = mfarray.storedSize
+        let newdata: MfData<U> = MfData(size: ret_size)
+        let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+        let dst_mfarray = MfArray(mfdata: newdata, mfstructure: newstructure)
+        //if T.StoredType.self is U.StoredType.Type{
+        if let srcptr = mfarray.mfdata.storedPtr.baseAddress! as? UnsafeMutablePointer<U.StoredType>{
+            wrap_cblas_copy(ret_size, srcptr, 1, newdata.storedPtr.baseAddress!, 1, U.StoredType.cblas_copy_func)
+        }
+        else{
+            if let srcptr = mfarray.mfdata.storedPtr.baseAddress! as? UnsafeMutablePointer<Float>, let dstptr = newdata.storedPtr.baseAddress! as? UnsafeMutablePointer<Double>{
+                wrap_vDSP_convert(ret_size, srcptr, 1, dstptr, 1, vDSP_vspdp)
+            }
+            else if let srcptr = mfarray.mfdata.storedPtr.baseAddress! as? UnsafeMutablePointer<Double>, let dstptr = newdata.storedPtr.baseAddress! as? UnsafeMutablePointer<Float>{
+                wrap_vDSP_convert(ret_size, srcptr, 1, dstptr, 1, vDSP_vdpsp)
+            }
+            else{
+                fatalError("Unsupported!")
+            }
+        }
+
+        return dst_mfarray
+    }
     
     /// Create any ordered transposed mfarray. Created mfarray will be sharing data with original one
     /// - Parameters:
