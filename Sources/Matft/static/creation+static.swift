@@ -59,6 +59,17 @@ extension Matft{
         
         return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
+    
+    /// Create a mfarray padded with a given value, and same structure as a given mfarray
+    /// - Parameters:
+    ///   - value: The padded value
+    ///   - mfarray: The mfarray to be imitated
+    ///   - mforder: (Optional) The order
+    /// - Returns: The result mfarray
+    static public func nums_like<T: MfTypeUsable>(_ value: T, mfarray: MfArray<T>, mforder: MfOrder = .Row) -> MfArray<T>{
+        
+        return Matft.nums(value, shape: mfarray.shape, mforder: mforder)
+    }
 
     /// Create arithmetic sequence mfarray
     /// - Parameters:
