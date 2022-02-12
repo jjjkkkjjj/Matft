@@ -36,6 +36,7 @@ internal func copy_all_mfarray<T: MfTypeUsable>(_ src_mfarray: MfArray<T>) -> Mf
 ///   - mfarray: An input mfarray
 ///   - mforder: An order
 /// - Returns: A contiguous mfarray
+@usableFromInline
 internal func check_contiguous<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ mforder: MfOrder? = nil) -> MfArray<T>{
     if ((mfarray.mfstructure.row_contiguous || mfarray.mfstructure.column_contiguous) && mforder == nil) ||
         (mfarray.mfstructure.row_contiguous && mforder == .Row) || (mfarray.mfstructure.column_contiguous && mforder == .Column){
@@ -44,4 +45,11 @@ internal func check_contiguous<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ mforder
     else{
         return Matft.to_contiguous(mfarray, mforder: mforder ?? .Row)
     }
+}
+
+/// Whether to contain reverse or not
+/// - Returns: The boolean whether to contain reverse or not
+@usableFromInline
+internal func isReverse<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> Bool{
+    return mfarray.strides.contains{ $0 < 0 }
 }

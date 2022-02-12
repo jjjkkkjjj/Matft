@@ -18,6 +18,29 @@ extension Matft{
         return MfArray(base: mfarray, mfstructure: newstructure, offset: mfarray.offsetIndex)
     }
     
+    
+    /// Create deep copy of mfarray. Deep means copied mfarray will be different object from original one
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - order: (Optional) order, default is nil, which means close to either row or column major if possibe.
+    /// - Returns: Copied mfarray
+    static public func deepcopy<T: MfTypeUsable>(_ mfarray: MfArray<T>, order: MfOrder? = nil) -> MfArray<T>{
+        if let order = order {
+            return to_contiguous(mfarray, mforder: order)
+        }
+        else{
+            if mfarray.mfstructure.row_contiguous || mfarray.mfstructure.column_contiguous{
+                return copy_all_mfarray(mfarray)
+            }
+            else if !isReverse(mfarray) && !mfarray.mfdata._isView{// not contain reverse and is not view, copy all}
+                return copy_all_mfarray(mfarray)
+            }
+            else{
+                return to_contiguous(mfarray, mforder: .Row)
+            }
+        }
+        
+    }
 
     /// Create arithmetic sequence mfarray
     /// - Parameters:
