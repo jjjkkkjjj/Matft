@@ -343,4 +343,23 @@ extension Matft{
         
         return mfarray.transpose(axes: axes)
     }
+    
+    
+    /// Move from given axis to dstination axis
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - src: The source axis index
+    ///   - dst: The destination axis index
+    /// - Returns: The moved mfarray
+    public static func moveaxis<T: MfTypeUsable>(_ mfarray: MfArray<T>, src: Int, dst: Int) -> MfArray<T>{
+        let src = get_positive_axis(src, ndim: mfarray.ndim)
+        let dst = get_positive_axis(dst, ndim: mfarray.ndim)
+
+        var axes = Array(stride(from: 0, to: mfarray.ndim, by: 1))
+        //move
+        axes.remove(at: src)
+        axes.insert(src, at: dst)
+
+        return mfarray.transpose(axes: axes)
+    }
 }

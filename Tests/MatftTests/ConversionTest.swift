@@ -235,4 +235,71 @@ final class ConversionTest: XCTestCase {
                                 [ 7, 15]]]]))
         }
     }
+    
+    func testMoveaxis() {
+        do{
+
+            let a = MfArray<Int>([[3, -19],
+                                  [-22, 4]])
+            let b = MfArray<Int>([[2, 1177],
+                                  [5, -43]])
+            
+            XCTAssertEqual(a.moveaxis(src: 0, dst: 1),
+                           MfArray<Int>([[3, -22],
+                                         [-19, 4]]))
+            XCTAssertEqual(a.moveaxis(src: -1, dst: -2), MfArray<Int>([[3, -22],
+                               [-19, 4]]))
+            
+            XCTAssertEqual(b.moveaxis(src: 0, dst: 1),
+                           MfArray<Int>([[2, 5],
+                                         [1177, -43]]))
+            XCTAssertEqual(b.moveaxis(src: -1, dst: -2), MfArray<Int>([[2, 5],
+                           [1177, -43]]))
+        }
+
+        
+        do{
+            let a = Matft.arange(start: 0, to: 2*2*2*2, by: 1, shape: [2,2,2,2])
+            XCTAssertEqual(a.moveaxis(src: 0, dst: 2),
+                           MfArray<Int>([[[[ 0,  1],
+                                           [ 8,  9]],
+
+                                          [[ 2,  3],
+                                           [10, 11]]],
+
+
+                                         [[[ 4,  5],
+                                           [12, 13]],
+
+                                          [[ 6,  7],
+                                           [14, 15]]]]))
+            XCTAssertEqual(a.moveaxis(src: 0, dst: -2), MfArray<Int>([[[[ 0,  1],
+                                [ 8,  9]],
+
+                               [[ 2,  3],
+                                [10, 11]]],
+
+
+                              [[[ 4,  5],
+                                [12, 13]],
+
+                               [[ 6,  7],
+                                [14, 15]]]]))
+            
+            XCTAssertEqual(a.moveaxis(src: -1, dst: 0), MfArray<Int>([[[[ 0,  2],
+                                [ 4,  6]],
+
+                               [[ 8, 10],
+                                [12, 14]]],
+
+
+                           [[[ 1,  3],
+                             [ 5,  7]],
+
+                            [[ 9, 11],
+                             [13, 15]]]]))
+        }
+    }
+    
+
 }

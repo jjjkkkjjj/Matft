@@ -128,4 +128,13 @@ extension MfArray{
     public func swapaxes(axis1: Int, axis2: Int) -> MfArray<T>{
         return Matft.swapaxes(self, axis1: axis1, axis2: axis2)
     }
+    
+    /// Move from given axis to dstination axis
+    /// - Parameters:
+    ///   - src: The source axis index
+    ///   - dst: The destination axis index
+    /// - Returns: The moved mfarray
+    public func moveaxis(src: Int, dst: Int) -> MfArray<T>{
+        return Matft.moveaxis(self, src: src, dst: dst)
+    }
 }
