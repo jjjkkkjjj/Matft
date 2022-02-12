@@ -22,11 +22,11 @@ extension Matft{
     /// Create deep copy of mfarray. Deep means copied mfarray will be different object from original one
     /// - Parameters:
     ///   - mfarray: An input mfarray
-    ///   - order: (Optional) order, default is nil, which means close to either row or column major if possibe.
+    ///   - mforder: (Optional) order, default is nil, which means close to either row or column major if possibe.
     /// - Returns: Copied mfarray
-    static public func deepcopy<T: MfTypeUsable>(_ mfarray: MfArray<T>, order: MfOrder? = nil) -> MfArray<T>{
-        if let order = order {
-            return to_contiguous(mfarray, mforder: order)
+    static public func deepcopy<T: MfTypeUsable>(_ mfarray: MfArray<T>, mforder: MfOrder? = nil) -> MfArray<T>{
+        if let mforder = mforder {
+            return to_contiguous(mfarray, mforder: mforder)
         }
         else{
             if mfarray.mfstructure.row_contiguous || mfarray.mfstructure.column_contiguous{
@@ -40,6 +40,24 @@ extension Matft{
             }
         }
         
+    }
+    
+    
+    /// Create a mfarray padded with a given value
+    /// - Parameters:
+    ///   - value: The padded value
+    ///   - shape: The shape array
+    ///   - mforder: (Optional) The order
+    /// - Returns: The result mfarray
+    static public func nums<T: MfTypeUsable>(_ value: T, shape: [Int], mforder: MfOrder = .Row) -> MfArray<T>{
+        var shape = shape
+        let size = shape2size(&shape)
+        var new_flattenarray = Array(repeating: value, count: size)
+        
+        let newdata = MfData(flattenArray: &new_flattenarray)
+        let newstructure = MfStructure(shape: shape, mforder: mforder)
+        
+        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
 
     /// Create arithmetic sequence mfarray
