@@ -153,4 +153,54 @@ extension Matft{
         
         return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
+    
+    ///  Concatenate given arrays vertically.
+    /// - Parameters:
+    ///   - mfarrays: The mfarray array
+    /// - Returns: The stacked mfarray
+    static public func vstack<T: MfTypeUsable>(_ mfarrays: [MfArray<T>]) -> MfArray<T> {
+        if mfarrays.count == 1{
+            return mfarrays[0].deepcopy()
+        }
+        
+        var ret_shape = mfarrays.first!.shape // shape except for given axis first, return shape later
+        var concatDim = ret_shape.remove(at: 0)
+        
+        //check if argument is valid or not
+        for i in 1..<mfarrays.count{
+            var shapeExceptAxis = mfarrays[i].shape
+            concatDim += shapeExceptAxis.remove(at: 0)
+            
+            precondition(ret_shape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
+        }
+        
+        ret_shape.insert(concatDim, at: 0)// return shape
+
+        return stack_by_cblas(mfarrays, ret_shape: ret_shape, mforder: .Row)
+    }
+    
+    ///  Concatenate given arrays horizontally.
+    /// - Parameters:
+    ///   - mfarrays: The mfarray array
+    /// - Returns: The stacked mfarray
+    static public func hstack<T: MfTypeUsable>(_ mfarrays: [MfArray<T>]) -> MfArray<T> {
+        if mfarrays.count == 1{
+            return mfarrays[0].deepcopy()
+        }
+        
+        var ret_shape = mfarrays.first!.shape // shape except for given axis first, return shape later
+        var concatDim = ret_shape.remove(at: ret_shape.count - 1)
+        
+        //check if argument is valid or not
+        for i in 1..<mfarrays.count{
+            var shapeExceptAxis = mfarrays[i].shape
+            concatDim += shapeExceptAxis.remove(at: shapeExceptAxis.count - 1)
+            
+            precondition(ret_shape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
+        }
+        
+        ret_shape.insert(concatDim, at: ret_shape.endIndex)// return shape
+
+        return stack_by_cblas(mfarrays, ret_shape: ret_shape, mforder: .Column)
+    }
 }

@@ -119,3 +119,27 @@ internal func samesize_by_cblas<T: MfTypeUsable>(_ src_mfarray: MfArray<T>, cbla
     
     return dst_mfarray
 }
+
+
+/// Stack vertically or horizontally
+/// - Parameters:
+///   - mfarrays: The mfarray array
+///   - ret_shape: The return shape array
+///   - mforder: An order. Row major means vstack, Column major means hstack.
+/// - Returns: The stacked mfarray
+internal func stack_by_cblas<T: MfTypeUsable>(_ mfarrays: [MfArray<T>], ret_shape: [Int], mforder: MfOrder) -> MfArray<T>{
+    var ret_shape = ret_shape
+    let majorArrays = mfarrays.map{ Matft.to_contiguous($0, mforder: mforder) }
+    let ret_size = shape2size(&ret_shape)
+    
+    let newdata: MfData<T> = MfData(size: ret_size)
+    var offset = 0
+    for mfarray in majorArrays {
+        wrap_cblas_copy(mfarray.storedSize, mfarray.mfdata.storedPtr.baseAddress!, 1, newdata.storedPtr.baseAddress! + offset, 1, T.StoredType.cblas_copy_func)
+        offset += mfarray.storedSize
+    }
+    
+    let newstructure = MfStructure(shape: ret_shape, mforder: mforder)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
