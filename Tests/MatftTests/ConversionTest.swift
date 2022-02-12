@@ -80,6 +80,29 @@ final class ConversionTest: XCTestCase {
         }
     }
     
+    func testExpandDims(){
+        do{
+            let a = MfArray<Int>([[2, -7, 0],
+                                  [1, 5, -2]])
+            XCTAssertEqual(Matft.expand_dims(a, axis: 0), MfArray<Int>([[[ 2, -7,  0],
+                             [ 1,  5, -2]]]))
+            XCTAssertEqual(Matft.expand_dims(a, axis: 2), MfArray<Int>([[[ 2],
+                             [-7],
+                             [ 0]],
+
+                            [[ 1],
+                             [ 5],
+                             [-2]]]))
+        }
+        
+        do{
+            let a = MfArray<Int>([1,2])
+            XCTAssertEqual(Matft.expand_dims(a, axes: [0, 1]), MfArray<Int>([[[1, 2]]]))
+            XCTAssertEqual(Matft.expand_dims(a, axes: [2, 0]), MfArray<Int>([[[1],
+                              [2]]]))
+        }
+    }
+    
     func testFlatten(){
         do{
             let a = MfArray<Int>([[2, -7, 0],

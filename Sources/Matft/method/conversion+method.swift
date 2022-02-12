@@ -41,6 +41,20 @@ extension MfArray{
         return Matft.reshape(self, new_shape: new_shape, mforder: mforder)
     }
     
+    /// Create mfarray expanded dimension for a given axis
+    /// - Parameter axis: The axis index to be expanded
+    /// - Returns: The expanded mfarray
+    public func expand_dims(axis: Int) -> MfArray<T>{
+        return Matft.expand_dims(self, axis: axis)
+    }
+    
+    /// Create mfarray expanded dimension for given axes
+    /// - Parameter axes: The axes array to be expanded
+    /// - Returns: The expanded mfarray
+    public func expand_dims(axes: [Int]) -> MfArray<T>{
+        return Matft.expand_dims(self, axes: axes)
+    }
+    
     /// Create broadcasted mfarray.
     /// - Parameters:
     ///   - shape: A new shape

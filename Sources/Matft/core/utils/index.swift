@@ -34,6 +34,30 @@ internal func get_positive_axis(_ axis: Int, ndim: Int) -> Int{
     return ret_axis
 }
 
+
+/// get a positive axis for expand_dims
+/// - Parameters:
+///   - axis: An axis index. Negative axis will be converted into positive one as return value
+///   - ndim: The dimension
+/// - Returns: A positive axis
+internal func get_positive_axis_for_expand_dims(_ axis: Int, ndim: Int) -> Int{
+    let ret_axis: Int
+    if axis < ndim && axis > -ndim - 1{
+        ret_axis = get_positive_axis(axis, ndim: ndim)
+    }
+    else if axis == ndim{
+        ret_axis = axis
+    }
+    else if axis == -ndim - 1{
+        ret_axis = 0
+    }
+    else{
+        preconditionFailure("Invalid axis was passed. must not be -mfarray.ndim - 1 <= axis <= mfarray.ndim")
+    }
+    
+    return ret_axis
+}
+
 /// Get a positive shape from a given size
 /// - Parameters:
 ///   - shape: A shape array. Negative axis will be converted into positive one as return value

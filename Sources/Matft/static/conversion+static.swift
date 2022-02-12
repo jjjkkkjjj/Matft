@@ -108,6 +108,51 @@ extension Matft{
         return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     
+    /// Create mfarray expanded dimension for a given axis
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - axis: A new axis index to be expanded
+    /// - Returns: The expanded mfarray
+    public static func expand_dims<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int) -> MfArray<T>{
+        let new_mfarray = mfarray.shallowcopy()
+        
+        var new_shape = mfarray.shape
+        let axis = get_positive_axis_for_expand_dims(axis, ndim: mfarray.ndim)
+        
+        new_shape.insert(1, at: axis)
+        var new_strides = mfarray.strides
+        new_strides.insert(0, at: axis)
+        
+        let newstructure = MfStructure(shape: new_shape, strides: new_strides)
+        new_mfarray.mfstructure = newstructure
+        
+        return new_mfarray
+    }
+    
+    /// Create mfarray expanded dimension for given axes
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - axes: A new axes array to be expanded
+    /// - Returns: The expanded mfarray
+    public static func expand_dims<T: MfTypeUsable>(_ mfarray: MfArray<T>, axes: [Int]) -> MfArray<T>{
+        let new_mfarray = mfarray.shallowcopy()
+        // reorder descending
+        let axes = axes.sorted{ $0 < $1 }
+        var new_shape = mfarray.shape
+        var new_strides = mfarray.strides
+        for axis in axes{
+            let axis = get_positive_axis_for_expand_dims(axis, ndim: new_shape.count)
+            
+            new_shape.insert(1, at: axis)
+            new_strides.insert(0, at: axis)
+        }
+        
+        let newstructure = MfStructure(shape: new_shape, strides: new_strides)
+        new_mfarray.mfstructure = newstructure
+        
+        return new_mfarray
+    }
+    
     /// Create broadcasted mfarray.
     /// - Parameters:
     ///   - mfarray: An input mfarray
