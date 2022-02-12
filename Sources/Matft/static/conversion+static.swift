@@ -93,6 +93,7 @@ extension Matft{
     }
     
     
+    
     /// Create broadcasted mfarray.
     /// - Parameters:
     ///   - mfarray: An input mfarray
@@ -148,5 +149,18 @@ extension Matft{
     /// - Returns: The contiguous mfarray
     public static func to_contiguous<T: MfTypeUsable>(_ mfarray: MfArray<T>, mforder: MfOrder) -> MfArray<T>{
         return contiguous_by_cblas(mfarray, cblas_func: T.StoredType.cblas_copy_func, mforder: mforder)
+    }
+    
+    /// Flatten to 1d-mfarray
+    /// - Parameters:
+    ///   - mfarray: The source mfarray
+    ///   - mforder: An order
+    /// - Returns: The flatten mfarray
+    public static func flatten<T: MfTypeUsable>(_ mfarray: MfArray<T>, mforder: MfOrder = .Row) -> MfArray<T>{
+        let ret = Matft.to_contiguous(mfarray, mforder: mforder)
+        assert(ret.size == ret.storedSize, "bug was occurred!!")
+        ret.mfstructure = MfStructure(shape: [ret.size], mforder: mforder)
+        
+        return ret
     }
 }

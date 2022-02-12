@@ -47,4 +47,12 @@ extension MfArray{
     public func to_contiguous(mforder: MfOrder) -> MfArray<T>{
         return Matft.to_contiguous(self, mforder: mforder)
     }
+    
+    /// Flatten to 1d-mfarray
+    /// - Parameters:
+    ///   - mforder: An order
+    /// - Returns: The flatten mfarray
+    public func flatten(mforder: MfOrder = .Row) -> MfArray<T>{
+        return Matft.flatten(self, mforder: mforder)
+    }
 }

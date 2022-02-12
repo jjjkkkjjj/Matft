@@ -27,4 +27,18 @@ final class ConversionTest: XCTestCase {
                                             [1, 5, 254]] as [[UInt8]]))
         }
     }
+    
+    func testFlatten(){
+        do{
+            let a = MfArray<Int>([[2, -7, 0],
+                                [1, 5, -2]])
+            
+            XCTAssertEqual(a.flatten(),
+                           MfArray<Int>([2, -7, 0, 1, 5, -2]))
+            XCTAssertEqual(a.T.flatten(),
+                           MfArray<Int>([ 2,  1, -7,  5,  0, -2]))
+            XCTAssertEqual(a[~<<-1].flatten(),
+                           MfArray<Int>([ 1,  5, -2,  2, -7,  0]))
+        }
+    }
 }
