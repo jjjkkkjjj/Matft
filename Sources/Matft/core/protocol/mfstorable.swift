@@ -29,6 +29,7 @@ public protocol MfStoredTypeUsable: FloatingPoint{
     
     static var vDSP_vminmg_func: vDSP_vminmg_func<Self>{ get }
     static var vDSP_viclip_func: vDSP_viclip_func<Self>{ get }
+    static var vDSP_clip_func: vDSP_clip_func<Self>{ get }
     
     //======= cblas ========//
     static var cblas_copy_func: cblas_copy_func<Self>{ get }

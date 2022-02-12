@@ -110,4 +110,13 @@ extension MfArray{
     public func flip(axes: [Int]) -> MfArray<T>{
         return Matft.flip(self, axes: axes)
     }
+    
+    /// Clip the mfarray
+    /// - Parameters:
+    ///   - minval: (Optional) The minimum value
+    ///   - maxval: (Optional) The maximum value
+    /// - Returns: The clipped mfarray
+    public func clip(minval: T? = nil, maxval: T? = nil) -> MfArray<T>{
+        return Matft.clip(self, minval: minval, maxval: maxval)
+    }
 }

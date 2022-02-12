@@ -22,6 +22,8 @@ public typealias vDSP_vminmg_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePoi
 
 public typealias vDSP_viclip_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>,  UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
+public typealias vDSP_clip_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length, UnsafeMutablePointer<vDSP_Length>, UnsafeMutablePointer<vDSP_Length>) -> Void
+
 /// Wrapper of vDSP conversion function
 /// - Parameters:
 ///   - size: A size to be copied
@@ -156,6 +158,19 @@ internal func wrap_vDSP_sign<T: MfStoredTypeUsable>(_ size: Int, _ srcptr: Unsaf
     vForce_copysign_func(dstptr, dstptr, srcptr, &i32size)
 }
 
+/// Wrapper of vDSP clip function
+/// - Parameters:
+///   - size: A size to be converted
+///   - srcptr: A source pointer
+///   - dstptr: A destination pointer
+///   - vDSP_clip_func: The vDSP clip function
+@inline(__always)
+internal func wrap_vDSP_clip<T: MfStoredTypeUsable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ minptr: UnsafePointer<T>, _ maxptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_clip_func: vDSP_clip_func<T>){
+    var mincount = vDSP_Length(0)
+    var maxcount = vDSP_Length(0)
+    
+    vDSP_clip_func(srcptr, vDSP_Stride(1), minptr, maxptr, dstptr, vDSP_Stride(1), vDSP_Length(size), &mincount, &maxcount)
+}
 
 /// Pre operation mfarray by vDSP
 /// - Parameters:
@@ -319,6 +334,27 @@ internal func biopsv_by_vDSP<T: MfTypeUsable>(_ l_scalar: T.StoredType, _ r_mfar
     }
     
     let newstructure = MfStructure(shape: r_mfarray.shape, strides: r_mfarray.strides)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+
+/// Clip operation by vDSP
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - minval: The minimum value
+///   - maxval: The maximum value
+///   - vDSP_func: The vDSP clip function
+/// - Returns: The clipped mfarray
+internal func clip_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ minval: T.StoredType, _ maxval: T.StoredType, vDSP_func: vDSP_clip_func<T.StoredType>) -> MfArray<T>{
+    var minval = minval
+    var maxval = maxval
+    let mfarray = check_contiguous(mfarray)
+    
+    let newdata: MfData<T> = MfData(size: mfarray.storedSize)
+    wrap_vDSP_clip(mfarray.storedSize, mfarray.mfdata.storedPtr.baseAddress!, &minval, &maxval, newdata.storedPtr.baseAddress!, T.StoredType.vDSP_clip_func)
+    
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }

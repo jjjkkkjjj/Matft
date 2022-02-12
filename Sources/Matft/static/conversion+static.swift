@@ -311,5 +311,18 @@ extension Matft{
            slices[axis] = MfSlice(start: nil, to: nil, by: -1)
         }
         return mfarray._get_mfarray(indices: &slices)
-   }
+    }
+    
+    /// Clip the mfarray
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - minval: (Optional) The minimum value
+    ///   - maxval: (Optional) The maximum value
+    /// - Returns: The clipped mfarray
+    public static func clip<T: MfTypeUsable>(_ mfarray: MfArray<T>, minval: T? = nil, maxval: T? = nil) -> MfArray<T>{
+        let minval = minval == nil ? -T.StoredType.infinity : T.StoredType.from(minval!)
+        let maxval = maxval == nil ? T.StoredType.infinity : T.StoredType.from(maxval!)
+        
+        return clip_by_vDSP(mfarray, minval, maxval, vDSP_func: T.StoredType.vDSP_clip_func)
+    }
 }

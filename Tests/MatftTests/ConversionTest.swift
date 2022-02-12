@@ -146,4 +146,31 @@ final class ConversionTest: XCTestCase {
 
                                                       [[-4, -1]]])))
     }
+    
+    func testClip(){
+        do{
+            let a = MfArray<Int>([[2, -7, 0],
+                                  [1, 5, -2]])
+            XCTAssertEqual(a.clip(minval: -3, maxval: 3), MfArray<Int>([[2, -3, 0],
+                              [1, 3, -2]]))
+            XCTAssertEqual(a.clip(minval: -1),
+                           MfArray<Int>([[2, -1, 0],
+                                      [1, 5, -1]]))
+            XCTAssertEqual(a.clip(maxval: 0),
+                           MfArray<Int>([[0, -7, 0],
+                                         [0, 0, -2]]))
+        }
+        
+        do{
+            let a = MfArray<Double>([[-0.87, 1.2, 5.5134, -8.78],
+                                     [-0.0002, 2, 3.4, -5]], mforder: .Column)
+            XCTAssertEqual(a.clip(minval: -0.2, maxval: 1.2), MfArray<Double>([[-0.2, 1.2, 1.2, -0.2],
+                                 [-0.0002, 1.2, 1.2, -0.2]]))
+            XCTAssertEqual(a.clip(maxval: 1.2),
+                           MfArray<Double>([[-0.87, 1.2, 1.2, -8.78],
+                                          [-0.0002, 1.2, 1.2, -5]]))
+            XCTAssertEqual(a.clip(minval: -0.2), MfArray<Double>([[-0.2, 1.2, 5.5134, -0.2],
+                               [-0.0002, 2, 3.4, -0.2]]))
+        }
+    }
 }
