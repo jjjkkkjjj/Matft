@@ -71,6 +71,12 @@ extension MfArray{
         return Matft.squeeze(self, axes: axes)
     }
     
+    /// Convert MfArray to Swift's Array
+    /// - Returns: Swift array
+    public func toArray() -> [Any]{
+        return Matft.toArray(self)
+    }
+    
     /// Create broadcasted mfarray.
     /// - Parameters:
     ///   - shape: A new shape

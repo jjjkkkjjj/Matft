@@ -211,6 +211,15 @@ extension Matft{
         return new_mfarray
     }
     
+    
+    /// Convert MfArray to Swift's Array
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    /// - Returns: Swift array
+    public static func toArray<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> [Any]{
+        return toSwiftArray(mfarray)
+    }
+    
     /// Create broadcasted mfarray.
     /// - Parameters:
     ///   - mfarray: An input mfarray

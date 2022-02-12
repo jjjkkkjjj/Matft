@@ -114,6 +114,100 @@ final class ConversionTest: XCTestCase {
                                                   [-4, -1]]))
     }
     
+    func testToArray(){
+        do{
+            let a = MfArray<Int>([[2, -7, 0],
+                                    [1, 5, -2]])
+
+            let b = Matft.expand_dims(a, axis: 0).toArray() as! [[[Int]]]
+            XCTAssertEqual(b, [[[ 2, -7,  0],
+                                [ 1,  5, -2]]])
+            XCTAssertNotEqual(b, [[[ 2, -3,  0],
+                                   [ 1,  5, -2]]])
+
+            let c = Matft.expand_dims(a, axis: 2).toArray() as! [[[Int]]]
+            XCTAssertEqual(c, [[[ 2],
+                                [-7],
+                                [ 0]],
+
+                               [[ 1],
+                                [ 5],
+                                [-2]]])
+        }
+
+        do{
+            let a = MfArray<Int>([[1, 3, 5],
+                             [2, -4, -1]], mforder: .Column)
+
+            XCTAssertEqual(a.toArray() as! [[Int]], [[1, 3, 5],
+                                                       [2, -4, -1]])
+
+            XCTAssertEqual(a.reshape([3, 1, 2]).toArray() as! [[[Int]]], [[[ 1,  3]],
+
+                                                                            [[ 5,  2]],
+
+                                                                            [[-4, -1]]])
+
+            XCTAssertEqual(a.T.toArray() as! [[Int]], [[ 1,  2],
+                                                         [ 3, -4],
+                                                         [ 5, -1]])
+        }
+        
+        do{
+            let a = MfArray<Int>([[1, 3, 5],
+                             [2, -4, -1]])
+
+            XCTAssertEqual(a.astype(newtype: Float.self).toArray() as! [[Float]], [[Float(1), 3, 5],
+                              [2, -4, -1]])
+
+            XCTAssertEqual(a.astype(newtype: Int16.self).toArray() as! [[Int16]], [[Int16(1), 3, 5],
+                              [2, -4, -1]])
+
+            XCTAssertEqual(a.astype(newtype: Double.self).toArray() as! [[Double]], [[1.0, 3, 5],
+                            [2, -4, -1]])
+
+            XCTAssertEqual(a.astype(newtype: Int.self).toArray() as! [[Int]], [[1, 3, 5],
+                          [2, -4, -1]])
+        }
+    }
+    
+    func testBroadcast(){
+        do{
+            let a = MfArray<Int>([[1, 3, 5],
+                                  [2, -4, -1]], mforder: .Column)
+            
+            XCTAssertEqual(a.broadcast_to(shape: [3,2,3]), MfArray<Int>([[[ 1,  3,  5],
+                              [ 2, -4, -1]],
+
+                             [[ 1,  3,  5],
+                              [ 2, -4, -1]],
+
+                             [[ 1,  3,  5],
+                              [ 2, -4, -1]]]))
+            let b = MfArray<Int>([[1, 2]])
+            XCTAssertEqual(b.broadcast_to(shape: [2,2]), MfArray<Int>([[1,2],
+                               [1,2]]))
+        }
+        do{
+            let a = MfArray<Int>([[2, -7, 0],
+                                  [1, 5, -2]]).reshape([2,1,1,3])
+            
+            XCTAssertEqual(a.broadcast_to(shape: [2,2,2,3]), MfArray<Int>([[[[ 2, -7,  0],
+                             [ 2, -7,  0]],
+
+                            [[ 2, -7,  0],
+                             [ 2, -7,  0]]],
+                          
+
+                           [[[ 1,  5, -2],
+                             [ 1,  5, -2]],
+
+                            [[ 1,  5, -2],
+                             [ 1,  5, -2]]]]))
+        }
+    }
+    
+    
     func testFlatten(){
         do{
             let a = MfArray<Int>([[2, -7, 0],
@@ -301,41 +395,6 @@ final class ConversionTest: XCTestCase {
         }
     }
     
-    func testBroadcast(){
-        do{
-            let a = MfArray<Int>([[1, 3, 5],
-                                  [2, -4, -1]], mforder: .Column)
-            
-            XCTAssertEqual(a.broadcast_to(shape: [3,2,3]), MfArray<Int>([[[ 1,  3,  5],
-                              [ 2, -4, -1]],
-
-                             [[ 1,  3,  5],
-                              [ 2, -4, -1]],
-
-                             [[ 1,  3,  5],
-                              [ 2, -4, -1]]]))
-            let b = MfArray<Int>([[1, 2]])
-            XCTAssertEqual(b.broadcast_to(shape: [2,2]), MfArray<Int>([[1,2],
-                               [1,2]]))
-        }
-        do{
-            let a = MfArray<Int>([[2, -7, 0],
-                                  [1, 5, -2]]).reshape([2,1,1,3])
-            
-            XCTAssertEqual(a.broadcast_to(shape: [2,2,2,3]), MfArray<Int>([[[[ 2, -7,  0],
-                             [ 2, -7,  0]],
-
-                            [[ 2, -7,  0],
-                             [ 2, -7,  0]]],
-                          
-
-                           [[[ 1,  5, -2],
-                             [ 1,  5, -2]],
-
-                            [[ 1,  5, -2],
-                             [ 1,  5, -2]]]]))
-        }
-    }
     
     func testSort(){
         do{

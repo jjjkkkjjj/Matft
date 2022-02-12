@@ -53,3 +53,43 @@ internal func check_contiguous<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ mforder
 internal func isReverse<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> Bool{
     return mfarray.strides.contains{ $0 < 0 }
 }
+
+
+/// Get a swift array
+/// - Parameter mfarray: An input mfarray
+/// - Returns: A swift array
+@usableFromInline
+internal func toSwiftArray<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> [Any]{
+    let mfarray = !mfarray.mfstructure.row_contiguous ? Matft.to_contiguous(mfarray, mforder: .Row) : mfarray
+    
+    var shape = mfarray.shape
+    var data: [Any] = mfarray.data
+    
+    return _get_swiftArray(&data, shape: &shape, axis: 0)
+}
+
+
+/// Get a swift array. This function is recursive one
+/// - Parameters:
+///   - data: An input and output data array
+///   - shape: A shape array
+///   - axis: The current axis
+/// - Returns: A swift array
+fileprivate func _get_swiftArray(_ data: inout [Any], shape: inout [Int], axis: Int) -> [Any]{
+    let dim = shape[axis]
+    let ndim = shape.count
+    let size = data.count
+    let offset = size / dim // note that this division must be divisible
+    
+    var ret: [Any] = []
+    for i in 0..<dim{
+        var slicedArray = Array(data[i*offset..<(i+1)*offset])
+        if axis + 1 < ndim{
+            ret += [_get_swiftArray(&slicedArray, shape: &shape, axis: axis + 1)]
+        }
+        else{
+            ret += slicedArray
+        }
+    }
+    return ret
+}
