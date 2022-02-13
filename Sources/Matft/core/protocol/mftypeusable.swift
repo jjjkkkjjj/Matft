@@ -227,6 +227,8 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     public static var vForce_abs_func: vForce_math_func<Float> = vvfabsf
     public static var vForce_reciprocal_func: vForce_math_func<Float> = vvrecf
     
+    public static var vForce_power_func: vForce_math_biop_func<Float> = vvpowf
+    
     public static func from<T>(_ value: T) -> Float where T : MfInterger {
         return Float(value)
     }
@@ -330,6 +332,8 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     public static var vForce_copysign_func: vForce_copysign_func<Double> = vvcopysign
     public static var vForce_abs_func: vForce_math_func<Double> = vvfabs
     public static var vForce_reciprocal_func: vForce_math_func<Double> = vvrec
+    
+    public static var vForce_power_func: vForce_math_biop_func<Double> = vvpow
     
     public static func from<T>(_ value: T) -> Double where T : MfInterger {
         return Double(value)

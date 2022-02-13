@@ -167,6 +167,50 @@ final class MathTests: XCTestCase {
         }
     }
     
+    func testPower(){
+        do{
+            let a = Matft.arange(start: Float.zero, to: 16, by: 1, shape: [2,2,2,2])
+            XCTAssertEqual(Matft.math.power(bases: 2, exponents: a), MfArray<Float>([[[[    1.0,        2.0],
+                               [    4.0,        8.0]],
+
+                              [[    16.0,        32.0],
+                               [    64.0,        128.0]]],
+
+
+                             [[[    256.0,        512.0],
+                               [    1024.0,        2048.0]],
+
+                              [[    4096.0,        8192.0],
+                               [    16384.0,        32768.0]]]] as [[[[Float]]]]))
+            let b = Matft.nums(Float(2), shape: [1])
+            XCTAssertEqual(Matft.math.power(bases: b, exponents: a), MfArray<Float>([[[[    1.0,        2.0],
+                               [    4.0,        8.0]],
+
+                              [[    16.0,        32.0],
+                               [    64.0,        128.0]]],
+
+
+                             [[[    256.0,        512.0],
+                               [    1024.0,        2048.0]],
+
+                              [[    4096.0,        8192.0],
+                               [    16384.0,        32768.0]]]] as [[[[Float]]]]))
+            XCTAssertEqual(Matft.math.power(bases: a, exponents: 2).round(decimals: 4),
+                           MfArray<Float>([[[[  0,   1],
+                                      [  4,   9]],
+
+                                     [[ 16,  25],
+                                      [ 36,  49]]],
+
+
+                                    [[[ 64,  81],
+                                      [100, 121]],
+
+                                     [[144, 169],
+                                      [196, 225]]]] as [[[[Float]]]]))
+        }
+    }
+    
     func testSign(){
         do{
             let a = MfArray<Float>([[[[ 1.0        , -0.65364362],
