@@ -333,6 +333,133 @@ final class StatsTests: XCTestCase {
         }
     }
     
+    func testArgmax(){
+        do{
+            let a = MfArray<Int>([[3, -19],
+                             [-22, 4]])
+            
+            XCTAssertEqual(Matft.stats.argmax(a), MfArray<UInt>([3] as [UInt]))
+            
+            XCTAssertEqual(Matft.stats.argmax(a, axis: 0), MfArray<UInt>([0, 1] as [UInt]))
+            XCTAssertEqual(Matft.stats.argmax(a, axis: -1), MfArray<UInt>([0, 1] as [UInt]))
+            
+            let b = MfArray<Int>([[2, 1177],
+                             [5, -43]])
+            
+            XCTAssertEqual(Matft.stats.argmax(b), MfArray<UInt>([1] as [UInt]))
+            
+            XCTAssertEqual(Matft.stats.argmax(b, axis: 0), MfArray<UInt>([1, 0] as [UInt]))
+            XCTAssertEqual(Matft.stats.argmax(b, axis: -1), MfArray<UInt>([1, 0] as [UInt]))
+        }
+
+        do{
+            
+            let a = MfArray<UInt8>([[  0,   4,   8,  12, 251, 247],
+                             [  1,   5,   9,  13,   3,   3],
+                             [  2,   6,  10,  14,   2,   1],
+                             [  3,   7,  11,  15,   4,   1]] as [[UInt8]]).reshape([2,3,2,2])
+            
+
+            XCTAssertEqual(Matft.stats.argmax(a), MfArray<UInt>([4] as [UInt]))
+            
+            XCTAssertEqual(Matft.stats.argmax(a, axis: 0), MfArray<UInt>([[[1, 1],
+                                 [1, 1]],
+
+                                [[0, 0],
+                                 [1, 1]],
+                                
+                                [[1, 1],
+                                 [1, 0]]] as [[[UInt]]]))
+            XCTAssertEqual(Matft.stats.argmax(a, axis: -1), MfArray<UInt>([[[1, 1],
+                              [0, 1],
+                              [1, 0]],
+
+                             [[1, 1],
+                              [0, 1],
+                              [1, 0]]] as [[[UInt]]]))
+            XCTAssertEqual(Matft.stats.argmax(a, axis: 1), MfArray<UInt>([[[1, 1],
+                             [0, 0]],
+
+                            [[2, 2],
+                             [0, 0]]] as [[[UInt]]]))
+
+        }
+        
+        do{
+            let a = MfArray<Float>([[2.0, 1.0, -3.0, 0.0, -0.87, 1.2, 5.5134, -8.78],
+                             [3.0, 1.0, 4.0, -5.0, -0.0002, 2.0, 3.4, -5.0]] as [[Float]], mforder: .Column)
+
+            XCTAssertEqual(Matft.stats.argmax(a), MfArray<UInt>([6] as [UInt]))
+            
+            XCTAssertEqual(Matft.stats.argmax(a, axis: 0), MfArray<UInt>([1, 0, 1, 0, 1, 1, 0, 1] as [UInt]))
+            XCTAssertEqual(Matft.stats.argmax(a, axis: -1), MfArray<UInt>([6, 2] as [UInt]))
+        }
+        
+    }
+    
+    func testArgmin(){
+        do{
+            let a = MfArray<Int>([[3, -19],
+                             [-22, 4]])
+            
+            XCTAssertEqual(Matft.stats.argmin(a), MfArray<UInt>([2] as [UInt]))
+            
+            XCTAssertEqual(Matft.stats.argmin(a, axis: 0), MfArray<UInt>([1, 0] as [UInt]))
+            XCTAssertEqual(Matft.stats.argmin(a, axis: -1), MfArray<UInt>([1, 0] as [UInt]))
+            
+            let b = MfArray<Int>([[2, 1177],
+                             [5, -43]])
+            
+            XCTAssertEqual(Matft.stats.argmin(b), MfArray<UInt>([3] as [UInt]))
+            
+            XCTAssertEqual(Matft.stats.argmin(b, axis: 0), MfArray<UInt>([0, 1] as [UInt]))
+            XCTAssertEqual(Matft.stats.argmin(b, axis: -1), MfArray<UInt>([0, 1] as [UInt]))
+        }
+
+        do{
+            
+            let a = MfArray<UInt8>([[  0,   4,   8,  12, 251, 247],
+                             [  1,   5,   9,  13,   3,   3],
+                             [  2,   6,  10,  14,   2,   1],
+                             [  3,   7,  11,  15,   4,   1]] as [[UInt8]]).reshape([2,3,2,2])
+            
+            XCTAssertEqual(Matft.stats.argmin(a), MfArray<UInt>([0] as [UInt]))
+
+            XCTAssertEqual(Matft.stats.argmin(a, axis: 0), MfArray<UInt>([[[0, 0],
+                             [0, 0]],
+
+                            [[1, 1],
+                             [0, 0]],
+
+                            [[0, 0],
+                             [0, 1]]] as [[[UInt]]]))
+            XCTAssertEqual(Matft.stats.argmin(a, axis: -1), MfArray<UInt>([[[0, 0],
+                              [1, 0],
+                              [0, 0]],
+
+                             [[0, 0],
+                              [1, 0],
+                              [0, 1]]] as [[[UInt]]]))
+            XCTAssertEqual(Matft.stats.argmin(a, axis: 1), MfArray<UInt>([[[0, 0],
+                             [1, 2]],
+
+                            [[0, 1],
+                             [1, 2]]] as [[[UInt]]]))
+
+        }
+        
+        do{
+            let a = MfArray<Float>([[2.0, 1.0, -3.0, 0.0, -0.87, 1.2, 5.5134, -8.78],
+                             [3.0, 1.0, 4.0, -5.0, -0.0002, 2.0, 3.4, -5.0]] as [[Float]], mforder: .Column)
+
+            XCTAssertEqual(Matft.stats.argmin(a), MfArray<UInt>([7] as [UInt]))
+            
+            XCTAssertEqual(Matft.stats.argmin(a, axis: 0), MfArray<UInt>([0, 0, 0, 1, 0, 0, 1, 0] as [UInt]))
+            XCTAssertEqual(Matft.stats.argmin(a, axis: -1), MfArray<UInt>([7, 3] as [UInt]))
+        }
+        
+    }
+    
     func testMinimum() {
         do{
             let a = MfArray<Int>([[3, -19],

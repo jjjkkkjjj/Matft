@@ -43,6 +43,8 @@ public protocol MfStoredTypeUsable: FloatingPoint{
     
     static var vDSP_max_func: vDSP_stats_func<Self>{ get }
     static var vDSP_min_func: vDSP_stats_func<Self>{ get }
+    static var vDSP_maxi_func: vDSP_stats_index_func<Self>{ get }
+    static var vDSP_mini_func: vDSP_stats_index_func<Self>{ get }
     
     static var vDSP_square_func: vDSP_math_func<Self, Self>{ get }
     

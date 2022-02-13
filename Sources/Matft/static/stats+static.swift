@@ -58,6 +58,25 @@ extension Matft.stats {
         return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: T.StoredType.vDSP_min_func)
     }
     
+    /// Get arg max value along axis
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - axis; (Optional) axis, if not given, get mean for all elements
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - Returns: The arg max mfarray
+    public static func argmax<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<UInt>{
+        return stats_index_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: T.StoredType.vDSP_maxi_func)
+    }
+    /// Get arg min value along axis
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - axis; (Optional) axis, if not given, get mean for all elements
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - Returns: The arg min mfarray
+    public static func argmin<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<UInt>{
+        return stats_index_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: T.StoredType.vDSP_mini_func)
+    }
+    
     /// Calculate root of sum MfArray
     /// - Parameters:
     ///   - mfarray: An input mfarray

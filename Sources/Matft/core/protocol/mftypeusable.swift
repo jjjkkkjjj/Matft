@@ -199,6 +199,8 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     
     public static var vDSP_min_func: vDSP_stats_func<Float> = vDSP_minv
     public static var vDSP_max_func: vDSP_stats_func<Float> = vDSP_maxv
+    public static var vDSP_mini_func: vDSP_stats_index_func<Float> = vDSP_minvi
+    public static var vDSP_maxi_func: vDSP_stats_index_func<Float> = vDSP_maxvi
     
     
     public static var vDSP_square_func: vDSP_math_func<Float, Float> = vDSP_vsq
@@ -314,6 +316,8 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     
     public static var vDSP_min_func: vDSP_stats_func<Double> = vDSP_minvD
     public static var vDSP_max_func: vDSP_stats_func<Double> = vDSP_maxvD
+    public static var vDSP_mini_func: vDSP_stats_index_func<Double> = vDSP_minviD
+    public static var vDSP_maxi_func: vDSP_stats_index_func<Double> = vDSP_maxviD
     
     public static var vDSP_square_func: vDSP_math_func<Double, Double> = vDSP_vsqD
     

@@ -52,6 +52,23 @@ extension MfArray{
         return Matft.stats.min(self, axis: axis, keepDims: keepDims)
     }
     
+    /// Get arg max value along axis
+    /// - Parameters:
+    ///   - axis; (Optional) axis, if not given, get mean for all elements
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - Returns: The arg max mfarray
+    public func argmax(axis: Int? = nil, keepDims: Bool = false) -> MfArray<UInt>{
+        return Matft.stats.argmax(self, axis: axis, keepDims: keepDims)
+    }
+    /// Get arg min value along axis
+    /// - Parameters:
+    ///   - axis; (Optional) axis, if not given, get mean for all elements
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - Returns: The arg min mfarray
+    public func argmin(axis: Int? = nil, keepDims: Bool = false) -> MfArray<UInt>{
+        return Matft.stats.argmin(self, axis: axis, keepDims: keepDims)
+    }
+    
     /// Calculate root of sum MfArray
     /// - Parameters:
     ///   - axis; (Optional) axis, if not given, get mean for all elements
