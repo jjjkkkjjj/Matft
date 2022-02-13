@@ -160,4 +160,75 @@ final class BiopVectorTests: XCTestCase {
                                     [ 978,  936,  894]]] as [[[Int]]]))
         
     }
+    
+    func testCross() {
+        do{
+
+            let a = MfArray<Int>([1,2] as [Int])
+            let b = MfArray<Int>([2,2] as [Int])
+            
+            XCTAssertEqual(a *^ b, MfArray<Int>([-2] as [Int]))
+        }
+
+        do{
+            
+            let a = MfArray<Int>([[1,2],[2,2]] as [[Int]])
+            let b = MfArray<Int>([[2,2],[2,2]] as [[Int]])
+            
+            XCTAssertEqual(a *^ b, MfArray<Int>([-2,  0] as [Int]))
+
+        }
+        
+        do{
+            let a = MfArray<Int>([[1,2,3], [4,5,6], [7, 8, 9]] as [[Int]])
+            let b = MfArray<Int>([[7, 8, 9], [4,5,6], [1,2,3]] as [[Int]])
+            
+            XCTAssertEqual(a *^ b, MfArray<Int>([[ -6,  12,  -6],
+                                            [  0,   0,   0],
+                                            [  6, -12,   6]] as [[Int]]))
+        }
+        
+        do{
+            let a = MfArray<Int>([[1,2,3], [4,5,6]] as [[Int]])
+            let b = MfArray<Int>([[4,5,6], [1,2,3]] as [[Int]])
+            
+            XCTAssertEqual(a *^ b, MfArray<Int>([[-3,  6, -3],
+                                            [ 3, -6,  3]] as [[Int]]))
+        }
+    }
+    
+    func testInner(){
+        do{
+
+            let a = MfArray<Int>([1,2,3] as [Int])
+            let b = MfArray<Int>([0,1,0] as [Int])
+            
+            XCTAssertEqual(a *+ b, MfArray<Int>([2] as [Int]))
+        }
+        
+        do{
+
+            let a = Matft.arange(start: 0, to: 24, by: 1).reshape([2, 3, 4])
+            let b = Matft.arange(start: 0, to: 4, by: 1)
+            
+            XCTAssertEqual(a *+ b, MfArray<Int>([[ 14,  38,  62],
+                                            [ 86, 110, 134]] as [[Int]]))
+        }
+        
+        do{
+
+            let a = Matft.arange(start: 0, to: 18, by: 1).reshape([3, 2, 3])
+            let b = Matft.arange(start: 0, to: 9, by: 1).reshape([3, 3])
+            
+            XCTAssertEqual(a *+ b, MfArray<Int>([[[  5,  14,  23],
+                                             [ 14,  50,  86]],
+
+                                            [[ 23,  86, 149],
+                                             [ 32, 122, 212]],
+
+                                            [[ 41, 158, 275],
+                                             [ 50, 194, 338]]] as [[[Int]]]))
+        }
+    }
+        
 }

@@ -138,6 +138,65 @@ extension Matft{
         return matmul_by_cblas(l_mfarray, r_mfarray, cblas_func: T.StoredType.cblas_matmul_func)
     }
     
+    /// Inner product
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The result mfarray
+    public static func inner<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+        let last_dim = l_mfarray.shape[l_mfarray.ndim - 1]
+        precondition(last_dim == r_mfarray.shape[r_mfarray.ndim - 1], "Last dimension must be same")
+        let ret_shape = Array(l_mfarray.shape.prefix(l_mfarray.ndim - 1) + r_mfarray.shape.prefix(r_mfarray.ndim - 1))
+        
+        //convert shape to calculate
+        let l_mfarray = l_mfarray.reshape([-1, last_dim])
+        let l_calcsize = l_mfarray.shape[0]
+        let r_mfarray = r_mfarray.reshape([-1, last_dim])
+        let r_calcsize = r_mfarray.shape[0]
+        
+        let ret = Matft.nums(T.zero, shape: [l_calcsize*r_calcsize])
+        for lind in 0..<l_calcsize{
+            for rind in 0..<r_calcsize{
+                ret[lind*r_calcsize + rind] = (l_mfarray[lind] * r_mfarray[rind]).sum()
+            }
+        }
+        
+        return ret.reshape(ret_shape.count != 0 ? ret_shape : [1])
+    }
+    
+    /// Cross product
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The result mfarray
+    public static func cross<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+        var (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
+        
+        let orig_shape_for3d = l_mfarray.shape
+        let last_dim = orig_shape_for3d[l_mfarray.ndim - 1]
+        
+        //convert shape to calculate
+        l_mfarray = l_mfarray.reshape([-1, last_dim])
+        r_mfarray = r_mfarray.reshape([-1, last_dim])
+
+        if last_dim == 2{
+            let ret = l_mfarray[0~<,0] * r_mfarray[0~<,1] - l_mfarray[0~<,1]*r_mfarray[0~<,0]
+            return ret
+        }
+        else if last_dim == 3{
+            let ret = Matft.nums(T.zero, shape: [l_mfarray.shape[0], last_dim])
+            
+            ret[0~<,0] = l_mfarray[0~<,1] * r_mfarray[0~<,2] - l_mfarray[0~<,2]*r_mfarray[0~<,1]
+            ret[0~<,1] = l_mfarray[0~<,2] * r_mfarray[0~<,0] - l_mfarray[0~<,0]*r_mfarray[0~<,2]
+            ret[0~<,2] = l_mfarray[0~<,0] * r_mfarray[0~<,1] - l_mfarray[0~<,1]*r_mfarray[0~<,0]
+            
+            return ret.reshape(orig_shape_for3d)
+        }
+        else{
+            preconditionFailure("Last dimension must be 2 or 3")
+        }
+    }
+    
     
     //============= left mfarray, right scalar operation =============//
     
