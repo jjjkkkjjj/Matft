@@ -58,7 +58,7 @@ final class CreationTest: XCTestCase {
         }
     }
     
-    func test_hstack() {
+    func testHstack() {
         do{
             let a = MfArray<Int>([[3, -19],
                              [-22, 4]])
@@ -92,7 +92,7 @@ final class CreationTest: XCTestCase {
         }
     }
     
-    func test_vstack(){
+    func testVstack(){
         do{
             let a = MfArray<Int>([[3, -19],
                              [-22, 4]])
@@ -132,7 +132,7 @@ final class CreationTest: XCTestCase {
         }
     }
     
-    func test_concatenate(){
+    func testConcatenate(){
         do{
             let a = MfArray<Int>([[3, -19],
                              [-22, 4]])
@@ -276,5 +276,41 @@ final class CreationTest: XCTestCase {
                            MfArray<Int>([[4, 3],
                                         [5, 7]] as [[Int]]))
         }
+    }
+    
+    func testInsert() {
+        do {
+            let a = MfArray<Int>([[1, 1], [2, 2], [3, 3]] as [[Int]])
+            
+            XCTAssertEqual(Matft.insert(a, indices: [1], value: 5), MfArray<Int>([1, 5, 1, 2, 2, 3, 3] as [Int]))
+            
+            XCTAssertEqual(Matft.insert(a, indices: [1], value: 5, axis: 1), MfArray<Int>([[1, 5, 1],
+                                [2, 5, 2],
+                                [3, 5, 3]] as [[Int]]))
+            
+            
+            XCTAssertEqual(Matft.insert(a, indices: [1], values: MfArray<Int>([1,2,3] as [Int]), axis: 1),
+                           MfArray<Int>([[1, 1, 1],
+                                        [2, 2, 2],
+                                        [3, 3, 3]] as [[Int]]))
+            
+            XCTAssertEqual(Matft.insert(a, indices: [1], values: MfArray<Int>([[1],[2],[3]] as [[Int]]), axis: 1),
+                           MfArray<Int>([[1, 1, 1],
+                                    [2, 2, 2],
+                                    [3, 3, 3]] as [[Int]]))
+        }
+        
+        do {
+            let a = Matft.arange(start: 0, to: 8, by: 1, shape: [2,4])
+            XCTAssertEqual(Matft.insert(a, indices: [1,3], value: 999, axis: 1), MfArray<Int>([[  0, 999,   1,   2, 999,   3],
+                                  [  4, 999,   5,   6, 999,   7]] as [[Int]]))
+            
+            XCTAssertEqual(Matft.insert(a, indices: [1,-1], value: 999, axis: 1), MfArray<Int>([[  0, 999,   1,   2, 999,   3],
+                                    [  4, 999,   5,   6, 999,   7]] as [[Int]]))
+            
+            XCTAssertEqual(Matft.insert(a, indices: [1,4], value: 999, axis: 1), MfArray<Int>([[  0, 999,   1,   2,  3, 999],
+                                      [  4, 999,   5,   6,   7, 999]] as [[Int]]))
+        }
+       
     }
 }

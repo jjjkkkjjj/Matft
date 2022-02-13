@@ -48,4 +48,23 @@ extension MfArray{
     public func take(indices: MfArray<Int>, axis: Int? = nil) -> MfArray<T>{
         return Matft.take(self, indices: indices, axis: axis)
     }
+    
+    /// Insert values along the given axis before the given indices.
+    /// - Parameters:
+    ///   - indices: The indices array
+    ///   - values: The inserted mfarray
+    ///   - axis: (Optional) An axis index
+    /// - Returns: The inserted mfarray
+    public func insert(indices: [Int], values: MfArray<T>, axis: Int? = nil) -> MfArray<T>{
+        return Matft.insert(self, indices: indices, values: values, axis: axis)
+    }
+    /// Insert values along the given axis before the given indices.
+    /// - Parameters:
+    ///   - indices: The indices array
+    ///   - value: The inserted value
+    ///   - axis: (Optional) An axis index
+    /// - Returns: The inserted mfarray
+    public func insert(indices: [Int], value: T, axis: Int? = nil) -> MfArray<T>{
+        return Matft.insert(self, indices: indices, value: value, axis: axis)
+    }
 }

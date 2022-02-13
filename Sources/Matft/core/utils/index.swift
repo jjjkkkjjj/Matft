@@ -22,6 +22,31 @@ internal func get_positive_index(_ index: Int, axissize: Int, axis: Int) -> Int{
 }
 
 
+/// Get a positive index for the insert function from a given index
+/// - Parameters:
+///   - index: An index. Negative index will be converted into positive one as return value
+///   - axissize: The axis size of a given index
+///   - axis: An axis
+/// - Returns: A positive index
+internal func get_positive_index_for_insert(_ index: Int, axissize: Int, axis: Int) -> Int{
+
+    let ret_index: Int
+    if index < axissize && index > -axissize - 1{
+        ret_index = get_positive_index(index, axissize: axissize, axis: axis)
+    }
+    else if index == axissize{
+        ret_index = index
+    }
+    else if index == -axissize - 1{
+        ret_index = 0
+    }
+    else{
+        preconditionFailure("Invalid index was passed. must not be \(-axissize - 1) <= index(\(index)) <= \(axissize) for axis \(axis)")
+    }
+    
+    return ret_index
+}
+
 /// Get a positive axis from a given axis
 /// - Parameters:
 ///   - axis: An axis index. Negative axis will be converted into positive one as return value
