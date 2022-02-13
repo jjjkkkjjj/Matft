@@ -77,6 +77,12 @@ extension MfArray{
         return Matft.toArray(self)
     }
     
+    /// Convert MfArray to Swift's flatten Array
+    /// - Returns: Swift array
+    public func toFlattenArray() -> [MfArrayType]{
+        return Matft.toArray(self.flatten()) as! [MfArrayType]
+    }
+    
     /// Create broadcasted mfarray.
     /// - Parameters:
     ///   - shape: A new shape
