@@ -47,10 +47,10 @@ extension MfArray: MfSubscriptable{
     public subscript<T: MfInterger>(indices: MfArray<T>) -> MfArray<MfArrayType>{
         get{
             return self._get_mfarray(indices: indices)
-        }/*
+        }
         set(new_array){
             self._set_mfarray(indices: indices, assigned_array: new_array)
-        }*/
+        }
     }
     
     public subscript<T: MfInterger>(indices: MfArray<T>...) -> MfArray<MfArrayType>{
@@ -316,21 +316,23 @@ extension MfArray: MfSubscriptable{
             return fancyndget_by_cblas(self, indices, cblas_func: T.StoredType.cblas_copy_func)
         }
     }
+    
+    /// Setter function for the fancy indexing on a given indices.
+    /// - Parameters:
+    ///   - indices: An input boolean indices array
+    ///   - assigned_array: An assigned mfarray
+    private func _set_mfarray<U: MfInterger>(indices: MfArray<U>, assigned_array: MfArray<MfArrayType>){
+        fancyset_by_cblas(self, indices, assigned_array, T.StoredType.cblas_copy_func)
+    }
+    
     /// Getter function for the fancy indexing on a given Interger indices.
     /// - Parameter indices: An input Interger indices mfarray array
     /// - Returns: The mfarray
     private func _get_mfarray<U: MfInterger>(indices: inout [MfArray<U>]) -> MfArray<MfArrayType>{
         return fancygetall_by_cblas(self, &indices, cblas_func: T.StoredType.cblas_copy_func)
     }
-    /*
-    private func _set_mfarray(indices: MfArray<Bool>, assignedMfarray: MfArray<MfArrayType>){
-        switch self.storedType {
-        case .Float:
-            _setter(self, indices, assignMfArray: assignedMfarray, type: Float.self)
-        case .Double:
-            _setter(self, indices, assignMfArray: assignedMfarray, type: Double.self)
-        }
-    }*/
+    
+    
 }
 
 fileprivate func _inner_product(_ left: UnsafeMutableBufferPointer<Int>, _ right: UnsafeMutableBufferPointer<Int>) -> Int{

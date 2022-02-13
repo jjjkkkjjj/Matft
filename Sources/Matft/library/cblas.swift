@@ -286,3 +286,37 @@ internal func fancygetall_by_cblas<T: MfTypeUsable, U: MfInterger>(_ mfarray: Mf
     
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
+
+
+internal func fancyset_by_cblas<T: MfTypeUsable, U: MfInterger>(_ mfarray: MfArray<T>, _ indices: MfArray<U>, _ assigned_array: MfArray<T>, _ cblas_func: cblas_copy_func<T.StoredType>){
+
+    var work_shape = Array(mfarray.shape.suffix(from: 1))
+    let work_size = shape2size(&work_shape)
+    let ret_shape = indices.shape + work_shape
+    
+    let indices = indices.astype(newtype: Int.self, mforder: .Row)
+    let assigned_array = check_contiguous(assigned_array.broadcast_to(shape: ret_shape), .Row)
+    
+    let offsets = indices.data.map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
+    
+    if mfarray.ndim == 1{
+        let srcptr = assigned_array.mfdata.storedPtr.baseAddress!
+        let dstptr = mfarray.mfdata.storedPtr.baseAddress!
+        for (i, offset) in offsets.enumerated(){
+            (dstptr + offset).assign(from: srcptr + i, count: 1)
+        }
+    }
+    else{
+        let srcptr = assigned_array.mfdata.storedPtr.baseAddress!
+        let dstptr = mfarray.mfdata.storedPtr.baseAddress!
+        
+        let work_mfarray_strides = Array(mfarray.strides.suffix(from: 1))
+        let work_assigned_mfarray_strides = Array(assigned_array.strides.suffix(from: indices.ndim))
+        for cblasParams in OptOffsetParamsSequence(shape: work_shape, bigger_strides: work_assigned_mfarray_strides, smaller_strides: work_mfarray_strides){
+            for (i, offset) in offsets.enumerated(){
+                wrap_cblas_copy(cblasParams.blocksize, srcptr + i*work_size + cblasParams.b_offset, cblasParams.b_stride, dstptr + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
+            }
+        }
+    }
+
+}
