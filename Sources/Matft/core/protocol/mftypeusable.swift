@@ -26,6 +26,10 @@ public protocol MfTypeUsable: Equatable{
     /// Convert a given value into this type's one
     /// - Parameter value: The value comformed to MfBinary
     static func from<T: MfBinary>(_ value: T) -> Self
+    
+    /// Convert string into this type's one
+    /// - Parameter value: The value
+    static func from(_ value: String) -> Self?
 }
 
 /// The numeric protocol for Matft
@@ -54,6 +58,7 @@ public protocol StoredDouble: MfTypeUsable{
 
 
 extension UInt8: MfInterger, StoredFloat {
+    
     public static func from<T>(_ value: T) -> UInt8 where T : MfInterger {
         return UInt8(value)
     }
@@ -62,6 +67,10 @@ extension UInt8: MfInterger, StoredFloat {
     }
     public static func from<T>(_ value: T) -> UInt8 where T : MfBinary {
         return value != T.zero ? UInt8(1) : UInt8.zero
+    }
+    
+    public static func from(_ value: String) -> UInt8? {
+        return UInt8(value)
     }
 }
 extension UInt16: MfInterger, StoredFloat {
@@ -74,6 +83,10 @@ extension UInt16: MfInterger, StoredFloat {
     public static func from<T>(_ value: T) -> UInt16 where T : MfBinary {
         return value != T.zero ? UInt16(1) : UInt16.zero
     }
+    
+    public static func from(_ value: String) -> UInt16? {
+        return UInt16(value)
+    }
 }
 extension UInt32: MfInterger, StoredDouble {
     public static func from<T>(_ value: T) -> UInt32 where T : MfInterger {
@@ -84,6 +97,10 @@ extension UInt32: MfInterger, StoredDouble {
     }
     public static func from<T>(_ value: T) -> UInt32 where T : MfBinary {
         return value != T.zero ? UInt32(1) : UInt32.zero
+    }
+    
+    public static func from(_ value: String) -> UInt32? {
+        return UInt32(value)
     }
 }
 extension UInt64: MfInterger, StoredDouble {
@@ -96,6 +113,10 @@ extension UInt64: MfInterger, StoredDouble {
     public static func from<T>(_ value: T) -> UInt64 where T : MfBinary {
         return value != T.zero ? UInt64(1) : UInt64.zero
     }
+    
+    public static func from(_ value: String) -> UInt64? {
+        return UInt64(value)
+    }
 }
 extension UInt: MfInterger, StoredDouble {
     public static func from<T>(_ value: T) -> UInt where T : MfInterger {
@@ -106,6 +127,10 @@ extension UInt: MfInterger, StoredDouble {
     }
     public static func from<T>(_ value: T) -> UInt where T : MfBinary {
         return value != T.zero ? UInt(1) : UInt.zero
+    }
+    
+    public static func from(_ value: String) -> UInt? {
+        return UInt(value)
     }
 }
 
@@ -119,6 +144,10 @@ extension Int8: MfInterger, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int8 where T : MfBinary {
         return value != T.zero ? Int8(1) : Int8.zero
     }
+    
+    public static func from(_ value: String) -> Int8? {
+        return Int8(value)
+    }
 }
 extension Int16: MfInterger, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int16 where T : MfInterger {
@@ -130,6 +159,10 @@ extension Int16: MfInterger, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int16 where T : MfBinary {
         return value != T.zero ? Int16(1) : Int16.zero
     }
+    
+    public static func from(_ value: String) -> Int16? {
+        return Int16(value)
+    }
 }
 extension Int32: MfInterger, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int32 where T : MfInterger {
@@ -140,6 +173,10 @@ extension Int32: MfInterger, StoredFloat, MfSignedNumeric {
     }
     public static func from<T>(_ value: T) -> Int32 where T : MfBinary {
         return value != T.zero ? Int32(1) : Int32.zero
+    }
+    
+    public static func from(_ value: String) -> Int32? {
+        return Int32(value)
     }
 }
 
@@ -153,6 +190,10 @@ extension Int64: MfInterger, StoredDouble, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int64 where T : MfBinary {
         return value != T.zero ? Int64(1) : Int64.zero
     }
+    
+    public static func from(_ value: String) -> Int64? {
+        return Int64(value)
+    }
 }
 extension Int: MfInterger, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int where T : MfInterger {
@@ -163,6 +204,10 @@ extension Int: MfInterger, StoredFloat, MfSignedNumeric {
     }
     public static func from<T>(_ value: T) -> Int where T : MfBinary {
         return value != T.zero ? Int(1) : Int.zero
+    }
+    
+    public static func from(_ value: String) -> Int? {
+        return Int(value)
     }
 }
 
@@ -284,6 +329,10 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
         }
     }
     
+    public static func from(_ value: String) -> Float? {
+        return Float(value)
+    }
+    
     public static func nealy_equal(_ lhs: Float, _ rhs: Float) -> Bool{
         return fabsf(lhs - rhs) < 1e-5
     }
@@ -403,6 +452,10 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
         }
     }
     
+    public static func from(_ value: String) -> Double? {
+        return Double(value)
+    }
+    
     public static func nealy_equal(_ lhs: Double, _ rhs: Double) -> Bool{
         return fabs(lhs - rhs) < 1e-10
     }
@@ -417,6 +470,9 @@ extension Bool: MfBinary, StoredFloat {
     }
     public static func from<T>(_ value: T) -> Bool where T : MfBinary {
         return value != T.zero ? true : false
+    }
+    public static func from(_ value: String) -> Bool? {
+        return Bool(value)
     }
     public static var zero: Bool {
         return false
