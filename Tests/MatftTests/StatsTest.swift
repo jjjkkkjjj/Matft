@@ -181,4 +181,26 @@ final class StatsTests: XCTestCase {
             XCTAssertEqual(Matft.stats.sum(a[0~<, 1~<5]), MfArray<Float>([-2.8702000000000005] as [Float]))
         }
     }
+    
+    func testSquareSum(){
+        
+        do{
+            let a = MfArray<Double>([[3, -19],
+                                     [-22, 4]] as [[Double]])
+            
+            XCTAssertEqual(Matft.stats.squaresum(a), MfArray<Double>([870.0]))
+            
+            XCTAssertEqual(Matft.stats.squaresum(a, axis: 0), MfArray<Double>([493.0, 377.0]))
+            XCTAssertEqual(Matft.stats.squaresum(a, axis: -1), MfArray<Double>([370.0, 500.0]))
+
+            let b = MfArray<Int>([[2, 1177],
+                             [5, -43]])
+            
+            XCTAssertEqual(Matft.stats.squaresum(b), MfArray<Int>([1387207]))
+                       
+            XCTAssertEqual(Matft.stats.squaresum(b, axis: 0),
+                           MfArray<Int>([ 29, 1387178]))
+            XCTAssertEqual(Matft.stats.squaresum(b, axis: -1),             MfArray<Int>([1385333, 1874]))
+        }
+    }
 }

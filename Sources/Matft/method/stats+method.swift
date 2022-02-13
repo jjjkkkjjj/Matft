@@ -33,4 +33,13 @@ extension MfArray{
     public func sum(axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
         return Matft.stats.sum(self, axis: axis, keepDims: keepDims)
     }
+    
+    /// Calculate sum of squared MfArray
+    /// - Parameters:
+    ///   - axis; (Optional) axis, if not given, get mean for all elements
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - Returns: The mean mfarray
+    public func squaresum(axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
+        return Matft.stats.squaresum(self, axis: axis, keepDims: keepDims)
+    }
 }
