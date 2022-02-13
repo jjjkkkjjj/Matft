@@ -540,14 +540,14 @@ final class SubscriptTests: XCTestCase {
                                           [15, 16, 17]] as [[Int]]))
         }
     }
-    /*
+    
     func testBooleanIndexingSet(){
         
         do{
             let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3, 3, 3])
             let b = MfArray<Bool>([true, false, true]).broadcast_to(shape: [3, 3, 3])
             
-            a[b] = MfArray<Int>([555])
+            a[b] = MfArray<Int>([555] as [Int])
             XCTAssertEqual(a, MfArray<Int>([[[555,   1, 555],
                                         [555,   4, 555],
                                         [555,   7, 555]],
@@ -558,11 +558,11 @@ final class SubscriptTests: XCTestCase {
 
                                        [[555,  19, 555],
                                         [555,  22, 555],
-                                        [555,  25, 555]]]))
+                                        [555,  25, 555]]] as [[[Int]]]))
             
             let c = MfArray<Bool>([false, false, true]).broadcast_to(shape: [3, 3, 3])
             
-            a[c] = MfArray<Int>([333])
+            a[c] = MfArray<Int>([333] as [Int])
             XCTAssertEqual(a, MfArray<Int>([[[555,   1, 333],
                                         [555,   4, 333],
                                         [555,   7, 333]],
@@ -573,7 +573,7 @@ final class SubscriptTests: XCTestCase {
 
                                        [[555,  19, 333],
                                         [555,  22, 333],
-                                        [555,  25, 333]]]))
+                                        [555,  25, 333]]] as [[[Int]]]))
         }
         
         do{
@@ -585,8 +585,8 @@ final class SubscriptTests: XCTestCase {
                 // time in release mode
                 // average: 0.009, relative standard deviation: 15.930%, values: [0.012394, 0.009048, 0.008606, 0.007531, 0.007859, 0.007862, 0.008099, 0.007935, 0.008400, 0.007617]
             //}
-            a[c] = MfArray<Int>([555])
-            XCTAssertEqual(a, MfArray<Int>([555]).broadcast_to(shape: [400, 400]))
+            a[c] = MfArray<Int>([555] as [Int])
+            XCTAssertEqual(a, MfArray<Int>([555] as [Int]).broadcast_to(shape: [400, 400]))
         }
         
         
@@ -598,14 +598,14 @@ final class SubscriptTests: XCTestCase {
             a[b] = MfArray<Int>([[-1,  0,  2],
                             [ 3,  7,  4],
                             [ 2,  3, 14],
-                            [ 8,  4,  4]])
+                            [ 8,  4,  4]] as [[Int]])
             XCTAssertEqual(a, MfArray<Int>([[[-1,  0,  2],
                                         [ 3,  4,  5],
                                         [ 3,  7,  4]],
 
                                        [[ 9, 10, 11],
                                         [ 2,  3, 14],
-                                        [ 8,  4,  4]]]))
+                                        [ 8,  4,  4]]] as [[[Int]]]))
         }
-    }*/
+    }
 }

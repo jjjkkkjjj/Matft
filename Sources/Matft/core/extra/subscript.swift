@@ -38,10 +38,10 @@ extension MfArray: MfSubscriptable{
     public subscript(indices: MfArray<Bool>) -> MfArray<MfArrayType>{
         get{
             return self._get_mfarray(indices: indices)
-        }/*
+        }
         set(new_array){
-            self._set_mfarray(indices: indices, assignedMfarray: new_array)
-        }*/
+            self._set_mfarray(indices: indices, assigned_array: new_array)
+        }
     }
     
     //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
@@ -225,6 +225,44 @@ extension MfArray: MfSubscriptable{
     /// - Returns: The mfarray
     private func _get_mfarray(indices: MfArray<Bool>) -> MfArray<T>{
         return boolget_by_vDSP(self, indices, T.StoredType.vDSP_vcmprs_func)
+    }
+    /// Setter function for the boolean indexing on a given boolean indices.
+    /// - Parameters:
+    ///   - indices: An input boolean indices array
+    ///   - assigned_array: An assigned mfarray
+    private func _set_mfarray(indices: MfArray<Bool>, assigned_array: MfArray<T>){
+        let true_num = Int(indices.astype(newtype: Float.self).sum().scalar!)
+        let orig_ind_dim = indices.ndim
+        
+        // broadcast
+        let indices = bool_broadcast_to(indices, shape: self.shape)
+        
+        // must be row major
+        let indicesT = indices.astype(newtype: T.self, mforder: .Row)
+        
+        // calculate assignMfarray's size
+        let last_shape = Array(self.shape.suffix(self.ndim - orig_ind_dim))
+        let assign_shape = [true_num] + last_shape
+        //let assignSize = shape2size(&assignShape)
+        
+        let new_array = assigned_array.broadcast_to(shape: assign_shape).flatten(mforder: .Row)
+        
+        var src_offset = 0
+        var ind_offset = 0
+        
+        // TODO: Refactor, use vDSP or cblas!
+        var dst_shape = self.shape
+        var dst_strides = self.strides
+        let dstptr = self.mfdata.storedPtr.baseAddress!
+        let srcptr = new_array.mfdata.storedPtr.baseAddress!
+        for ind in FlattenIndSequence(shape: &dst_shape, strides: &dst_strides){
+            if (indicesT.mfdata.storedPtr.baseAddress! + ind_offset).pointee != T.StoredType.zero{
+                (dstptr + ind.flattenIndex).assign(from: srcptr + src_offset, count: 1)
+                src_offset += 1
+            }
+            ind_offset += 1
+        }
+        
     }
     
     // fancy indexing
