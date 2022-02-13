@@ -17,7 +17,7 @@ extension MfArray{
     ///   - initial: Initial MfArray
     /// - Returns: Reduced mfarray
     public func ufuncReduce(ufunc: biopufuncNoargs<T>, axis: Int? = 0, keepDims: Bool = false, initial: MfArray<T>? = nil) -> MfArray<T> {
-        return Matft.ufuncReduce(mfarray: self, ufunc: ufunc, axis: axis, keepDims: keepDims)
+        return Matft.ufuncReduce(mfarray: self, ufunc: ufunc, axis: axis, keepDims: keepDims, initial: initial)
     }
     
     /// Return accumulated MfArray applied passed ufunc

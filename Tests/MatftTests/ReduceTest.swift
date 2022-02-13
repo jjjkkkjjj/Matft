@@ -10,14 +10,14 @@ import XCTest
 import Matft
 
 final class ReduceTests: XCTestCase {
-    /*
+    
     func testReduce() {
         do{
             let arr = [Matft.arange(start: 0, to: 3, by: 1), Matft.arange(start: 2, to: -1, by: -1), Matft.nums(1, shape: [3,])].ufuncReduce(Matft.stats.minimum)
             XCTAssertEqual(arr, MfArray<Int>([0, 1, 0]))
         }
         
-    }*/
+    }
     
     func testReduceAxis(){
         do{
@@ -34,14 +34,14 @@ final class ReduceTests: XCTestCase {
             
             XCTAssertEqual(a.ufuncReduce(ufunc: Matft.add, axis: nil), MfArray([28]))
         }
-        /*
+        
         do{
             let a = MfArray<Double>([[11.0, 8.0],
                              [3.0, 12.0]])
             
-            XCTAssertEqual(a.ufuncReduce(Matft.stats.minimum, initial: MfArray<Double>([4.0])), MfArray<Double>([3.0, 4.0]))
-            XCTAssertEqual(a.ufuncReduce(Matft.stats.minimum, axis: nil), MfArray<Double>([3.0]))
-        }*/
+            XCTAssertEqual(a.ufuncReduce(ufunc: Matft.stats.minimum, initial: MfArray<Double>([4.0])), MfArray<Double>([3.0, 4.0]))
+            XCTAssertEqual(a.ufuncReduce(ufunc: Matft.stats.minimum, axis: nil), MfArray<Double>([3.0]))
+        }
     }
     
     func testAccumulate(){
@@ -62,7 +62,7 @@ final class ReduceTests: XCTestCase {
             XCTAssertEqual(I.ufuncAccumulate(ufunc: Matft.add, axis: 1), MfArray<Int>([[1,  1],
                            [0,  1]]))
         }
-        /*
+        
         do{
             let a = MfArray<Int>([1, 3, 2, 5, 4])
             
@@ -71,6 +71,6 @@ final class ReduceTests: XCTestCase {
             let b = MfArray<Int>([11,12,13,20,19,18,17,18,23,21])
             
             XCTAssertEqual(b.ufuncAccumulate(ufunc: Matft.stats.maximum), MfArray<Int>([11, 12, 13, 20, 20, 20, 20, 20, 23, 23]))
-        }*/
+        }
     }
 }

@@ -68,6 +68,25 @@ extension Matft.stats {
     }
     
     
+    /// Element-wise  minimum of mfarray and mfarray
+    /// - Parameters:
+    ///   - l_mfarray: An input left mfarray
+    ///   - r_mfarray;  An input right mfarray
+    /// - Returns: The minimum mfarray
+    public static func minimum<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+        let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
+        return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: T.StoredType.vDSP_minimum_func)
+    }
+    /// Element-wise  maximum of mfarray and mfarray
+    /// - Parameters:
+    ///   - l_mfarray: An input left mfarray
+    ///   - r_mfarray;  An input right mfarray
+    /// - Returns: The maximum mfarray
+    public static func maximum<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+        let (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
+        return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: T.StoredType.vDSP_maximum_func)
+    }
+    
     /// Calculate cumulative sum of MfArray along axis
     /// - Parameters:
     ///   - mfarray: An input mfarray
