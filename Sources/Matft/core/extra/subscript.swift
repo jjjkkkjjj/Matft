@@ -34,15 +34,15 @@ extension MfArray: MfSubscriptable{
         }
     }
     
-    /*
+    
     public subscript(indices: MfArray<Bool>) -> MfArray<MfArrayType>{
         get{
             return self._get_mfarray(indices: indices)
-        }
+        }/*
         set(new_array){
             self._set_mfarray(indices: indices, assignedMfarray: new_array)
-        }
-    }*/
+        }*/
+    }
     
     //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
     public subscript(indices: Any...) -> MfArray<MfArrayType>{
@@ -56,8 +56,7 @@ extension MfArray: MfSubscriptable{
         }
     }
     
-    
-    
+    //================ normal indexing ================//
     /// Getter function for the normal indexing on a given indices.
     /// - Parameter indices: An input indices array
     /// - Returns: The VIEW mfarray
@@ -184,6 +183,10 @@ extension MfArray: MfSubscriptable{
         return MfArray(base: self, mfstructure: newstructure, offset: offset)
     }
     
+    /// Setter function for the normal indexing on a given indices.
+    /// - Parameters:
+    ///   - indices: An input indices array
+    ///   - new_array: An assigned mfarray
     private func _set_mfarray(indices: inout [Any], new_array: MfArray){
         for index in indices{
             if let _ = index as? SubscriptOps{
@@ -214,6 +217,14 @@ extension MfArray: MfSubscriptable{
         }
         
         copy_by_cblas(new_array, dst_array, cblas_func: MfArrayStoredType.cblas_copy_func)
+    }
+    
+    //================ boolean indexing ================//
+    /// Getter function for the boolean indexing on a given boolean indices.
+    /// - Parameter indices: An input boolean indices array
+    /// - Returns: The mfarray
+    private func _get_mfarray(indices: MfArray<Bool>) -> MfArray<T>{
+        return boolget_by_vDSP(self, indices, T.StoredType.vDSP_vcmprs_func)
     }
     
     // fancy indexing

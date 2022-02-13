@@ -76,6 +76,53 @@ internal func get_positive_shape(_ shape: [Int], size: Int) -> [Int]{
 }
 
 
+/// Broadcasting mfarray for boolean indexing
+/// - Parameters:
+///   - mfarray: An input boolean mfarray
+///   - shape: The destination shape array
+/// - Returns: COPIED boolean indices mfarray
+internal func bool_broadcast_to<T: MfBinary>(_ mfarray: MfArray<T>, shape: [Int]) -> MfArray<T>{
+    var mfarray = mfarray
+    
+    let orig_size = mfarray.size
+    
+    let new_ndim = shape.count
+    var ret_shape = shape
+    let ret_size = shape2size(&ret_shape)
+    
+    
+    let idim_start = new_ndim  - mfarray.ndim
+    
+    precondition(idim_start >= 0, "can't broadcast to fewer dimensions")
+    
+    // broadcast for common part's shape
+    let common_shape = Array(shape[0..<mfarray.ndim])
+    mfarray = mfarray.broadcast_to(shape: common_shape)
+    
+    // convert row contiguous
+    let rowc_mfarray = check_contiguous(mfarray, .Row)
+    
+    if idim_start == 0{
+        return rowc_mfarray
+    }
+    var newer_shape = Array(shape[mfarray.ndim..<new_ndim])
+    let offset = shape2size(&newer_shape)
+    
+    let newdata: MfData<T> = MfData(size: ret_size)
+
+    rowc_mfarray.withUnsafeMutableStartPointer{
+        srcptr in
+        for i in 0..<orig_size{
+            (newdata.storedPtr.baseAddress! + i*offset).assign(repeating: (srcptr + i).pointee, count: offset)
+        }
+    }
+    
+    let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+
 /// Index sequence for a flatten array
 internal struct FlattenIndSequence: Sequence{
     let shape: [Int]
