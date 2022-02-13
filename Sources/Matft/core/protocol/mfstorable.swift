@@ -62,6 +62,11 @@ public protocol MfStoredTypeUsable: FloatingPoint{
     static var vForce_log2_func: vForce_math_func<Self>{ get }
     static var vForce_log10_func: vForce_math_func<Self>{ get }
     
+    static var vForce_ceil_func: vForce_math_func<Self>{ get }
+    static var vForce_floor_func: vForce_math_func<Self>{ get }
+    static var vForce_trunc_func: vForce_math_func<Self>{ get }
+    static var vForce_nearest_func: vForce_math_func<Self>{ get }
+    
     static var vForce_copysign_func: vForce_copysign_func<Self>{ get }
     static var vForce_abs_func: vForce_math_func<Self>{ get }
 }

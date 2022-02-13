@@ -143,7 +143,7 @@ extension Int32: MfNumeric, StoredFloat, MfSignedNumeric {
     }
 }
 
-extension Int64: MfNumeric, StoredFloat, MfSignedNumeric {
+extension Int64: MfNumeric, StoredDouble, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int64 where T : MfInterger {
         return Int64(value)
     }
@@ -217,6 +217,11 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     public static var vForce_log_func: vForce_math_func<Float> = vvlogf
     public static var vForce_log2_func: vForce_math_func<Float> = vvlog2f
     public static var vForce_log10_func: vForce_math_func<Float> = vvlog10f
+    
+    public static var vForce_ceil_func: vForce_math_func<Float> = vvceilf
+    public static var vForce_floor_func: vForce_math_func<Float> = vvfloorf
+    public static var vForce_trunc_func: vForce_math_func<Float> = vvintf
+    public static var vForce_nearest_func: vForce_math_func<Float> = vvnintf
     
     public static var vForce_copysign_func: vForce_copysign_func<Float> = vvcopysignf
     public static var vForce_abs_func: vForce_math_func<Float> = vvfabsf
@@ -315,6 +320,11 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     public static var vForce_log_func: vForce_math_func<Double> = vvlog
     public static var vForce_log2_func: vForce_math_func<Double> = vvlog2
     public static var vForce_log10_func: vForce_math_func<Double> = vvlog10
+    
+    public static var vForce_ceil_func: vForce_math_func<Double> = vvceil
+    public static var vForce_floor_func: vForce_math_func<Double> = vvfloor
+    public static var vForce_trunc_func: vForce_math_func<Double> = vvint
+    public static var vForce_nearest_func: vForce_math_func<Double> = vvnint
     
     public static var vForce_copysign_func: vForce_copysign_func<Double> = vvcopysign
     public static var vForce_abs_func: vForce_math_func<Double> = vvfabs

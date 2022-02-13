@@ -69,7 +69,14 @@ final class MathTests: XCTestCase {
                                      
                                      [[-0.83907153,  0.13673722],
                                       [ 0.0044257 , -0.75968791]]]] as [[[[Float]]]]))
-            /*
+        }
+            
+    }
+        
+    func testRound(){
+        do {
+            let a = Matft.arange(start: Float.zero, to: 2*2*2*2, by: 1, shape: [2,2,2,2])
+            
             XCTAssertEqual(Matft.math.sin(a.transpose(axes: [3,0,2,1])*3.1415926535).round(decimals: 7),
                            MfArray<Float>([[[[ 0, 0],
                                       [0, 0]],
@@ -96,7 +103,7 @@ final class MathTests: XCTestCase {
                                       [-1.0, -1.0]],
 
                                      [[-1.0, -1.0],
-                                      [-1.0, -1.0]]]] as [[[[Float]]]]))*/
+                                      [-1.0, -1.0]]]] as [[[[Float]]]]))
         }
     }
     

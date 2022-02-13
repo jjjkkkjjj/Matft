@@ -27,3 +27,32 @@ internal func math_vv_by_vForce<T: MfTypeUsable, U: MfTypeUsable>(_ mfarray: MfA
     
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
+
+/// Calculate the round for all elements
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - decimals: (Optional) Int, default is 0, which is equivelent to nearest
+///   - powval: The power value
+/// - Returns: round mfarray
+internal func round_by_vForce<T: MfTypeUsable, U: MfTypeUsable>(_ mfarray: MfArray<T>, decimals: Int = 0, powval: U.StoredType) -> MfArray<U> where T.StoredType == U.StoredType{
+    
+    let mfarray = check_contiguous(mfarray)
+    let newdata: MfData<U> = MfData(size: mfarray.storedSize)
+    var ret_size = Int32(mfarray.storedSize)
+    var powval = powval
+    
+    let dstptr = newdata.storedPtr.baseAddress!
+    mfarray.withUnsafeMutableStartPointer{
+        // mfarray * pow
+        // nearest(mfarray * pow)
+        // nearest(mfarray * pow) / pow
+        wrap_vDSP_biopvs(mfarray.storedSize, $0, 1, &powval, dstptr, 1, T.StoredType.vDSP_mulvs_func)
+        T.StoredType.vForce_nearest_func(dstptr, dstptr, &ret_size)
+        wrap_vDSP_biopvs(mfarray.storedSize, dstptr, 1, &powval, dstptr, 1, T.StoredType.vDSP_divvs_func)
+    }
+    
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}

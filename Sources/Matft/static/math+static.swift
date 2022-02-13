@@ -255,7 +255,76 @@ extension Matft.math{ // vForce
     //
     //================ approximation ================//
     //
+    /// Calculate the ceil for all elements
+    /// - Parameter mfarray: An input mfarray
+    /// - Returns: ceil mfarray
+    public static func ceil<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Int> where T.StoredType == Float{
+        return math_vv_by_vForce(mfarray, Int.StoredType.vForce_ceil_func)
+    }
+    /// Calculate the ceil for all elements
+    /// - Parameter mfarray: An input mfarray
+    /// - Returns: ceil mfarray
+    public static func ceil<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Int64> where T.StoredType == Double{
+        return math_vv_by_vForce(mfarray, Int64.StoredType.vForce_ceil_func)
+    }
     
+    /// Calculate the floor for all elements
+    /// - Parameter mfarray: An input mfarray
+    /// - Returns: floor mfarray
+    public static func floor<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Int> where T.StoredType == Float{
+        return math_vv_by_vForce(mfarray, Int.StoredType.vForce_floor_func)
+    }
+    /// Calculate the floor for all elements
+    /// - Parameter mfarray: An input mfarray
+    /// - Returns: floor mfarray
+    public static func floor<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Int64> where T.StoredType == Double{
+        return math_vv_by_vForce(mfarray, Int64.StoredType.vForce_floor_func)
+    }
+    
+    /// Calculate the trunc for all elements
+    /// - Parameter mfarray: An input mfarray
+    /// - Returns: trunc mfarray
+    public static func trunc<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Int> where T.StoredType == Float{
+        return math_vv_by_vForce(mfarray, Int.StoredType.vForce_trunc_func)
+    }
+    /// Calculate the trunc for all elements
+    /// - Parameter mfarray: An input mfarray
+    /// - Returns: trunc mfarray
+    public static func trunc<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Int64> where T.StoredType == Double{
+        return math_vv_by_vForce(mfarray, Int64.StoredType.vForce_trunc_func)
+    }
+    
+    /// Calculate the nearest for all elements
+    /// - Parameter mfarray: An input mfarray
+    /// - Returns: nearest mfarray
+    public static func nearest<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Int> where T.StoredType == Float{
+        return math_vv_by_vForce(mfarray, Int.StoredType.vForce_nearest_func)
+    }
+    /// Calculate the nearest for all elements
+    /// - Parameter mfarray: An input mfarray
+    /// - Returns: nearest mfarray
+    public static func nearest<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Int64> where T.StoredType == Double{
+        return math_vv_by_vForce(mfarray, Int64.StoredType.vForce_nearest_func)
+    }
+    
+    /// Calculate the round for all elements
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - decimals: (Optional) Int, default is 0, which is equivelent to nearest
+    /// - Returns: round mfarray
+    public static func round<T: MfTypeUsable>(_ mfarray: MfArray<T>, decimals: Int = 0) -> MfArray<Float> where T.StoredType == Float{
+        let powval = powf(10, Float(decimals)) as T.StoredType
+        return round_by_vForce(mfarray, decimals: decimals, powval: powval)
+    }
+    /// Calculate the round for all elements
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - decimals: (Optional) Int, default is 0, which is equivelent to nearest
+    /// - Returns: round mfarray
+    public static func round<T: MfTypeUsable>(_ mfarray: MfArray<T>, decimals: Int = 0) -> MfArray<Double> where T.StoredType == Double{
+        let powval = pow(10, Double(decimals))
+        return round_by_vForce(mfarray, decimals: decimals, powval: powval)
+    }
 }
 
 extension Matft.math{ // vDSP
