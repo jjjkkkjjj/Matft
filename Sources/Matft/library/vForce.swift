@@ -23,7 +23,9 @@ internal func math_by_vForce<T: MfTypeUsable, U: MfTypeUsable>(_ mfarray: MfArra
     var ret_size = Int32(mfarray.size)
     
     let newdata: MfData<U> = MfData(size: mfarray.size)
-    vForce_func(newdata.storedPtr.baseAddress!, mfarray.mfdata.storedPtr.baseAddress!, &ret_size)
+    mfarray.withUnsafeMutableStartPointer{
+        vForce_func(newdata.storedPtr.baseAddress!, $0, &ret_size)
+    }
     
     let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     
@@ -42,7 +44,13 @@ internal func math_biop_by_vForce<T: MfTypeUsable, U: MfTypeUsable>(_ l_mfarray:
     var ret_size = Int32(l_mfarray.storedSize)
     
     let newdata: MfData<U> = MfData(size: l_mfarray.storedSize)
-    vForce_func(newdata.storedPtr.baseAddress!, l_mfarray.mfdata.storedPtr.baseAddress!, r_mfarray.mfdata.storedPtr.baseAddress!, &ret_size)
+    l_mfarray.withUnsafeMutableStartPointer{
+        lptr in
+        r_mfarray.withUnsafeMutableStartPointer{
+            rptr in
+            vForce_func(newdata.storedPtr.baseAddress!, lptr, rptr, &ret_size)
+        }
+    }
     
     let newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
     

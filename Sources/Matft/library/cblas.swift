@@ -135,7 +135,10 @@ internal func stack_by_cblas<T: MfTypeUsable>(_ mfarrays: [MfArray<T>], ret_shap
     let newdata: MfData<T> = MfData(size: ret_size)
     var offset = 0
     for mfarray in majorArrays {
-        wrap_cblas_copy(mfarray.storedSize, mfarray.mfdata.storedPtr.baseAddress!, 1, newdata.storedPtr.baseAddress! + offset, 1, T.StoredType.cblas_copy_func)
+        mfarray.withUnsafeMutableStartPointer{
+            wrap_cblas_copy(mfarray.storedSize, $0, 1, newdata.storedPtr.baseAddress! + offset, 1, T.StoredType.cblas_copy_func)
+        }
+        
         offset += mfarray.storedSize
     }
     
@@ -171,7 +174,10 @@ internal func concat_by_cblas<T: MfTypeUsable>(_ mfarrays: [MfArray<T>], ret_sha
     for sb in 0..<slowerBlockSize{
         for mfarray in majorArrays {
             let concat_size = mfarray.shape[axis]
-            wrap_cblas_copy(fasterBlockSize*concat_size, mfarray.mfdata.storedPtr.baseAddress! + sb*fasterBlockSize*concat_size, 1, newdata.storedPtr.baseAddress! + offset, 1, T.StoredType.cblas_copy_func)
+            mfarray.withUnsafeMutableStartPointer{
+                wrap_cblas_copy(fasterBlockSize*concat_size, $0 + sb*fasterBlockSize*concat_size, 1, newdata.storedPtr.baseAddress! + offset, 1, T.StoredType.cblas_copy_func)
+            }
+            
             offset += fasterBlockSize*concat_size
         }
     }
@@ -231,9 +237,11 @@ internal func fancyndget_by_cblas<T: MfTypeUsable, U: MfInterger>(_ mfarray: MfA
     let offsets = indices.data.map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
     
     var dstptr = newdata.storedPtr.baseAddress!
-    for offset in offsets{
-        wrap_cblas_copy(work_size, mfarray.mfdata.storedPtr.baseAddress! + offset, 1, dstptr, 1, cblas_func)
-        dstptr += work_size
+    mfarray.withUnsafeMutableStartPointer{
+        for offset in offsets{
+            wrap_cblas_copy(work_size, $0 + offset, 1, dstptr, 1, cblas_func)
+            dstptr += work_size
+        }
     }
     
     let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
@@ -277,9 +285,11 @@ internal func fancygetall_by_cblas<T: MfTypeUsable, U: MfInterger>(_ mfarray: Mf
     let newdata: MfData<T> = MfData(size: ret_size)
     var dstptr = newdata.storedPtr.baseAddress!
     
-    for offset in offsets{
-        wrap_cblas_copy(work_size, mfarray.mfdata.storedPtr.baseAddress! + offset, 1, dstptr, 1, cblas_func)
-        dstptr += work_size
+    mfarray.withUnsafeMutableStartPointer{
+        for offset in offsets{
+            wrap_cblas_copy(work_size, $0 + offset, 1, dstptr, 1, cblas_func)
+            dstptr += work_size
+        }
     }
     
     let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
@@ -304,21 +314,29 @@ internal func fancyset_by_cblas<T: MfTypeUsable, U: MfInterger>(_ mfarray: MfArr
     let offsets = indices.data.map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
     
     if mfarray.ndim == 1{
-        let srcptr = assigned_array.mfdata.storedPtr.baseAddress!
-        let dstptr = mfarray.mfdata.storedPtr.baseAddress!
-        for (i, offset) in offsets.enumerated(){
-            (dstptr + offset).assign(from: srcptr + i, count: 1)
+        assigned_array.withUnsafeMutableStartPointer{
+            srcptr in
+            mfarray.withUnsafeMutableStartPointer{
+                dstptr in
+                for (i, offset) in offsets.enumerated(){
+                    (dstptr + offset).assign(from: srcptr + i, count: 1)
+                }
+            }
         }
     }
     else{
-        let srcptr = assigned_array.mfdata.storedPtr.baseAddress!
-        let dstptr = mfarray.mfdata.storedPtr.baseAddress!
-        
         let work_mfarray_strides = Array(mfarray.strides.suffix(from: 1))
         let work_assigned_mfarray_strides = Array(assigned_array.strides.suffix(from: indices.ndim))
-        for cblasParams in OptOffsetParamsSequence(shape: work_shape, bigger_strides: work_assigned_mfarray_strides, smaller_strides: work_mfarray_strides){
-            for (i, offset) in offsets.enumerated(){
-                wrap_cblas_copy(cblasParams.blocksize, srcptr + i*work_size + cblasParams.b_offset, cblasParams.b_stride, dstptr + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
+        
+        assigned_array.withUnsafeMutableStartPointer{
+            srcptr in
+            mfarray.withUnsafeMutableStartPointer{
+                dstptr in
+                for cblasParams in OptOffsetParamsSequence(shape: work_shape, bigger_strides: work_assigned_mfarray_strides, smaller_strides: work_mfarray_strides){
+                    for (i, offset) in offsets.enumerated(){
+                        wrap_cblas_copy(cblasParams.blocksize, srcptr + i*work_size + cblasParams.b_offset, cblasParams.b_stride, dstptr + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
+                    }
+                }
             }
         }
     }
@@ -355,20 +373,30 @@ internal func fancysetall_by_cblas<T: MfTypeUsable, U: MfInterger>(_ mfarray: Mf
      >>> a[0,0]
      array([0, 1, 2])
      */
-    let srcptr = assigned_array.mfdata.storedPtr.baseAddress!
-    let dstptr = mfarray.mfdata.storedPtr.baseAddress!
-    
+
     if work_shape.count == 0{// indices.count == mfarray.ndim
-        for (i, offset) in offsets.enumerated(){
-            (dstptr + offset).assign(from: srcptr + i, count: 1)
+        assigned_array.withUnsafeMutableStartPointer{
+            srcptr in
+            mfarray.withUnsafeMutableStartPointer{
+                dstptr in
+                for (i, offset) in offsets.enumerated(){
+                    (dstptr + offset).assign(from: srcptr + i, count: 1)
+                }
+            }
         }
     }
     else{
         let work_mfarray_strides = Array(mfarray.strides.suffix(from: indices.count))
         let work_sssigned_mfarray_strides = Array(assigned_array.strides.suffix(work_shape.count))
-        for cblasParams in OptOffsetParamsSequence(shape: work_shape, bigger_strides: work_sssigned_mfarray_strides, smaller_strides: work_mfarray_strides){
-            for (i, offset) in offsets.enumerated(){
-                wrap_cblas_copy(cblasParams.blocksize, srcptr + i*work_size + cblasParams.b_offset, cblasParams.b_stride, dstptr + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
+        assigned_array.withUnsafeMutableStartPointer{
+            srcptr in
+            mfarray.withUnsafeMutableStartPointer{
+                dstptr in
+                for cblasParams in OptOffsetParamsSequence(shape: work_shape, bigger_strides: work_sssigned_mfarray_strides, smaller_strides: work_mfarray_strides){
+                    for (i, offset) in offsets.enumerated(){
+                        wrap_cblas_copy(cblasParams.blocksize, srcptr + i*work_size + cblasParams.b_offset, cblasParams.b_stride, dstptr + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
+                    }
+                }
             }
         }
         

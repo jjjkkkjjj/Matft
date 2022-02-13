@@ -37,7 +37,7 @@ internal func copy_all_mfarray<T: MfTypeUsable>(_ src_mfarray: MfArray<T>) -> Mf
 ///   - mforder: An order
 /// - Returns: A contiguous mfarray
 @usableFromInline
-internal func check_contiguous<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ mforder: MfOrder? = .Row) -> MfArray<T>{
+internal func check_contiguous<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ mforder: MfOrder? = nil) -> MfArray<T>{
     if ((mfarray.mfstructure.row_contiguous || mfarray.mfstructure.column_contiguous) && mforder == nil) ||
         (mfarray.mfstructure.row_contiguous && mforder == .Row) || (mfarray.mfstructure.column_contiguous && mforder == .Column){
         return mfarray
