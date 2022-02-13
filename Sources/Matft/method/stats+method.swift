@@ -34,6 +34,24 @@ extension MfArray{
         return Matft.stats.sum(self, axis: axis, keepDims: keepDims)
     }
     
+    /// Get max value along axis
+    /// - Parameters:
+    ///   - axis; (Optional) axis, if not given, get mean for all elements
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - Returns: The max mfarray
+    public func max(axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
+        return Matft.stats.max(self, axis: axis, keepDims: keepDims)
+    }
+    
+    /// Get min value along axis
+    /// - Parameters:
+    ///   - axis; (Optional) axis, if not given, get mean for all elements
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - Returns: The min mfarray
+    public func min(axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
+        return Matft.stats.min(self, axis: axis, keepDims: keepDims)
+    }
+    
     /// Calculate root of sum MfArray
     /// - Parameters:
     ///   - axis; (Optional) axis, if not given, get mean for all elements

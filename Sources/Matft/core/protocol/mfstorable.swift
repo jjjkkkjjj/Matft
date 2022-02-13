@@ -41,6 +41,9 @@ public protocol MfStoredTypeUsable: FloatingPoint{
     static var vDSP_sum_func: vDSP_stats_func<Self>{ get }
     static var vDSP_sqsum_func: vDSP_stats_func<Self>{ get }
     
+    static var vDSP_max_func: vDSP_stats_func<Self>{ get }
+    static var vDSP_min_func: vDSP_stats_func<Self>{ get }
+    
     static var vDSP_square_func: vDSP_math_func<Self, Self>{ get }
     
     //======= cblas ========//

@@ -182,6 +182,135 @@ final class StatsTests: XCTestCase {
         }
     }
     
+
+    func testMin() {
+        do{
+            let a = MfArray<Int>([[3, -19],
+                             [-22, 4]])
+            
+            XCTAssertEqual(Matft.stats.min(a), MfArray<Int>([-22]))
+
+            XCTAssertEqual(Matft.stats.min(a, axis: 0), MfArray<Int>([-22, -19]))
+            XCTAssertEqual(Matft.stats.min(a, axis: -1), MfArray<Int>([-19, -22]))
+            
+            let b = MfArray<Int>([[2, 1177],
+                             [5, -43]])
+            
+            XCTAssertEqual(Matft.stats.min(b), MfArray<Int>([-43]))
+
+            XCTAssertEqual(Matft.stats.min(b, axis: 0),
+                           MfArray<Int>([2, -43]))
+            XCTAssertEqual(Matft.stats.min(b, axis: -1), MfArray<Int>([2, -43]))
+        }
+
+        do{
+            let a = MfArray<Double>([[2.0, 1.0, -3.0, 0.0, -0.87, 1.2, 5.5134, -8.78],
+                             [3.0, 1.0, 4.0, -5.0, -0.0002, 2.0, 3.4, -5.0]], mforder: .Column)
+
+            XCTAssertEqual(Matft.stats.min(a), MfArray<Double>([-8.78]))
+
+            XCTAssertEqual(Matft.stats.min(a, axis: 0), MfArray<Double>([ 2.0  ,  1.0  , -3.0  , -5.0  , -0.87,  1.2 ,  3.4 , -8.78]))
+            XCTAssertEqual(Matft.stats.min(a, axis: -1), MfArray<Double>([-8.78, -5.0  ]))
+        }
+        
+        do{
+            let a = MfArray<UInt8>([[  0,   4,   8,  12, 251, 247],
+                             [  1,   5,   9,  13,   3,   3],
+                             [  2,   6,  10,  14,   2,   1],
+                             [  3,   7,  11,  15,   4,   1]] as [[UInt8]]).reshape([2,3,2,2])
+            
+            XCTAssertEqual(Matft.stats.min(a), MfArray<UInt8>([0] as [UInt8]))
+            
+            XCTAssertEqual(Matft.stats.min(a, axis: 0), MfArray<UInt8>([[[ 0,  4],
+                                  [ 8, 12]],
+
+                                 [[ 2,  1],
+                                  [ 1,  5]],
+
+                                 [[ 9, 13],
+                                  [ 3,  1]]] as [[[UInt8]]]))
+            XCTAssertEqual(Matft.stats.min(a, axis: -1), MfArray<UInt8>([[[  0,   8],
+                               [247,   1],
+                               [  9,   3]],
+
+                              [[  2,  10],
+                               [  1,   3],
+                               [ 11,   1]]] as [[[UInt8]]]))
+            XCTAssertEqual(Matft.stats.min(a, axis: 1, keepDims: true), MfArray<UInt8>([[[[0, 4],
+                               [1, 3]]],
+
+
+                             [[[2, 1],
+                               [3, 1]]]] as [[[[UInt8]]]]))
+                
+        }
+    }
+
+    func testMax() {
+        do{
+            let a = MfArray<Int>([[3, -19],
+                             [-22, 4]])
+            
+            XCTAssertEqual(Matft.stats.max(a), MfArray<Int>([4]))
+            
+            XCTAssertEqual(Matft.stats.max(a, axis: 0),
+                           MfArray<Int>([3, 4]))
+            XCTAssertEqual(Matft.stats.max(a, axis: -1), MfArray<Int>([3, 4]))
+            
+            let b = MfArray<Int>([[2, 1177],
+                             [5, -43]])
+            
+            XCTAssertEqual(Matft.stats.max(b), MfArray<Int>([1177]))
+            
+            XCTAssertEqual(Matft.stats.max(b, axis: 0),
+                MfArray<Int>([5, 1177]))
+            XCTAssertEqual(Matft.stats.max(b, axis: -1), MfArray<Int>([1177, 5]))
+        }
+
+        do{
+            let a = MfArray<Double>([[2.0, 1.0, -3.0, 0.0, -0.87, 1.2, 5.5134, -8.78],
+                             [3.0, 1.0, 4.0, -5.0, -0.0002, 2.0, 3.4, -5.0]], mforder: .Column)
+
+            XCTAssertEqual(Matft.stats.max(a), MfArray<Double>([5.5134]))
+
+            XCTAssertEqual(Matft.stats.max(a, axis: 0), MfArray<Double>([ 3.0000e+00,  1.0000e+00,  4.0000e+00,  0.0000e+00, -2.0000e-04,
+            2.0000e+00,  5.5134e+00, -5.0000e+00]))
+            XCTAssertEqual(Matft.stats.max(a, axis: -1), MfArray<Double>([5.5134, 4.0    ]))
+        }
+        
+        do{
+            let a = MfArray<UInt8>([[  0,   4,   8,  12, 251, 247],
+                             [  1,   5,   9,  13,   3,   3],
+                             [  2,   6,  10,  14,   2,   1],
+                             [  3,   7,  11,  15,   4,   1]] as [[UInt8]]).reshape([2,3,2,2])
+            
+            XCTAssertEqual(Matft.stats.max(a), MfArray<UInt8>([251] as [UInt8]))
+            
+            XCTAssertEqual(Matft.stats.max(a, axis: 0), MfArray<UInt8>([[[  2,   6],
+                                  [ 10,  14]],
+
+                                 [[251, 247],
+                                  [  3,   7]],
+
+                                 [[ 11,  15],
+                                  [  4,   3]]] as [[[UInt8]]]))
+            XCTAssertEqual(Matft.stats.max(a, axis: -1), MfArray<UInt8>([[[  4,  12],
+                               [251,   5],
+                               [ 13,   3]],
+                              
+                              [[  6,  14],
+                               [  2,   7],
+                               [ 15,   4]]] as [[[UInt8]]]))
+            XCTAssertEqual(Matft.stats.max(a, axis: 1, keepDims: true), MfArray<UInt8>([[[[251, 247],
+                               [  8,  12]]],
+
+
+                             [[[ 11,  15],
+                               [ 10,  14]]]] as [[[[UInt8]]]]))
+                
+        }
+    }
+    
     func testSquareSum(){
         
         do{
