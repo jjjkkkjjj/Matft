@@ -66,5 +66,19 @@ extension Matft.stats {
     public static func squaresum<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
         return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: T.StoredType.vDSP_sqsum_func)
     }
-
+    
+    
+    /// Calculate cumulative sum of MfArray along axis
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - axis; (Optional) axis, if not given, get mean for all elements
+    /// - Returns: The mean mfarray
+    public static func cumsum<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int? = nil) -> MfArray<T>{
+        if let axis = axis{
+            return mfarray.ufuncAccumulate(ufunc: Matft.add, axis: axis)
+        }
+        else{
+            return mfarray.flatten().ufuncAccumulate(ufunc: Matft.add)
+        }
+    }
 }

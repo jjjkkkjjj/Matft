@@ -59,4 +59,12 @@ extension MfArray{
     public func squaresum(axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
         return Matft.stats.squaresum(self, axis: axis, keepDims: keepDims)
     }
+    
+    /// Calculate cumulative sum of MfArray along axis
+    /// - Parameters:
+    ///   - axis; (Optional) axis, if not given, get mean for all elements
+    /// - Returns: The mean mfarray
+    public func cumsum(axis: Int? = nil) -> MfArray<T>{
+        return Matft.stats.cumsum(self, axis: axis)
+    }
 }

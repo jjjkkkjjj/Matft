@@ -203,4 +203,45 @@ final class StatsTests: XCTestCase {
             XCTAssertEqual(Matft.stats.squaresum(b, axis: -1),             MfArray<Int>([1385333, 1874]))
         }
     }
+    
+    func testCumsum(){
+        do{
+            let a = MfArray<Int>([[1,2,3],
+                             [4,5,6]])
+
+            XCTAssertEqual(a.cumsum(),
+                           MfArray<Int>([ 1,  3,  6, 10, 15, 21]))
+            XCTAssertEqual(a.cumsum(axis: 0),
+                           MfArray<Int>([[1, 2, 3],
+                                       [5, 7, 9]]))
+            XCTAssertEqual(a.cumsum(axis: 1),
+                           MfArray<Int>([[ 1,  3,  6],
+                                       [ 4,  9, 15]]))
+        }
+
+        do{
+            let a = MfArray<Int>([[1, 2],
+                             [3, 4],
+                             [5, 6]])
+
+            XCTAssertEqual(a.cumsum(),
+                           MfArray<Int>([1, 3, 6, 10, 15, 21]))
+            XCTAssertEqual(a.cumsum(axis: 0),
+                           MfArray<Int>([[ 1,  2],
+                                       [ 4,  6],
+                                       [ 9, 12]]))
+            XCTAssertEqual(a.cumsum(axis: 1),
+                           MfArray<Int>([[ 1,  3],
+                                       [ 3,  7],
+                                       [ 5, 11]]))
+
+            XCTAssertEqual(a.T.cumsum(),
+                           MfArray<Int>([ 1,  4,  9, 11, 15, 21]))
+            XCTAssertEqual(a[1~<].cumsum(),
+                           MfArray<Int>([ 3,  7, 12, 18]))
+            XCTAssertEqual(a[~<<2].cumsum(axis: 1),
+                           MfArray<Int>([[ 1,  3],
+                                         [ 5, 11]]))
+        }
+    }
 }
