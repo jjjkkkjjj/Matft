@@ -325,6 +325,41 @@ extension Matft.math{ // vForce
         let powval = pow(10, Double(decimals))
         return round_by_vForce(mfarray, decimals: decimals, powval: powval)
     }
+    
+    //
+    //================ basic ================//
+    //
+    /// Calculate the absolute value for all elements
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    /// - Returns: abs mfarray
+    public static func abs<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Float> where T.StoredType == Float{
+        return math_vv_by_vForce(mfarray, Float.StoredType.vForce_abs_func)
+    }
+    /// Calculate the absolute value for all elements
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - decimals: (Optional) Int, default is 0, which is equivelent to nearest
+    /// - Returns: abs mfarray
+    public static func abs<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Double> where T.StoredType == Double{
+        return math_vv_by_vForce(mfarray, Double.StoredType.vForce_abs_func)
+    }
+    
+    /// Calculate the reciprocal value for all elements
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    /// - Returns: abs mfarray
+    public static func reciprocal<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Float> where T.StoredType == Float{
+        return math_vv_by_vForce(mfarray, Float.StoredType.vForce_reciprocal_func)
+    }
+    /// Calculate the reciprocal value for all elements
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - decimals: (Optional) Int, default is 0, which is equivelent to nearest
+    /// - Returns: abs mfarray
+    public static func reciprocal<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<Double> where T.StoredType == Double{
+        return math_vv_by_vForce(mfarray, Double.StoredType.vForce_reciprocal_func)
+    }
 }
 
 extension Matft.math{ // vDSP
