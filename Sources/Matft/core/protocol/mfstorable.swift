@@ -35,6 +35,7 @@ public protocol MfStoredTypeUsable: FloatingPoint{
     static var vDSP_argsort_func: vDSP_argsort_func<Self>{ get }
     
     static var vDSP_mean_func: vDSP_stats_func<Self>{ get }
+    static var vDSP_sum_func: vDSP_stats_func<Self>{ get }
     
     //======= cblas ========//
     static var cblas_copy_func: cblas_copy_func<Self>{ get }

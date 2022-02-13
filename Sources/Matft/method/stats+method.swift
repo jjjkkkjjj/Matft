@@ -24,4 +24,13 @@ extension MfArray{
     public func mean(axis: Int? = nil, keepDims: Bool = false) -> MfArray<Double> where T.StoredType == Double{
         return Matft.stats.mean(self, axis: axis, keepDims: keepDims)
     }
+    
+    /// Get summation value along axis
+    /// - Parameters:
+    ///   - axis; (Optional) axis, if not given, get mean for all elements
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - Returns: The sum mfarray
+    public func sum(axis: Int? = nil, keepDims: Bool = false) -> MfArray<T>{
+        return Matft.stats.sum(self, axis: axis, keepDims: keepDims)
+    }
 }
