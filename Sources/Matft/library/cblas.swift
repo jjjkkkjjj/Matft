@@ -11,6 +11,7 @@ import Accelerate
 
 public typealias cblas_copy_func<T> = (Int32, UnsafePointer<T>, Int32, UnsafeMutablePointer<T>, Int32) -> Void
 
+public typealias cblas_matmul_func<T> = (CBLAS_ORDER, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, Int32, Int32, Int32, T, UnsafePointer<T>, Int32, UnsafePointer<T>, Int32, T, UnsafeMutablePointer<T>, Int32) -> Void
 
 
 /// Wrapper of cblas copy function
@@ -24,6 +25,40 @@ public typealias cblas_copy_func<T> = (Int32, UnsafePointer<T>, Int32, UnsafeMut
 @inline(__always)
 internal func wrap_cblas_copy<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ cblas_func: cblas_copy_func<T>){
     cblas_func(Int32(size), srcptr, Int32(srcStride), dstptr, Int32(dstStride))
+}
+
+/// Wrapper of cblas matmul function
+/// - Parameters:
+///   - size: A size
+///   - mforder: MfOrder
+///   - lptr: A left pointer
+///   - lrow: A left row size
+///   - lcol: A left column size
+///   - rptr: A right pointer
+///   - rrow: A right row size
+///   - rcol: A right column size
+///   - dstptr: A destination pointer
+///   - cblas_func: The cblas matmul function
+@inline(__always)
+internal func wrap_cblas_matmul<T: MfStoredTypeUsable>(_ size: Int, _ mforder: MfOrder, _ lptr: UnsafePointer<T>, _ lrow: Int, _ lcol: Int, _ rptr: UnsafePointer<T>, _ rrow: Int, _ rcol: Int, _ dstptr: UnsafeMutablePointer<T>, _ cblas_func: cblas_matmul_func<T>){
+    let M = Int32(lrow)
+    let N = Int32(rcol)
+    let K = Int32(lcol)
+    
+    switch mforder {
+    case .Column:
+        let order = CblasColMajor
+        let lda = Int32(lrow)
+        let ldb = Int32(rrow)
+        let ldc = Int32(lrow)
+        cblas_func(order, CblasNoTrans, CblasNoTrans, M, N, K, T.from(1), lptr, lda, rptr, ldb, T.zero, dstptr, ldc)
+    case .Row:
+        let order = CblasRowMajor
+        let lda = Int32(lcol)
+        let ldb = Int32(rcol)
+        let ldc = Int32(rcol)
+        cblas_func(order, CblasNoTrans, CblasNoTrans, M, N, K, T.from(1), lptr, lda, rptr, ldb, T.zero, dstptr, ldc)
+    }
 }
 
 
@@ -402,4 +437,37 @@ internal func fancysetall_by_cblas<T: MfTypeUsable, U: MfInterger>(_ mfarray: Mf
         
     }
     
+}
+
+internal func matmul_by_cblas<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>, cblas_func: cblas_matmul_func<T.StoredType>) -> MfArray<T>{
+    let l_shape = l_mfarray.shape
+    let r_shape = r_mfarray.shape
+    var ret_shape = l_mfarray.shape
+    let ret_ndim = ret_shape.count
+    ret_shape[ret_ndim - 1] = r_shape[ret_ndim - 1]
+    let ret_size = shape2size(&ret_shape)
+    // order
+    // must be row major
+    let (l_mfarray, r_mfarray, ret_order) = check_matmul_contiguous(l_mfarray, r_mfarray)
+
+    let matNum = l_shape[ret_ndim - 2] * r_shape[ret_ndim - 1]
+    let l_matNum = l_shape[ret_ndim - 2] * l_shape[ret_ndim - 1]
+    let r_matNum = r_shape[ret_ndim - 2] * r_shape[ret_ndim - 1]
+    let iterNum = ret_size / matNum
+    
+    let newdata: MfData<T> = MfData(size: ret_size)
+    let dstptr = newdata.storedPtr.baseAddress!
+    l_mfarray.withUnsafeMutableStartPointer{
+        lptr in
+        r_mfarray.withUnsafeMutableStartPointer{
+            rptr in
+            for i in 0..<iterNum{
+                wrap_cblas_matmul(matNum, ret_order, lptr + i*l_matNum, l_shape[ret_ndim - 2], l_shape[ret_ndim - 1], rptr + i*r_matNum, r_shape[ret_ndim - 2], r_shape[ret_ndim - 1], dstptr + i*matNum, cblas_func)
+            }
+        }
+    }
+ 
+    let newstructure = MfStructure(shape: ret_shape, mforder: ret_order)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
 }

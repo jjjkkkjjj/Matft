@@ -209,6 +209,8 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     //======= cblas ========//
     public static var cblas_copy_func: cblas_copy_func<Float> = cblas_scopy
     
+    public static var cblas_matmul_func: cblas_matmul_func<Float> = cblas_sgemm
+    
     //======= vForce ========//
     public static var vForce_sin_func: vForce_math_func<Float> = vvsinf
     public static var vForce_asin_func: vForce_math_func<Float> = vvasinf
@@ -326,6 +328,8 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     
     //======= cblas ========//
     public static var cblas_copy_func: cblas_copy_func<Double> = cblas_dcopy
+    
+    public static var cblas_matmul_func: cblas_matmul_func<Double> = cblas_dgemm
     
     //======= vForce ========//
     public static var vForce_sin_func: vForce_math_func<Double> = vvsin

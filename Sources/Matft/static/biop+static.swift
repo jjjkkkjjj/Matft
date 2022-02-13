@@ -124,6 +124,21 @@ extension Matft{
         return toBool_by_vDSP(diff.sign() + T.from(1))
     }
     
+    //===== vector =====//
+    /// Matrix multiplication
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The result mfarray
+    public static func matmul<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<T>{
+        precondition(l_mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        precondition(r_mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        let (l_mfarray, r_mfarray) = matmul_broadcast_to(l_mfarray, r_mfarray)
+        
+        return matmul_by_cblas(l_mfarray, r_mfarray, cblas_func: T.StoredType.cblas_matmul_func)
+    }
+    
+    
     //============= left mfarray, right scalar operation =============//
     
     /// Element-wise addition of  two mfarray

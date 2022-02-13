@@ -52,6 +52,8 @@ public protocol MfStoredTypeUsable: FloatingPoint{
     //======= cblas ========//
     static var cblas_copy_func: cblas_copy_func<Self>{ get }
     
+    static var cblas_matmul_func: cblas_matmul_func<Self>{ get }
+    
     //======= vForce ========//
     static var vForce_sin_func: vForce_math_func<Self>{ get }
     static var vForce_asin_func: vForce_math_func<Self>{ get }

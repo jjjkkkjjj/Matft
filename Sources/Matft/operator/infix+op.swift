@@ -108,3 +108,8 @@ extension MfArray: Equatable{
         return Matft.equalAll(lhs, rhs)
     }
 }
+
+infix operator *&: MultiplicationPrecedence //matmul
+public func *&<T: MfTypeUsable>(l_mfarray: MfArray<T>, r_mfarray: MfArray<T>) -> MfArray<T>{
+    return Matft.matmul(l_mfarray, r_mfarray)
+}

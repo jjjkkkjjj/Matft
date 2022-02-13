@@ -69,6 +69,60 @@ internal func toSwiftArray<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> [Any]{
 }
 
 
+/// Get a best order for matrix mulplication
+/// - Parameters:
+///   - l_mfarray: An left mfarray
+///   - r_mfarray: An right mfarray
+/// - Returns:
+///   - l_mfarray: Contiguous left mfarray
+///   - r_mfarray: Contiguous right mfarray
+///   - mforder: Best order
+@usableFromInline
+internal func check_matmul_contiguous<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> (l_mfarray: MfArray<T>, r_mfarray: MfArray<T>, mforder: MfOrder){
+    /*
+    // must be close to either row or column major
+    var retorder = MfOrder.Row
+    if !(lmfarray.mfflags.column_contiguous && rmfarray.mfflags.column_contiguous) || lmfarray.mfflags.row_contiguous && rmfarray.mfflags.row_contiguous{//convert either row or column major
+        if lmfarray.mfflags.column_contiguous{
+            rmfarray = Matft.conv_order(rmfarray, mforder: .Column)
+            retorder = .Column
+        }
+        else if lmfarray.mfflags.row_contiguous{
+            rmfarray = Matft.conv_order(rmfarray, mforder: .Row)
+            retorder = .Row
+        }
+        else if rmfarray.mfflags.column_contiguous{
+            lmfarray = Matft.conv_order(lmfarray, mforder: .Column)
+            retorder = .Column
+        }
+        else if rmfarray.mfflags.row_contiguous{
+            lmfarray = Matft.conv_order(lmfarray, mforder: .Row)
+            retorder = .Row
+        }
+        else{
+            lmfarray = Matft.conv_order(lmfarray, mforder: .Row)
+            rmfarray = Matft.conv_order(rmfarray, mforder: .Row)
+            retorder = .Row
+        }
+    }
+    else{
+        retorder = lmfarray.mfflags.row_contiguous ? .Row : .Column
+    }*/
+    //must be row major
+    let ret_order = MfOrder.Row
+    var l_mfarray = l_mfarray
+    var r_mfarray = r_mfarray
+    if !(l_mfarray.mfstructure.row_contiguous && r_mfarray.mfstructure.row_contiguous){//convert row major
+        if !r_mfarray.mfstructure.row_contiguous{
+            r_mfarray = Matft.to_contiguous(r_mfarray, mforder: .Row)
+        }
+        if !l_mfarray.mfstructure.row_contiguous{
+            l_mfarray = Matft.to_contiguous(l_mfarray, mforder: .Row)
+        }
+    }
+    return (l_mfarray, r_mfarray, ret_order)
+}
+
 /// Get a swift array. This function is recursive one
 /// - Parameters:
 ///   - data: An input and output data array

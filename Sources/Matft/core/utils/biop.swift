@@ -143,3 +143,55 @@ internal func biop_broadcast_to<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mf
     
     return (l_mfarray, r_mfarray)
 }
+
+
+//Note that this function is slighly different from biobiop_broadcast_to for precondition and checked axis
+//TODO: gather this function and biobiop_broadcast_to
+internal func matmul_broadcast_to<T>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> (l_mfarray: MfArray<T>, r_mfarray: MfArray<T>){
+    var l_shape = l_mfarray.shape
+    var l_strides = l_mfarray.strides
+    var r_shape = r_mfarray.shape
+    var r_strides = r_mfarray.strides
+    
+    precondition(l_shape[l_mfarray.ndim - 1] == r_shape[r_mfarray.ndim - 2], "Last 2 dimensions of the input mfarray must be lmfarray:(...,l,m) and rmfarray:(...,m,n)")
+    
+    // broadcast
+    let ret_ndim: Int
+    
+    if l_mfarray.ndim < r_mfarray.ndim{ // l has smaller dim
+        ret_ndim = r_mfarray.ndim
+        l_shape = Array<Int>(repeating: 1, count: r_mfarray.ndim - l_mfarray.ndim) + l_shape // the 1 concatenated elements means broadcastable
+        l_strides = Array<Int>(repeating: 0, count: r_mfarray.ndim - l_mfarray.ndim) + l_strides// the 0 concatenated elements means broadcastable
+    }
+    else if l_mfarray.ndim > r_mfarray.ndim{// r has smaller dim
+        ret_ndim = l_mfarray.ndim
+        r_shape = Array<Int>(repeating: 1, count: l_mfarray.ndim - r_mfarray.ndim) + r_shape // the 1 concatenated elements means broadcastable
+        r_strides = Array<Int>(repeating: 0, count: l_mfarray.ndim - r_mfarray.ndim) + r_strides// the 0 concatenated elements means broadcastable
+    }
+    else{
+        ret_ndim = l_mfarray.ndim
+    }
+
+    for axis in (0..<ret_ndim-2).reversed(){
+        if l_shape[axis] == r_shape[axis]{
+            continue
+        }
+        else if l_shape[axis] == 1{
+            l_shape[axis] = r_shape[axis] // aligned to r
+            l_strides[axis] = 0 // broad casted 0
+        }
+        else if r_shape[axis] == 1{
+            r_shape[axis] = l_shape[axis] // aligned to l
+            r_strides[axis] = 0 // broad casted 0
+        }
+        else{
+            preconditionFailure("Broadcast error: cannot calculate matrix multiplication due to broadcasting error. hint: For all dim < ndim-2, left.shape[dim] or right.shape[dim] is one, or left.shape[dim] == right.shape[dim]")
+        }
+    }
+    //print(Array<Int>(UnsafeBufferPointer<Int>(start: l_mfstructure._shape, count: l_mfstructure._ndim)))
+    //print(Array<Int>(UnsafeBufferPointer<Int>(start: r_mfstructure._shape, count: r_mfstructure._ndim)))
+    let l_structure = MfStructure(shape: l_shape, strides: l_strides)
+    let r_structure = MfStructure(shape: r_shape, strides: r_strides)
+    
+    return (MfArray(base: l_mfarray, mfstructure: l_structure, offset: l_mfarray.offsetIndex), MfArray(base: r_mfarray, mfstructure: r_structure, offset: r_mfarray.offsetIndex))
+}
