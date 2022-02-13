@@ -287,7 +287,11 @@ internal func fancygetall_by_cblas<T: MfTypeUsable, U: MfInterger>(_ mfarray: Mf
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
-
+/// Setter function for the fancy indexing on a given Interger indices.
+/// - Parameters:
+///   - mfarray: An inpu mfarray.
+///   - indices: An input Interger indices mfarray
+///   - cblas_func: cblas_copy_func
 internal func fancyset_by_cblas<T: MfTypeUsable, U: MfInterger>(_ mfarray: MfArray<T>, _ indices: MfArray<U>, _ assigned_array: MfArray<T>, _ cblas_func: cblas_copy_func<T.StoredType>){
 
     var work_shape = Array(mfarray.shape.suffix(from: 1))
@@ -319,4 +323,55 @@ internal func fancyset_by_cblas<T: MfTypeUsable, U: MfInterger>(_ mfarray: MfArr
         }
     }
 
+}
+
+/// Setter function for the fancy indexing on a given Interger indices.
+/// - Parameters:
+///   - mfarray: An inpu mfarray.
+///   - indices: An input Interger indices mfarray array
+///   - cblas_func: cblas_copy_func
+internal func fancysetall_by_cblas<T: MfTypeUsable, U: MfInterger>(_ mfarray: MfArray<T>, _ indices: inout [MfArray<U>], _ assigned_array: MfArray<T>, _ cblas_func: cblas_copy_func<T.StoredType>){
+    // check proper indices
+    assert(indices.count >= 2)
+    precondition(indices.count <= mfarray.ndim, "too many indices for array: array is \(mfarray.ndim)-dimensional, but \(indices.count) were indexed")
+
+    let (offsets, ind_shape, _) = get_offsets_from_indices(mfarray, &indices)
+    
+    var work_shape = Array(mfarray.shape.suffix(from: indices.count))
+    let ret_shape = ind_shape + work_shape
+    let work_size = work_shape.count > 0 ? shape2size(&work_shape) : 1
+    
+    let assigned_array = check_contiguous(assigned_array.broadcast_to(shape: ret_shape), .Row)
+    /*
+     >>> a = np.arange(27).reshape(3,3,3)
+     >>> a[[[-2,1,0]], [[0,1,0]]]
+     array([[[ 9, 10, 11],
+             [12, 13, 14],
+             [ 0,  1,  2]]])
+     >>> a[-2,0]
+     array([ 9, 10, 11])
+     >>> a[1,1]
+     array([12, 13, 14])
+     >>> a[0,0]
+     array([0, 1, 2])
+     */
+    let srcptr = assigned_array.mfdata.storedPtr.baseAddress!
+    let dstptr = mfarray.mfdata.storedPtr.baseAddress!
+    
+    if work_shape.count == 0{// indices.count == mfarray.ndim
+        for (i, offset) in offsets.enumerated(){
+            (dstptr + offset).assign(from: srcptr + i, count: 1)
+        }
+    }
+    else{
+        let work_mfarray_strides = Array(mfarray.strides.suffix(from: indices.count))
+        let work_sssigned_mfarray_strides = Array(assigned_array.strides.suffix(work_shape.count))
+        for cblasParams in OptOffsetParamsSequence(shape: work_shape, bigger_strides: work_sssigned_mfarray_strides, smaller_strides: work_mfarray_strides){
+            for (i, offset) in offsets.enumerated(){
+                wrap_cblas_copy(cblasParams.blocksize, srcptr + i*work_size + cblasParams.b_offset, cblasParams.b_stride, dstptr + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
+            }
+        }
+        
+    }
+    
 }

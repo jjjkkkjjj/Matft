@@ -57,10 +57,11 @@ extension MfArray: MfSubscriptable{
         get{
             var indices = indices
             return self._get_mfarray(indices: &indices)
-        }/*
+        }
         set(new_array){
-            self._set_mfarray(indices: indices, assigned_array: new_array)
-        }*/
+            var indices = indices
+            self._set_mfarray(indices: &indices, assigned_array: new_array)
+        }
     }
     
     //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
@@ -316,7 +317,6 @@ extension MfArray: MfSubscriptable{
             return fancyndget_by_cblas(self, indices, cblas_func: T.StoredType.cblas_copy_func)
         }
     }
-    
     /// Setter function for the fancy indexing on a given indices.
     /// - Parameters:
     ///   - indices: An input boolean indices array
@@ -331,7 +331,13 @@ extension MfArray: MfSubscriptable{
     private func _get_mfarray<U: MfInterger>(indices: inout [MfArray<U>]) -> MfArray<MfArrayType>{
         return fancygetall_by_cblas(self, &indices, cblas_func: T.StoredType.cblas_copy_func)
     }
-    
+    /// Setter function for the fancy indexing on a given indices.
+    /// - Parameters:
+    ///   - indices: An input boolean indices mfarray array
+    ///   - assigned_array: An assigned mfarray
+    private func _set_mfarray<U: MfInterger>(indices: inout [MfArray<U>], assigned_array: MfArray<MfArrayType>){
+        fancysetall_by_cblas(self, &indices, assigned_array, T.StoredType.cblas_copy_func)
+    }
     
 }
 

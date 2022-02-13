@@ -803,11 +803,11 @@ final class SubscriptTests: XCTestCase {
                                            [ 104,  105,  106]]] as [[[Int]]]))
             
         }
-        /*
+        
         do{
             let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
-            a[MfArray([-2,1,0]), MfArray([0,1,0])] = MfArray([999])
-            XCTAssertEqual(a, MfArray([[[999, 999, 999],
+            a[MfArray<Int>([-2,1,0] as [Int]), MfArray<Int>([0,1,0] as [Int])] = MfArray<Int>([999] as [Int])
+            XCTAssertEqual(a, MfArray<Int>([[[999, 999, 999],
                                         [  3,   4,   5],
                                         [  6,   7,   8]],
 
@@ -817,10 +817,10 @@ final class SubscriptTests: XCTestCase {
 
                                        [[ 18,  19,  20],
                                         [ 21,  22,  23],
-                                        [ 24,  25,  26]]]))
+                                        [ 24,  25,  26]]] as [[[Int]]]))
             
-            a.T[MfArray([-2,1,0]), MfArray([0,1,0])] = MfArray([-999])
-            XCTAssertEqual(a, MfArray([[[-999, -999,  999],
+            a.T[MfArray<Int>([-2,1,0] as [Int]), MfArray<Int>([0,1,0] as [Int])] = MfArray<Int>([-999] as [Int])
+            XCTAssertEqual(a, MfArray<Int>([[[-999, -999,  999],
                                        [   3, -999,    5],
                                        [   6,    7,    8]],
 
@@ -830,22 +830,22 @@ final class SubscriptTests: XCTestCase {
 
                                       [[-999, -999,   20],
                                        [  21, -999,   23],
-                                       [  24,   25,   26]]]))
+                                       [  24,   25,   26]]] as [[[Int]]]))
         }
         
         do{
-            let a = MfArray([[1, 2], [3, 4], [5, 6]])
+            let a = MfArray<Int>([[1, 2], [3, 4], [5, 6]] as [[Int]])
             
-            a[MfArray([0, 1, 2]), MfArray([0, -1, 0])] = MfArray([999,888,777])
-            XCTAssertEqual(a, MfArray(([[999,   2],
+            a[MfArray<Int>([0, 1, 2] as [Int]), MfArray<Int>([0, -1, 0] as [Int])] = MfArray<Int>([999,888,777] as [Int])
+            XCTAssertEqual(a, MfArray<Int>(([[999,   2],
                                         [  3, 888],
-                                        [777,   6]])))
+                                        [777,   6]] as [[Int]])))
             
-            a.T[MfArray([0, 1, -1]), MfArray([0, 1, 0])] = MfArray([-999,-888,-777])
-            XCTAssertEqual(a, MfArray([[-999, -777],
+            a.T[MfArray<Int>([0, 1, -1] as [Int]), MfArray<Int>([0, 1, 0] as [Int])] = MfArray<Int>([-999,-888,-777] as [Int])
+            XCTAssertEqual(a, MfArray<Int>([[-999, -777],
                                        [   3, -888],
-                                       [ 777,    6]]))
-        }*/
+                                       [ 777,    6]] as [[Int]]))
+        }
     }
     
 }
