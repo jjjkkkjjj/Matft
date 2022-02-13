@@ -190,6 +190,8 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     public static var vDSP_sort_func: vDSP_sort_func<Float> = vDSP_vsort
     public static var vDSP_argsort_func: vDSP_argsort_func<Float> = vDSP_vsorti
     
+    public static var vDSP_mean_func: vDSP_stats_func<Float> = vDSP_meanv
+    
     //======= cblas ========//
     public static var cblas_copy_func: cblas_copy_func<Float> = cblas_scopy
     
@@ -263,6 +265,8 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     
     public static var vDSP_sort_func: vDSP_sort_func<Double> = vDSP_vsortD
     public static var vDSP_argsort_func: vDSP_argsort_func<Double> = vDSP_vsortiD
+    
+    public static var vDSP_mean_func: vDSP_stats_func<Double> = vDSP_meanvD
     
     //======= cblas ========//
     public static var cblas_copy_func: cblas_copy_func<Double> = cblas_dcopy

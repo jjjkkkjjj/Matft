@@ -28,6 +28,8 @@ public typealias vDSP_sort_func<T> = (UnsafeMutablePointer<T>, vDSP_Length, Int3
 
 public typealias vDSP_argsort_func<T> = (UnsafePointer<T>, UnsafeMutablePointer<vDSP_Length>, UnsafeMutablePointer<vDSP_Length>, vDSP_Length, Int32) -> Void
 
+public typealias vDSP_stats_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Length) -> Void
+
 /// Wrapper of vDSP conversion function
 /// - Parameters:
 ///   - size: A size to be copied
@@ -198,6 +200,18 @@ internal func wrap_vDSP_sort<T>(_ size: Int, _ srcdstptr: UnsafeMutablePointer<T
 internal func wrap_vDSP_argsort<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<UInt>, _ order: MfSortOrder, _ vDSP_func: vDSP_argsort_func<T>){
     var tmp = Array<vDSP_Length>(repeating: 0, count: size)
     vDSP_func(srcptr, dstptr, &tmp, vDSP_Length(size), order.rawValue)
+}
+
+/// Wrapper of vDSP stats function
+/// - Parameters:
+///   - size: A size to be copied
+///   - srcptr: A source pointer
+///   - stride: A stride
+///   - dstptr: A destination pointer
+///   - vDSP_func: The vDSP stats function
+@inline(__always)
+internal func wrap_vDSP_stats<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ stride: Int, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_func: vDSP_stats_func<T>){
+    vDSP_func(srcptr, vDSP_Stride(stride), dstptr, vDSP_Length(size))
 }
 
 /// Pre operation mfarray by vDSP
@@ -452,6 +466,51 @@ internal func argsort_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int,
     
     // re-move axis and lastaxis
     return ret.moveaxis(src: last_axis, dst: axis)
+}
+
+
+/// Stats operation by vDSP
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - axis; An axis index
+///   - keepDims: Whether to keep dimension or not
+///   - vDSP_func: The vDSP stats function
+/// - Returns: The sorted mfarray
+internal func stats_by_vDSP<T: MfTypeUsable, U: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_func<U.StoredType>) -> MfArray<U> where T.StoredType == U.StoredType{
+    
+    let mfarray = check_contiguous(mfarray)
+    
+    if let axis = axis, mfarray.ndim > 1{
+        let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+        var ret_shape = mfarray.shape
+        let count = ret_shape.remove(at: axis)
+        var ret_strides = mfarray.strides
+        //remove and get stride at given axis
+        let stride = ret_strides.remove(at: axis)
+        
+        let ret_size = shape2size(&ret_shape)
+        
+        let newdata: MfData<U> = MfData(size: ret_size)
+        
+        var dst_offset = 0
+        for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
+            wrap_vDSP_stats(count, mfarray.mfdata.storedPtr.baseAddress! + flat.flattenIndex, stride, newdata.storedPtr.baseAddress! + dst_offset, vDSP_func)
+            dst_offset += 1
+        }
+        
+        
+        let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+        
+        let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
+        return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
+    }
+    else{
+        let newdata: MfData<U> = MfData(size: 1)
+        wrap_vDSP_stats(mfarray.size, mfarray.mfdata.storedPtr.baseAddress!, 1, newdata.storedPtr.baseAddress!, vDSP_func)
+        let ret_shape = keepDims ? Array(repeating: 1, count: mfarray.ndim) : [1]
+        let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
+    }
 }
 
 /*

@@ -33,6 +33,7 @@ extension MfArray: MfSubscriptable{
             return self._set_mfarray(indices: &indices, new_array: new_array)
         }
     }
+    
     /*
     public subscript(indices: MfArray<Bool>) -> MfArray<MfArrayType>{
         get{

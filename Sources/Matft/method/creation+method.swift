@@ -39,4 +39,13 @@ extension MfArray{
     public func append(value: T, axis: Int? = nil) -> MfArray<T>{
         return Matft.append(self, value: value, axis: axis)
     }
+    
+    /// Take mfarray on given indices
+    /// - Parameters:
+    ///   - indices: The indices mfarray
+    ///   - axis: (Optional) An axis index
+    /// - Returns: The taken mfarray
+    public func take(indices: MfArray<Int>, axis: Int? = nil) -> MfArray<T>{
+        return Matft.take(self, indices: indices, axis: axis)
+    }
 }

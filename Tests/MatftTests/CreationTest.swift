@@ -242,4 +242,39 @@ final class CreationTest: XCTestCase {
                             [7, 8, 9]]))
         }
     }
+    /*
+    func testTake() {
+        do {
+            let a = Matft.arange(start: 0, to: 20, by: 1, shape: [2,2,5])
+            let b = MfArray<Int>([1,0])
+            
+            XCTAssertEqual(Matft.take(a, indices: b), MfArray<Int>([[[10, 11, 12, 13, 14],
+                             [15, 16, 17, 18, 19]],
+
+                            [[ 0,  1,  2,  3,  4],
+                             [ 5,  6,  7,  8,  9]]]))
+            
+            XCTAssertEqual(Matft.take(a, indices: b, axis: 1), MfArray<Int>([[[ 5,  6,  7,  8,  9],
+                             [ 0,  1,  2,  3,  4]],
+
+                            [[15, 16, 17, 18, 19],
+                             [10, 11, 12, 13, 14]]]))
+            
+            XCTAssertEqual(Matft.take(a, indices: b, axis: -1), MfArray<Int>([[[ 1,  0],
+                             [ 6,  5]],
+
+                            [[11, 10],
+                             [16, 15]]]))
+        }
+        
+        do {
+            let a = MfArray<Int>([4, 3, 5, 7, 6, 8])
+            let b = MfArray<Int>([0,1,4])
+            XCTAssertEqual(Matft.take(a, indices: b), MfArray<Int>([4,3,6]))
+            
+            XCTAssertEqual(Matft.take(a, indices: MfArray<Int>([[0,1],[2,3]])),
+                           MfArray<Int>([[4, 3],
+                                        [5, 7]]))
+        }
+    }*/
 }

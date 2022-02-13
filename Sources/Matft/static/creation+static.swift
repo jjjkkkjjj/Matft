@@ -271,4 +271,15 @@ extension Matft{
     static public func append<T: MfTypeUsable>(_ mfarray: MfArray<T>, value: T, axis: Int? = nil) -> MfArray<T>{
         return Matft.append(mfarray, values: MfArray([value]), axis: axis)
     }
+    
+    /// Take mfarray on given indices
+    /// - Parameters:
+    ///   - mfarrays: The mfarray array
+    ///   - indices: The indices mfarray
+    ///   - axis: (Optional) An axis index
+    /// - Returns: The taken mfarray
+    static public func take<T: MfTypeUsable>(_ mfarray: MfArray<T>, indices: MfArray<Int>, axis: Int? = nil) -> MfArray<T>{
+        let axis = axis ?? 0
+        return Matft.swapaxes(mfarray, axis1: axis, axis2: 0)[indices].swapaxes(axis1: 0, axis2: axis)
+    }
 }
