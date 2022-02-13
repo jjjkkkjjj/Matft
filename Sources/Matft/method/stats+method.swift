@@ -34,6 +34,23 @@ extension MfArray{
         return Matft.stats.sum(self, axis: axis, keepDims: keepDims)
     }
     
+    /// Calculate root of sum MfArray
+    /// - Parameters:
+    ///   - axis; (Optional) axis, if not given, get mean for all elements
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - Returns: The result mfarray
+    public func sumsqrt(axis: Int? = nil, keepDims: Bool = false) -> MfArray<Float> where T.StoredType == Float{
+        return Matft.stats.sumsqrt(self, axis: axis, keepDims: keepDims)
+    }
+    /// Calculate root of sum MfArray
+    /// - Parameters:
+    ///   - axis; (Optional) axis, if not given, get mean for all elements
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - Returns: The result mfarray
+    public func sumsqrt(axis: Int? = nil, keepDims: Bool = false) -> MfArray<Double> where T.StoredType == Double{
+        return Matft.stats.sumsqrt(self, axis: axis, keepDims: keepDims)
+    }
+    
     /// Calculate sum of squared MfArray
     /// - Parameters:
     ///   - axis; (Optional) axis, if not given, get mean for all elements

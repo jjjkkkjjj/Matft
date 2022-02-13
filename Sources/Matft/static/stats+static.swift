@@ -38,6 +38,25 @@ extension Matft.stats {
         return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: T.StoredType.vDSP_sum_func)
     }
     
+    /// Calculate root of sum MfArray
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - axis; (Optional) axis, if not given, get mean for all elements
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - Returns: The result mfarray
+    public static func sumsqrt<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<Float> where T.StoredType == Float{
+        return Matft.math.sqrt(Matft.stats.sum(mfarray, axis: axis, keepDims: keepDims))
+    }
+    /// Calculate root of sum MfArray
+    /// - Parameters:
+    ///   - mfarray: An input mfarray
+    ///   - axis; (Optional) axis, if not given, get mean for all elements
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - Returns: The result mfarray
+    public static func sumsqrt<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: Int? = nil, keepDims: Bool = false) -> MfArray<Double> where T.StoredType == Double{
+        return Matft.math.sqrt(Matft.stats.sum(mfarray, axis: axis, keepDims: keepDims))
+    }
+    
     /// Calculate sum of squared MfArray
     /// - Parameters:
     ///   - mfarray: An input mfarray
