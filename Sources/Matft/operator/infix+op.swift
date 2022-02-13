@@ -26,7 +26,18 @@ public func ===<T>(l_mfarray: MfArray<T>, r_mfarray: MfArray<T>) -> MfArray<Bool
 public func !==<T>(l_mfarray: MfArray<T>, r_mfarray: MfArray<T>) -> MfArray<Bool>{
     return Matft.not_equal(l_mfarray, r_mfarray)
 }
-
+public func <<T: MfTypeUsable>(l_mfarray: MfArray<T>, r_mfarray: MfArray<T>) -> MfArray<Bool>{
+    return Matft.less(l_mfarray, r_mfarray)
+}
+public func <=<T: MfTypeUsable>(l_mfarray: MfArray<T>, r_mfarray: MfArray<T>) -> MfArray<Bool>{
+    return Matft.less_equal(l_mfarray, r_mfarray)
+}
+public func ><T: MfTypeUsable>(l_mfarray: MfArray<T>, r_mfarray: MfArray<T>) -> MfArray<Bool>{
+    return Matft.greater(l_mfarray, r_mfarray)
+}
+public func >=<T: MfTypeUsable>(l_mfarray: MfArray<T>, r_mfarray: MfArray<T>) -> MfArray<Bool>{
+    return Matft.greater_equal(l_mfarray, r_mfarray)
+}
 
 // left mfarray, right scalar operation
 public func +<T: MfTypeUsable>(l_mfarray: MfArray<T>, r_scalar: T) -> MfArray<T>{
@@ -47,6 +58,18 @@ public func ===<T>(l_mfarray: MfArray<T>, r_scalar: T) -> MfArray<Bool>{
 public func !==<T>(l_mfarray: MfArray<T>, r_scalar: T) -> MfArray<Bool>{
     return Matft.not_equal(l_mfarray, r_scalar)
 }
+public func <<T: MfTypeUsable>(l_mfarray: MfArray<T>, r_scalar: T) -> MfArray<Bool>{
+    return Matft.less(l_mfarray, r_scalar)
+}
+public func <=<T: MfTypeUsable>(l_mfarray: MfArray<T>, r_scalar: T) -> MfArray<Bool>{
+    return Matft.less_equal(l_mfarray, r_scalar)
+}
+public func ><T: MfTypeUsable>(l_mfarray: MfArray<T>, r_scalar: T) -> MfArray<Bool>{
+    return Matft.greater(l_mfarray, r_scalar)
+}
+public func >=<T: MfTypeUsable>(l_mfarray: MfArray<T>, r_scalar: T) -> MfArray<Bool>{
+    return Matft.greater_equal(l_mfarray, r_scalar)
+}
 
 // right mfarray, left scalar operation
 public func +<T: MfTypeUsable>(l_scalar: T, r_mfarray: MfArray<T>) -> MfArray<T>{
@@ -66,6 +89,18 @@ public func ===<T>(l_scalar: T, r_mfarray: MfArray<T>) -> MfArray<Bool>{
 }
 public func !==<T>(l_scalar: T, r_mfarray: MfArray<T>) -> MfArray<Bool>{
     return Matft.not_equal(l_scalar, r_mfarray)
+}
+public func <<T: MfTypeUsable>(l_scalar: T, r_mfarray: MfArray<T>) -> MfArray<Bool>{
+    return Matft.less(l_scalar, r_mfarray)
+}
+public func <=<T: MfTypeUsable>(l_scalar: T, r_mfarray: MfArray<T>) -> MfArray<Bool>{
+    return Matft.less_equal(l_scalar, r_mfarray)
+}
+public func ><T: MfTypeUsable>(l_scalar: T, r_mfarray: MfArray<T>) -> MfArray<Bool>{
+    return Matft.greater(l_scalar, r_mfarray)
+}
+public func >=<T: MfTypeUsable>(l_scalar: T, r_mfarray: MfArray<T>) -> MfArray<Bool>{
+    return Matft.greater_equal(l_scalar, r_mfarray)
 }
 
 extension MfArray: Equatable{

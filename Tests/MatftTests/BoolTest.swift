@@ -161,27 +161,29 @@ final class BoolTests: XCTestCase {
                                                     [true,true]]]))
         }
     }
-    /*
+    
     func testLess(){
         do{
             let a = MfArray<Int>([[24, 15,  8, 65, 82],
-                             [56, 17, 61, 44, 68]])
+                             [56, 17, 61, 44, 68]] as [[Int]])
             let b = MfArray<Int>([[41, 30, 71, 93,  1],
-                             [78, 31, 61, 24, 44]])
+                             [78, 31, 61, 24, 44]] as [[Int]])
 
-            XCTAssertEqual(a < b, MfArray<Bool>([[ true,  true,  true,  true, false],
-                                           [ true,  true, false, false, false]]))
+            XCTAssertEqual(a < b,
+                MfArray<Bool>([[ true,  true,  true,  true, false],
+                               [ true,  true, false, false, false]]))
         }
 
         do{
             let a = MfArray<Float>([[0.74823355, 0.5969193 ],
                              [0.60871936, 0.45788907],
-                             [0.14370076, 0.50432377]], mforder: .Column)
-            let b = MfArray<Float>([[0.31286134, 0.69967412]])
+                             [0.14370076, 0.50432377]] as [[Float]], mforder: .Column)
+            let b = MfArray<Float>([[0.31286134, 0.69967412]] as [[Float]])
 
-            XCTAssertEqual(a < b, MfArray<Bool>([[false,  true],
-                                           [false,  true],
-                                           [ true,  true]]))
+            XCTAssertEqual(a < b,
+                MfArray<Bool>([[false,  true],
+                               [false,  true],
+                               [ true,  true]]))
         }
 
         do{
@@ -189,12 +191,12 @@ final class BoolTests: XCTestCase {
                               [0.85263964, 0.90533189]],
 
                              [[0.9674209 , 0.84241149],
-                              [0.29424463, 0.56187957]]])
+                              [0.29424463, 0.56187957]]] as [[[Float]]])
             let b = MfArray<Float>([[[0.35092796, 0.0700771 ],
                               [0.70294935, 0.34088329]],
 
                              [[0.57415529, 0.08435943],
-                              [0.96066889, 0.83724368]]])
+                              [0.96066889, 0.83724368]]] as [[[Float]]])
 
             XCTAssertEqual(a < b, MfArray<Bool>([[[false, false],
                                             [false, false]],
@@ -203,29 +205,30 @@ final class BoolTests: XCTestCase {
                                             [ true,  true]]]))
 
             XCTAssertEqual(a.transpose(axes: [2,0,1]) < b, MfArray<Bool>([[[false, false],
-                                                                     [false,  true]],
+                                 [false,  true]],
 
-                                                                    [[ true, false],
-                                                                     [ true,  true]]]))
+                                [[ true, false],
+                                 [ true,  true]]]))
         }
     }
 
     func testGreater(){
         do{
             let a = MfArray<Int>([[24, 15,  8, 65, 82],
-                             [56, 17, 61, 44, 68]])
+                             [56, 17, 61, 44, 68]] as [[Int]])
             let b = MfArray<Int>([[41, 30, 71, 93,  1],
-                             [78, 31, 61, 24, 44]])
+                             [78, 31, 61, 24, 44]] as [[Int]])
 
-            XCTAssertEqual(b > a, MfArray<Bool>([[ true,  true,  true,  true, false],
-                                           [ true,  true, false, false, false]]))
+            XCTAssertEqual(b > a,
+                MfArray<Bool>([[ true,  true,  true,  true, false],
+                               [ true,  true, false, false, false]]))
         }
 
         do{
             let a = MfArray<Float>([[0.74823355, 0.5969193 ],
                              [0.60871936, 0.45788907],
-                             [0.14370076, 0.50432377]], mforder: .Column)
-            let b = MfArray<Float>([[0.31286134, 0.69967412]])
+                             [0.14370076, 0.50432377]] as [[Float]], mforder: .Column)
+            let b = MfArray<Float>([[0.31286134, 0.69967412]] as [[Float]])
 
             XCTAssertEqual(b > a, MfArray<Bool>([[false,  true],
                                            [false,  true],
@@ -237,12 +240,12 @@ final class BoolTests: XCTestCase {
                               [0.85263964, 0.90533189]],
 
                              [[0.9674209 , 0.84241149],
-                              [0.29424463, 0.56187957]]])
+                              [0.29424463, 0.56187957]]] as [[[Float]]])
             let b = MfArray<Float>([[[0.35092796, 0.0700771 ],
                               [0.70294935, 0.34088329]],
 
                              [[0.57415529, 0.08435943],
-                              [0.96066889, 0.83724368]]])
+                              [0.96066889, 0.83724368]]] as [[[Float]]])
 
             XCTAssertEqual(b > a, MfArray<Bool>([[[false, false],
                                             [false, false]],
@@ -251,20 +254,20 @@ final class BoolTests: XCTestCase {
                                             [ true,  true]]]))
 
             XCTAssertEqual(b > a.transpose(axes: [2,0,1]), MfArray<Bool>([[[false, false],
-                                                                     [false,  true]],
+                             [false,  true]],
 
-                                                                    [[ true, false],
-                                                                     [ true,  true]]]))
+                            [[ true, false],
+                             [ true,  true]]]))
         }
 
         do{
             let img = MfArray<UInt8>([[1, 2, 3],
                                [4, 5, 6],
-                               [7, 8, 9]])
-            img[img > 3] = MfArray<UInt8>([10])
+                               [7, 8, 9]] as [[UInt8]])
+            img[img > 3] = MfArray<UInt8>([10] as [UInt8])
             XCTAssertEqual(img, MfArray<UInt8>([[ 1,  2,  3],
                                          [10, 10, 10],
-                                         [10, 10, 10]]))
+                                         [10, 10, 10]] as [[UInt8]]))
             //print(img)
         }
     }
@@ -272,19 +275,20 @@ final class BoolTests: XCTestCase {
     func testLessEqual(){
         do{
             let a = MfArray<Int>([[24, 15,  8, 65, 82],
-                             [56, 17, 61, 44, 68]])
+                             [56, 17, 61, 44, 68]] as [[Int]])
             let b = MfArray<Int>([[41, 30, 71, 93,  1],
-                             [78, 31, 61, 24, 44]])
+                             [78, 31, 61, 24, 44]] as [[Int]])
 
-            XCTAssertEqual(a <= b, MfArray<Bool>([[ true,  true,  true,  true, false],
-                                           [ true,  true, true, false, false]]))
+            XCTAssertEqual(a <= b,
+                MfArray<Bool>([[ true,  true,  true,  true, false],
+                               [ true,  true, true, false, false]]))
         }
 
         do{
             let a = MfArray<Float>([[0.74823355, 0.5969193 ],
                              [0.60871936, 0.45788907],
-                             [0.14370076, 0.50432377]], mforder: .Column)
-            let b = MfArray<Float>([[0.60871936, 0.69967412]])
+                             [0.14370076, 0.50432377]] as [[Float]], mforder: .Column)
+            let b = MfArray<Float>([[0.60871936, 0.69967412]] as [[Float]])
 
             XCTAssertEqual(a <= b, MfArray<Bool>([[false,  true],
                                            [ true,  true],
@@ -296,12 +300,12 @@ final class BoolTests: XCTestCase {
                               [0.70294935, 0.90533189]],
 
                              [[0.9674209 , 0.84241149],
-                              [0.29424463, 0.56187957]]])
+                              [0.29424463, 0.56187957]]] as [[[Float]]])
             let b = MfArray<Float>([[[0.35092796, 0.0700771 ],
                               [0.70294935, 0.34088329]],
 
                              [[0.57415529, 0.08435943],
-                              [0.96066889, 0.83724368]]])
+                              [0.96066889, 0.83724368]]] as [[[Float]]])
 
             XCTAssertEqual(a <= b, MfArray<Bool>([[[false, false],
                                             [ true, false]],
@@ -310,29 +314,30 @@ final class BoolTests: XCTestCase {
                                             [ true,  true]]]))
 
             XCTAssertEqual(a.transpose(axes: [2,0,1]) <= b, MfArray<Bool>([[[false, false],
-                                                                     [false,  true]],
+                                 [false,  true]],
 
-                                                                    [[ true, false],
-                                                                     [ true,  true]]]))
+                                [[ true, false],
+                                 [ true,  true]]]))
         }
     }
 
     func testGreaterEqual(){
         do{
             let a = MfArray<Int>([[24, 15,  8, 65, 82],
-                             [56, 17, 61, 44, 68]])
+                             [56, 17, 61, 44, 68]] as [[Int]])
             let b = MfArray<Int>([[41, 30, 71, 93,  1],
-                             [78, 31, 61, 24, 44]])
+                             [78, 31, 61, 24, 44]] as [[Int]])
 
-            XCTAssertEqual(b >= a, MfArray<Bool>([[ true,  true,  true,  true, false],
-                                           [ true,  true, true, false, false]]))
+            XCTAssertEqual(b >= a,
+                MfArray<Bool>([[ true,  true,  true,  true, false],
+                               [ true,  true, true, false, false]]))
         }
 
         do{
             let a = MfArray<Float>([[0.74823355, 0.5969193 ],
                              [0.60871936, 0.45788907],
-                             [0.14370076, 0.50432377]], mforder: .Column)
-            let b = MfArray<Float>([[0.60871936, 0.69967412]])
+                             [0.14370076, 0.50432377]] as [[Float]], mforder: .Column)
+            let b = MfArray<Float>([[0.60871936, 0.69967412]] as [[Float]])
 
             XCTAssertEqual(b >= a, MfArray<Bool>([[false,  true],
                                            [ true,  true],
@@ -344,12 +349,12 @@ final class BoolTests: XCTestCase {
                               [0.70294935, 0.90533189]],
 
                              [[0.9674209 , 0.84241149],
-                              [0.29424463, 0.56187957]]])
+                              [0.29424463, 0.56187957]]] as [[[Float]]])
             let b = MfArray<Float>([[[0.35092796, 0.0700771 ],
                               [0.70294935, 0.34088329]],
 
                              [[0.57415529, 0.08435943],
-                              [0.96066889, 0.83724368]]])
+                              [0.96066889, 0.83724368]]] as [[[Float]]])
 
             XCTAssertEqual(b >= a, MfArray<Bool>([[[false, false],
                                             [ true, false]],
@@ -358,10 +363,10 @@ final class BoolTests: XCTestCase {
                                             [ true,  true]]]))
 
             XCTAssertEqual(b >= a.transpose(axes: [2,0,1]), MfArray<Bool>([[[false, false],
-                                                                     [false,  true]],
+                                 [false,  true]],
 
-                                                                    [[ true, false],
-                                                                     [ true,  true]]]))
+                                [[ true, false],
+                                 [ true,  true]]]))
         }
-    }*/
+    }
 }

@@ -84,6 +84,46 @@ extension Matft{
         return toBool_by_vDSP(l_mfarray - r_mfarray)
     }
     
+    /// Check left mfarray's elements are less than right ones in element-wise. Returned mfarray's type will be bool.
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The bool mfarray
+    public static func less<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        let diff = r_mfarray - l_mfarray
+        return toBool_by_vDSP(diff.clip(minval: T.zero, maxval: nil))
+    }
+    
+    /// Check left mfarray's elements are less equal than right ones in element-wise. Returned mfarray's type will be bool.
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The bool mfarray
+    public static func less_equal<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        let diff = r_mfarray - l_mfarray
+        return toBool_by_vDSP(diff.sign() + T.from(1))
+    }
+    
+    /// Check left mfarray's elements are greater than right ones in element-wise. Returned mfarray's type will be bool.
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The bool mfarray
+    public static func greater<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        let diff = l_mfarray - r_mfarray
+        return toBool_by_vDSP(diff.clip(minval: T.zero, maxval: nil))
+    }
+    
+    /// Check left mfarray's elements are greater equal than right ones in element-wise. Returned mfarray's type will be bool.
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The bool mfarray
+    public static func greater_equal<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        let diff = l_mfarray - r_mfarray
+        return toBool_by_vDSP(diff.sign() + T.from(1))
+    }
+    
     //============= left mfarray, right scalar operation =============//
     
     /// Element-wise addition of  two mfarray
@@ -148,6 +188,46 @@ extension Matft{
         
         return MfArray(mfdata: newdata, mfstructure: newstructure)*/
         return toBool_by_vDSP(l_mfarray - r_scalar)
+    }
+    
+    /// Check left mfarray's elements are less than right ones in element-wise. Returned mfarray's type will be bool.
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_scalar: The right scalar
+    /// - Returns: The bool mfarray
+    public static func less<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<Bool>{
+        let diff = r_scalar - l_mfarray
+        return toBool_by_vDSP(diff.clip(minval: T.zero, maxval: nil))
+    }
+    
+    /// Check left mfarray's elements are less equal than right ones in element-wise. Returned mfarray's type will be bool.
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_scalar: The right scalar
+    /// - Returns: The bool mfarray
+    public static func less_equal<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<Bool>{
+        let diff = r_scalar - l_mfarray
+        return toBool_by_vDSP(diff.sign() + T.from(1))
+    }
+    
+    /// Check left mfarray's elements are greater than right ones in element-wise. Returned mfarray's type will be bool.
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_scalar: The right scalar
+    /// - Returns: The bool mfarray
+    public static func greater<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<Bool>{
+        let diff = l_mfarray - r_scalar
+        return toBool_by_vDSP(diff.clip(minval: T.zero, maxval: nil))
+    }
+    
+    /// Check left mfarray's elements are greater equal than right ones in element-wise. Returned mfarray's type will be bool.
+    /// - Parameters:
+    ///   - l_mfarray: The left mfarray
+    ///   - r_scalar: The right scalar
+    /// - Returns: The bool mfarray
+    public static func greater_equal<T: MfTypeUsable>(_ l_mfarray: MfArray<T>, _ r_scalar: T) -> MfArray<Bool>{
+        let diff = l_mfarray - r_scalar
+        return toBool_by_vDSP(diff.sign() + T.from(1))
     }
     
     
@@ -218,6 +298,45 @@ extension Matft{
         return toBool_by_vDSP(l_scalar - r_mfarray)
     }
     
+    /// Check left mfarray's elements are less than right ones in element-wise. Returned mfarray's type will be bool.
+    /// - Parameters:
+    ///   - l_scalar: The left scalar
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The bool mfarray
+    public static func less<T: MfTypeUsable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        let diff = r_mfarray - l_scalar
+        return toBool_by_vDSP(diff.clip(minval: T.zero, maxval: nil))
+    }
+    
+    /// Check left mfarray's elements are less equal than right ones in element-wise. Returned mfarray's type will be bool.
+    /// - Parameters:
+    ///   - l_scalar: The left scalar
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The bool mfarray
+    public static func less_equal<T: MfTypeUsable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        let diff = r_mfarray - l_scalar
+        return toBool_by_vDSP(diff.sign() + T.from(1))
+    }
+    
+    /// Check left mfarray's elements are greater than right ones in element-wise. Returned mfarray's type will be bool.
+    /// - Parameters:
+    ///   - l_scalar: The left scalar
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The bool mfarray
+    public static func greater<T: MfTypeUsable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        let diff = l_scalar - r_mfarray
+        return toBool_by_vDSP(diff.clip(minval: T.zero, maxval: nil))
+    }
+    
+    /// Check left mfarray's elements are greater equal than right ones in element-wise. Returned mfarray's type will be bool.
+    /// - Parameters:
+    ///   - l_scalar: The left scalar
+    ///   - r_mfarray: The right mfarray
+    /// - Returns: The bool mfarray
+    public static func greater_equal<T: MfTypeUsable>(_ l_scalar: T, _ r_mfarray: MfArray<T>) -> MfArray<Bool>{
+        let diff = l_scalar - r_mfarray
+        return toBool_by_vDSP(diff.sign() + T.from(1))
+    }
     
     /// Check equality in element-wise, and then when all of elements are true, return true, otherwise false
     /// - Parameters:
