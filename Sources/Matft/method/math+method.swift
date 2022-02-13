@@ -7,7 +7,13 @@
 
 import Foundation
 
-extension MfArray{
+extension MfArray{ // vForce
+    
+    
+}
+
+
+extension MfArray{ // vDSP
     
     
     /// Calculate sign of mfarray

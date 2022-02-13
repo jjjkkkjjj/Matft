@@ -198,6 +198,26 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     public static var cblas_copy_func: cblas_copy_func<Float> = cblas_scopy
     
     //======= vForce ========//
+    public static var vForce_sin_func: vForce_math_func<Float> = vvsinf
+    public static var vForce_asin_func: vForce_math_func<Float> = vvasinf
+    public static var vForce_sinh_func: vForce_math_func<Float> = vvsinhf
+    public static var vForce_asinh_func: vForce_math_func<Float> = vvasinhf
+    public static var vForce_cos_func: vForce_math_func<Float> = vvcosf
+    public static var vForce_acos_func: vForce_math_func<Float> = vvacosf
+    public static var vForce_cosh_func: vForce_math_func<Float> = vvcoshf
+    public static var vForce_acosh_func: vForce_math_func<Float> = vvacoshf
+    public static var vForce_tan_func: vForce_math_func<Float> = vvtanf
+    public static var vForce_atan_func: vForce_math_func<Float> = vvatanf
+    public static var vForce_tanh_func: vForce_math_func<Float> = vvtanhf
+    public static var vForce_atanh_func: vForce_math_func<Float> = vvtanhf
+    
+    public static var vForce_sqrt_func: vForce_math_func<Float> = vvsqrtf
+    public static var vForce_rsqrt_func: vForce_math_func<Float> = vvrsqrtf
+    public static var vForce_exp_func: vForce_math_func<Float> = vvexpf
+    public static var vForce_log_func: vForce_math_func<Float> = vvlogf
+    public static var vForce_log2_func: vForce_math_func<Float> = vvlog2f
+    public static var vForce_log10_func: vForce_math_func<Float> = vvlog10f
+    
     public static var vForce_copysign_func: vForce_copysign_func<Float> = vvcopysignf
     public static var vForce_abs_func: vForce_math_func<Float> = vvfabsf
     
@@ -276,6 +296,26 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     public static var cblas_copy_func: cblas_copy_func<Double> = cblas_dcopy
     
     //======= vForce ========//
+    public static var vForce_sin_func: vForce_math_func<Double> = vvsin
+    public static var vForce_asin_func: vForce_math_func<Double> = vvasin
+    public static var vForce_sinh_func: vForce_math_func<Double> = vvsinh
+    public static var vForce_asinh_func: vForce_math_func<Double> = vvasinh
+    public static var vForce_cos_func: vForce_math_func<Double> = vvcos
+    public static var vForce_acos_func: vForce_math_func<Double> = vvacos
+    public static var vForce_cosh_func: vForce_math_func<Double> = vvcosh
+    public static var vForce_acosh_func: vForce_math_func<Double> = vvacosh
+    public static var vForce_tan_func: vForce_math_func<Double> = vvtan
+    public static var vForce_atan_func: vForce_math_func<Double> = vvatan
+    public static var vForce_tanh_func: vForce_math_func<Double> = vvtanh
+    public static var vForce_atanh_func: vForce_math_func<Double> = vvtanh
+    
+    public static var vForce_sqrt_func: vForce_math_func<Double> = vvsqrt
+    public static var vForce_rsqrt_func: vForce_math_func<Double> = vvrsqrt
+    public static var vForce_exp_func: vForce_math_func<Double> = vvexp
+    public static var vForce_log_func: vForce_math_func<Double> = vvlog
+    public static var vForce_log2_func: vForce_math_func<Double> = vvlog2
+    public static var vForce_log10_func: vForce_math_func<Double> = vvlog10
+    
     public static var vForce_copysign_func: vForce_copysign_func<Double> = vvcopysign
     public static var vForce_abs_func: vForce_math_func<Double> = vvfabs
     

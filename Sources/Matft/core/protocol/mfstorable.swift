@@ -42,6 +42,26 @@ public protocol MfStoredTypeUsable: FloatingPoint{
     static var cblas_copy_func: cblas_copy_func<Self>{ get }
     
     //======= vForce ========//
+    static var vForce_sin_func: vForce_math_func<Self>{ get }
+    static var vForce_asin_func: vForce_math_func<Self>{ get }
+    static var vForce_sinh_func: vForce_math_func<Self>{ get }
+    static var vForce_asinh_func: vForce_math_func<Self>{ get }
+    static var vForce_cos_func: vForce_math_func<Self>{ get }
+    static var vForce_acos_func: vForce_math_func<Self>{ get }
+    static var vForce_cosh_func: vForce_math_func<Self>{ get }
+    static var vForce_acosh_func: vForce_math_func<Self>{ get }
+    static var vForce_tan_func: vForce_math_func<Self>{ get }
+    static var vForce_atan_func: vForce_math_func<Self>{ get }
+    static var vForce_tanh_func: vForce_math_func<Self>{ get }
+    static var vForce_atanh_func: vForce_math_func<Self>{ get }
+    
+    static var vForce_sqrt_func: vForce_math_func<Self>{ get }
+    static var vForce_rsqrt_func: vForce_math_func<Self>{ get }
+    static var vForce_exp_func: vForce_math_func<Self>{ get }
+    static var vForce_log_func: vForce_math_func<Self>{ get }
+    static var vForce_log2_func: vForce_math_func<Self>{ get }
+    static var vForce_log10_func: vForce_math_func<Self>{ get }
+    
     static var vForce_copysign_func: vForce_copysign_func<Self>{ get }
     static var vForce_abs_func: vForce_math_func<Self>{ get }
 }
