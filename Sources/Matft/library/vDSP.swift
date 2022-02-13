@@ -35,6 +35,8 @@ public typealias vDSP_stats_index_func<T> = (UnsafePointer<T>, vDSP_Stride, Unsa
 
 public typealias vDSP_math_func<T, U> = vDSP_convert_func<T, U>
 
+public typealias vDSP_vgathr_func<T> = (UnsafePointer<T>, UnsafePointer<vDSP_Length>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
 /// Wrapper of vDSP conversion function
 /// - Parameters:
 ///   - size: A size to be copied
@@ -574,7 +576,7 @@ internal func stats_index_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>, axis: 
         for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
             var uival = UInt.zero
             wrap_vDSP_stats_index(count, mfarray.mfdata.storedPtr.baseAddress! + flat.flattenIndex, stride, &uival, vDSP_func)
-            (newdata.storedPtr.baseAddress! + dst_offset).pointee = UInt.StoredType.from(uival / ui_stride)
+            (newdata.storedPtr.baseAddress! + dst_offset).pointee = UInt.StoredType(uival / ui_stride)
             
             dst_offset += 1//koko
         }
@@ -640,6 +642,54 @@ internal func boolget_by_vDSP<T: MfTypeUsable>(_ src_mfarray: MfArray<T>, _ indi
     wrap_vDSP_cmprs(indicesT.size, src_mfarray.mfdata.storedPtr.baseAddress!, 1, indicesT.mfdata.storedPtr.baseAddress!, 1, newdata.storedPtr.baseAddress!, 1, vDSP_func)
     
     let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// Getter function for the fancy indexing on a given Interger indices.
+/// - Parameters:
+///   - mfarray: An inpu mfarray. Must be 1d
+///   - indices: An input Interger indices array
+///   - vDSP_func: vDSP_vgathr_func
+/// - Returns: The mfarray
+internal func fancy1dget_by_vDSP<T: MfTypeUsable, U: MfInterger>(_ mfarray: MfArray<T>, _ indices: MfArray<U>, vDSP_func: vDSP_vgathr_func<T.StoredType>) -> MfArray<T>{
+    assert(mfarray.ndim == 1, "must be 1d!")
+    // fancy indexing
+    // note that if not assignment, returned copy value not view.
+    /*
+     >>> a = np.arange(9).reshape(3,3)
+     >>> a
+     array([[0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8]])
+     >>> a[[1,2],[2,2]].base
+     None
+     */
+    // boolean indexing
+    // note that if not assignment, returned copy value not view.
+    /*
+     a = np.arange(5)
+     >>> a[a==1]
+     array([1])
+     >>> a[a==1].base
+     None
+     */
+    /*
+     var a = [0.0, 2.0, 3.0, 1.0]
+     var c = [0.0, 0, 0]
+     var bb: [UInt] = [1, 1, 3]
+     vDSP_vgathrD(&a, &bb, vDSP_Stride(1), &c, vDSP_Stride(1), vDSP_Length(c.count))
+     print(c)
+     //[0.0, 0.0, 3.0]
+     */
+    let indicesT = indices.astype(newtype: Int.self, mforder: .Row)
+    
+    let newdata: MfData<T> = MfData(size: indices.size)
+    
+    var offsets = indicesT.data.map{ UInt(get_positive_index($0, axissize: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
+    vDSP_func(mfarray.mfdata.storedPtr.baseAddress!, &offsets, vDSP_Stride(1), newdata.storedPtr.baseAddress!, vDSP_Stride(1), vDSP_Length(indices.size))
+    
+    let newstructure = MfStructure(shape: indices.shape, strides: indices.strides)
     
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }

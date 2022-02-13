@@ -76,6 +76,31 @@ internal func get_positive_shape(_ shape: [Int], size: Int) -> [Int]{
 }
 
 
+/// Get offsets from indices array
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - indices: An indices mfarray array
+/// - Returns:
+///   - offsets: Offset values
+///   - ind_shape: Indices shape array
+///   - ind_size: Indices size
+internal func get_offsets_from_indices<T: MfTypeUsable, U: MfInterger>(_ mfarray: MfArray<T>, _ indices: inout [MfArray<U>]) -> (offsets: [Int], ind_shape: [Int], ind_size: Int){
+    var ind_shape = indices.reduce(indices[0]){ biop_broadcast_to($0, $1).r }.shape
+    let ind_size = shape2size(&ind_shape)
+    // note that all of mfarraies should have same size thanks to this process
+    var offsets = Array(repeating: 0, count: ind_size)
+    for (axis, inds) in indices.enumerated(){
+
+        let rowInd = inds.broadcast_to(shape: ind_shape).astype(newtype: Int.self, mforder: .Row)
+        for (i, ind) in rowInd.data.enumerated(){
+            offsets[i] += get_positive_index(ind, axissize: mfarray.shape[axis], axis: axis) * mfarray.strides[axis]
+        }
+    }
+    
+    return (offsets, ind_shape, ind_size)
+}
+
+
 /// Broadcasting mfarray for boolean indexing
 /// - Parameters:
 ///   - mfarray: An input boolean mfarray

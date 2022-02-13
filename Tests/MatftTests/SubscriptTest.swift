@@ -608,4 +608,134 @@ final class SubscriptTests: XCTestCase {
                                         [ 8,  4,  4]]] as [[[Int]]]))
         }
     }
+    
+    func testFancyIndexingGet(){
+        
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1)
+            let b = MfArray<Int>([3, 7, 2])
+            
+            XCTAssertEqual(a[b], MfArray<Int>([3, 7, 2] as [Int]))
+            
+            let c = MfArray<Int>([[2, 1],
+                             [-2, 1]] as [[Int]])
+            XCTAssertEqual(a[c], MfArray<Int>([[ 2,  1],
+                                          [25,  1]] as [[Int]]))
+            
+            let d = MfArray<Int>([[2,1,0,-2],
+                             [-2,1,-1,1]] as [[Int]])
+            XCTAssertEqual(a[d], MfArray<Int>([[ 2,  1,  0, 25],
+                                          [25,  1, 26,  1]] as [[Int]]))
+        }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3, 3, 3])
+            let b = MfArray<Int>([[2,1],
+                             [-2,1]] as [[Int]])
+            
+            XCTAssertEqual(a[b], MfArray<Int>([[[[18, 19, 20],
+                                            [21, 22, 23],
+                                            [24, 25, 26]],
+
+                                           [[ 9, 10, 11],
+                                            [12, 13, 14],
+                                            [15, 16, 17]]],
+
+
+                                          [[[ 9, 10, 11],
+                                            [12, 13, 14],
+                                            [15, 16, 17]],
+
+                                           [[ 9, 10, 11],
+                                            [12, 13, 14],
+                                            [15, 16, 17]]]] as [[[[Int]]]]))
+            
+            let c = MfArray<Int>([[1,-1,2,2],[2,-2,-1,0]] as [[Int]])
+            
+            XCTAssertEqual(a[c], MfArray<Int>([[[[ 9, 10, 11],
+                                              [12, 13, 14],
+                                              [15, 16, 17]],
+
+                                             [[18, 19, 20],
+                                              [21, 22, 23],
+                                              [24, 25, 26]],
+
+                                             [[18, 19, 20],
+                                              [21, 22, 23],
+                                              [24, 25, 26]],
+
+                                             [[18, 19, 20],
+                                              [21, 22, 23],
+                                              [24, 25, 26]]],
+
+
+                                            [[[18, 19, 20],
+                                              [21, 22, 23],
+                                              [24, 25, 26]],
+
+                                             [[ 9, 10, 11],
+                                              [12, 13, 14],
+                                              [15, 16, 17]],
+
+                                             [[18, 19, 20],
+                                              [21, 22, 23],
+                                              [24, 25, 26]],
+
+                                             [[ 0,  1,  2],
+                                              [ 3,  4,  5],
+                                              [ 6,  7,  8]]]] as [[[[Int]]]]))
+            
+            XCTAssertEqual(a.T[c], MfArray<Int>([[[[ 1, 10, 19],
+                                              [ 4, 13, 22],
+                                              [ 7, 16, 25]],
+
+                                             [[ 2, 11, 20],
+                                              [ 5, 14, 23],
+                                              [ 8, 17, 26]],
+
+                                             [[ 2, 11, 20],
+                                              [ 5, 14, 23],
+                                              [ 8, 17, 26]],
+
+                                             [[ 2, 11, 20],
+                                              [ 5, 14, 23],
+                                              [ 8, 17, 26]]],
+
+
+                                            [[[ 2, 11, 20],
+                                              [ 5, 14, 23],
+                                              [ 8, 17, 26]],
+
+                                             [[ 1, 10, 19],
+                                              [ 4, 13, 22],
+                                              [ 7, 16, 25]],
+
+                                             [[ 2, 11, 20],
+                                              [ 5, 14, 23],
+                                              [ 8, 17, 26]],
+
+                                             [[ 0,  9, 18],
+                                              [ 3, 12, 21],
+                                              [ 6, 15, 24]]]] as [[[[Int]]]]))
+            
+        }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
+
+            XCTAssertEqual(a[MfArray<Int>([-2,1,0]), MfArray<Int>([0,1,0])], MfArray<Int>([[ 9, 10, 11],
+                                                                            [12, 13, 14],
+                                                                            [ 0,  1,  2]] as [[Int]]))
+            
+            XCTAssertEqual(a[MfArray<Int>([-2,1,0]), MfArray<Int>([0,1,0]), MfArray<Int>([2,2,2])], MfArray<Int>([11, 14,  2]))
+        }
+        
+        do{
+            let a = MfArray<Int>([[1, 2], [3, 4], [5, 6]] as [[Int]])
+            
+            XCTAssertEqual(a[MfArray<Int>([0, 1, 2]), MfArray<Int>([0, 1, 0])], MfArray<Int>([1, 4, 5]))
+            XCTAssertEqual(a.T[MfArray<Int>([0, 1, -1]), MfArray<Int>([0, 1, 0])], MfArray<Int>([1, 4, 2]))
+        }
+    }
+    
 }

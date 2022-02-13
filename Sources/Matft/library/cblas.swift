@@ -179,3 +179,110 @@ internal func concat_by_cblas<T: MfTypeUsable>(_ mfarrays: [MfArray<T>], ret_sha
     
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
+
+
+/// Getter function for the fancy indexing on a given Interger indices.
+/// - Parameters:
+///   - mfarray: An inpu mfarray. Must be more than 2d
+///   - indices: An input Interger indices array
+///   - cblas_func: cblas_copy_func
+/// - Returns: The mfarray
+internal func fancyndget_by_cblas<T: MfTypeUsable, U: MfInterger>(_ mfarray: MfArray<T>, _ indices: MfArray<U>, cblas_func: cblas_copy_func<T.StoredType>) -> MfArray<T>{
+    // fancy indexing
+    // note that if not assignment, returned copy value not view.
+    assert(mfarray.ndim > 1, "must be more than 2d!")
+    /*
+     >>> a = np.arange(9).reshape(3,3)
+     >>> a
+     array([[0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8]])
+     >>> a[[1,2],[2,2]].base
+     None
+     */
+    // boolean indexing
+    // note that if not assignment, returned copy value not view.
+    /*
+     a = np.arange(5)
+     >>> a[a==1]
+     array([1])
+     >>> a[a==1].base
+     None
+     */
+    /*
+     var a = [0.0, 2.0, 3.0, 1.0]
+     var c = [0.0, 0, 0]
+     var bb: [UInt] = [1, 1, 3]
+     vDSP_vgathrD(&a, &bb, vDSP_Stride(1), &c, vDSP_Stride(1), vDSP_Length(c.count))
+     print(c)
+     //[0.0, 0.0, 3.0]
+     */
+    var work_shape = Array(mfarray.shape.suffix(from: 1))
+    var ret_shape = indices.shape + work_shape
+    let ret_size = shape2size(&ret_shape)
+    
+    let indices = indices.astype(newtype: Int.self, mforder: .Row)
+    let mfarray = check_contiguous(mfarray, .Row)
+    
+    let work_size = shape2size(&work_shape)
+    
+    let newdata: MfData<T> = MfData(size: ret_size)
+    
+    let offsets = indices.data.map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
+    
+    var dstptr = newdata.storedPtr.baseAddress!
+    for offset in offsets{
+        wrap_cblas_copy(work_size, mfarray.mfdata.storedPtr.baseAddress! + offset, 1, dstptr, 1, cblas_func)
+        dstptr += work_size
+    }
+    
+    let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+    
+}
+
+/// Getter function for the fancy indexing on a given Interger indices.
+/// - Parameters:
+///   - mfarray: An inpu mfarray. Must be more than 2d
+///   - indices: An input Interger indices array
+///   - cblas_func: cblas_copy_func
+/// - Returns: The mfarray
+internal func fancygetall_by_cblas<T: MfTypeUsable, U: MfInterger>(_ mfarray: MfArray<T>, _ indices: inout [MfArray<U>], cblas_func: cblas_copy_func<T.StoredType>) -> MfArray<T>{
+    assert(indices.count >= 2)
+    precondition(indices.count <= mfarray.ndim, "too many indices for array: array is \(mfarray.ndim)-dimensional, but \(indices.count) were indexed")
+    
+    let mfarray = check_contiguous(mfarray, .Row)
+    
+    let (offsets, ind_shape, _) = get_offsets_from_indices(mfarray, &indices)
+    
+    var work_shape = Array(mfarray.shape.suffix(from: indices.count))
+    var ret_shape = ind_shape + work_shape
+    let ret_size = shape2size(&ret_shape)
+    let work_size = work_shape.count > 0 ? shape2size(&work_shape) : 1
+    /*
+     >>> a = np.arange(27).reshape(3,3,3)
+     >>> a[[[-2,1,0]], [[0,1,0]]]
+     array([[[ 9, 10, 11],
+             [12, 13, 14],
+             [ 0,  1,  2]]])
+     >>> a[-2,0]
+     array([ 9, 10, 11])
+     >>> a[1,1]
+     array([12, 13, 14])
+     >>> a[0,0]
+     array([0, 1, 2])
+     */
+    
+    let newdata: MfData<T> = MfData(size: ret_size)
+    var dstptr = newdata.storedPtr.baseAddress!
+    
+    for offset in offsets{
+        wrap_cblas_copy(work_size, mfarray.mfdata.storedPtr.baseAddress! + offset, 1, dstptr, 1, cblas_func)
+        dstptr += work_size
+    }
+    
+    let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}

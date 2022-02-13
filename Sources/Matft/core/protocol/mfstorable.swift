@@ -29,6 +29,7 @@ public protocol MfStoredTypeUsable: FloatingPoint{
     static var vDSP_maximum_func: vDSP_biopvv_func<Self>{ get }
     
     static var vDSP_vcmprs_func: vDSP_vcmprs_func<Self>{ get }
+    static var vDSP_vgathr_func: vDSP_vgathr_func<Self>{ get }
     
     static var vDSP_vminmg_func: vDSP_vminmg_func<Self>{ get }
     static var vDSP_viclip_func: vDSP_viclip_func<Self>{ get }

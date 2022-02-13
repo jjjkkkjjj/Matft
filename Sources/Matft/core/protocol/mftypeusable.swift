@@ -53,7 +53,7 @@ public protocol StoredDouble: MfTypeUsable{
 }
 
 
-extension UInt8: MfNumeric, StoredFloat {
+extension UInt8: MfInterger, StoredFloat {
     public static func from<T>(_ value: T) -> UInt8 where T : MfInterger {
         return UInt8(value)
     }
@@ -64,7 +64,7 @@ extension UInt8: MfNumeric, StoredFloat {
         return value != T.zero ? UInt8(1) : UInt8.zero
     }
 }
-extension UInt16: MfNumeric, StoredFloat {
+extension UInt16: MfInterger, StoredFloat {
     public static func from<T>(_ value: T) -> UInt16 where T : MfInterger {
         return UInt16(value)
     }
@@ -75,7 +75,7 @@ extension UInt16: MfNumeric, StoredFloat {
         return value != T.zero ? UInt16(1) : UInt16.zero
     }
 }
-extension UInt32: MfNumeric, StoredDouble {
+extension UInt32: MfInterger, StoredDouble {
     public static func from<T>(_ value: T) -> UInt32 where T : MfInterger {
         return UInt32(value)
     }
@@ -86,7 +86,7 @@ extension UInt32: MfNumeric, StoredDouble {
         return value != T.zero ? UInt32(1) : UInt32.zero
     }
 }
-extension UInt64: MfNumeric, StoredDouble {
+extension UInt64: MfInterger, StoredDouble {
     public static func from<T>(_ value: T) -> UInt64 where T : MfInterger {
         return UInt64(value)
     }
@@ -97,7 +97,7 @@ extension UInt64: MfNumeric, StoredDouble {
         return value != T.zero ? UInt64(1) : UInt64.zero
     }
 }
-extension UInt: MfNumeric, StoredDouble {
+extension UInt: MfInterger, StoredDouble {
     public static func from<T>(_ value: T) -> UInt where T : MfInterger {
         return UInt(value)
     }
@@ -109,7 +109,7 @@ extension UInt: MfNumeric, StoredDouble {
     }
 }
 
-extension Int8: MfNumeric, StoredFloat, MfSignedNumeric {
+extension Int8: MfInterger, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int8 where T : MfInterger {
         return Int8(value)
     }
@@ -120,7 +120,7 @@ extension Int8: MfNumeric, StoredFloat, MfSignedNumeric {
         return value != T.zero ? Int8(1) : Int8.zero
     }
 }
-extension Int16: MfNumeric, StoredFloat, MfSignedNumeric {
+extension Int16: MfInterger, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int16 where T : MfInterger {
         return Int16(value)
     }
@@ -131,7 +131,7 @@ extension Int16: MfNumeric, StoredFloat, MfSignedNumeric {
         return value != T.zero ? Int16(1) : Int16.zero
     }
 }
-extension Int32: MfNumeric, StoredFloat, MfSignedNumeric {
+extension Int32: MfInterger, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int32 where T : MfInterger {
         return Int32(value)
     }
@@ -143,7 +143,7 @@ extension Int32: MfNumeric, StoredFloat, MfSignedNumeric {
     }
 }
 
-extension Int64: MfNumeric, StoredDouble, MfSignedNumeric {
+extension Int64: MfInterger, StoredDouble, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int64 where T : MfInterger {
         return Int64(value)
     }
@@ -154,7 +154,7 @@ extension Int64: MfNumeric, StoredDouble, MfSignedNumeric {
         return value != T.zero ? Int64(1) : Int64.zero
     }
 }
-extension Int: MfNumeric, StoredFloat, MfSignedNumeric {
+extension Int: MfInterger, StoredFloat, MfSignedNumeric {
     public static func from<T>(_ value: T) -> Int where T : MfInterger {
         return Int(value)
     }
@@ -185,6 +185,7 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     public static var vDSP_maximum_func: vDSP_biopvv_func<Float> = vDSP_vmax
     
     public static var vDSP_vcmprs_func: vDSP_vcmprs_func<Float> = vDSP_vcmprs
+    public static var vDSP_vgathr_func: vDSP_vgathr_func<Float> = vDSP_vgathr
     
     public static var vDSP_vminmg_func: vDSP_vminmg_func<Float> = vDSP_vminmg
     public static var vDSP_viclip_func: vDSP_viclip_func<Float> = vDSP_viclip
@@ -303,6 +304,8 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     public static var vDSP_maximum_func: vDSP_biopvv_func<Double> = vDSP_vmaxD
     
     public static var vDSP_vcmprs_func: vDSP_vcmprs_func<Double> = vDSP_vcmprsD
+    public static var vDSP_vgathr_func: vDSP_vgathr_func<Double> = vDSP_vgathrD
+    
     public static var vDSP_vminmg_func: vDSP_vminmg_func<Double> = vDSP_vminmgD
     public static var vDSP_viclip_func: vDSP_viclip_func<Double> = vDSP_viclipD
     public static var vDSP_clip_func: vDSP_clip_func<Double> = vDSP_vclipcD

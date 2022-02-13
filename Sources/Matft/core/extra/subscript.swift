@@ -44,6 +44,25 @@ extension MfArray: MfSubscriptable{
         }
     }
     
+    public subscript<T: MfInterger>(indices: MfArray<T>) -> MfArray<MfArrayType>{
+        get{
+            return self._get_mfarray(indices: indices)
+        }/*
+        set(new_array){
+            self._set_mfarray(indices: indices, assigned_array: new_array)
+        }*/
+    }
+    
+    public subscript<T: MfInterger>(indices: MfArray<T>...) -> MfArray<MfArrayType>{
+        get{
+            var indices = indices
+            return self._get_mfarray(indices: &indices)
+        }/*
+        set(new_array){
+            self._set_mfarray(indices: indices, assigned_array: new_array)
+        }*/
+    }
+    
     //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
     public subscript(indices: Any...) -> MfArray<MfArrayType>{
         get{
@@ -265,7 +284,7 @@ extension MfArray: MfSubscriptable{
         
     }
     
-    // fancy indexing
+    //================ fancy indexing ================//
     // note that if not assignment, returned copy value not view.
     /*
      >>> a = np.arange(9).reshape(3,3)
@@ -285,17 +304,25 @@ extension MfArray: MfSubscriptable{
      >>> a[a==1].base
      None
      */
-    /*
-    private func _get_mfarray(indices: MfArray<Bool>) -> MfArray<MfArrayType>{
-        
-        switch self.storedType {
-        case .Float:
-            return boolget_by_vDSP(self, indices, vDSP_vcmprs)
-        case .Double:
-            return boolget_by_vDSP(self, indices, vDSP_vcmprsD)
+    
+    /// Getter function for the fancy indexing on a given Interger indices.
+    /// - Parameter indices: An input Interger indices mfarray
+    /// - Returns: The mfarray
+    private func _get_mfarray<U: MfInterger>(indices: MfArray<U>) -> MfArray<MfArrayType>{
+        if self.ndim == 1{
+            return fancy1dget_by_vDSP(self, indices, vDSP_func: T.StoredType.vDSP_vgathr_func)
+        }
+        else{
+            return fancyndget_by_cblas(self, indices, cblas_func: T.StoredType.cblas_copy_func)
         }
     }
-    
+    /// Getter function for the fancy indexing on a given Interger indices.
+    /// - Parameter indices: An input Interger indices mfarray array
+    /// - Returns: The mfarray
+    private func _get_mfarray<U: MfInterger>(indices: inout [MfArray<U>]) -> MfArray<MfArrayType>{
+        return fancygetall_by_cblas(self, &indices, cblas_func: T.StoredType.cblas_copy_func)
+    }
+    /*
     private func _set_mfarray(indices: MfArray<Bool>, assignedMfarray: MfArray<MfArrayType>){
         switch self.storedType {
         case .Float:
@@ -305,45 +332,6 @@ extension MfArray: MfSubscriptable{
         }
     }*/
 }
-/*
-fileprivate func _setter<T: MfTypable, U: MfStorable>(_ mfarray: MfArray<T>, _ indices: MfArray<Bool>, assignMfArray: MfArray<T>, type: U.Type){
-    let true_num = Float.toInt(indices.sum().scalar!)
-    let orig_ind_dim = indices.ndim
-    
-    // broadcast
-    let indices = bool_broadcast_to(indices, shape: mfarray.shape)
-    
-    // must be row major
-    let indicesU: MfArray<U> = check_contiguous(indices.astype(U.self), .Row)
-    
-    // calculate assignMfarray's size
-    let lastShape = Array(mfarray.shape.suffix(mfarray.ndim - orig_ind_dim))
-    let assignShape = [true_num] + lastShape
-    //let assignSize = shape2size(&assignShape)
-    
-    let assignMfArray = assignMfArray.broadcast_to(shape: assignShape).flatten(.Row).astype(T.self)
-    
-    var srcoffset = 0
-    var indoffset = 0
-    
-    indicesU.withDataUnsafeMBPtrT(datatype: U.self){
-        indptr in
-        let indptr = indptr.baseAddress!
-        assignMfArray.withDataUnsafeMBPtrT(datatype: U.self){
-            assptr in
-            let srcptr = assptr.baseAddress!
-            mfarray.withContiguousDataUnsafeMPtrT(datatype: U.self){
-                if (indptr + indoffset).pointee != U.zero{
-                    $0.assign(from: srcptr + srcoffset, count: 1)
-                    srcoffset += 1
-                    //print(srcptr.pointee)
-                }
-                indoffset += 1
-            }
-        }
-    }
-    
-}*/
 
 fileprivate func _inner_product(_ left: UnsafeMutableBufferPointer<Int>, _ right: UnsafeMutableBufferPointer<Int>) -> Int{
     
