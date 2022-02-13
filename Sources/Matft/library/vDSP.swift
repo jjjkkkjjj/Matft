@@ -30,6 +30,8 @@ public typealias vDSP_argsort_func<T> = (UnsafePointer<T>, UnsafeMutablePointer<
 
 public typealias vDSP_stats_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Length) -> Void
 
+public typealias vDSP_math_func<T, U> = vDSP_convert_func<T, U>
+
 /// Wrapper of vDSP conversion function
 /// - Parameters:
 ///   - size: A size to be copied
@@ -511,6 +513,15 @@ internal func stats_by_vDSP<T: MfTypeUsable, U: MfTypeUsable>(_ mfarray: MfArray
         let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
         return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
+}
+
+/// Math operation mfarray by vDSP
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - vDSP_func: vDSP_math_func
+/// - Returns: Math operated mfarray
+internal func math_by_vDSP<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ vDSP_func: vDSP_math_func<T.StoredType, T.StoredType>) -> MfArray<T>{
+    return preop_by_vDSP(mfarray, vDSP_func)
 }
 
 /*

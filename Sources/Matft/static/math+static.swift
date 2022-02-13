@@ -391,6 +391,13 @@ extension Matft.math{ // vForce
 
 extension Matft.math{ // vDSP
 
+    /// Calculate squared mfarray
+    /// - Parameter mfarray: An input mfarray
+    /// - Returns: The squared mfarray
+    public static func square<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<T>{
+        return math_by_vDSP(mfarray, T.StoredType.vDSP_square_func)
+    }
+    
     /// Calculate sign of mfarray
     /// - Parameter mfarray: An input mfarray
     /// - Returns: The result mfarray
