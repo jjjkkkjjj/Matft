@@ -418,6 +418,9 @@ extension Matft{
     ///   - r_mfarray: The right mfarray
     /// - Returns: Whether it's equal or not
     public static func equalAll<T>(_ l_mfarray: MfArray<T>, _ r_mfarray: MfArray<T>) -> Bool{
+        if l_mfarray.shape != r_mfarray.shape{
+            return false
+        }
         var (l_mfarray, r_mfarray) = biop_broadcast_to(l_mfarray, r_mfarray)
         (l_mfarray, r_mfarray) = to_samestructure(l_mfarray, r_mfarray)
         if let ldata = l_mfarray.data as? [Float], let rdata = r_mfarray.data as? [Float]{

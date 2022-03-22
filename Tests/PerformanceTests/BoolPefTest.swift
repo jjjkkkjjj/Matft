@@ -10,7 +10,7 @@ import XCTest
 import Matft
 
 final class BoolPefTests: XCTestCase {
-    /*
+    
     func testPeformanceGreater1() {
         do{
             let a = Matft.arange(start: -10*10*10*10*10*5, to: 10*10*10*10*10*5, by: 1, shape: [10,10,10,10,10,10])
@@ -38,7 +38,7 @@ final class BoolPefTests: XCTestCase {
              */
         }
     }
-    */
+    
     func testPeformanceEqual1() {
         do{
             let a = Matft.arange(start: -10*10*10*10*10*5, to: 10*10*10*10*10*5, by: 1, shape: [10,10,10,10,10,10])
