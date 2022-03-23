@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		01F0369827EA034E00C91620 /* rena.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 01F0369727EA034E00C91620 /* rena.jpeg */; };
 		D6C2675D24249310005731C6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C2675C24249310005731C6 /* AppDelegate.swift */; };
 		D6C2675F24249310005731C6 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C2675E24249310005731C6 /* SceneDelegate.swift */; };
 		D6C2676124249310005731C6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C2676024249310005731C6 /* ViewController.swift */; };
@@ -17,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		01F0369727EA034E00C91620 /* rena.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = rena.jpeg; sourceTree = "<group>"; };
 		D6C2675924249310005731C6 /* MatftDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MatftDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6C2675C24249310005731C6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D6C2675E24249310005731C6 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -63,6 +65,7 @@
 				D6C2675E24249310005731C6 /* SceneDelegate.swift */,
 				D6C2676024249310005731C6 /* ViewController.swift */,
 				D6C2676224249310005731C6 /* Main.storyboard */,
+				01F0369727EA034E00C91620 /* rena.jpeg */,
 				D6C2676524249311005731C6 /* Assets.xcassets */,
 				D6C2676724249311005731C6 /* LaunchScreen.storyboard */,
 				D6C2676A24249311005731C6 /* Info.plist */,
@@ -107,7 +110,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1130;
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 1320;
 				ORGANIZATIONNAME = jkado;
 				TargetAttributes = {
 					D6C2675824249310005731C6 = {
@@ -144,6 +147,7 @@
 				D6C2676924249311005731C6 /* LaunchScreen.storyboard in Resources */,
 				D6C2676624249311005731C6 /* Assets.xcassets in Resources */,
 				D6C2676424249310005731C6 /* Main.storyboard in Resources */,
+				01F0369827EA034E00C91620 /* rena.jpeg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -208,6 +212,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -268,6 +273,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
