@@ -18,6 +18,7 @@
       - [Fancy Indexing](#boolean-indexing)
       - [View](#view)
   * [Function List](#function-list)
+  * [Example](#example)
   * [Performance](#performance)
   * [Installation](#installation)
     + [SwiftPM](#swiftpm)
@@ -557,6 +558,61 @@ Matft supports only natural cubic spline. I'll implement other boundary conditio
 | Matft                            | Numpy              |
 | -------------------------------- | ----------------- |
 | Matft.interp1d.cubicSpline       | scipy.interpolation.CubicSpline |
+
+## Example
+
+You can acheive an image processing by Matft! (Beta version)
+Please refer to the example [here](./MatftDemo/MatftDemo/ViewController.swift).
+
+```swift
+@IBOutlet weak var originalImageView: UIImageView!
+@IBOutlet weak var processedImageView: UIImageView!
+
+func reverse(){
+    let size = CFDataGetLength(self.processedImageView.image!.cgImage!.dataProvider!.data)
+    let width = Int(self.processedImageView.image!.size.width)
+    let height = Int(self.processedImageView.image!.size.height)
+    
+    var arr = Matft.nums(Float.zero, shape: [height, width, 4])
+    var dst = Array<UInt8>(repeating: UInt8.zero, count: arr.size)
+    
+    // UIImage to MfArray
+    arr.withDataUnsafeMBPtrT(datatype: Float.self){
+    
+        let srcptr = CFDataGetBytePtr(self.processedImageView.image?.cgImage?.dataProvider?.data)!
+        
+        // unit8 to float
+        vDSP_vfltu8(srcptr, vDSP_Stride(1), $0.baseAddress!, vDSP_Stride(1), vDSP_Length(size))
+    }
+
+    // reverse
+    arr = arr[~<<-1]
+    arr = arr.conv_order(mforder: .Row)
+    
+    // MfArray to UIImage
+    arr.withDataUnsafeMBPtrT(datatype: Float.self){
+        srcptr in
+        
+        dst.withUnsafeMutableBufferPointer{
+            // float to unit8
+            vDSP_vfixu8(srcptr.baseAddress!, vDSP_Stride(1), $0.baseAddress!, vDSP_Stride(1), vDSP_Length(arr.size))
+            
+            let colorSpace = CGColorSpaceCreateDeviceRGB()
+            let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
+            let provider = CGDataProvider(data: CFDataCreate(kCFAllocatorDefault, $0.baseAddress!, arr.size))
+            let cgimage =  CGImage(width: arr.shape[1], height: arr.shape[0], bitsPerComponent: 8*1, bitsPerPixel: 8*arr.shape[2], bytesPerRow: arr.shape[1]*arr.shape[2], space: colorSpace, bitmapInfo: bitmapInfo, provider: provider!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)
+            
+            self.processedImageView.image = UIImage(cgImage: cgimage!)
+        }
+        
+    }
+      
+  }
+```
+
+For more complex conversion, see OpenCV [code](https://github.com/opencv/opencv/blob/4.x/modules/imgcodecs/src/apple_conversions.mm).
+
+<img width="513" alt="image-processing" src="https://user-images.githubusercontent.com/16914891/159737464-a2c35faf-1961-4f93-87f0-ded7d4a4de64.png">
 
 ## Performance
 
