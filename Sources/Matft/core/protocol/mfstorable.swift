@@ -86,4 +86,7 @@ public protocol MfStoredTypeUsable: FloatingPoint{
     static var vForce_reciprocal_func: vForce_math_func<Self>{ get }
     
     static var vForce_power_func: vForce_math_biop_func<Self>{ get }
+    
+    //======= lapack ========//
+    static var lapack_solve_func: lapack_solve_func<Self>{ get }
 }

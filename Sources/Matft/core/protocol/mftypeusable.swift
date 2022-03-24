@@ -288,6 +288,9 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     
     public static var vForce_power_func: vForce_math_biop_func<Float> = vvpowf
     
+    //======= lapack ========//
+    public static var lapack_solve_func: lapack_solve_func<Float> = sgesv_
+    
     public static func from<T>(_ value: T) -> Float where T : MfInterger {
         return Float(value)
     }
@@ -411,6 +414,9 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     public static var vForce_reciprocal_func: vForce_math_func<Double> = vvrec
     
     public static var vForce_power_func: vForce_math_biop_func<Double> = vvpow
+    
+    //======= lapack ========//
+    public static var lapack_solve_func: lapack_solve_func<Double> = dgesv_
     
     public static func from<T>(_ value: T) -> Double where T : MfInterger {
         return Double(value)
