@@ -10,7 +10,7 @@ import Accelerate
 
 public class MfArray<T: MfTypeUsable>{
     public typealias MfArrayType = T
-    internal typealias MfArrayStoredType = T.StoredType
+    public typealias MfArrayStoredType = T.StoredType
     
     public internal(set) var mfdata: MfData<MfArrayType>
     public internal(set) var mfstructure: MfStructure

@@ -89,4 +89,6 @@ public protocol MfStoredTypeUsable: FloatingPoint{
     
     //======= lapack ========//
     static var lapack_solve_func: lapack_solve_func<Self>{ get }
+    static var lapack_LU_func: lapack_LU_func<Self>{ get }
+    static var lapack_inv_func: lapack_inv_func<Self>{ get }
 }
