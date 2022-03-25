@@ -142,7 +142,7 @@ final class LinAlgTests: XCTestCase {
             
         }
     }
-    /*
+    
     func testSVD(){
         do{
             let a = MfArray<Int>([[2, 4, 1, 3],
@@ -153,7 +153,7 @@ final class LinAlgTests: XCTestCase {
             //XCTAssertEqual(ret.v.astype(.Float), MfArray<Int>([[-0.40783698, -0.12444751,  0.90453403],
             //                                              [-0.40538262, -0.86299238, -0.30151134],
             //                                              [-0.81812831,  0.48964985, -0.30151134]]))
-            XCTAssertEqual(ret.s, MfArray<Float>([1.33853840e+01, 3.58210781e+00, 5.07054122e-16]))
+            XCTAssertEqual(ret.s, MfArray<Float>([1.33853840e+01, 3.58210781e+00, 5.07054122e-16] as [Float]))
             /*
              below assertion is failure... I don't know the reason...
              */
@@ -164,9 +164,9 @@ final class LinAlgTests: XCTestCase {
             //print(ret.v *& Matft.diag(v: ret.s) *& ret.rt)
             //print(ret.rt *& ret.rt.T)
             
-            let ret_nofull = try! Matft.linalg.svd(a, full_mtrices: false)
+            let ret_nofull = try! Matft.linalg.svd(a, full_matrices: false)
             
-            XCTAssertEqual((ret_nofull.v *& Matft.diag(v: ret_nofull.s) *& ret_nofull.rt).nearest(), a.astype(Int32.self))
+            XCTAssertEqual((ret_nofull.v *& Matft.diag(v: ret_nofull.s) *& ret_nofull.rt).nearest(), a.astype(newtype: Int.self))
         }
         
         do{
@@ -174,13 +174,13 @@ final class LinAlgTests: XCTestCase {
                              [3, 4]])
             let ret = try! Matft.linalg.svd(a)
             XCTAssertEqual(ret.v, MfArray<Float>([[-0.40455358, -0.9145143 ],
-                                           [-0.9145143 ,  0.40455358]]))
-            XCTAssertEqual(ret.s, MfArray<Float>([ 5.4649857 ,  0.36596619]))
+                                           [-0.9145143 ,  0.40455358]] as [[Float]]))
+            XCTAssertEqual(ret.s, MfArray<Float>([ 5.4649857 ,  0.36596619] as [Float]))
             XCTAssertEqual(ret.rt, MfArray<Float>([[-0.57604844, -0.81741556],
-                                            [ 0.81741556, -0.57604844]]))
+                                            [ 0.81741556, -0.57604844]] as [[Float]]))
             
             //XCTAssertEqual((ret.v *& Matft.diag(v: ret.s) *& ret.rt).nearest(), a)
         }
         
-    }*/
+    }
 }

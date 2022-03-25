@@ -293,6 +293,7 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     public static var lapack_LU_func: lapack_LU_func<Float> = sgetrf_
     public static var lapack_inv_func: lapack_inv_func<Float> = sgetri_
     public static var lapack_eigen_func: lapack_eigen_func<Float> = sgeev_
+    public static var lapack_svd_func: lapack_svd_func<Float> = sgesdd_
     
     public static func from<T>(_ value: T) -> Float where T : MfInterger {
         return Float(value)
@@ -427,6 +428,7 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     public static var lapack_LU_func: lapack_LU_func<Double> = dgetrf_
     public static var lapack_inv_func: lapack_inv_func<Double> = dgetri_
     public static var lapack_eigen_func: lapack_eigen_func<Double> = dgeev_
+    public static var lapack_svd_func: lapack_svd_func<Double> = dgesdd_
     
     public static func from<T>(_ value: T) -> Double where T : MfInterger {
         return Double(value)

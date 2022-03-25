@@ -68,4 +68,14 @@ extension Matft.linalg{
     public static func eigen<T: MfTypeUsable>(_ mfarray: MfArray<T>) throws -> (valRe: MfArray<T.StoredType>, valIm: MfArray<T.StoredType>, lvecRe: MfArray<T.StoredType>, lvecIm: MfArray<T.StoredType>, rvecRe: MfArray<T.StoredType>, rvecIm: MfArray<T.StoredType>){
         return try eigen_by_lapack(mfarray, T.StoredType.lapack_eigen_func)
     }
+    
+    ///  Do singular value decomposition of passed mfarray. Returned mfarray's type will be converted properly.
+    /// - parameters:
+    ///   - mfarray: The source mfarray
+    ///   - full_matrices: if true returned v and rt have the shapes (..., M, M) and (..., N, N) respectively. Otherwise, the shapes are (..., M, K) and (..., K, N), respectively, where K = min(M, N).
+    /// - throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+    /// - Returns: The SVD mfarraies
+    public static func svd<T: MfTypeUsable>(_ mfarray: MfArray<T>, full_matrices: Bool = true) throws -> (v: MfArray<T.StoredType>, s: MfArray<T.StoredType>, rt: MfArray<T.StoredType>){
+        return try svd_by_lapack(mfarray, full_matrices, T.StoredType.lapack_svd_func)
+    }
 }

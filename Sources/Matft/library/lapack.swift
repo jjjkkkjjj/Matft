@@ -16,6 +16,8 @@ public typealias lapack_inv_func<T> = (UnsafeMutablePointer<__CLPK_integer>, Uns
 
 public typealias lapack_eigen_func<T> = (UnsafeMutablePointer<Int8>, UnsafeMutablePointer<Int8>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
+public typealias lapack_svd_func<T> = (UnsafeMutablePointer<Int8>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>,UnsafeMutablePointer<__CLPK_integer>) -> Int32
+
 /// Wrapper of lapck solve function
 /// - Parameters:
 ///   - rownum: A destination row number
@@ -302,6 +304,93 @@ internal func wrap_lapack_eigen<T: MfStoredTypeUsable>(_ rowcolnum: Int, _ srcpt
     }
 }
 
+/// Wrapper of lapack SVD function
+/// ref: https://www.netlib.org/lapack/explore-html/d4/dca/group__real_g_esing_gac2cd4f1079370ac908186d77efcd5ea8.html
+///
+/// - Parameters:
+///   - rownum: A destination row number
+///   - colnum: A destination column number
+///   - srcptr: A source pointer
+///   - vptr: A source pointer
+///   - sptr: A source pointer
+///   - rtptr: A source pointer
+///   - full_matrices: if true returned v and rt have the shapes (..., M, M) and (..., N, N) respectively. Otherwise, the shapes are (..., M, K) and (..., K, N), respectively, where K = min(M, N).
+///   - lapack_func: The lapack SVD fractorization function
+/// - Throws: An error of type `MfError.LinAlgError.singularMatrix`
+@inline(__always)
+internal func wrap_lapack_svd<T: MfStoredTypeUsable>(_ rownum: Int, _ colnum: Int, _ srcptr: UnsafeMutablePointer<T>, _ vptr: UnsafeMutablePointer<T>, _ sptr: UnsafeMutablePointer<T>, _ rtptr: UnsafeMutablePointer<T>, _ full_matrices: Bool, lapack_func: lapack_svd_func<T>) throws{
+    let JOBZ: UnsafeMutablePointer<Int8>
+    
+    var M = __CLPK_integer(rownum)
+    var N = __CLPK_integer(colnum)
+    
+    let ucol: Int, vtrow: Int
+    
+    var LDA = __CLPK_integer(rownum)
+    
+    let snum = min(rownum, colnum)
+    var S = Array<T>(repeating: T.zero, count: snum)
+    
+    var U: Array<T>
+    var LDU = __CLPK_integer(rownum)
+    
+    var VT: Array<T>
+    var LDVT: __CLPK_integer
+    
+    
+    if full_matrices{
+        JOBZ = UnsafeMutablePointer(mutating: ("A" as NSString).utf8String)!
+        LDVT = __CLPK_integer(colnum)
+        
+        ucol = rownum
+        vtrow = colnum
+    }
+    else{
+        JOBZ = UnsafeMutablePointer(mutating: ("S" as NSString).utf8String)!
+        LDVT = __CLPK_integer(snum)
+        
+        ucol = snum
+        vtrow = snum
+    }
+    U = Array<T>(repeating: T.zero, count: rownum*ucol)
+    VT = Array<T>(repeating: T.zero, count: colnum*vtrow)
+    
+    //work space
+    var WORKQ = T.zero //workspace query
+    var LWORK = __CLPK_integer(-1)
+    var IWORK = Array<__CLPK_integer>(repeating: 0, count: 8*snum)
+    
+    //error indicator
+    var INFO: __CLPK_integer = 0
+    
+    //run (calculate optimal workspace)
+    let _ = lapack_func(JOBZ, &M, &N, srcptr, &LDA, &S, &U, &LDU, &VT, &LDVT, &WORKQ, &LWORK, &IWORK, &INFO)
+    
+    var WORK = Array<T>(repeating: T.zero, count: T.toInt(WORKQ))
+    LWORK = __CLPK_integer(T.toInt(WORKQ))
+    //run
+    let _ = lapack_func(JOBZ, &M, &N, srcptr, &LDA, &S, &U, &LDU, &VT, &LDVT, &WORK, &LWORK, &IWORK, &INFO)
+    
+    //check error
+    if INFO < 0{
+        throw MfError.LinAlgError.factorizationError("Illegal value found: \(-INFO)th argument")
+    }
+    else if INFO > 0{
+        throw MfError.LinAlgError.notConverge("the QR algorithm failed to compute all the eigenvalues, and no eigenvectors have been computed; elements \(INFO)+1:N of WR and WI contain eigenvalues which have converged.")
+    }
+    else{
+        U.withUnsafeMutableBufferPointer{
+            vptr.moveAssign(from: $0.baseAddress!, count: rownum*ucol)
+        }
+        S.withUnsafeMutableBufferPointer{
+            sptr.moveAssign(from: $0.baseAddress!, count: snum)
+        }
+        VT.withUnsafeMutableBufferPointer{
+            rtptr.moveAssign(from: $0.baseAddress!, count: colnum*vtrow)
+        }
+    }
+}
+
 /// Solve by lapack
 /// - Parameters:
 ///   - coef: coef MfArray
@@ -490,3 +579,68 @@ internal func eigen_by_lapack<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ lapack_f
             MfArray(mfdata: rvecIm_data, mfstructure: MfStructure(shape: shape, mforder: .Row)))
 }
 
+
+/// SVD by lapack
+/// - Parameters:
+///   - mfarray: The source mfarray
+///   - full_matrices: if true returned v and rt have the shapes (..., M, M) and (..., N, N) respectively. Otherwise, the shapes are (..., M, K) and (..., K, N), respectively, where K = min(M, N).
+///   - lapack_func: The lapack SVD factorization function
+/// - Throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+internal func svd_by_lapack<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ full_matrices: Bool, _ lapack_func: lapack_svd_func<T.StoredType>) throws -> (v: MfArray<T.StoredType>, s: MfArray<T.StoredType>, rt: MfArray<T.StoredType>){
+    let shape = mfarray.shape
+    let M = shape[mfarray.ndim - 2]
+    let N = shape[mfarray.ndim - 1]
+    let ssize = min(M, N)
+    let stacked_shape = Array(shape.prefix(mfarray.ndim - 2))
+    
+    let v_data: MfData<T.StoredType>, s_data: MfData<T.StoredType>, rt_data: MfData<T.StoredType>
+    var v_shape: [Int], s_shape: [Int], rt_shape: [Int]
+    let vcol: Int, rtrow: Int
+    if full_matrices{
+        v_shape = stacked_shape + [M, M]
+        s_shape = stacked_shape + [ssize]
+        rt_shape = stacked_shape + [N, N]
+        v_data = MfData(size: shape2size(&v_shape))
+        s_data = MfData(size: shape2size(&s_shape))
+        rt_data = MfData(size: shape2size(&rt_shape))
+        
+        vcol = M
+        rtrow = N
+    }
+    else{
+        v_shape = stacked_shape + [ssize, M]
+        s_shape = stacked_shape + [ssize]
+        rt_shape = stacked_shape + [N, ssize]
+        v_data = MfData(size: shape2size(&v_shape)) // returned shape = (..., M, ssize)
+        s_data = MfData(size: shape2size(&s_shape))
+        rt_data = MfData(size: shape2size(&rt_shape)) // returned shape = (..., ssize, N)
+        
+        vcol = ssize
+        rtrow = ssize
+    }
+    
+    //offset
+    var v_offset = 0
+    var s_offset = 0
+    var rt_offset = 0
+    
+    let vptr = v_data.storedPtr.baseAddress! as! UnsafeMutablePointer<T.StoredType>
+    let sptr = s_data.storedPtr.baseAddress! as! UnsafeMutablePointer<T.StoredType>
+    let rtptr = rt_data.storedPtr.baseAddress! as! UnsafeMutablePointer<T.StoredType>
+    
+    
+    try mfarray.withMNStackedMajorPointer(mforder: .Column){
+        srcptr, _, _, _ in
+        try wrap_lapack_svd(M, N, srcptr, vptr + v_offset, sptr + s_offset, rtptr + rt_offset, full_matrices, lapack_func: lapack_func)
+        
+        v_offset += M*vcol
+        s_offset += ssize
+        rt_offset += N*rtrow
+    }
+    
+    let v = MfArray(mfdata: v_data, mfstructure: MfStructure(shape: v_shape, mforder: .Row))
+    let s = MfArray(mfdata: s_data, mfstructure: MfStructure(shape: s_shape, mforder: .Row))
+    let rt = MfArray(mfdata: rt_data, mfstructure: MfStructure(shape: rt_shape, mforder: .Row))
+    
+    return (v.swapaxes(axis1: -1, axis2: -2), s, rt.swapaxes(axis1: -1, axis2: -2))
+}
