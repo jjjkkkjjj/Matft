@@ -292,6 +292,7 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     public static var lapack_solve_func: lapack_solve_func<Float> = sgesv_
     public static var lapack_LU_func: lapack_LU_func<Float> = sgetrf_
     public static var lapack_inv_func: lapack_inv_func<Float> = sgetri_
+    public static var lapack_eigen_func: lapack_eigen_func<Float> = sgeev_
     
     public static func from<T>(_ value: T) -> Float where T : MfInterger {
         return Float(value)
@@ -336,6 +337,10 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
     
     public static func from(_ value: String) -> Float? {
         return Float(value)
+    }
+    
+    public static func toInt(_ value: Float) -> Int{
+        return Int(value)
     }
     
     public static func nealy_equal(_ lhs: Float, _ rhs: Float) -> Bool{
@@ -421,6 +426,7 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     public static var lapack_solve_func: lapack_solve_func<Double> = dgesv_
     public static var lapack_LU_func: lapack_LU_func<Double> = dgetrf_
     public static var lapack_inv_func: lapack_inv_func<Double> = dgetri_
+    public static var lapack_eigen_func: lapack_eigen_func<Double> = dgeev_
     
     public static func from<T>(_ value: T) -> Double where T : MfInterger {
         return Double(value)
@@ -464,6 +470,10 @@ extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
     
     public static func from(_ value: String) -> Double? {
         return Double(value)
+    }
+    
+    public static func toInt(_ value: Double) -> Int{
+        return Int(value)
     }
     
     public static func nealy_equal(_ lhs: Double, _ rhs: Double) -> Bool{

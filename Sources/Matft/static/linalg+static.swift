@@ -59,4 +59,13 @@ extension Matft.linalg{
     public static func det<T: MfTypeUsable>(_ mfarray: MfArray<T>) throws -> MfArray<T.StoredType>{
         return try det_by_lapack(mfarray, T.StoredType.lapack_LU_func)
     }
+    
+    /// Get eigenvelues of passed mfarray. Returned mfarray's type will be converted properly.
+    /// - parameters:
+    ///   - mfarray: The source mfarray
+    /// - throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+    /// - Returns: The eigen mfarraies
+    public static func eigen<T: MfTypeUsable>(_ mfarray: MfArray<T>) throws -> (valRe: MfArray<T.StoredType>, valIm: MfArray<T.StoredType>, lvecRe: MfArray<T.StoredType>, lvecIm: MfArray<T.StoredType>, rvecRe: MfArray<T.StoredType>, rvecIm: MfArray<T.StoredType>){
+        return try eigen_by_lapack(mfarray, T.StoredType.lapack_eigen_func)
+    }
 }

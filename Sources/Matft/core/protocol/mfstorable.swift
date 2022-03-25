@@ -11,6 +11,7 @@ import Foundation
 public protocol MfStoredTypeUsable: FloatingPoint{
     static func from<T: MfTypeUsable>(_ value: T) -> Self
     static func from(_ value: String) -> Self?
+    static func toInt(_ value: Self) -> Int
     static func nealy_equal(_ lhs: Self, _ rhs: Self) -> Bool
     
     //======= vDSP ========//
@@ -91,4 +92,5 @@ public protocol MfStoredTypeUsable: FloatingPoint{
     static var lapack_solve_func: lapack_solve_func<Self>{ get }
     static var lapack_LU_func: lapack_LU_func<Self>{ get }
     static var lapack_inv_func: lapack_inv_func<Self>{ get }
+    static var lapack_eigen_func: lapack_eigen_func<Self>{ get }
 }
