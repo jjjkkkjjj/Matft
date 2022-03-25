@@ -197,3 +197,56 @@ internal func inv_by_lapack<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ lapack_fun
     
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
+
+
+/// Determinant by lapack
+/// - Parameters:
+///   - mfarray: The source mfarray
+///   - lapack_func: The lapack LU factorization function
+/// - Throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+internal func det_by_lapack<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ lapack_func: lapack_LU_func<T.StoredType>) throws -> MfArray<T.StoredType>{
+    let shape = mfarray.shape
+    
+    precondition(mfarray.ndim > 1, "cannot get a determinant from 1-d mfarray")
+    precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+    
+    let ret_size = mfarray.size / (shape[mfarray.ndim - 1] * shape[mfarray.ndim - 1])
+    
+    let newdata: MfData<T.StoredType> = MfData(size: ret_size)
+    let dstptr = newdata.storedPtr.baseAddress! as! UnsafeMutablePointer<T.StoredType>
+    var dst_offset = 0
+    
+    try mfarray.withMNStackedMajorPointer(mforder: .Row){
+        srcptr, row, col, offset in
+        // Note row == col
+        let square_num = row
+        
+        //LU decomposition
+        let IPIV = try wrap_lapack_LU(row, col, srcptr, lapack_func: lapack_func)
+        
+        //calculate L and U's determinant
+        //Note that L and U's determinant are calculated by product of diagonal elements
+        // L's determinant is always one
+        //ref: https://stackoverflow.com/questions/47315471/compute-determinant-from-lu-decomposition-in-lapack
+        var det = T.StoredType.from(1)
+        for i in 0..<square_num{
+            det *= IPIV[i] != __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*square_num).pointee : -(srcptr.advanced(by: i + i*square_num).pointee)
+        }
+        
+        //assign
+        (dstptr + dst_offset).assign(from: &det, count: 1)
+        dst_offset += 1
+    }
+    
+    let ret_shape: [Int]
+    if mfarray.ndim - 2 != 0{
+        ret_shape = Array(mfarray.shape.prefix(mfarray.ndim - 2))
+    }
+    else{
+       ret_shape = [1]
+    }
+    
+    let newmfstructure = MfStructure(shape: ret_shape, mforder: .Row)
+    
+    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+}

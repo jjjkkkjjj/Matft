@@ -50,4 +50,13 @@ extension Matft.linalg{
     public static func inv<T: MfTypeUsable>(_ mfarray: MfArray<T>) throws -> MfArray<T.StoredType>{
         return try inv_by_lapack(mfarray, T.StoredType.lapack_LU_func, T.StoredType.lapack_inv_func)
     }
+    
+    /// Get last 2 dim's NxN mfarray's determinant. Returned mfarray's type will be float but be double in case that mftype of mfarray is double.
+    /// - parameters:
+    ///   - mfarray: The source mfarray
+    /// - throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+    /// - Returns: The determinant mfarray
+    public static func det<T: MfTypeUsable>(_ mfarray: MfArray<T>) throws -> MfArray<T.StoredType>{
+        return try det_by_lapack(mfarray, T.StoredType.lapack_LU_func)
+    }
 }

@@ -60,4 +60,21 @@ final class LinAlgTests: XCTestCase {
                           [ 0.75, -0.25]]] as [[[Double]]]))
         }
     }
+    
+    func testDet(){
+        
+        do{
+            let a = MfArray<Int>([[1, 2], [3, 4]])
+            XCTAssertEqual(try Matft.linalg.det(a), MfArray<Float>([-2.0] as [Float]))
+        }
+        
+        do{
+            let a = MfArray<Double>([[[1.0, 2.0],
+                                      [3.0, 4.0]],
+                                     
+                                     [[1.0, 3.0],
+                                      [3.0, 5.0]]] as [[[Double]]])
+            XCTAssertEqual(try Matft.linalg.det(a), MfArray<Double>([-2.0, -4.0] as [Double]))
+        }
+    }
 }
