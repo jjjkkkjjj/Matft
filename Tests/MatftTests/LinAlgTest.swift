@@ -183,4 +183,61 @@ final class LinAlgTests: XCTestCase {
         }
         
     }
+    
+    func testPInv(){
+        do{
+            let a = MfArray<Int>([[2, -1, 0],
+                             [4,3,-2]])
+            let ret = try! Matft.linalg.pinv(a)
+            XCTAssertEqual(ret.round(decimals: 5),
+                           MfArray<Float>([[ 0.31666667,  0.08333333],
+                                    [-0.36666667,  0.16666667],
+                                    [ 0.08333333, -0.08333333]]
+                                   as [[Float]]).round(decimals: 5))
+        }
+        
+        do{
+            let a = MfArray<Float>([[ 0.10122714, -1.7555435 ,  0.72242671],
+                             [ 0.70605646, -3.03520525, -0.8974524 ],
+                             [ 0.89382228,  0.53009567,  1.59680764],
+                             [-0.61128203, -0.75155814,  0.00382533]] as [[Float]])
+            let ret = try! Matft.linalg.pinv(a)
+            XCTAssertEqual(ret.round(decimals: 5), MfArray<Float>([[-0.34872843,  0.42493471,  0.39808427, -0.62075487],
+                                [-0.24171501, -0.14397516,  0.0288316 , -0.16416708],
+                                [ 0.40742503, -0.2408292 ,  0.30600237,  0.23674046]] as [[Float]]).round(decimals: 5))
+        }
+        
+        do{
+            let a = MfArray<Int>([[-33,  43,  25],
+                             [-65, -36, -33],
+                             [-26,  44, -65],
+                             [-35,  -7,  40]])
+            let ret = try! Matft.linalg.pinv(a)
+            XCTAssertEqual(ret.round(decimals: 7), MfArray<Float>([[-0.00586522, -0.00820323, -0.00198698, -0.00633075],
+                                [ 0.00937469, -0.00758197,  0.00732988, -0.00020324],
+                                [ 0.00565919, -0.00350739, -0.00734483,  0.00663407]] as [[Float]]).round(decimals: 7))
+        }
+        
+        do{
+            let a = MfArray<Double>([[7, 2],
+                             [3, 4],
+                             [5, 3]] as [[Double]])
+            let ret = try! Matft.linalg.pinv(a)
+            XCTAssertEqual(ret.round(decimals: 7),
+                           MfArray<Double>([[ 0.16666667, -0.10606061,  0.03030303],
+                            [-0.16666667,  0.28787879,  0.06060606]]).round(decimals: 7))
+        }
+        
+        do{
+            let a = MfArray<Int>([[ -6,   4,  -1,   8,   2],
+                             [ -1,   6, -10,  -1,   6],
+                             [  3,  -4,   5,  -7,   5]])
+            let ret = try! Matft.linalg.pinv(a)
+            XCTAssertEqual(ret, MfArray<Float>([[-0.06456498,  0.00644501, -0.01798566],
+                                         [ 0.01267183,  0.02793085, -0.01456178],
+                                         [ 0.0539209 , -0.0576122 ,  0.05869991],
+                                         [ 0.05795672, -0.02618938, -0.0251714 ],
+                                         [ 0.07609496,  0.03942475,  0.10520211]] as [[Float]]))
+        }
+    }
 }

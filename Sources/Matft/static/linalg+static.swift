@@ -78,4 +78,25 @@ extension Matft.linalg{
     public static func svd<T: MfTypeUsable>(_ mfarray: MfArray<T>, full_matrices: Bool = true) throws -> (v: MfArray<T.StoredType>, s: MfArray<T.StoredType>, rt: MfArray<T.StoredType>){
         return try svd_by_lapack(mfarray, full_matrices, T.StoredType.lapack_svd_func)
     }
+    
+    
+    ///  Get last 2 dim's MxN mfarray's pseudo-inverse. Returned mfarray's type will be float but be double in case that mftype of mfarray is double.
+    /// - parameters:
+    ///   - mfarray: The source mfarray
+    /// - throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+    /// - Returns: The pseudo-inverse  mfarraies
+    public static func pinv<T: MfTypeUsable>(_ mfarray: MfArray<T>, rcond: Float = 1e-15) throws -> MfArray<T.StoredType>{
+        precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        
+        // v's shape = (...,N,X)
+        // s's shape = (min(X,Y),)
+        // rt.shape = (...,Y,M)
+        let (v, s, rt) = try Matft.linalg.svd(mfarray, full_matrices: false)
+        let smax = s.max().scalar!
+        let condition = T.StoredType.from(rcond) * smax
+        
+        let spinv_array = s.toFlattenArray().map{ $0 <= condition ? T.StoredType.zero : 1/$0 }
+        let spinv = MfArray<T.StoredType>(spinv_array)
+        return rt.swapaxes(axis1: -1, axis2: -2) *& (spinv.expand_dims(axis: 1) * v.swapaxes(axis1: -1, axis2: -2))
+    }
 }
