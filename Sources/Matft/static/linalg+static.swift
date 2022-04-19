@@ -99,4 +99,45 @@ extension Matft.linalg{
         let spinv = MfArray<T.StoredType>(spinv_array)
         return rt.swapaxes(axis1: -1, axis2: -2) *& (spinv.expand_dims(axis: 1) * v.swapaxes(axis1: -1, axis2: -2))
     }
+    
+    ///  Do left polar decomposition of passed mfarray. Returned mfarray's type will be converted properly.
+    /// - parameters:
+    ///   - mfarray: The source mfarray
+    /// - throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+    /// - Returns: The polar left matrices
+    public static func polar_left<T: MfTypeUsable>(_ mfarray: MfArray<T>) throws -> (p: MfArray<T.StoredType>, l: MfArray<T.StoredType>){
+        let shape = mfarray.shape
+        precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        
+        let svd = try Matft.linalg.svd(mfarray)
+        // M(=mfarray) = USV
+        let s = Matft.diag(v: svd.s)
+        
+        // M = PL = VSRt => P=VSVt, L=VRt
+        let p = svd.v *& s *& svd.v.T
+        let l = svd.v *& svd.rt
+        
+        return (p, l)
+    }
+    
+    ///  Do right polar decomposition of passed mfarray. Returned mfarray's type will be converted properly.
+    /// - parameters:
+    ///   - mfarray: The source mfarray
+    /// - throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+    /// - Returns: The polar left matrices
+    public static func polar_right<T: MfTypeUsable>(_ mfarray: MfArray<T>) throws -> (u: MfArray<T.StoredType>, p: MfArray<T.StoredType>){
+        let shape = mfarray.shape
+        precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        
+        let svd = try Matft.linalg.svd(mfarray)
+        // M(=mfarray) = USV
+        let s = Matft.diag(v: svd.s)
+        
+        // M = UP = VSRt => U=VRt P=RSRt
+        let u = svd.v *& svd.rt
+        let p = svd.rt.T *& s *& svd.rt
+        return (u, p)
+    }
 }

@@ -240,4 +240,43 @@ final class LinAlgTests: XCTestCase {
                                          [ 0.07609496,  0.03942475,  0.10520211]] as [[Float]]))
         }
     }
+
+    func testPolar(){
+        do{
+            let a = MfArray<Int>([[1, -1],
+                             [2, 4]])
+            let retR = try! Matft.linalg.polar_right(a)
+            XCTAssertEqual(retR.u, MfArray<Float>([[ 0.85749293, -0.51449576],
+                                           [ 0.51449576,  0.85749293]] as [[Float]]))
+            XCTAssertEqual(retR.p, MfArray<Float>([[ 1.88648444,  1.2004901 ],
+                                           [ 1.2004901 ,  3.94446746]] as [[Float]]))
+            
+            let retL = try! Matft.linalg.polar_left(a)
+            XCTAssertEqual(retL.l, MfArray<Float>([[ 0.85749293, -0.51449576],
+                                            [ 0.51449576,  0.85749293]] as [[Float]]))
+            XCTAssertEqual(retL.p, MfArray<Float>([[ 1.37198868, -0.34299717],
+                                            [-0.34299717,  4.45896321]] as [[Float]]))
+            
+        }
+        do{
+            let a = MfArray<Float>([[0.5, 1, 2],
+                             [1.5, 3, 4],
+                             [2, 3.5, 1]] as [[Float]])
+            let retR = try! Matft.linalg.polar_right(a)
+            XCTAssertEqual(retR.u, MfArray<Float>([[ 0.72794019, -0.42246022,  0.54002819],
+                                                          [-0.28527167,  0.52959999,  0.79883911],
+                                                          [ 0.62347667,  0.73556183, -0.26500119]] as [[Float]]))
+            XCTAssertEqual(retR.p, MfArray<Float>([[1.18301594, 2.05429354, 0.93827039],
+                                                           [2.05429354, 3.74080617, 2.00904136],
+                                                           [0.93827039, 2.00904136, 4.01041163]] as [[Float]]))
+            let retL = try! Matft.linalg.polar_left(a)
+            XCTAssertEqual(retL.l, MfArray<Float>([[ 0.72794019, -0.42246022,  0.54002819],
+                                                           [-0.28527167,  0.52959999,  0.79883911],
+                                                           [ 0.62347667,  0.73556183, -0.26500119]] as [[Float]]))
+            XCTAssertEqual(retL.p, MfArray<Float>([[1.02156625, 1.98464238, 0.51729779],
+                                                           [1.98464238, 4.35624892, 2.08189576],
+                                                           [0.51729779, 2.08189576, 3.55641857]] as [[Float]]))
+            
+        }
+    }
 }
