@@ -18,13 +18,34 @@ public typealias vForce_math_biop_func<T> = (UnsafeMutablePointer<T>, UnsafePoin
 ///   - mfarray: An input mfarray
 ///   - vForce_func: The vForce math function
 /// - Returns: The math-operated mfarray
-internal func math_by_vForce<T: MfTypeUsable, U: MfTypeUsable>(_ mfarray: MfArray<T>, _ vForce_func: vForce_math_func<U.StoredType>) -> MfArray<U> where T.StoredType == U.StoredType{
+internal func math_by_vForce<T: MfTypeUsable, U: MfTypeUsable>(_ mfarray: MfArray<T>, _ vForce_func: vForce_math_func<T.StoredType>) -> MfArray<U> where T.StoredType == U.StoredType{
     let mfarray = check_contiguous(mfarray)
     var ret_size = Int32(mfarray.size)
     
     let newdata: MfData<U> = MfData(size: mfarray.size)
+
     mfarray.withUnsafeMutableStartPointer{
         vForce_func(newdata.storedPtr.baseAddress!, $0, &ret_size)
+    }
+    
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// Math operation by vDSP
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - vForce_func: The vForce math function
+/// - Returns: The math-operated mfarray
+internal func mathf_by_vForce<T: MfTypeUsable>(_ mfarray: MfArray<T>, _ vForce_func: vForce_math_func<T.StoredType>) -> MfArray<T.StoredType>{
+    let mfarray = check_contiguous(mfarray)
+    var ret_size = Int32(mfarray.size)
+    
+    let newdata: MfData<T.StoredType> = MfData(size: mfarray.size)
+    let dstptr = newdata.storedPtr.baseAddress! as! UnsafeMutablePointer<T.StoredType>
+    mfarray.withUnsafeMutableStartPointer{
+        vForce_func(dstptr, $0, &ret_size)
     }
     
     let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
@@ -63,14 +84,14 @@ internal func math_biop_by_vForce<T: MfTypeUsable, U: MfTypeUsable>(_ l_mfarray:
 ///   - decimals: (Optional) Int, default is 0, which is equivelent to nearest
 ///   - powval: The power value
 /// - Returns: round mfarray
-internal func round_by_vForce<T: MfTypeUsable, U: MfTypeUsable>(_ mfarray: MfArray<T>, decimals: Int = 0, powval: U.StoredType) -> MfArray<U> where T.StoredType == U.StoredType{
+internal func round_by_vForce<T: MfTypeUsable>(_ mfarray: MfArray<T>, decimals: Int = 0, powval: T.StoredType) -> MfArray<T.StoredType>{
     
     let mfarray = check_contiguous(mfarray)
-    let newdata: MfData<U> = MfData(size: mfarray.storedSize)
+    let newdata: MfData<T.StoredType> = MfData(size: mfarray.storedSize)
     var ret_size = Int32(mfarray.storedSize)
     var powval = powval
     
-    let dstptr = newdata.storedPtr.baseAddress!
+    let dstptr = newdata.storedPtr.baseAddress! as! UnsafeMutablePointer<T.StoredType>
     mfarray.withUnsafeMutableStartPointer{
         // mfarray * pow
         // nearest(mfarray * pow)
