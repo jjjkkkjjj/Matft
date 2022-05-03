@@ -488,6 +488,27 @@ extension Matft.math{//use math_vv_by_vecLib
             return ret
         }
     }
+    
+    /**
+       Calculate the arc tangent of x1/x2 choosing the quadrant correctly
+       - parameters:
+            - x1: y coordinates mfarray
+            - x2: x coordinates mfarray
+    */
+    public static func arctan2(x1: MfArray, x2: MfArray) -> MfArray{
+        let (x1, x2, rettype) = biop_broadcast_to(x1, x2)
+        
+        switch MfType.storedType(rettype) {
+        case .Float:
+            let ret = math_biop_vv_by_vForce(x1, x2, vvatan2f)
+            ret.mfdata._mftype = .Float
+            return ret
+        case .Double:
+            let ret = math_biop_vv_by_vForce(x1, x2, vvatan2)
+            ret.mfdata._mftype = .Double
+            return ret
+        }
+    }
 }
 
 extension Matft.math{//use vDSP

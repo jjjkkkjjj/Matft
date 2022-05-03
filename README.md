@@ -509,6 +509,7 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.math.abs | numpy.abs |
 | Matft.math.reciprocal | numpy.reciprocal |
 | Matft.math.power | numpy.power |
+| Matft.math.arctan2 | numpy.arctan2 |
 | Matft.math.square | numpy.square |
 | Matft.math.sign | numpy.sign |
 

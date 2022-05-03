@@ -30,7 +30,7 @@ final class MathTests: XCTestCase {
             let aTret = MfArray([[1.4142135, 1.7320508],
                                  [1.0        , 1.0        ],
                                  [   -Float.nan, 2.0        ],
-                                 [0.0        ,    -Float.nan]], mftype: .Float)
+                                 [0.0        ,    -Float.nan]] as [[Float]], mftype: .Float)
             
             XCTAssertEqual(Matft.math.sqrt(a) === aret, MfArray([[true, true, false, true],
                                                                          [true, true, true, false]]))
@@ -265,6 +265,23 @@ final class MathTests: XCTestCase {
 
                                      [[144, 169],
                                       [196, 225]]]], mftype: .Float))
+        }
+    }
+    
+    func testArctan2(){
+        do {
+            let x = MfArray([-1, +1, +1, -1])
+            let y = MfArray([-1, -1, +1, +1])
+            
+            XCTAssertEqual((Matft.math.arctan2(x1: y, x2: x) * Float(180)/Float.pi).round(decimals: 3), MfArray([-135.0,  -45.0,   45.0,  135.0], mftype: .Float))
+        }
+        
+        do {
+            let x = MfArray([[ 1, 83,  5,  4, 93]], mftype: .Double)
+            let y = MfArray([[88, 90, 80, 96, 20],
+                             [10, 61,  6, 98, 63]], mftype: .Double)
+            XCTAssertEqual(Matft.math.arctan2(x1: y, x2: x).round(decimals: 5), MfArray([[1.55943318, 0.82583853, 1.50837752, 1.52915375, 0.21182755],
+                                                                                                                 [1.47112767, 0.63379268, 0.87605805, 1.53000264, 0.59540988]]).round(decimals: 5))
         }
     }
 }
