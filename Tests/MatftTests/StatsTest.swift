@@ -215,11 +215,11 @@ final class StatsTests: XCTestCase {
             let b = MfArray([[-0.87, 1.2, 5.5134, -8.78],
                              [-0.0002, 2, 3.4, -5]], mftype: .Double, mforder: .Column)
 
-            XCTAssertEqual(Matft.stats.maximum(a, b), MfArray([[2,1.2,5.5134,0],[3,2,4,-5]]))
-            XCTAssertEqual(Matft.stats.maximum(b, a), MfArray([[2,1.2,5.5134,0],[3,2,4,-5]]))
+            XCTAssertEqual(Matft.stats.maximum(a, b), MfArray([[2,1.2,5.5134,0],[3,2,4,-5]] as [[Double]]))
+            XCTAssertEqual(Matft.stats.maximum(b, a), MfArray([[2,1.2,5.5134,0],[3,2,4,-5]] as [[Double]]))
 
-            XCTAssertEqual(Matft.stats.minimum(a, b), MfArray([[-0.87,1,-3,-8.78],[-0.0002,1,3.4,-5]]))
-            XCTAssertEqual(Matft.stats.minimum(b, a), MfArray([[-0.87,1,-3,-8.78],[-0.0002,1,3.4,-5]]))
+            XCTAssertEqual(Matft.stats.minimum(a, b), MfArray([[-0.87,1,-3,-8.78],[-0.0002,1,3.4,-5]] as [[Double]]))
+            XCTAssertEqual(Matft.stats.minimum(b, a), MfArray([[-0.87,1,-3,-8.78],[-0.0002,1,3.4,-5]] as [[Double]]))
         }
         
         do{

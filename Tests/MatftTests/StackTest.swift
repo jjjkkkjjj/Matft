@@ -61,7 +61,7 @@ final class StackTests: XCTestCase {
             XCTAssertEqual(Matft.vstack([a, b]), MfArray([[2, 1, -3, 0],
                                                                   [3, 1, 4, -5],
                                                                   [-0.87, 1.2, 5.5134, -8.78],
-                                                                  [-0.0002, 2, 3.4, -5]]))
+                                                                  [-0.0002, 2, 3.4, -5]] as [[Double]]))
 
         }
         
@@ -103,7 +103,7 @@ final class StackTests: XCTestCase {
             XCTAssertEqual(Matft.concatenate([c, d], axis: 0), MfArray([[2, 1, -3, 0],
                                                                                 [3, 1, 4, -5],
                                                                                 [-0.87, 1.2, 5.5134, -8.78],
-                                                                                [-0.0002, 2, 3.4, -5]]))
+                                                                                [-0.0002, 2, 3.4, -5]] as [[Double]]))
             
             let e = Matft.arange(start: 0, to: 4*4, by: 1, shape: [4,4], mftype: .UInt8).T
             let f = MfArray([[-5, 3, 2, 4],
