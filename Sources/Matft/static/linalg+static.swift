@@ -140,4 +140,35 @@ extension Matft.linalg{
         let p = svd.rt.T *& s *& svd.rt
         return (u, p)
     }
+    
+    ///  Calculate lp norm along given axis. Note that ord = Float.infinity and -Float.infinity are also available.
+    /// - parameters:
+    ///   - mfarray: The source mfarray
+    ///   - ord: (Optional) Order of the norm
+    ///   - axis: (Optional) axis, if not given, get mean for all elements
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+    /// - Returns: The polar left matrices
+    public static func normlp_vec<T: MfTypeUsable>(_ mfarray: MfArray<T>, ord: Float = 2, axis: Int = -1, keepDims: Bool = false) -> MfArray<T.StoredType>{
+        /*
+         // ref: https://github.com/numpy/numpy/blob/91118b3363b636f932f7ff6748d8259e9eb2c23a/numpy/linalg/linalg.py#L2316-L2557
+         vDSP_svesq(<#T##__A: UnsafePointer<Float>##UnsafePointer<Float>#>, <#T##__IA: vDSP_Stride##vDSP_Stride#>, <#T##__C: UnsafeMutablePointer<Float>##UnsafeMutablePointer<Float>#>, <#T##__N: vDSP_Length##vDSP_Length#>)
+         dlange_(<#T##__norm: UnsafeMutablePointer<Int8>!##UnsafeMutablePointer<Int8>!#>, <#T##__m: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>, <#T##__n: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>, <#T##__a: UnsafeMutablePointer<__CLPK_doublereal>!##UnsafeMutablePointer<__CLPK_doublereal>!#>, <#T##__lda: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>, <#T##__work: UnsafeMutablePointer<__CLPK_doublereal>!##UnsafeMutablePointer<__CLPK_doublereal>!#>)
+         cblas_dnrm2(<#T##__N: Int32##Int32#>, <#T##__X: UnsafePointer<Double>!##UnsafePointer<Double>!#>, <#T##__incX: Int32##Int32#>)
+         */
+        if ord == Float.infinity{
+            return Matft.math.abs(mfarray).max(axis: axis, keepDims: keepDims).astype(newtype: T.StoredType.self)
+        }
+        else if ord == -Float.infinity{
+            return Matft.math.abs(mfarray).min(axis: axis, keepDims: keepDims).astype(newtype: T.StoredType.self)
+        }
+        if ord != 0{
+            let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponents: T.from(ord)).astype(newtype: T.StoredType.self)
+            return Matft.math.power(bases: abspow.sum(axis: axis, keepDims: keepDims), exponents: T.StoredType.from(Float(1)/ord))
+        }
+        else{
+            // remove mfarray == 0, and count up non-zero
+            return (mfarray !== T.from(0)).astype(newtype: T.StoredType.self).sum(axis: axis, keepDims: keepDims)
+        }
+    }
 }

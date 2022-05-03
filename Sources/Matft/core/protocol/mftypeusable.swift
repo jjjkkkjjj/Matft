@@ -212,7 +212,7 @@ extension Int: MfInterger, StoredFloat, MfSignedNumeric {
 }
 
 
-extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
+extension Float: MfNumeric, StoredFloat, MfFloatingPoint, MfSignedNumeric, MfStoredTypeUsable {
     //======= vDSP ========//
     public static var vDSP_neg_func: vDSP_convert_func<Float, Float> = vDSP_vneg
     
@@ -348,7 +348,7 @@ extension Float: MfNumeric, StoredFloat, MfSignedNumeric, MfStoredTypeUsable {
         return fabsf(lhs - rhs) < 1e-5
     }
 }
-extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfStoredTypeUsable {
+extension Double: MfNumeric, StoredDouble, MfSignedNumeric, MfFloatingPoint, MfStoredTypeUsable {
     //======= vDSP ========//
     public static var vDSP_neg_func: vDSP_convert_func<Double, Double> = vDSP_vnegD
     

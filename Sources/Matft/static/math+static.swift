@@ -216,8 +216,8 @@ extension Matft.math{ // vForce
     /// - Parameters:
     ///   - mfarray: An input mfarray
     /// - Returns: abs mfarray
-    public static func abs<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<T.StoredType>{
-        return mathf_by_vForce(mfarray, T.StoredType.vForce_abs_func)
+    public static func abs<T: MfTypeUsable>(_ mfarray: MfArray<T>) -> MfArray<T>{
+        return math_by_vForce(mfarray, T.StoredType.vForce_abs_func)
     }
     
     /// Calculate the reciprocal value for all elements
