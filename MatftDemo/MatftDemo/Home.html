@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!-- saved from url=(0050)http://localhost:8000/accounts/test/baseball#board -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    
+    <title>
+Home
+</title>
+
+    <!-- ajax -->
+    <script src="./Home_files/jquery-1.9.1.js"></script>
+    <script src="./Home_files/jquery-ui.js"></script>
+    
+    <!-- bootstrap -->
+    <link rel="stylesheet" href="./Home_files/bootstrap.min.css">
+    <script src="./Home_files/bootstrap.min.js"></script>
+
+    
+    <script src="./Home_files/common.js"></script>
+    <script src="./Home_files/url.min.js"></script>
+    <noscript>
+        <h3>Javascript is disabled</h3>
+        <style type="text/css">
+          #body {display: none; } 
+        </style>
+    </noscript>
+
+    <link rel="stylesheet" href="./Home_files/common.css">
+  
+    
+    
+    <script src="./Home_files/home.js"></script>
+    <script src="./Home_files/settings.js"></script>
+
+    <link rel="stylesheet" href="./Home_files/home.css">
+
+  </head>
+  <body id="body">
+    
+
+    
+
+<nav>
+    <a href="http://localhost:8000/accounts/test/baseball/mypage">アカウント</a>
+    <a href="http://localhost:8000/accounts/test/baseball">通知</a>
+    
+    <a class="modal_link" href="http://localhost:8000/accounts/test/settings/main">設定</a>
+</nav>
+
+<nav>
+    <a class="tab-link" id="home" href="http://localhost:8000/accounts/test/baseball#home">ホーム</a>
+    <a class="tab-link" id="search" href="http://localhost:8000/accounts/test/baseball#search">検索</a>
+    
+    <a class="tab-link" id="karte" href="http://localhost:8000/accounts/test/baseball#karte"> カルテ</a>
+    <a class="tab-link" id="board" href="http://localhost:8000/accounts/test/baseball#board">掲示板</a>
+</nav>
+
+<!-- modal -->
+
+    <div class="modal fade" id="modal" role="dialog">
+    <nav class="modal-dialog" id="modal_dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content" id="modal_content">
+            <header class="modal-header">
+                
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                
+                
+            </header>
+            <main class="modal-body">
+                
+                
+            </main>
+            <footer class="modal-footer">
+                
+                
+            </footer>
+        </div>
+        
+    </nav>
+</div>
+
+
+
+<!-- tab content -->
+
+    <section id="home_tab" class="tab-content" style="display: none;">
+    
+<h2>Home</h2>
+
+<!-- select team -->
+<form id="select_team_form" method="post" action="http://localhost:8000/accounts/test/baseball">
+    <input type="hidden" name="csrfmiddlewaretoken" value="WnBtR0aKfvD1NxMkQ0QBbXZmucQQSEnp0xsJgPGdezwQ8GGN32TmYHfBX7JxXzgz">
+    <select id="select_login_teams" name="select_login_teams" form="select_team_form">
+        
+        <option value="newteam">
+            チームを追加する
+        </option>
+    </select>
+    <button id="select_team_btn" type="submit" hidden="">保存 »</button>
+</form>
+
+<a id="add_team_link" class="modal_link" href="http://localhost:8000/accounts/baseball/search" hidden="">aaa</a>
+
+<!-- notification -->
+<ul>
+
+</ul>
+
+
+</section>
+
+
+    <section id="search_tab" class="tab-content" style="display: none;">
+    
+<h2>Search</h2>
+
+
+</section>
+
+
+    <section id="record_tab" class="tab-content" style="display: none;">
+    
+<h2>Record</h2>
+
+
+</section>
+
+
+    <section id="karte_tab" class="tab-content" style="display: none;">
+    
+<h2>Karte</h2>
+
+
+</section>
+
+
+    <section id="board_tab" class="tab-content" style="display: none;">
+    
+<h2>Board</h2>
+
+
+</section>
+
+
+
+<a href="http://localhost:8000/auth/logout/">ログアウト</a>
+
+
+
+
+
+    
+    
+    
+    
+  
+</body></html>
