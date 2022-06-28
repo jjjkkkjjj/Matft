@@ -334,7 +334,7 @@ final class LinAlgTests: XCTestCase {
         }
         
     }
-    /*
+    
     func testNormFro_mat(){
         
         do{
@@ -342,14 +342,14 @@ final class LinAlgTests: XCTestCase {
             
             XCTAssertEqual(Matft.linalg.normfro_mat(a, axes: (2, 0), keepDims: false).round(decimals: 4),
                            MfArray<Float>([[12.9614814 , 14.56021978],
-                                    [19.79898987, 21.63330765]]).round(decimals: 4))
+                                    [19.79898987, 21.63330765]] as [[Float]]).round(decimals: 4))
             XCTAssertEqual(Matft.linalg.normfro_mat(a, axes: (-2, 1), keepDims: false).round(decimals: 4),
                            MfArray<Float>([[ 7.48331477,  9.16515139],
-                                    [22.44994432, 24.41311123]]).round(decimals: 4))
+                                    [22.44994432, 24.41311123]] as [[Float]]).round(decimals: 4))
             
         }
     }
-    
+    /*
     func testNormNuc_mat(){
         do{
             let a = Matft.arange(start: 0, to: 16, by: 1, shape: [2,2,2,2])

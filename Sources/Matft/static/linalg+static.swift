@@ -176,10 +176,10 @@ extension Matft.linalg{
     /// - parameters:
     ///   - mfarray: The source mfarray
     ///   - ord: (Optional) Order of the norm
-    ///   - axis: (Optional) axis, if not given, get mean for all elements
+    ///   - axes: (Optional) axes
     ///   - keepDims: (Optional) whether to keep original dimension, default is true
     /// - throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
-    /// - Returns: The polar left matrices
+    /// - Returns: The lp norm matrices
     public static func normlp_mat<T: MfTypeUsable>(_ mfarray: MfArray<T>, ord: Float? = 2, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray<T.StoredType>{
         var axes: (row: Int, col: Int) = (get_positive_axis(axes.row, ndim: mfarray.ndim), get_positive_axis(axes.col, ndim: mfarray.ndim))
         
@@ -219,6 +219,32 @@ extension Matft.linalg{
         else{
             preconditionFailure("Invalid norm order for matrices.")
         }
+        
+        if keepDims{
+            var retShape = mfarray.shape
+            retShape[axes.row] = 1
+            retShape[axes.col] = 1
+            ret = ret.reshape(retShape)
+        }
+        
+        return ret
+    }
+
+    ///  Calculate Frobenius norm for matrix along given axis.
+    /// - parameters:
+    ///   - mfarray: The source mfarray
+    ///   - axes: (Optional) axes
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+    /// - Returns: The Frobenius norm matrices
+    public static func normfro_mat<T: MfTypeUsable>(_ mfarray: MfArray<T>, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray<T.StoredType>{
+        let axes: (row: Int, col: Int) = (get_positive_axis(axes.row, ndim: mfarray.ndim), get_positive_axis(axes.col, ndim: mfarray.ndim))
+        
+        precondition(axes.row != axes.col, "Duplicate axes given.")
+        
+        let abspow = Matft.math.power(bases: Matft.math.abs(mfarray.astype(newtype: T.StoredType.self)), exponents: T.StoredType.from(2))
+        
+        var ret = Matft.math.power(bases: abspow.sum(axis: max(axes.row, axes.col), keepDims: false).sum(axis: min(axes.row, axes.col), keepDims: false), exponents: 1/2)
         
         if keepDims{
             var retShape = mfarray.shape
