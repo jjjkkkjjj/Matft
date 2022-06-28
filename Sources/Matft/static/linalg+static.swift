@@ -255,6 +255,30 @@ extension Matft.linalg{
         
         return ret
     }
+    
+    ///  Calculate Nuclear norm for matrix along given axis.
+    /// - parameters:
+    ///   - mfarray: The source mfarray
+    ///   - axes: (Optional) axes
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+    /// - Returns: The Nuclear norm matrices
+    public static func normnuc_mat<T: MfTypeUsable>(_ mfarray: MfArray<T>, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray<T.StoredType>{
+        var axes: (row: Int, col: Int) = (get_positive_axis(axes.row, ndim: mfarray.ndim), get_positive_axis(axes.col, ndim: mfarray.ndim))
+        
+        precondition(axes.row != axes.col, "Duplicate axes given.")
+        
+        var ret = _multi_svd_norm(mfarray: mfarray, axes: &axes, op: Matft.stats.sum)
+        
+        if keepDims{
+            var retShape = mfarray.shape
+            retShape[axes.row] = 1
+            retShape[axes.col] = 1
+            ret = ret.reshape(retShape)
+        }
+        
+        return ret
+    }
 }
 
 fileprivate typealias _norm_op<T: MfTypeUsable> = (MfArray<T>, Int?, Bool) -> MfArray<T>

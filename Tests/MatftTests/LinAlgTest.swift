@@ -349,20 +349,20 @@ final class LinAlgTests: XCTestCase {
             
         }
     }
-    /*
+    
     func testNormNuc_mat(){
         do{
             let a = Matft.arange(start: 0, to: 16, by: 1, shape: [2,2,2,2])
             
             XCTAssertEqual(Matft.linalg.normnuc_mat(a, axes: (2, 0), keepDims: false).round(decimals: 4),
                            MfArray<Float>([[14.14213562, 15.62049935],
-                                    [20.59126028, 22.36067977]]).round(decimals: 4))
+                                    [20.59126028, 22.36067977]] as [[Float]]).round(decimals: 4))
             XCTAssertEqual(Matft.linalg.normnuc_mat(a, axes: (-2, 1), keepDims: false).round(decimals: 4),
                            MfArray<Float>([[ 8.48528137, 10.0        ],
-                                    [22.8035085 , 24.73863375]]).round(decimals: 4))
+                                    [22.8035085 , 24.73863375]] as [[Float]]).round(decimals: 4))
             
         }
-    }*/
+    }
 
     
 }
