@@ -94,7 +94,9 @@ public enum MfType: Int{
 
 public enum StoredType: Int{
     case Float
+    //case DSPComplexFloat
     case Double
+    //case DSPComplexDouble
     
     static public func priority(_ a: StoredType, _ b: StoredType) -> StoredType{
         if a.rawValue < b.rawValue{
