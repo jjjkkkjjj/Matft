@@ -171,4 +171,74 @@ extension Matft.linalg{
             return (mfarray !== T.from(0)).astype(newtype: T.StoredType.self).sum(axis: axis, keepDims: keepDims)
         }
     }
+    
+    ///  Calculate lp norm for matrix along given axis. Note that ord = Float.infinity and -Float.infinity are also available.
+    /// - parameters:
+    ///   - mfarray: The source mfarray
+    ///   - ord: (Optional) Order of the norm
+    ///   - axis: (Optional) axis, if not given, get mean for all elements
+    ///   - keepDims: (Optional) whether to keep original dimension, default is true
+    /// - throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+    /// - Returns: The polar left matrices
+    public static func normlp_mat<T: MfTypeUsable>(_ mfarray: MfArray<T>, ord: Float? = 2, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray<T.StoredType>{
+        var axes: (row: Int, col: Int) = (get_positive_axis(axes.row, ndim: mfarray.ndim), get_positive_axis(axes.col, ndim: mfarray.ndim))
+        
+        precondition(axes.row != axes.col, "Duplicate axes given.")
+        
+        var ret: MfArray<T.StoredType>
+        if ord == 2{
+            ret = _multi_svd_norm(mfarray: mfarray, axes: &axes, op: Matft.stats.max)
+        }
+        else if ord == -2{
+            ret = _multi_svd_norm(mfarray: mfarray, axes: &axes, op: Matft.stats.min)
+        }
+        else if ord == 1{
+            if axes.col > axes.row{
+                axes.col -= 1
+            }
+            ret = Matft.math.abs(mfarray).sum(axis: axes.row, keepDims: false).max(axis: axes.col, keepDims: false).astype(newtype: T.StoredType.self)
+        }
+        else if ord == Float.infinity{
+            if axes.row > axes.col{
+                axes.row -= 1
+            }
+            ret = Matft.math.abs(mfarray).sum(axis: axes.col, keepDims: false).max(axis: axes.row, keepDims: false).astype(newtype: T.StoredType.self)
+        }
+        else if ord == -1{
+            if axes.col > axes.row{
+                axes.col -= 1
+            }
+            ret = Matft.math.abs(mfarray).sum(axis: axes.row, keepDims: false).min(axis: axes.col, keepDims: false).astype(newtype: T.StoredType.self)
+        }
+        else if ord == -Float.infinity{
+            if axes.row > axes.col{
+                axes.row -= 1
+            }
+            ret = Matft.math.abs(mfarray).sum(axis: axes.col, keepDims: false).min(axis: axes.row, keepDims: false).astype(newtype: T.StoredType.self)
+        }
+        else{
+            preconditionFailure("Invalid norm order for matrices.")
+        }
+        
+        if keepDims{
+            var retShape = mfarray.shape
+            retShape[axes.row] = 1
+            retShape[axes.col] = 1
+            ret = ret.reshape(retShape)
+        }
+        
+        return ret
+    }
+}
+
+fileprivate typealias _norm_op<T: MfTypeUsable> = (MfArray<T>, Int?, Bool) -> MfArray<T>
+fileprivate func _multi_svd_norm<T: MfTypeUsable>(mfarray: MfArray<T>, axes: inout (row: Int, col: Int), op: _norm_op<T.StoredType>) -> MfArray<T.StoredType>{
+    do{
+        let mfarray = mfarray.moveaxis(src: [axes.row, axes.col], dst: [-2, -1])
+        let ret = op(try Matft.linalg.svd(mfarray).s, -1, false)
+        return ret
+    }
+    catch{
+        fatalError("Cannot calculate svd")
+    }
 }
