@@ -199,7 +199,7 @@ extension Matft{
         switch MfType.storedType(rettype){
         case .Float:
             let ret = biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv)
-            ret.mfdata._mftype = .Float
+            ret.mfdata.mftype = .Float
             return ret
         case .Double:
             return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)

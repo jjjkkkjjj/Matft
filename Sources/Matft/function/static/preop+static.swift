@@ -26,7 +26,7 @@ extension Matft{
     public static func logical_not(_ mfarray: MfArray) -> MfArray{
         var ret = to_Bool(mfarray)// copy and convert to bool
         ret = Matft.math.abs(ret - 1) // force cast to Float
-        ret.mfdata._mftype = .Bool
+        ret.mfdata.mftype = .Bool
         return ret
     }
 }

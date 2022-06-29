@@ -120,7 +120,7 @@ internal func bool_broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
 
 internal func boolean2float(_ mfarray: MfArray) -> MfArray{
     if mfarray.mftype == .Bool{
-        mfarray.mfdata._mftype = .Float
+        mfarray.mfdata.mftype = .Float
     }
     return mfarray
 }

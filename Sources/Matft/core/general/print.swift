@@ -128,22 +128,22 @@ extension MfData: CustomStringConvertible{
     public var description: String{
         var ret = ""
         
-        ret += "Original Type\t: \(self._mftype)\n"
-        ret += "Stored Type\t\t: \(self._storedType)\n"
+        ret += "Original Type\t: \(self.mftype)\n"
+        ret += "Stored Type\t\t: \(self.storedType)\n"
         ret += "Raw Data:\n"
-        switch self._storedType{
+        switch self.storedType{
         case .Float:
-            let ptrF = self._data.bindMemory(to: Float.self, capacity: self._storedSize)
-            ret += "\(Array(UnsafeMutableBufferPointer(start: ptrF, count: self._storedSize)))\n"
+            let ptrF = self.data.bindMemory(to: Float.self, capacity: self.storedSize)
+            ret += "\(Array(UnsafeMutableBufferPointer(start: ptrF, count: self.storedSize)))\n"
         case .Double:
-            let ptrD = self._data.bindMemory(to: Double.self, capacity: self._storedSize)
-            ret += "\(Array(UnsafeMutableBufferPointer(start: ptrD, count: self._storedSize)))\n"
+            let ptrD = self.data.bindMemory(to: Double.self, capacity: self.storedSize)
+            ret += "\(Array(UnsafeMutableBufferPointer(start: ptrD, count: self.storedSize)))\n"
         }
         
         ret += "\n"
         
         ret += "isView\t: \(self._isView)\n"
-        ret += "offset\t: \(self._offset)\n"
+        ret += "offset\t: \(self.offset)\n"
         
         return ret
     }

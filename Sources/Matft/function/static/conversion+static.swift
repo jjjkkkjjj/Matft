@@ -27,7 +27,7 @@ extension Matft{
         let newStoredType = MfType.storedType(mftype)
         if mfarray.storedType == newStoredType{
             let ret = mfarray.deepcopy()
-            ret.mfdata._mftype = mftype
+            ret.mfdata.mftype = mftype
             return ret
         }
         

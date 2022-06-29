@@ -15,7 +15,7 @@ public class MfArray{
 
     public internal(set) var base: MfArray?
     public var offsetIndex: Int{
-        return self.mfdata._offset
+        return self.mfdata.offset
     }
     
 
@@ -52,16 +52,16 @@ public class MfArray{
     }
     
     public var mftype: MfType{
-        return self.mfdata._mftype
+        return self.mfdata.mftype
     }
     public var storedType: StoredType{
-        return self.mfdata._storedType
+        return self.mfdata.storedType
     }
     public var storedSize: Int{
-        return self.mfdata._storedSize
+        return self.mfdata.storedSize
     }
     public var storedByteSize: Int{
-        return self.mfdata._storedByteSize
+        return self.mfdata.storedByteSize
     }
     
     //mfstructure getter
