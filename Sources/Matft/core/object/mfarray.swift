@@ -98,57 +98,27 @@ public class MfArray{
         
         var _mforder = mforder
         
-        var (flatten, _shape) = array.withUnsafeBufferPointer{
+        var (flattenArray, shape_from_array) = array.withUnsafeBufferPointer{
             flatten_array(ptr: $0, mforder: &_mforder)
         }
     
         if mftype == .Object || mftype == .None{
             //print(flatten)
-            fatalError("Matft does not support Object and None. Shape was \(_shape)")
+            preconditionFailure("Matft does not support Object and None. Shape was \(shape_from_array)")
         }
-        
-        let (ptr, _mftype) = flattenarray2UnsafeMRPtr_viaForD(&flatten, mftypeBool: (mftype ?? .None) == .Bool)
+        let mftype_from_array = get_mftype(&flattenArray)
+        let mftype = mftype ?? mftype_from_array
         
         // set mfdata and mfstructure
-        var shape = shape ?? _shape
-        precondition(shape2size(&shape) == flatten.count, "Invalid shape, size must be \(flatten.count), but got \(shape2size(&shape))")
+        var shape = shape ?? shape_from_array
+        precondition(shape2size(&shape) == flattenArray.count, "Invalid shape, size must be \(flattenArray.count), but got \(shape2size(&shape))")
+        
+        self.mfdata = MfData(flattenArray: &flattenArray, mftype: mftype)
+        
+        
         let shapeptr = array2UnsafeMPtrT(&shape)
-        self.mfdata = MfData(dataptr: ptr, storedSize: flatten.count, mftype: _mftype)
         self.mfstructure = MfStructure(shapeptr: shapeptr, mforder: _mforder, ndim: shape.count)
         
-        guard let mftype = mftype else { return }
-        
-        if MfType.storedType(mftype) != MfType.storedType(_mftype){
-            switch MfType.storedType(mftype){
-            case .Float://double to float
-                let newdata = withDummyDataMRPtr(mftype, storedSize: self.storedSize){
-                    [unowned self] in
-                    let dstptr = $0.bindMemory(to:  Float.self, capacity: self.storedSize)
-                    self.withDataUnsafeMBPtrT(datatype: Double.self){
-                        [unowned self] in
-                        unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vdpsp, self.storedSize)
-                    }
-                }
-                
-                self.mfdata = newdata
-                
-            case .Double://float to double
-                let newdata = withDummyDataMRPtr(mftype, storedSize: self.storedSize){
-                    [unowned self] in
-                    let dstptr = $0.bindMemory(to:  Double.self, capacity: self.storedSize)
-                    self.withDataUnsafeMBPtrT(datatype: Float.self){
-                        [unowned self] in
-                         unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vspdp, self.storedSize)
-                    }
-                }
-                
-                self.mfdata = newdata
-            }
-        }
-        else if _mftype != mftype{
-            //same storedType
-            self.mfdata._mftype = mftype
-        }
     }
     public init (mfdata: MfData, mfstructure: MfStructure){
         self.mfdata = mfdata

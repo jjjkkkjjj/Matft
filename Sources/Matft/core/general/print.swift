@@ -124,7 +124,30 @@ fileprivate func _clousure_number(mfarray: MfArray, indices: inout [Int]) -> Int
     return clousureNum
 }
 
-
+extension MfData: CustomStringConvertible{
+    public var description: String{
+        var ret = ""
+        
+        ret += "Original Type\t: \(self._mftype)\n"
+        ret += "Stored Type\t\t: \(self._storedType)\n"
+        ret += "Raw Data:\n"
+        switch self._storedType{
+        case .Float:
+            let ptrF = self._data.bindMemory(to: Float.self, capacity: self._storedSize)
+            ret += "\(Array(UnsafeMutableBufferPointer(start: ptrF, count: self._storedSize)))\n"
+        case .Double:
+            let ptrD = self._data.bindMemory(to: Double.self, capacity: self._storedSize)
+            ret += "\(Array(UnsafeMutableBufferPointer(start: ptrD, count: self._storedSize)))\n"
+        }
+        
+        ret += "\n"
+        
+        ret += "isView\t: \(self._isView)\n"
+        ret += "offset\t: \(self._offset)\n"
+        
+        return ret
+    }
+}
 
 extension MfFlags: CustomStringConvertible{
     public var description: String{
