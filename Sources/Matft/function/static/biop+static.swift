@@ -598,41 +598,25 @@ fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: ino
         retndim = lmfarray.ndim
     }
 
-    let (l_mfstructure, r_mfstructure) = withDummy2ShapeStridesMBPtr(retndim){
-        
-        l_shapeptr, l_stridesptr, r_shapeptr, r_stridesptr in
-        //move
-        lshape.withUnsafeMutableBufferPointer{
-            l_shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+    for axis in (0..<retndim-2).reversed(){
+        if lshape[axis] == rshape[axis]{
+            continue
         }
-        lstrides.withUnsafeMutableBufferPointer{
-            l_stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        else if lshape[axis] == 1{
+            lshape[axis] = rshape[axis] // aligned to r
+            lstrides[axis] = 0 // broad casted 0
         }
-        rshape.withUnsafeMutableBufferPointer{
-            r_shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        else if rshape[axis] == 1{
+            rshape[axis] = lshape[axis] // aligned to l
+            rstrides[axis] = 0 // broad casted 0
         }
-        rstrides.withUnsafeMutableBufferPointer{
-            r_stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-        }
-        
-        
-        for axis in (0..<retndim-2).reversed(){
-            if l_shapeptr[axis] == r_shapeptr[axis]{
-                continue
-            }
-            else if l_shapeptr[axis] == 1{
-                l_shapeptr[axis] = r_shapeptr[axis] // aligned to r
-                l_stridesptr[axis] = 0 // broad casted 0
-            }
-            else if r_shapeptr[axis] == 1{
-                r_shapeptr[axis] = l_shapeptr[axis] // aligned to l
-                r_stridesptr[axis] = 0 // broad casted 0
-            }
-            else{
-                preconditionFailure("Broadcast error: cannot calculate matrix multiplication due to broadcasting error. hint: For all dim < ndim-2, left.shape[dim] or right.shape[dim] is one, or left.shape[dim] == right.shape[dim]")
-            }
+        else{
+            preconditionFailure("Broadcast error: cannot calculate matrix multiplication due to broadcasting error. hint: For all dim < ndim-2, left.shape[dim] or right.shape[dim] is one, or left.shape[dim] == right.shape[dim]")
         }
     }
+    let l_mfstructure = MfStructure(shape: lshape, strides: lstrides)
+    let r_mfstructure = MfStructure(shape: rshape, strides: rstrides)
+    
     //print(Array<Int>(UnsafeBufferPointer<Int>(start: l_mfstructure._shape, count: l_mfstructure._ndim)))
     //print(Array<Int>(UnsafeBufferPointer<Int>(start: r_mfstructure._shape, count: r_mfstructure._ndim)))
     
@@ -788,6 +772,6 @@ fileprivate func _greater<T: MfStorable>(l_mfarray: MfArray, val: T) -> MfArray{
         }
     }
     
-    let newmfstructure = copy_mfstructure(l_mfarray.mfstructure)
+    let newmfstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }

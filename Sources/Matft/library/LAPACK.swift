@@ -135,8 +135,7 @@ internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func:
         }
     }
     
-    var shape = mfarray.shape
-    let newmfstructure = create_mfstructure(&shape, mforder: .Row)
+    let newmfstructure = MfStructure(shape: mfarray.shape, mforder: .Row)
     
     return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
 }
@@ -175,7 +174,7 @@ internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func:
     else{
         shape = [1]
     }
-    let newmfstructure = create_mfstructure(&shape, mforder: .Row)
+    let newmfstructure = MfStructure(shape: shape, mforder: .Row)
     
     return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
 }

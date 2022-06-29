@@ -123,7 +123,7 @@ internal func sign_by_evDSP<T: MfStorable>(_ mfarray: MfArray, lower: T, upper: 
         }
     }
     
-    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }

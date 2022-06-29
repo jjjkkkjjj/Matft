@@ -90,124 +90,112 @@ extension MfArray: MfSubscriptable{
         }
         
         var orig_axis = 0
+        let orig_shape = self.shape
+        let orig_strides = self.strides
+        
         var new_axis = 0
         var newshape: [Int] = []
         var newstrides: [Int] = []
         var newsize = 1
         
         var offset = self.offsetIndex
-        self.withShapeStridesUnsafeMBPtr{
-        [unowned self] (orig_shapeptr, orig_stridesptr) in
-            //Indexing ref: https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
-            while orig_axis < self.ndim {
-                if let _index = indices[orig_axis] as? Int { // normal indexing
-                    let index = get_index(_index, dim: orig_shapeptr[orig_axis], axis: orig_axis)
+        //Indexing ref: https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
+        while orig_axis < self.ndim {
+            if let _index = indices[orig_axis] as? Int { // normal indexing
+                let index = get_index(_index, dim: orig_shape[orig_axis], axis: orig_axis)
 
-                    offset += index * orig_stridesptr[orig_axis]
-                    orig_axis += 1 // not move
-                    new_axis += 0
-                }
-                else if let mfslice = indices[orig_axis] as? MfSlice{// slicing
-                    let orig_dim = orig_shapeptr[orig_axis]
-                    //default value is 0(if by >= 0), dim - 1(if by < 0)
-                    var startIndex = mfslice.start ?? (mfslice.by >= 0 ? 0 : orig_dim - 1)
-                    //default value is dim(if by >= 0), -dim - 1(if by < 0)
-                    var toIndex = mfslice.to ?? (mfslice.by >= 0 ? orig_dim : -orig_dim - 1)
-                    var by = mfslice.by
-                    /*
-                    align with proper value
-                    by > 0
-                    startIndex <= -orig_dim ==> 0
-                    startIndex > orig_dim ==> orig_dim
-                    orig_dim < toIndex ==> orig_dim
-                    toIndex <= -orig_dim ==> 0
-                    
-                    by < 0
-                    startIndex < -orig_dim ==> -orig_dim-1
-                    startIndex > orig_dim ==> orig_dim
-                    orig_dim < toIndex ==> orig_dim
-                    toIndex < -orig_dim ==> -orig_dim-1
-                    */
-                    if by >= 0{
-                        if startIndex <= -orig_dim{
-                            startIndex = 0
-                        }
-                        else if startIndex > orig_dim{
-                            startIndex = orig_dim
-                        }
-                        if orig_dim < toIndex{
-                            toIndex = orig_dim
-                        }
-                        else if toIndex < -orig_dim{
-                            toIndex = 0
-                        }
-                    }
-                    else{
-                        if startIndex < -orig_dim{
-                            startIndex = -orig_dim - 1
-                        }
-                        else if startIndex > orig_dim{
-                            startIndex = orig_dim
-                        }
-                        if orig_dim < toIndex{
-                            toIndex = orig_dim
-                        }
-                        else if toIndex < -orig_dim{
-                            toIndex = -orig_dim - 1
-                        }
-                    }
-                     
-                    // convert negative index to proper positive index
-                    startIndex = startIndex >= 0 ? startIndex : orig_dim + startIndex
-                    toIndex = toIndex >= 0 ? toIndex : orig_dim + toIndex
-                    
-                    var nsteps = (toIndex - startIndex) / mfslice.by + (toIndex - startIndex) % mfslice.by
-                    if nsteps <= 0{
-                        nsteps = 0
-                        by = 1
+                offset += index * orig_strides[orig_axis]
+                orig_axis += 1 // not move
+                new_axis += 0
+            }
+            else if let mfslice = indices[orig_axis] as? MfSlice{// slicing
+                let orig_dim = orig_shape[orig_axis]
+                //default value is 0(if by >= 0), dim - 1(if by < 0)
+                var startIndex = mfslice.start ?? (mfslice.by >= 0 ? 0 : orig_dim - 1)
+                //default value is dim(if by >= 0), -dim - 1(if by < 0)
+                var toIndex = mfslice.to ?? (mfslice.by >= 0 ? orig_dim : -orig_dim - 1)
+                var by = mfslice.by
+                /*
+                align with proper value
+                by > 0
+                startIndex <= -orig_dim ==> 0
+                startIndex > orig_dim ==> orig_dim
+                orig_dim < toIndex ==> orig_dim
+                toIndex <= -orig_dim ==> 0
+                
+                by < 0
+                startIndex < -orig_dim ==> -orig_dim-1
+                startIndex > orig_dim ==> orig_dim
+                orig_dim < toIndex ==> orig_dim
+                toIndex < -orig_dim ==> -orig_dim-1
+                */
+                if by >= 0{
+                    if startIndex <= -orig_dim{
                         startIndex = 0
                     }
-                     
-                    newshape.append(Swift.min(nsteps, orig_dim))
-                    newstrides.append(orig_stridesptr[orig_axis] * by)
-                    newsize *= newshape.last!
-                    offset += startIndex * orig_stridesptr[orig_axis]
-                    
-                    orig_axis += 1
-                    new_axis += 1
-                }
-                else if let subop = indices[orig_axis] as? SubscriptOps{// expand dim
-                    switch subop {
-                    case .newaxis:
-                        newshape.append(1)
-                        newstrides.append(0)
-                    /*
-                    default:
-                        fatalError("\(subop) is invalid in getter")*/
+                    else if startIndex > orig_dim{
+                        startIndex = orig_dim
                     }
-                    
-                    orig_axis += 0 // not move
-                    new_axis += 1
+                    if orig_dim < toIndex{
+                        toIndex = orig_dim
+                    }
+                    else if toIndex < -orig_dim{
+                        toIndex = 0
+                    }
                 }
                 else{
-                    preconditionFailure("\(indices[orig_axis]) is not subscriptable value")
+                    if startIndex < -orig_dim{
+                        startIndex = -orig_dim - 1
+                    }
+                    else if startIndex > orig_dim{
+                        startIndex = orig_dim
+                    }
+                    if orig_dim < toIndex{
+                        toIndex = orig_dim
+                    }
+                    else if toIndex < -orig_dim{
+                        toIndex = -orig_dim - 1
+                    }
                 }
+                 
+                // convert negative index to proper positive index
+                startIndex = startIndex >= 0 ? startIndex : orig_dim + startIndex
+                toIndex = toIndex >= 0 ? toIndex : orig_dim + toIndex
+                
+                var nsteps = (toIndex - startIndex) / mfslice.by + (toIndex - startIndex) % mfslice.by
+                if nsteps <= 0{
+                    nsteps = 0
+                    by = 1
+                    startIndex = 0
+                }
+                 
+                newshape.append(Swift.min(nsteps, orig_dim))
+                newstrides.append(orig_strides[orig_axis] * by)
+                newsize *= newshape.last!
+                offset += startIndex * orig_strides[orig_axis]
+                
+                orig_axis += 1
+                new_axis += 1
+            }
+            else if let subop = indices[orig_axis] as? SubscriptOps{// expand dim
+                switch subop {
+                case .newaxis:
+                    newshape.append(1)
+                    newstrides.append(0)
+                /*
+                default:
+                    fatalError("\(subop) is invalid in getter")*/
+                }
+                
+                orig_axis += 0 // not move
+                new_axis += 1
+            }
+            else{
+                preconditionFailure("\(indices[orig_axis]) is not subscriptable value")
             }
         }
-        let newndim = newshape.count
         
-        let newstructure = withDummyShapeStridesMBPtr(newndim){
-            newshapeptr, newstridesptr in
-            //move shape
-            newshape.withUnsafeMutableBufferPointer{
-                newshapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: newndim)
-            }
-            
-            //move strides
-            newstrides.withUnsafeMutableBufferPointer{
-                newstridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: newndim)
-            }
-        }
+        let newstructure = MfStructure(shape: newshape, strides: newstrides)
         //newarray.mfdata._storedSize = get_storedSize(newarray.shapeptr, newarray.stridesptr)
         //print(newarray.shape, newarray.mfdata._size, newarray.mfdata._storedSize)
         return MfArray(base: self, mfstructure: newstructure, offset: offset)

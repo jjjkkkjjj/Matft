@@ -16,7 +16,7 @@ extension Matft{
            - mfarray: mfarray
     */
     static public func shallowcopy(_ mfarray: MfArray) -> MfArray{
-        let newstructure = copy_mfstructure(mfarray.mfstructure)
+        let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
         
         return MfArray(base: mfarray, mfstructure: newstructure, offset: mfarray.offsetIndex)
     }
@@ -36,10 +36,11 @@ extension Matft{
             }
         }
         else{
-            if mfarray.mfflags.column_contiguous || mfarray.mfflags.row_contiguous{// all including strides will be copied
+            if mfarray.mfstructure.column_contiguous || mfarray.mfstructure.row_contiguous{// all including strides will be copied
                 return copyAll(mfarray)
             }
-            if !(mfarray.withStridesUnsafeMBPtr{ isReverse($0) }) && !mfarray.mfdata._isView{// not contain reverse and is not view, copy all
+            var strides = mfarray.strides
+            if !isReverse(&strides) && !mfarray.mfdata._isView{// not contain reverse and is not view, copy all
                 return copyAll(mfarray)
             }
             else{//close to row major
@@ -63,9 +64,7 @@ extension Matft{
     */
     static public func nums<T: MfTypable>(_ value: T, shape: [Int], mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
         var shape = shape
-        let size = shape.withUnsafeMutableBufferPointer{
-            shape2size($0)
-        }
+        let size = shape2size(&shape)
         
         let retmftype = mftype ?? MfType.mftype(value: T.zero)
         let newmfdata = withDummyDataMRPtr(retmftype, storedSize: size){
@@ -87,7 +86,7 @@ extension Matft{
 
         }
         
-        let newmfstructure = create_mfstructure(&shape, mforder: mforder)
+        let newmfstructure = MfStructure(shape: shape, mforder: mforder)
         
         return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
@@ -163,7 +162,7 @@ extension Matft{
         let dim = v.size + abs(k)
         let size = dim*dim
         let retmftype = mftype ?? v.mftype
-        var shape = [dim, dim]
+        let shape = [dim, dim]
         
         let newmfdata = withDummyDataMRPtr(retmftype, storedSize: size){
             ptr in
@@ -195,7 +194,7 @@ extension Matft{
 
         }
         
-        let newmfstructure = create_mfstructure(&shape, mforder: mforder)
+        let newmfstructure = MfStructure(shape: shape, mforder: mforder)
         
         return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
         
@@ -251,7 +250,7 @@ extension Matft{
             }
         }
         
-        let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+        let newmfstructure = MfStructure(shape: retShape, mforder: .Row)
         
         return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
@@ -306,7 +305,7 @@ extension Matft{
             }
         }
         
-        let newmfstructure = create_mfstructure(&retShape, mforder: .Column)
+        let newmfstructure = MfStructure(shape: retShape, mforder: .Column)
         
         return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }
@@ -389,7 +388,7 @@ extension Matft{
             }
         }
         
-        let newmfstructure = create_mfstructure(&retShape, mforder: fasterOrder)
+        let newmfstructure = MfStructure(shape: retShape, mforder: fasterOrder)
         
         return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     }

@@ -113,7 +113,7 @@ internal func bool_broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
         }
         
     }
-    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+    let newmfstructure = MfStructure(shape: retShape, mforder: .Row)
     
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }

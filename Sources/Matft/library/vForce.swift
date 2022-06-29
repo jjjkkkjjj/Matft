@@ -25,7 +25,7 @@ internal func math_vv_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func
         }
     }
     
-    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 
@@ -48,7 +48,7 @@ internal func math_biop_vv_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mf
         }
     }
 
-    let newmfstructure = copy_mfstructure(l_mfarray.mfstructure)
+    let newmfstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 

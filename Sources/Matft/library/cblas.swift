@@ -63,9 +63,8 @@ internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfA
 
 internal func copy_by_cblas<T: MfStorable>(_ mfarray: MfArray, mforder: MfOrder, cblas_func: cblas_convorder_func<T>) -> MfArray{
     let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.size){_ in}//dummy
-    var shape = mfarray.shape
     
-    let newstructure = create_mfstructure(&shape, mforder: mforder)
+    let newstructure = MfStructure(shape: mfarray.shape, mforder: mforder)
 
     let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
     return copy_mfarray(mfarray, dsttmpMfarray: ret, cblas_func: cblas_func)
@@ -106,16 +105,17 @@ internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarr
     // must be row major
     let retorder = _matmul_convorder(&lmfarray, &rmfarray)
     
-    let newmfstructure = create_mfstructure(&retshape, mforder: retorder)
-
+    let newmfstructure = MfStructure(shape: retshape, mforder: retorder)
+    let newsize = shape2size(&retshape)
+    
     let matNum = lshape[retndim - 2] * rshape[retndim - 1]
     let l_matNum = lshape[retndim - 2] * lshape[retndim - 1]
     let r_matNum = rshape[retndim - 2] * rshape[retndim - 1]
-    let iterNum = newmfstructure._size / matNum
+    let iterNum = newsize / matNum
     
-    let newmfdata = withDummyDataMRPtr(lmfarray.mftype, storedSize: newmfstructure._size){
+    let newmfdata = withDummyDataMRPtr(lmfarray.mftype, storedSize: newsize){
         dstptr in
-        var dstptrT = dstptr.bindMemory(to: T.self, capacity: newmfstructure._size)
+        var dstptrT = dstptr.bindMemory(to: T.self, capacity: newsize)
         lmfarray.withDataUnsafeMBPtrT(datatype: T.self){
             lptr in
             var lptr = lptr.baseAddress!
@@ -142,20 +142,20 @@ fileprivate func _matmul_convorder(_ lmfarray: inout MfArray, _ rmfarray: inout 
     /*
     // must be close to either row or column major
     var retorder = MfOrder.Row
-    if !(lmfarray.mfflags.column_contiguous && rmfarray.mfflags.column_contiguous) || lmfarray.mfflags.row_contiguous && rmfarray.mfflags.row_contiguous{//convert either row or column major
-        if lmfarray.mfflags.column_contiguous{
+    if !(lmfarray.mfstructure.column_contiguous && rmfarray.mfstructure.column_contiguous) || lmfarray.mfstructure.row_contiguous && rmfarray.mfstructure.row_contiguous{//convert either row or column major
+        if lmfarray.mfstructure.column_contiguous{
             rmfarray = Matft.conv_order(rmfarray, mforder: .Column)
             retorder = .Column
         }
-        else if lmfarray.mfflags.row_contiguous{
+        else if lmfarray.mfstructure.row_contiguous{
             rmfarray = Matft.conv_order(rmfarray, mforder: .Row)
             retorder = .Row
         }
-        else if rmfarray.mfflags.column_contiguous{
+        else if rmfarray.mfstructure.column_contiguous{
             lmfarray = Matft.conv_order(lmfarray, mforder: .Column)
             retorder = .Column
         }
-        else if rmfarray.mfflags.row_contiguous{
+        else if rmfarray.mfstructure.row_contiguous{
             lmfarray = Matft.conv_order(lmfarray, mforder: .Row)
             retorder = .Row
         }
@@ -166,15 +166,15 @@ fileprivate func _matmul_convorder(_ lmfarray: inout MfArray, _ rmfarray: inout 
         }
     }
     else{
-        retorder = lmfarray.mfflags.row_contiguous ? .Row : .Column
+        retorder = lmfarray.mfstructure.row_contiguous ? .Row : .Column
     }*/
     //must be row major
     let retorder = MfOrder.Row
-    if !(lmfarray.mfflags.row_contiguous && rmfarray.mfflags.row_contiguous){//convert row major
-        if !rmfarray.mfflags.row_contiguous{
+    if !(lmfarray.mfstructure.row_contiguous && rmfarray.mfstructure.row_contiguous){//convert row major
+        if !rmfarray.mfstructure.row_contiguous{
             rmfarray = Matft.conv_order(rmfarray, mforder: .Row)
         }
-        if !lmfarray.mfflags.row_contiguous{
+        if !lmfarray.mfstructure.row_contiguous{
             lmfarray = Matft.conv_order(lmfarray, mforder: .Row)
         }
     }
@@ -235,7 +235,7 @@ internal func fancyndgetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indice
             }
         }
     }
-    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+    let newmfstructure = MfStructure(shape: retShape, mforder: .Row)
     
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
@@ -279,7 +279,7 @@ internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
             }
         }
     }
-    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+    let newmfstructure = MfStructure(shape: retShape, mforder: .Row)
     
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }

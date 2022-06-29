@@ -112,7 +112,7 @@ public class MfData{
 /// - Returns:
 ///   - flatten: Flatten array
 ///   - shape: Input array's shape
-internal func flatten_array(ptr: UnsafeBufferPointer<Any>, mforder: inout MfOrder) -> (flatten: [Any], shape: [Int]){
+internal func flatten_array(ptr: UnsafeBufferPointer<Any>, mforder: MfOrder) -> (flatten: [Any], shape: [Int]){
     var shape: [Int] = [ptr.count]
     var queue = ptr.compactMap{ $0 }
     

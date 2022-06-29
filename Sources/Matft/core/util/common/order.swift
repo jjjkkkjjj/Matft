@@ -10,7 +10,7 @@ import Foundation
 import Accelerate
 
 internal func toSwiftArray(_ mfarray: MfArray) -> [Any]{
-    let mfarray = !mfarray.mfflags.row_contiguous ? to_row_major(mfarray) : mfarray
+    let mfarray = !mfarray.mfstructure.row_contiguous ? to_row_major(mfarray) : mfarray
     
     var shape = mfarray.shape
     var data = mfarray.data
@@ -41,7 +41,7 @@ fileprivate func _get_swiftArray(_ data: inout [Any], shape: inout [Int], axis: 
     - Important: strides must be checked before calling this function
  */
 internal func copyAll(_ mfarray: MfArray) -> MfArray{
-    assert(mfarray.mfflags.row_contiguous || mfarray.mfflags.column_contiguous, "To call copyAll function, passed mfarray must be contiguous")
+    assert(mfarray.mfstructure.row_contiguous || mfarray.mfstructure.column_contiguous, "To call copyAll function, passed mfarray must be contiguous")
     let newmfdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.size){
         dstptr in
         mfarray.withDataUnsafeMRPtr{
@@ -49,13 +49,13 @@ internal func copyAll(_ mfarray: MfArray) -> MfArray{
             dstptr.copyMemory(from: $0, byteCount: mfarray.byteSize)
         }
     }
-    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     
     return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
 }
 
 internal func to_row_major(_ mfarray: MfArray) -> MfArray{
-    if mfarray.mfflags.row_contiguous{
+    if mfarray.mfstructure.row_contiguous{
         return copyAll(mfarray)
     }
     
@@ -69,7 +69,7 @@ internal func to_row_major(_ mfarray: MfArray) -> MfArray{
 }
 
 internal func to_column_major(_ mfarray: MfArray) -> MfArray{
-    if mfarray.mfflags.column_contiguous{
+    if mfarray.mfstructure.column_contiguous{
         return copyAll(mfarray)
     }
     
@@ -85,8 +85,8 @@ internal func to_column_major(_ mfarray: MfArray) -> MfArray{
  Return contiguous mfarray. If passed mfarray is arleady contiguous, return one directly
  */
 internal func check_contiguous(_ mfarray: MfArray, _ mforder: MfOrder? = nil) -> MfArray{
-    if ((mfarray.mfflags.row_contiguous || mfarray.mfflags.column_contiguous) && mforder == nil) ||
-        (mfarray.mfflags.row_contiguous && mforder == .Row) || (mfarray.mfflags.column_contiguous && mforder == .Column){
+    if ((mfarray.mfstructure.row_contiguous || mfarray.mfstructure.column_contiguous) && mforder == nil) ||
+        (mfarray.mfstructure.row_contiguous && mforder == .Row) || (mfarray.mfstructure.column_contiguous && mforder == .Column){
         return mfarray
     }
     else{
@@ -102,13 +102,13 @@ internal func check_biop_contiguous(_ l_mfarray: MfArray, _ r_mfarray: MfArray, 
     let l: MfArray, r: MfArray
     let biggerL: Bool
     let retsize: Int
-    if r_mfarray.mfflags.column_contiguous || r_mfarray.mfflags.row_contiguous{
+    if r_mfarray.mfstructure.column_contiguous || r_mfarray.mfstructure.row_contiguous{
         l = l_mfarray
         r = r_mfarray
         biggerL = false
         retsize = r_mfarray.size
     }
-    else if l_mfarray.mfflags.column_contiguous || l_mfarray.mfflags.row_contiguous{
+    else if l_mfarray.mfstructure.column_contiguous || l_mfarray.mfstructure.row_contiguous{
         l = l_mfarray
         r = r_mfarray
         biggerL = true

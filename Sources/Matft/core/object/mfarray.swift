@@ -66,21 +66,17 @@ public class MfArray{
     
     //mfstructure getter
     public var shape: [Int]{
-        return self.withShapeUnsafeMBPtr{
-            Array($0)
-        }
+        return self.mfstructure.shape
     }
     public var strides: [Int]{
-        return self.withStridesUnsafeMBPtr{
-            Array($0)
-        }
+        return self.mfstructure.strides
     }
     
     public var ndim: Int{
-        return self.mfstructure._ndim
+        return self.mfstructure.shape.count
     }
     public var size: Int{
-        return self.mfstructure._size
+        return shape2size(&self.mfstructure.shape)
     }
     public var byteSize: Int{
         switch self.storedType {
@@ -90,16 +86,11 @@ public class MfArray{
             return self.size * MemoryLayout<Double>.size
         }
     }
-    public var mfflags: MfFlags{
-        return self.mfstructure._flags
-    }
 
     public init (_ array: [Any], mftype: MfType? = nil, shape: [Int]? = nil, mforder: MfOrder = .Row) {
         
-        var _mforder = mforder
-        
         var (flattenArray, shape_from_array) = array.withUnsafeBufferPointer{
-            flatten_array(ptr: $0, mforder: &_mforder)
+            flatten_array(ptr: $0, mforder: mforder)
         }
     
         if mftype == .Object || mftype == .None{
@@ -114,10 +105,7 @@ public class MfArray{
         precondition(shape2size(&shape) == flattenArray.count, "Invalid shape, size must be \(flattenArray.count), but got \(shape2size(&shape))")
         
         self.mfdata = MfData(flattenArray: &flattenArray, mftype: mftype)
-        
-        
-        let shapeptr = array2UnsafeMPtrT(&shape)
-        self.mfstructure = MfStructure(shapeptr: shapeptr, mforder: _mforder, ndim: shape.count)
+        self.mfstructure = MfStructure(shape: shape, mforder: mforder)
         
     }
     public init (mfdata: MfData, mfstructure: MfStructure){

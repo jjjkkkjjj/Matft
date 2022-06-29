@@ -38,53 +38,9 @@ extension MfArray{
         }
     }
     
-    public func withShapeUnsafeMBPtr<R>(_ body: (UnsafeMutableBufferPointer<Int>) throws -> R) rethrows -> R{
-        return try body(UnsafeMutableBufferPointer(start: self.mfstructure._shape, count: self.ndim))
-    }
-    public func withShapeUnsafeMPtr<R>(_ body: (UnsafeMutablePointer<Int>) throws -> R) rethrows -> R{
-        return try body(self.mfstructure._shape)
-    }
-    
-    public func withStridesUnsafeMBPtr<R>(_ body: (UnsafeMutableBufferPointer<Int>) throws -> R) rethrows -> R{
-        return try body(UnsafeMutableBufferPointer(start: self.mfstructure._strides, count: self.ndim))
-    }
-    public func withStridesUnsafeMPtr<R>(_ body: (UnsafeMutablePointer<Int>) throws -> R) rethrows -> R{
-        return try body(self.mfstructure._strides)
-    }
-    
-    public func withShapeStridesUnsafeMBPtr<R>(_ body: (UnsafeMutableBufferPointer<Int>, UnsafeMutableBufferPointer<Int>) throws -> R) rethrows -> R{
-        let ret = try self.withShapeUnsafeMBPtr{
-            [unowned self](shapeptr) in
-            try self.withStridesUnsafeMBPtr{
-                stridesptr in
-                try body(shapeptr, stridesptr)
-            }
-        }
-        self.mfstructure.updateContiguous()
-        
-        return ret
-    }
+
 }
 
-
-internal func withDummyShapeStridesMBPtr(_ ndim: Int, _ body: (UnsafeMutableBufferPointer<Int>, UnsafeMutableBufferPointer<Int>) throws -> Void) rethrows -> MfStructure{
-    
-    let dummyShapePtr = UnsafeMutableBufferPointer(start: create_unsafeMPtrT(type: Int.self, count: ndim), count: ndim)
-    let dummyStridesPtr = UnsafeMutableBufferPointer(start: create_unsafeMPtrT(type: Int.self, count: ndim), count: ndim)
-    
-    try body(dummyShapePtr, dummyStridesPtr)
-    
-    return MfStructure(shapeptr: dummyShapePtr.baseAddress!, stridesptr: dummyStridesPtr.baseAddress!, ndim: ndim)
-}
-internal func withDummyShapeStridesMPtr(_ ndim: Int, _ body: (UnsafeMutablePointer<Int>, UnsafeMutablePointer<Int>) throws -> Void) rethrows -> MfStructure{
-    
-    let dummyShapePtr = create_unsafeMPtrT(type: Int.self, count: ndim)
-    let dummyStridesPtr = create_unsafeMPtrT(type: Int.self, count: ndim)
-    
-    try body(dummyShapePtr, dummyStridesPtr)
-    
-    return MfStructure(shapeptr: dummyShapePtr, stridesptr: dummyStridesPtr, ndim: ndim)
-}
 
 internal func withDummyDataMRPtr(_ mftype: MfType, storedSize: Int, _ body: (UnsafeMutableRawPointer) throws -> Void) rethrows -> MfData{
     
@@ -104,32 +60,7 @@ internal func withDummyDataMRPtr(_ mftype: MfType, storedSize: Int, _ body: (Uns
     }
 }
 
-// not used
-internal func withDummy(mftype: MfType, storedSize: Int, ndim: Int, _ body: (UnsafeMutableRawPointer, UnsafeMutableBufferPointer<Int>, UnsafeMutableBufferPointer<Int>) throws -> Void) rethrows -> MfArray{
-    let dummyShapePtr = UnsafeMutableBufferPointer(start: create_unsafeMPtrT(type: Int.self, count: ndim), count: ndim)
-    let dummyStridesPtr = UnsafeMutableBufferPointer(start: create_unsafeMPtrT(type: Int.self, count: ndim), count: ndim)
-    
-    let newmfdata = try withDummyDataMRPtr(mftype, storedSize: storedSize){
-        try body($0, dummyShapePtr, dummyStridesPtr)
-    }
-    
-    let newmfstructure = MfStructure(shapeptr: dummyShapePtr.baseAddress!, stridesptr: dummyStridesPtr.baseAddress!, ndim: ndim)
-    
-    return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
-}
 
-internal func withDummy2ShapeStridesMBPtr(_ ndim: Int, _ body: (UnsafeMutableBufferPointer<Int>, UnsafeMutableBufferPointer<Int>, UnsafeMutableBufferPointer<Int>, UnsafeMutableBufferPointer<Int>) throws -> Void) rethrows -> (l: MfStructure, r: MfStructure){
-    
-    let l_dummyShapePtr = UnsafeMutableBufferPointer(start: create_unsafeMPtrT(type: Int.self, count: ndim), count: ndim)
-    let l_dummyStridesPtr = UnsafeMutableBufferPointer(start: create_unsafeMPtrT(type: Int.self, count: ndim), count: ndim)
-    
-    let r_dummyShapePtr = UnsafeMutableBufferPointer(start: create_unsafeMPtrT(type: Int.self, count: ndim), count: ndim)
-    let r_dummyStridesPtr = UnsafeMutableBufferPointer(start: create_unsafeMPtrT(type: Int.self, count: ndim), count: ndim)
-    
-    try body(l_dummyShapePtr, l_dummyStridesPtr, r_dummyShapePtr, r_dummyStridesPtr)
-    
-    return (MfStructure(shapeptr: l_dummyShapePtr.baseAddress!, stridesptr: l_dummyStridesPtr.baseAddress!, ndim: ndim), MfStructure(shapeptr: r_dummyShapePtr.baseAddress!, stridesptr: r_dummyStridesPtr.baseAddress!, ndim: ndim))
-}
 
 internal func withDataMBPtr_multi<T, R>(datatype: T.Type, _ a: MfArray, _ b: MfArray, _ body: ((UnsafeMutableBufferPointer<T>, UnsafeMutableBufferPointer<T>) throws -> R)) rethrows -> R{
     return try a.withDataUnsafeMBPtrT(datatype: T.self){

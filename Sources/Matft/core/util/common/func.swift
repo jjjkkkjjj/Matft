@@ -105,41 +105,24 @@ internal func biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (
         retndim = l_mfarray.ndim
     }
 
-    let (l_mfstructure, r_mfstructure) = withDummy2ShapeStridesMBPtr(retndim){
-        
-        l_shapeptr, l_stridesptr, r_shapeptr, r_stridesptr in
-        //move
-        lshape.withUnsafeMutableBufferPointer{
-            l_shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+    for axis in (0..<retndim).reversed(){
+        if lshape[axis] == rshape[axis]{
+            continue
         }
-        lstrides.withUnsafeMutableBufferPointer{
-            l_stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        else if lshape[axis] == 1{
+            lshape[axis] = rshape[axis] // aligned to r
+            lstrides[axis] = 0 // broad casted 0
         }
-        rshape.withUnsafeMutableBufferPointer{
-            r_shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
+        else if rshape[axis] == 1{
+            rshape[axis] = lshape[axis] // aligned to l
+            rstrides[axis] = 0 // broad casted 0
         }
-        rstrides.withUnsafeMutableBufferPointer{
-            r_stridesptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: retndim)
-        }
-        
-        
-        for axis in (0..<retndim).reversed(){
-            if l_shapeptr[axis] == r_shapeptr[axis]{
-                continue
-            }
-            else if l_shapeptr[axis] == 1{
-                l_shapeptr[axis] = r_shapeptr[axis] // aligned to r
-                l_stridesptr[axis] = 0 // broad casted 0
-            }
-            else if r_shapeptr[axis] == 1{
-                r_shapeptr[axis] = l_shapeptr[axis] // aligned to l
-                r_stridesptr[axis] = 0 // broad casted 0
-            }
-            else{
-                preconditionFailure("could not be broadcast together with shapes \(l_mfarray.shape) \(r_mfarray.shape)")
-            }
+        else{
+            preconditionFailure("could not be broadcast together with shapes \(l_mfarray.shape) \(r_mfarray.shape)")
         }
     }
+    let l_mfstructure = MfStructure(shape: lshape, strides: lstrides)
+    let r_mfstructure = MfStructure(shape: rshape, strides: rstrides)
     //print(Array<Int>(UnsafeBufferPointer<Int>(start: l_mfstructure._shape, count: l_mfstructure._ndim)))
     //print(Array<Int>(UnsafeBufferPointer<Int>(start: r_mfstructure._shape, count: r_mfstructure._ndim)))
 

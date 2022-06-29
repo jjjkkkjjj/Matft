@@ -37,7 +37,7 @@ internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP
         }
     }
     
-    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 // same above
@@ -66,7 +66,7 @@ internal func biop_vs_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T
         }
     }
     
-    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 
@@ -92,7 +92,7 @@ internal func biop_sv_by_vDSP<T: MfStorable>(_ l_scalar: T, _ r_mfarray: MfArray
         }
     }
     
-    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 
@@ -139,8 +139,15 @@ internal func biop_vv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: 
             }
         }
     }
+    
+    let newmfstructure: MfStructure
+    if biggerL{
+        newmfstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
+    }
+    else{
+        newmfstructure = MfStructure(shape: r_mfarray.shape, strides: r_mfarray.strides)
+    }
 
-    let newmfstructure = copy_mfstructure(biggerL ? l_mfarray.mfstructure : r_mfarray.mfstructure)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 
@@ -176,7 +183,7 @@ internal func stats_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int, v
         }
     }
     
-    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+    let newmfstructure = MfStructure(shape: retShape, mforder: .Row)
 
     return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
 }
@@ -238,7 +245,7 @@ internal func stats_index_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: 
         }
     }
     
-    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+    let newmfstructure = MfStructure(shape: retShape, mforder: .Row)
 
     return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
 }
@@ -330,7 +337,7 @@ internal func sort_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int,
         }
     }
     
-    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+    let newmfstructure = MfStructure(shape: retShape, mforder: .Row)
     
     let ret = MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
     
@@ -366,7 +373,7 @@ internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ min: T, _ max: T
         }
     }
     
-    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 
@@ -399,7 +406,7 @@ internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_vminmg_func: 
         }
     }
     
-    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 
@@ -431,7 +438,7 @@ internal func toBool_by_vDSP(_ mfarray: MfArray) -> MfArray{
         }
     }
     
-    let newmfstructure = copy_mfstructure(mfarray.mfstructure)
+    let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 
@@ -517,7 +524,7 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
     }
     
     
-    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+    let newmfstructure = MfStructure(shape: retShape, mforder: .Row)
     
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
@@ -568,7 +575,7 @@ internal func fancy1dgetcol_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices
             vDSP_func(srcptr.baseAddress!, &offsets, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(indices.size))
         }
     }
-    let newmfstructure = copy_mfstructure(indices.mfstructure)
+    let newmfstructure = MfStructure(shape: indices.shape, strides: indices.strides)
     return MfArray(mfdata: newdata, mfstructure: newmfstructure)
 }
 

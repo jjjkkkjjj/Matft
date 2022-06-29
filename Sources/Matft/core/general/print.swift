@@ -149,9 +149,14 @@ extension MfData: CustomStringConvertible{
     }
 }
 
-extension MfFlags: CustomStringConvertible{
+extension MfStructure: CustomStringConvertible{
     public var description: String{
         var ret = ""
+        ret += "shape\t: \(self.shape)\n"
+        ret += "strides\t: \(self.strides)\n"
+        
+        ret += "\n"
+        
         ret += "Row contiguous\t\t: \(self.row_contiguous)\n"
         ret += "Column contiguous\t: \(self.column_contiguous)\n"
         return ret

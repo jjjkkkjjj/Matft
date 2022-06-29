@@ -9,26 +9,26 @@
 import Foundation
 
 // note that i is index of data
-fileprivate func _get_index(i: Int, shapeptr: inout UnsafeMutableBufferPointer<Int>) -> [Int]{
-    var ret = Array(repeating: 0, count: shapeptr.count)
+fileprivate func _get_index(i: Int, shape: inout [Int]) -> [Int]{
+    var ret = Array(repeating: 0, count: shape.count)
     var quotient = i
-    let ndim = shapeptr.count
+    let ndim = shape.count
     
     for axis in stride(from: ndim - 1, through: 0, by: -1){
-        ret[axis] = quotient % shapeptr[axis]
-        quotient = Int(quotient / shapeptr[axis])
+        ret[axis] = quotient % shape[axis]
+        quotient = Int(quotient / shape[axis])
     }
     
     return ret
 }
 
-internal func get_indices(_ shapeptr: inout UnsafeMutableBufferPointer<Int>) -> [[Int]]{
+internal func get_indices(_ shape: inout [Int]) -> [[Int]]{
     var ret: [[Int]] = []
     
-    let size = shape2size(shapeptr)
+    let size = shape2size(&shape)
     
     for i in 0..<size{
-        ret.append(_get_index(i: i, shapeptr: &shapeptr))
+        ret.append(_get_index(i: i, shape: &shape))
     }
     
     //print(ret)
@@ -36,13 +36,13 @@ internal func get_indices(_ shapeptr: inout UnsafeMutableBufferPointer<Int>) -> 
     return ret
 }
 //recursive function for getting limitted
-fileprivate func _recursive_leaveout_indices(shapeptr: inout UnsafeMutableBufferPointer<Int>, axis: Int, ini_num: Int, numbers: inout [Int?]){
+fileprivate func _recursive_leaveout_indices(shape: inout [Int], axis: Int, ini_num: Int, numbers: inout [Int?]){
     
-    let ndim = shapeptr.count
+    let ndim = shape.count
     
     if axis == ndim - 1{
-        if shapeptr[axis] < 6{ //not leave out
-            for i in 0..<shapeptr[axis]{
+        if shape[axis] < 6{ //not leave out
+            for i in 0..<shape[axis]{
                 numbers.append(i + ini_num)
             }
         }
@@ -53,7 +53,7 @@ fileprivate func _recursive_leaveout_indices(shapeptr: inout UnsafeMutableBuffer
             
             numbers.append(nil) //skip
             
-            for i in (shapeptr[axis] - 3)..<shapeptr[axis]{ //last 3 elements
+            for i in (shape[axis] - 3)..<shape[axis]{ //last 3 elements
                 numbers.append(i + ini_num)
             }
         }
@@ -61,36 +61,36 @@ fileprivate func _recursive_leaveout_indices(shapeptr: inout UnsafeMutableBuffer
     }
     else{
 
-        let restsize = shape2size(shapeptr)
+        let restsize = shape2size(&shape)
         
-        if shapeptr[axis] < 6{ //not leave out
-            for i in 0..<shapeptr[axis]{
-                _recursive_leaveout_indices(shapeptr: &shapeptr, axis: axis + 1, ini_num: i * restsize + ini_num, numbers: &numbers)
+        if shape[axis] < 6{ //not leave out
+            for i in 0..<shape[axis]{
+                _recursive_leaveout_indices(shape: &shape, axis: axis + 1, ini_num: i * restsize + ini_num, numbers: &numbers)
             }
         }
         else{ //leave out
             for i in 0..<3{ //first 3 elements
-                _recursive_leaveout_indices(shapeptr: &shapeptr, axis: axis + 1, ini_num: i * restsize + ini_num, numbers: &numbers)
+                _recursive_leaveout_indices(shape: &shape, axis: axis + 1, ini_num: i * restsize + ini_num, numbers: &numbers)
             }
             
             numbers.append(nil) //skip
             
-            for i in (shapeptr[axis] - 3)..<shapeptr[axis]{  //last 3 elements
-                _recursive_leaveout_indices(shapeptr: &shapeptr, axis: axis + 1, ini_num: i * restsize + ini_num, numbers: &numbers)
+            for i in (shape[axis] - 3)..<shape[axis]{  //last 3 elements
+                _recursive_leaveout_indices(shape: &shape, axis: axis + 1, ini_num: i * restsize + ini_num, numbers: &numbers)
             }
         }
     }
 }
 //nil means skip
-internal func get_leaveout_indices(_ shapeptr: inout UnsafeMutableBufferPointer<Int>) -> [[Int]?]{
+internal func get_leaveout_indices(_ shape: inout [Int]) -> [[Int]?]{
     var numbers: [Int?] = [] //list of indices of data
-    _recursive_leaveout_indices(shapeptr: &shapeptr, axis: 0, ini_num: 0, numbers: &numbers)
+    _recursive_leaveout_indices(shape: &shape, axis: 0, ini_num: 0, numbers: &numbers)
     //print(numbers)
     var ret: [[Int]?] = []
     
     for number in numbers{
         if let number = number{
-            ret.append(_get_index(i: number, shapeptr: &shapeptr))
+            ret.append(_get_index(i: number, shape: &shape))
         }
         else{ // nil i.e. skip
             ret.append(nil)
