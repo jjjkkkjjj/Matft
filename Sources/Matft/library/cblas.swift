@@ -48,7 +48,7 @@ internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfA
              //[7.0, 6.0]!!!!!
             */
             //print(dsttmpMfarray.strides, mfarray.strides)
-            for cblasPrams in OptOffsetParams_mfarray(bigger_mfarray: dsttmpMfarray, smaller_mfarray: mfarray){
+            for cblasPrams in OptOffsetParamsSequence(shape: dsttmpMfarray.shape, bigger_strides: dsttmpMfarray.strides, smaller_strides: mfarray.strides){
                 //if negative offset, move proper position
                 let srcptr = cblasPrams.s_stride >= 0 ? srcptr.baseAddress! + cblasPrams.s_offset : srcptr.baseAddress! + (cblasPrams.blocksize - 1) * cblasPrams.s_stride + cblasPrams.s_offset
                 let dstptr = cblasPrams.b_stride >= 0 ? dstptr.baseAddress! + cblasPrams.b_offset : dstptr.baseAddress! + (cblasPrams.blocksize - 1) * cblasPrams.b_stride + cblasPrams.b_offset
@@ -311,7 +311,7 @@ internal func fancysetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
                 
                 let workMfarrayStrides = Array(mfarray.strides.suffix(from: 1))
                 let workAssignedMfarrayStrides = Array(assignedMfarray.strides.suffix(from: indices.ndim))
-                for cblasParams in OptOffsetParams_raw(shape: workShape, bigger_strides: workAssignedMfarrayStrides, smaller_strides: workMfarrayStrides){
+                for cblasParams in OptOffsetParamsSequence(shape: workShape, bigger_strides: workAssignedMfarrayStrides, smaller_strides: workMfarrayStrides){
                     for (i, offset) in offsets.enumerated(){
                         copy_unsafeptrT(cblasParams.blocksize, srcptr.baseAddress! + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr.baseAddress! + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
                     }
@@ -368,7 +368,7 @@ internal func fancysetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
             else{
                 let workMfarrayStrides = Array(mfarray.strides.suffix(from: indices.count))
                 let workAssignedMfarrayStrides = Array(assignedMfarray.strides.suffix(workShape.count))
-                for cblasParams in OptOffsetParams_raw(shape: workShape, bigger_strides: workAssignedMfarrayStrides, smaller_strides: workMfarrayStrides){
+                for cblasParams in OptOffsetParamsSequence(shape: workShape, bigger_strides: workAssignedMfarrayStrides, smaller_strides: workMfarrayStrides){
                     for (i, offset) in offsets.enumerated(){
                         copy_unsafeptrT(cblasParams.blocksize, srcptr.baseAddress! + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr.baseAddress! + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
                     }

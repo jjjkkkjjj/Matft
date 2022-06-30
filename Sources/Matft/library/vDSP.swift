@@ -112,7 +112,7 @@ internal func biop_vv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: 
             //print(l_mfarray.storedSize, r_mfarray.storedSize)
             //print(biggerL)
             if biggerL{// l is bigger
-                for vDSPPrams in OptOffsetParams_mfarray(bigger_mfarray: l_mfarray, smaller_mfarray: r_mfarray){
+                for vDSPPrams in OptOffsetParamsSequence(shape: l_mfarray.shape, bigger_strides: l_mfarray.strides, smaller_strides: r_mfarray.strides){
                     /*
                     let bptr = bptr.baseAddress! + vDSPPrams.b_offset
                     let sptr = sptr.baseAddress! + vDSPPrams.s_offset
@@ -122,7 +122,7 @@ internal func biop_vv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: 
                 }
             }
             else{// r is bigger
-                for vDSPPrams in OptOffsetParams_mfarray(bigger_mfarray: r_mfarray, smaller_mfarray: l_mfarray){
+                for vDSPPrams in OptOffsetParamsSequence(shape: r_mfarray.shape, bigger_strides: r_mfarray.strides, smaller_strides: l_mfarray.strides){
                     _run_biop_vv(lptr: lptr.baseAddress! + vDSPPrams.s_offset, vDSPPrams.s_stride, rptr: rptr.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptr: dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSPPrams.blocksize, vDSP_func)
                     //print(vDSPPrams.blocksize, vDSPPrams.b_offset,vDSPPrams.b_stride,vDSPPrams.s_offset, vDSPPrams.s_stride)
                 }
@@ -492,7 +492,7 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
         mfarray.withDataUnsafeMBPtrT(datatype: T.self){
             srcptr in
             
-            for vDSPPrams in OptOffsetParams_mfarray(bigger_mfarray: indicesT, smaller_mfarray: mfarray){
+            for vDSPPrams in OptOffsetParamsSequence(shape: indicesT.shape, bigger_strides: indicesT.strides, smaller_strides: mfarray.strides){
                 vDSP_func(srcptr.baseAddress! + vDSPPrams.s_offset, vDSP_Stride(vDSPPrams.s_stride), indptr.baseAddress! + vDSPPrams.b_offset, vDSP_Stride(vDSPPrams.b_stride), dstptrT + vDSPPrams.b_offset, vDSP_Stride(vDSPPrams.b_stride), vDSP_Length(vDSPPrams.blocksize))
             }
             //vDSP_func(srcptr.baseAddress!, vDSP_Stride(1), indptr.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(indicesT.size))
