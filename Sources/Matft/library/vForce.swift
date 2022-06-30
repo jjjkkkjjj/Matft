@@ -64,8 +64,8 @@ internal func mathf_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: 
 ///   - vForce_func: The vForce math function
 /// - Returns: The math-operated mfarray
 internal func math_biop_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ vForce_func: vForce_math_biop_func<T>) -> MfArray{
-    let l_mfarray = to_row_major(l_mfarray)
-    let r_mfarray = to_row_major(r_mfarray)
+    let l_mfarray = l_mfarray.to_contiguous(mforder: .Row)
+    let r_mfarray = r_mfarray.to_contiguous(mforder: .Row)
     
     var storedSize = Int32(l_mfarray.storedSize)
     let newdata = MfData(size: l_mfarray.storedSize, mftype: l_mfarray.mftype)

@@ -9,14 +9,62 @@
 import Foundation
 import Accelerate
 
-//convert order
-internal typealias cblas_convorder_func<T> = (Int32, UnsafePointer<T>, Int32, UnsafeMutablePointer<T>, Int32) -> Void
 
-internal func copy_unsafeptrT<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ cblas_func: cblas_convorder_func<T>){
+public typealias cblas_copy_func<T> = (Int32, UnsafePointer<T>, Int32, UnsafeMutablePointer<T>, Int32) -> Void
+
+public typealias cblas_matmul_func<T> = (CBLAS_ORDER, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, Int32, Int32, Int32, T, UnsafePointer<T>, Int32, UnsafePointer<T>, Int32, T, UnsafeMutablePointer<T>, Int32) -> Void
+
+
+/// Wrapper of cblas copy function
+/// - Parameters:
+///   - size: A size to be copied
+///   - srcptr: A source pointer
+///   - srcStride: A source stride
+///   - dstptr: A destination pointer
+///   - dstStride: A destination stride
+///   - cblas_func: The cblas copy function
+@inline(__always)
+internal func wrap_cblas_copy<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ cblas_func: cblas_copy_func<T>){
     cblas_func(Int32(size), srcptr, Int32(srcStride), dstptr, Int32(dstStride))
 }
 
-internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfArray, cblas_func: cblas_convorder_func<T>) -> MfArray{
+/// Wrapper of cblas matmul function
+/// - Parameters:
+///   - size: A size
+///   - mforder: MfOrder
+///   - lptr: A left pointer
+///   - lrow: A left row size
+///   - lcol: A left column size
+///   - rptr: A right pointer
+///   - rrow: A right row size
+///   - rcol: A right column size
+///   - dstptr: A destination pointer
+///   - cblas_func: The cblas matmul function
+@inline(__always)
+internal func wrap_cblas_matmul<T: MfStorable>(_ size: Int, _ mforder: MfOrder, _ lptr: UnsafePointer<T>, _ lrow: Int, _ lcol: Int, _ rptr: UnsafePointer<T>, _ rrow: Int, _ rcol: Int, _ dstptr: UnsafeMutablePointer<T>, _ cblas_func: cblas_matmul_func<T>){
+    let M = Int32(lrow)
+    let N = Int32(rcol)
+    let K = Int32(lcol)
+    
+    switch mforder {
+    case .Column:
+        let order = CblasColMajor
+        let lda = Int32(lrow)
+        let ldb = Int32(rrow)
+        let ldc = Int32(lrow)
+        cblas_func(order, CblasNoTrans, CblasNoTrans, M, N, K, T.from(1), lptr, lda, rptr, ldb, T.zero, dstptr, ldc)
+    case .Row:
+        let order = CblasRowMajor
+        let lda = Int32(lcol)
+        let ldb = Int32(rcol)
+        let ldc = Int32(rcol)
+        cblas_func(order, CblasNoTrans, CblasNoTrans, M, N, K, T.from(1), lptr, lda, rptr, ldb, T.zero, dstptr, ldc)
+    }
+}
+
+
+
+internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfArray, cblas_func: cblas_copy_func<T>) -> MfArray{
     
     
     dsttmpMfarray.withDataUnsafeMBPtrT(datatype: T.self){
@@ -52,7 +100,7 @@ internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfA
                 //if negative offset, move proper position
                 let srcptr = cblasPrams.s_stride >= 0 ? srcptr.baseAddress! + cblasPrams.s_offset : srcptr.baseAddress! + (cblasPrams.blocksize - 1) * cblasPrams.s_stride + cblasPrams.s_offset
                 let dstptr = cblasPrams.b_stride >= 0 ? dstptr.baseAddress! + cblasPrams.b_offset : dstptr.baseAddress! + (cblasPrams.blocksize - 1) * cblasPrams.b_stride + cblasPrams.b_offset
-                copy_unsafeptrT(cblasPrams.blocksize, srcptr, cblasPrams.s_stride, dstptr, cblasPrams.b_stride, cblas_func)
+                wrap_cblas_copy(cblasPrams.blocksize, srcptr, cblasPrams.s_stride, dstptr, cblasPrams.b_stride, cblas_func)
                 //print(cblasPrams.blocksize, cblasPrams.b_offset, cblasPrams.b_stride, cblasPrams.s_offset, cblasPrams.s_stride)
             }
         }
@@ -61,38 +109,104 @@ internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfA
     return dsttmpMfarray
 }
 
-internal func copy_by_cblas<T: MfStorable>(_ mfarray: MfArray, mforder: MfOrder, cblas_func: cblas_convorder_func<T>) -> MfArray{
-    let newdata = MfData(size: mfarray.size, mftype: mfarray.mftype)
-    let newstructure = MfStructure(shape: mfarray.shape, mforder: mforder)
-
-    let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
-    return copy_mfarray(mfarray, dsttmpMfarray: ret, cblas_func: cblas_func)
-}
-
-//matrix multiplication
-internal typealias cblas_matmul_func<T> = (CBLAS_ORDER, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, Int32, Int32, Int32, T, UnsafePointer<T>, Int32, UnsafePointer<T>, Int32, T, UnsafeMutablePointer<T>, Int32) -> Void
-
-fileprivate func _run_matmul<T: MfStorable>(_ mforder: MfOrder, _ lrow: Int, _ lcol: Int, _ lptr: UnsafePointer<T>, _ rrow: Int, _ rcol: Int, _ rptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ cblas_func: cblas_matmul_func<T>){
-    let M = Int32(lrow)
-    let N = Int32(rcol)
-    let K = Int32(lcol)
+/// Copy mfarray by cblas
+/// - Parameters:
+///   - src_mfarray: The source mfarray
+///   - dst_mfarray: The destination mfarray
+///   - cblas_func: cblas_copy_function
+internal func copy_by_cblas<T: MfStorable>(_ src_mfarray: MfArray, _ dst_mfarray: MfArray, cblas_func: cblas_copy_func<T>) -> Void{
     
-    switch mforder {
-    case .Column:
-        let order = CblasColMajor
-        let lda = Int32(lrow)
-        let ldb = Int32(rrow)
-        let ldc = Int32(lrow)
-        cblas_func(order, CblasNoTrans, CblasNoTrans, M, N, K, T.num(1), lptr, lda, rptr, ldb, T.zero, dstptr, ldc)
-    case .Row:
-        let order = CblasRowMajor
-        let lda = Int32(lcol)
-        let ldb = Int32(rcol)
-        let ldc = Int32(rcol)
-        cblas_func(order, CblasNoTrans, CblasNoTrans, M, N, K, T.num(1), lptr, lda, rptr, ldb, T.zero, dstptr, ldc)
+    let shape = dst_mfarray.shape
+    let bigger_strides = dst_mfarray.strides
+    let smaller_strides = src_mfarray.strides
+    
+    dst_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        dstptr in
+        src_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            srcptr in
+            /*
+            var b = [5,6,7,2.0]
+            var c = [0,0,0,0.0]
+            
+            //vDSP_vaddD(&a, vDSP_Stride(1), &b + 3, vDSP_Stride(-1), &c, vDSP_Stride(1), vDSP_Length(4))
+            let add = UnsafePointer(b)
+            cblas_dcopy(Int32(4), add + 3, Int32(-1), &c, Int32(1))
+            print(c)
+            //->[6.9532560551673e-310, 6.9532560552309e-310, 1.2516202258872396e-308, 2.0]
+            //Cannot copy!!!!
+             
+            cblas_dcopy(Int32(4), &b, Int32(-1), &c, Int32(1))
+            print(c)
+            //[2.0, 7.0, 6.0, 5.0]
+            //Copied!!!!!!!!!
+             
+             var b = [5,6,7,2.0]
+             var c = [0,0.0]
+             
+             cblas_dcopy(Int32(c.count), &b + 1, Int32(-1), &c, Int32(1))
+             print(c)
+             //[7.0, 6.0]!!!!!
+            */
+            //print(dsttmpMfarray.strides, mfarray.strides)
+            for cblasPrams in OptOffsetParamsSequence(shape: shape, bigger_strides: bigger_strides, smaller_strides: smaller_strides){
+                //if negative offset, move proper position
+                let srcptr = cblasPrams.s_stride >= 0 ? srcptr.baseAddress! + cblasPrams.s_offset : srcptr.baseAddress! + (cblasPrams.blocksize - 1) * cblasPrams.s_stride + cblasPrams.s_offset
+                let dstptr = cblasPrams.b_stride >= 0 ? dstptr.baseAddress! + cblasPrams.b_offset : dstptr.baseAddress! + (cblasPrams.blocksize - 1) * cblasPrams.b_stride + cblasPrams.b_offset
+                wrap_cblas_copy(cblasPrams.blocksize, srcptr, cblasPrams.s_stride, dstptr, cblasPrams.b_stride, cblas_func)
+                //print(cblasPrams.blocksize, cblasPrams.b_offset, cblasPrams.b_stride, cblasPrams.s_offset, cblasPrams.s_stride)
+            }
+        }
     }
+    
+    return
 }
 
+/// Convert contiguous mfarray
+/// - Parameters:
+///   - src_mfarray: The source mfarray
+///   - cblas_func: cblas_copy_function
+///   - mforder: The order
+/// - Returns: Contiguous mfarray
+internal func contiguous_by_cblas<T: MfStorable>(_ src_mfarray: MfArray, cblas_func: cblas_copy_func<T>, mforder: MfOrder) -> MfArray{
+        
+    switch mforder {
+    case .Row:
+        if src_mfarray.mfstructure.row_contiguous{
+            return copy_all_mfarray(src_mfarray)
+        }
+    case .Column:
+        if src_mfarray.mfstructure.column_contiguous{
+            return copy_all_mfarray(src_mfarray)
+        }
+    }
+    
+    return samesize_by_cblas(src_mfarray, cblas_func: cblas_func, mforder: mforder)
+}
+
+/// Convert mfarray with same size as an internal stored data size
+/// - Parameters:
+///   - src_mfarray: The source mfarray
+///   - cblas_func: cblas_copy_func
+///   - mforder: An order
+/// - Returns: The destination mfarray with same size as an internal stored data size
+internal func samesize_by_cblas<T: MfStorable>(_ src_mfarray: MfArray, cblas_func: cblas_copy_func<T>, mforder: MfOrder) -> MfArray{
+    let newsize = src_mfarray.size
+    let newdata: MfData = MfData(size: newsize, mftype: src_mfarray.mftype)
+    let newstructure = MfStructure(shape: src_mfarray.shape, mforder: mforder)
+    let dst_mfarray = MfArray(mfdata: newdata, mfstructure: newstructure)
+    
+    copy_by_cblas(src_mfarray, dst_mfarray, cblas_func: cblas_func)
+    
+    return dst_mfarray
+}
+
+
+/// Multiply mfarray
+/// - Parameters:
+///   - lmfarray: The left mfarray
+///   - rmfarray: The right mfarray
+///   - cblas_func: cblas_matmul function
+/// - Returns: The multiplied mfarray
 internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray, cblas_func: cblas_matmul_func<T>) -> MfArray{
     let lshape = lmfarray.shape
     let rshape = rmfarray.shape
@@ -102,7 +216,7 @@ internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarr
     
     // order
     // must be row major
-    let retorder = _matmul_convorder(&lmfarray, &rmfarray)
+    let retorder = check_matmul_contiguous(&lmfarray, &rmfarray)
     
     let newstructure = MfStructure(shape: retshape, mforder: retorder)
     let newsize = shape2size(&retshape)
@@ -122,7 +236,7 @@ internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarr
             var rptr = rptr.baseAddress!
             
             for _ in 0..<iterNum{
-                _run_matmul(retorder, lshape[retndim - 2], lshape[retndim - 1], lptr, rshape[retndim - 2], rshape[retndim - 1], rptr, dstptrT, cblas_func)
+                wrap_cblas_matmul(matNum, retorder, lptr, lshape[retndim - 2], lshape[retndim - 1], rptr, rshape[retndim - 2], rshape[retndim - 1], dstptrT, cblas_func)
                 
                 lptr += l_matNum
                 rptr += r_matNum
@@ -134,52 +248,13 @@ internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarr
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
-fileprivate func _matmul_convorder(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray) -> MfOrder{
-    // order
-    /*
-    // must be close to either row or column major
-    var retorder = MfOrder.Row
-    if !(lmfarray.mfstructure.column_contiguous && rmfarray.mfstructure.column_contiguous) || lmfarray.mfstructure.row_contiguous && rmfarray.mfstructure.row_contiguous{//convert either row or column major
-        if lmfarray.mfstructure.column_contiguous{
-            rmfarray = Matft.conv_order(rmfarray, mforder: .Column)
-            retorder = .Column
-        }
-        else if lmfarray.mfstructure.row_contiguous{
-            rmfarray = Matft.conv_order(rmfarray, mforder: .Row)
-            retorder = .Row
-        }
-        else if rmfarray.mfstructure.column_contiguous{
-            lmfarray = Matft.conv_order(lmfarray, mforder: .Column)
-            retorder = .Column
-        }
-        else if rmfarray.mfstructure.row_contiguous{
-            lmfarray = Matft.conv_order(lmfarray, mforder: .Row)
-            retorder = .Row
-        }
-        else{
-            lmfarray = Matft.conv_order(lmfarray, mforder: .Row)
-            rmfarray = Matft.conv_order(rmfarray, mforder: .Row)
-            retorder = .Row
-        }
-    }
-    else{
-        retorder = lmfarray.mfstructure.row_contiguous ? .Row : .Column
-    }*/
-    //must be row major
-    let retorder = MfOrder.Row
-    if !(lmfarray.mfstructure.row_contiguous && rmfarray.mfstructure.row_contiguous){//convert row major
-        if !rmfarray.mfstructure.row_contiguous{
-            rmfarray = Matft.conv_order(rmfarray, mforder: .Row)
-        }
-        if !lmfarray.mfstructure.row_contiguous{
-            lmfarray = Matft.conv_order(lmfarray, mforder: .Row)
-        }
-    }
-    return retorder
-}
-
-
-internal func fancyndgetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, _ cblas_func: cblas_convorder_func<T>) -> MfArray{
+/// Getter function for the fancy indexing on a given Interger indices.
+/// - Parameters:
+///   - mfarray: An inpu mfarray. Must be more than 2d
+///   - indices: An input Interger indices array
+///   - cblas_func: cblas_copy_func
+/// - Returns: The mfarray
+internal func fancyndget_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, _ cblas_func: cblas_copy_func<T>) -> MfArray{
     assert(indices.mftype == .Int, "must be int")
     assert(mfarray.ndim > 1, "must be more than 2d")
     // fancy indexing
@@ -226,7 +301,7 @@ internal func fancyndgetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indice
         
         let offsets = (indices.data as! [Int]).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
         for offset in offsets{
-            copy_unsafeptrT(workSize, srcptr.baseAddress! + offset, 1, dstptrT, 1, cblas_func)
+            wrap_cblas_copy(workSize, srcptr.baseAddress! + offset, 1, dstptrT, 1, cblas_func)
             dstptrT += workSize
         }
     }
@@ -236,7 +311,13 @@ internal func fancyndgetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indice
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
-internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: inout [MfArray], _ cblas_func: cblas_convorder_func<T>) -> MfArray{
+/// Getter function for the fancy indexing on a given Interger indices.
+/// - Parameters:
+///   - mfarray: An inpu mfarray. Must be more than 2d
+///   - indices: An input Interger indices array
+///   - cblas_func: cblas_copy_func
+/// - Returns: The mfarray
+internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: inout [MfArray], _ cblas_func: cblas_copy_func<T>) -> MfArray{
     // check proper indices
     assert(indices.count >= 2)
     precondition(indices.count <= mfarray.ndim, "too many indices for array: array is \(mfarray.ndim)-dimensional, but \(indices.count) were indexed")
@@ -269,7 +350,7 @@ internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
         srcptr in
         
         for offset in offsets{
-            copy_unsafeptrT(workSize, srcptr.baseAddress! + offset, 1, dstptrT, 1, cblas_func)
+            wrap_cblas_copy(workSize, srcptr.baseAddress! + offset, 1, dstptrT, 1, cblas_func)
             dstptrT += workSize
         }
     }
@@ -278,8 +359,13 @@ internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
-
-internal func fancysetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, _ assignedMfarray: MfArray, _ cblas_func: cblas_convorder_func<T>) -> Void{
+/// Setter function for the fancy indexing on a given Interger indices.
+/// - Parameters:
+///   - mfarray: An inpu mfarray.
+///   - indices: An input Interger indices mfarray
+///   - assignedMfarray: The assigned mfarray
+///   - cblas_func: cblas_copy_func
+internal func fancyset_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, _ assignedMfarray: MfArray, _ cblas_func: cblas_copy_func<T>) -> Void{
     assert(indices.mftype == .Int, "must be int")
     
     var workShape = Array(mfarray.shape.suffix(from: 1))
@@ -313,14 +399,14 @@ internal func fancysetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
                 let workAssignedMfarrayStrides = Array(assignedMfarray.strides.suffix(from: indices.ndim))
                 for cblasParams in OptOffsetParamsSequence(shape: workShape, bigger_strides: workAssignedMfarrayStrides, smaller_strides: workMfarrayStrides){
                     for (i, offset) in offsets.enumerated(){
-                        copy_unsafeptrT(cblasParams.blocksize, srcptr.baseAddress! + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr.baseAddress! + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
+                        wrap_cblas_copy(cblasParams.blocksize, srcptr.baseAddress! + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr.baseAddress! + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
                     }
                 }
                 /*
                 for (i, offset) in offsets.enumerated(){
                     for cblasParams in OptOffsetParams_raw(shape: workShape, bigger_strides: Array(assignedMfarray.strides.suffix(from: indices.ndim)), smaller_strides: workMfarrayStrides){
 
-                        copy_unsafeptrT(cblasParams.blocksize, srcptr.baseAddress! + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr.baseAddress! + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
+                        wrap_cblas_copy(cblasParams.blocksize, srcptr.baseAddress! + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr.baseAddress! + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
                     }
                 }*/
             }
@@ -330,8 +416,13 @@ internal func fancysetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
 
 }
 
-
-internal func fancysetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: inout [MfArray], _ assignedMfarray: MfArray, _ cblas_func: cblas_convorder_func<T>) -> Void{
+/// Setter function for the fancy indexing on a given Interger indices.
+/// - Parameters:
+///   - mfarray: An inpu mfarray.
+///   - indices: An input Interger indices mfarray array
+///   - assignedMfarray: The assigned mfarray
+///   - cblas_func: cblas_copy_func
+internal func fancysetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: inout [MfArray], _ assignedMfarray: MfArray, _ cblas_func: cblas_copy_func<T>) -> Void{
     // check proper indices
     assert(indices.count >= 2)
     precondition(indices.count <= mfarray.ndim, "too many indices for array: array is \(mfarray.ndim)-dimensional, but \(indices.count) were indexed")
@@ -370,7 +461,7 @@ internal func fancysetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
                 let workAssignedMfarrayStrides = Array(assignedMfarray.strides.suffix(workShape.count))
                 for cblasParams in OptOffsetParamsSequence(shape: workShape, bigger_strides: workAssignedMfarrayStrides, smaller_strides: workMfarrayStrides){
                     for (i, offset) in offsets.enumerated(){
-                        copy_unsafeptrT(cblasParams.blocksize, srcptr.baseAddress! + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr.baseAddress! + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
+                        wrap_cblas_copy(cblasParams.blocksize, srcptr.baseAddress! + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr.baseAddress! + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
                     }
                 }
             }

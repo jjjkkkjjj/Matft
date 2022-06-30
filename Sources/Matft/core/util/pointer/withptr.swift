@@ -39,7 +39,7 @@ extension MfArray{
         let matricesNum = self.size / (M * N)
         
         // get stacked row major and copy
-        let rowMfarray = mforder == .Row ? to_row_major(self) : to_row_major(self.swapaxes(axis1: -1, axis2: -2))
+        let rowMfarray = mforder == .Row ? self.to_contiguous(mforder: .Row) : self.swapaxes(axis1: -1, axis2: -2).to_contiguous(mforder: .Row)
         
         var offset = 0
         try rowMfarray.withDataUnsafeMBPtrT(datatype: T.self){

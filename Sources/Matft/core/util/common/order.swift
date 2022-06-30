@@ -10,7 +10,7 @@ import Foundation
 import Accelerate
 
 internal func toSwiftArray(_ mfarray: MfArray) -> [Any]{
-    let mfarray = !mfarray.mfstructure.row_contiguous ? to_row_major(mfarray) : mfarray
+    let mfarray = !mfarray.mfstructure.row_contiguous ? mfarray.to_contiguous(mforder: .Row) : mfarray
     
     var shape = mfarray.shape
     var data = mfarray.data
@@ -37,51 +37,47 @@ fileprivate func _get_swiftArray(_ data: inout [Any], shape: inout [Int], axis: 
     return ret
 }
 
-/**
-    - Important: strides must be checked before calling this function
- */
-internal func copyAll(_ mfarray: MfArray) -> MfArray{
-    assert(mfarray.mfstructure.row_contiguous || mfarray.mfstructure.column_contiguous, "To call copyAll function, passed mfarray must be contiguous")
-    let newdata = MfData(size: mfarray.size, mftype: mfarray.mftype)
-    mfarray.withDataUnsafeMRPtr{
-        [unowned mfarray] in
-        newdata.data.copyMemory(from: $0, byteCount: mfarray.byteSize)
-    }
-    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
-    
-    return MfArray(mfdata: newdata, mfstructure: newstructure)
-}
 
-internal func to_row_major(_ mfarray: MfArray) -> MfArray{
-    if mfarray.mfstructure.row_contiguous{
-        return copyAll(mfarray)
-    }
+/// Copy mfarray including structure
+/// - Parameter src_mfarray: The source mfarray
+/// - Returns: The destination mfarray
+@usableFromInline
+internal func copy_all_mfarray(_ src_mfarray: MfArray) -> MfArray{
+    assert(src_mfarray.mfstructure.row_contiguous || src_mfarray.mfstructure.column_contiguous, "To call copyAll function, passed mfarray must be contiguous")
     
-    switch mfarray.storedType {
+    let newsize = src_mfarray.size
+    let newdata = MfData(size: newsize, mftype: src_mfarray.mftype)
+    let newstructure = MfStructure(shape: src_mfarray.shape, strides: src_mfarray.strides)
+    let dst_mfarray = MfArray(mfdata: newdata, mfstructure: newstructure)
+    
+    switch src_mfarray.storedType{
     case .Float:
-        return copy_by_cblas(mfarray, mforder: .Row, cblas_func: cblas_scopy)
+        _ = src_mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+            srcptr in
+            dst_mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+                dstptr in
+                memcpy(dstptr.baseAddress!, srcptr.baseAddress!, MemoryLayout<Float>.size*newsize)
+            }
+        }
     case .Double:
-        return copy_by_cblas(mfarray, mforder: .Row, cblas_func: cblas_dcopy)
+        _ = src_mfarray.withDataUnsafeMBPtrT(datatype: Double.self){
+            srcptr in
+            dst_mfarray.withDataUnsafeMBPtrT(datatype: Double.self){
+                dstptr in
+                memcpy(dstptr.baseAddress!, srcptr.baseAddress!, MemoryLayout<Double>.size*newsize)
+            }
+        }
     }
     
+    return dst_mfarray
 }
 
-internal func to_column_major(_ mfarray: MfArray) -> MfArray{
-    if mfarray.mfstructure.column_contiguous{
-        return copyAll(mfarray)
-    }
-    
-    switch mfarray.storedType {
-    case .Float:
-        return copy_by_cblas(mfarray, mforder: .Column, cblas_func: cblas_scopy)
-    case .Double:
-        return copy_by_cblas(mfarray, mforder: .Column, cblas_func: cblas_dcopy)
-    }
-}
-
-/**
- Return contiguous mfarray. If passed mfarray is arleady contiguous, return one directly
- */
+/// Return contiguous mfarray. If passed mfarray is arleady contiguous, return one directly
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - mforder: An order
+/// - Returns: A contiguous mfarray
+@usableFromInline
 internal func check_contiguous(_ mfarray: MfArray, _ mforder: MfOrder? = nil) -> MfArray{
     if ((mfarray.mfstructure.row_contiguous || mfarray.mfstructure.column_contiguous) && mforder == nil) ||
         (mfarray.mfstructure.row_contiguous && mforder == .Row) || (mfarray.mfstructure.column_contiguous && mforder == .Column){
@@ -90,12 +86,14 @@ internal func check_contiguous(_ mfarray: MfArray, _ mforder: MfOrder? = nil) ->
     else{
         switch mforder {
         case .Row, nil:
-            return to_row_major(mfarray)
+            return mfarray.to_contiguous(mforder: .Row)
         case .Column:
-            return to_column_major(mfarray)
+            return mfarray.to_contiguous(mforder: .Column)
         }
     }
 }
+
+@usableFromInline
 internal func check_biop_contiguous(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ mforder: MfOrder = .Row, convertL: Bool = true) -> (l: MfArray, r: MfArray, biggerL: Bool, retsize: Int){
     let l: MfArray, r: MfArray
     let biggerL: Bool
@@ -114,17 +112,70 @@ internal func check_biop_contiguous(_ l_mfarray: MfArray, _ r_mfarray: MfArray, 
     }
     else{
         if convertL{
-            l = Matft.conv_order(l_mfarray, mforder: mforder)
+            l = Matft.to_contiguous(l_mfarray, mforder: mforder)
             r = r_mfarray
             biggerL = true
             retsize = l.size
         }
         else{
             l = l_mfarray
-            r = Matft.conv_order(r_mfarray, mforder: mforder)
+            r = Matft.to_contiguous(r_mfarray, mforder: mforder)
             biggerL = false
             retsize = r.size
         }
     }
     return (l, r, biggerL, retsize)
+}
+
+/// Get a best order for matrix mulplication
+/// - Parameters:
+///   - l_mfarray: An left mfarray
+///   - r_mfarray: An right mfarray
+/// - Returns:
+///   - l_mfarray: Contiguous left mfarray
+///   - r_mfarray: Contiguous right mfarray
+///   - mforder: Best order
+@usableFromInline
+internal func check_matmul_contiguous(_ lmfarray: inout MfArray, _ rmfarray: inout MfArray) -> MfOrder{
+    // order
+    /*
+    // must be close to either row or column major
+    var retorder = MfOrder.Row
+    if !(lmfarray.mfstructure.column_contiguous && rmfarray.mfstructure.column_contiguous) || lmfarray.mfstructure.row_contiguous && rmfarray.mfstructure.row_contiguous{//convert either row or column major
+        if lmfarray.mfstructure.column_contiguous{
+            rmfarray = Matft.to_contiguous(rmfarray, mforder: .Column)
+            retorder = .Column
+        }
+        else if lmfarray.mfstructure.row_contiguous{
+            rmfarray = Matft.to_contiguous(rmfarray, mforder: .Row)
+            retorder = .Row
+        }
+        else if rmfarray.mfstructure.column_contiguous{
+            lmfarray = Matft.to_contiguous(lmfarray, mforder: .Column)
+            retorder = .Column
+        }
+        else if rmfarray.mfstructure.row_contiguous{
+            lmfarray = Matft.to_contiguous(lmfarray, mforder: .Row)
+            retorder = .Row
+        }
+        else{
+            lmfarray = Matft.to_contiguous(lmfarray, mforder: .Row)
+            rmfarray = Matft.to_contiguous(rmfarray, mforder: .Row)
+            retorder = .Row
+        }
+    }
+    else{
+        retorder = lmfarray.mfstructure.row_contiguous ? .Row : .Column
+    }*/
+    //must be row major
+    let retorder = MfOrder.Row
+    if !(lmfarray.mfstructure.row_contiguous && rmfarray.mfstructure.row_contiguous){//convert row major
+        if !rmfarray.mfstructure.row_contiguous{
+            rmfarray = Matft.to_contiguous(rmfarray, mforder: .Row)
+        }
+        if !lmfarray.mfstructure.row_contiguous{
+            lmfarray = Matft.to_contiguous(lmfarray, mforder: .Row)
+        }
+    }
+    return retorder
 }

@@ -43,7 +43,7 @@ class ViewController: UIViewController {
 
         // reverse
         arr = arr[~<<-1]
-        arr = arr.conv_order(mforder: .Row)
+        arr = arr.to_contiguous(mforder: .Row)
         
         arr.withDataUnsafeMBPtrT(datatype: Float.self){
             srcptr in
@@ -83,7 +83,7 @@ class ViewController: UIViewController {
 
         // reverse
         arr = arr[0~<, 0~<, ~<<-1]
-        arr = arr.conv_order(mforder: .Row)
+        arr = arr.to_contiguous(mforder: .Row)
         
         arr.withDataUnsafeMBPtrT(datatype: Float.self){
             srcptr in

@@ -522,7 +522,7 @@ internal func sort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ ord
     
     let lastaxis = retndim - 1
     // move lastaxis and given axis and align order
-    let srcdst_mfarray = mfarray.moveaxis(src: axis, dst: lastaxis).conv_order(mforder: .Row)
+    let srcdst_mfarray = mfarray.moveaxis(src: axis, dst: lastaxis).to_contiguous(mforder: .Row)
 
     var offset = 0
     
@@ -552,7 +552,7 @@ internal func argsort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ 
     
     let lastaxis = mfarray.ndim - 1
     // move lastaxis and given axis and align order
-    let srcmfarray = mfarray.moveaxis(src: axis, dst: lastaxis).conv_order(mforder: .Row)
+    let srcmfarray = mfarray.moveaxis(src: axis, dst: lastaxis).to_contiguous(mforder: .Row)
     var retShape = srcmfarray.shape
     
     var offset = 0

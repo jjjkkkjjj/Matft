@@ -30,21 +30,21 @@ extension Matft{
         if let order = order{
             switch order {
             case .Row:
-                return to_row_major(mfarray)
+                return mfarray.to_contiguous(mforder: .Row)
             case .Column:
-                return to_column_major(mfarray)
+                return mfarray.to_contiguous(mforder: .Column)
             }
         }
         else{
             if mfarray.mfstructure.column_contiguous || mfarray.mfstructure.row_contiguous{// all including strides will be copied
-                return copyAll(mfarray)
+                return copy_all_mfarray(mfarray)
             }
             var strides = mfarray.strides
             if !isReverse(&strides) && !mfarray.mfdata._isView{// not contain reverse and is not view, copy all
-                return copyAll(mfarray)
+                return copy_all_mfarray(mfarray)
             }
             else{//close to row major
-                return to_row_major(mfarray)
+                return mfarray.to_contiguous(mforder: .Row)
             }
 
         }
@@ -219,17 +219,17 @@ extension Matft{
         
         retShape.insert(concatDim, at: 0)// return shape
         
-        let rmajorArrays = mfarrays.map{ Matft.conv_order($0, mforder: .Row) }
+        let rmajorArrays = mfarrays.map{ Matft.to_contiguous($0, mforder: .Row) }
         let retSize = shape2size(&retShape)
         
         let newdata = MfData(size: retSize, mftype: retMfType)
-        func _stack<T: MfStorable>(_ cblas_func: cblas_convorder_func<T>){
+        func _stack<T: MfStorable>(_ cblas_func: cblas_copy_func<T>){
             let dstptrT = newdata.data.bindMemory(to: T.self, capacity: retSize)
             var offset = 0
             for array in rmajorArrays{
                 array.withDataUnsafeMBPtrT(datatype: T.self){
                     [unowned array] in
-                    copy_unsafeptrT(array.storedSize, $0.baseAddress!, 1, dstptrT + offset, 1, cblas_func)
+                    wrap_cblas_copy(array.storedSize, $0.baseAddress!, 1, dstptrT + offset, 1, cblas_func)
                 }
                 offset += array.storedSize
             }
@@ -272,17 +272,17 @@ extension Matft{
         
         retShape.insert(concatDim, at: retShape.endIndex)// return shape
         
-        let cmajorArrays = mfarrays.map{ Matft.conv_order($0, mforder: .Column) }
+        let cmajorArrays = mfarrays.map{ Matft.to_contiguous($0, mforder: .Column) }
         let retSize = shape2size(&retShape)
         
         let newdata = MfData(size: retSize, mftype: retMfType)
-        func _stack<T: MfStorable>(_ cblas_func: cblas_convorder_func<T>){
+        func _stack<T: MfStorable>(_ cblas_func: cblas_copy_func<T>){
             let dstptrT = newdata.data.bindMemory(to: T.self, capacity: retSize)
             var offset = 0
             for array in cmajorArrays{
                 array.withDataUnsafeMBPtrT(datatype: T.self){
                     [unowned array] in
-                    copy_unsafeptrT(array.storedSize, $0.baseAddress!, 1, dstptrT + offset, 1, cblas_func)
+                    wrap_cblas_copy(array.storedSize, $0.baseAddress!, 1, dstptrT + offset, 1, cblas_func)
                 }
                 offset += array.storedSize
             }
@@ -349,11 +349,11 @@ extension Matft{
         let fasterBlockSize = rowSize >= columnSize ? rowSize : columnSize
         let slowerBlockSize = rowSize >= columnSize ? columnSize : rowSize
         
-        let majorArrays = mfarrays.map{ Matft.conv_order($0, mforder: fasterOrder).astype(retMfType) }
+        let majorArrays = mfarrays.map{ Matft.to_contiguous($0, mforder: fasterOrder).astype(retMfType) }
         let retSize = shape2size(&retShape)
         
         let newdata = MfData(size: retSize, mftype: retMfType)
-        func _concat<T: MfStorable>(_ cblas_func: cblas_convorder_func<T>){
+        func _concat<T: MfStorable>(_ cblas_func: cblas_copy_func<T>){
             let dstptrT = newdata.data.bindMemory(to: T.self, capacity: retSize)
 
             var dst_offset = 0
@@ -362,7 +362,7 @@ extension Matft{
                     let concatSize = array.shape[axis]
                     
                     array.withDataUnsafeMBPtrT(datatype: T.self){
-                        copy_unsafeptrT(fasterBlockSize * concatSize, $0.baseAddress! + sb * fasterBlockSize * concatSize, 1, dstptrT + dst_offset, 1, cblas_func)
+                        wrap_cblas_copy(fasterBlockSize * concatSize, $0.baseAddress! + sb * fasterBlockSize * concatSize, 1, dstptrT + dst_offset, 1, cblas_func)
                     }
                     dst_offset += fasterBlockSize * concatSize
                 }

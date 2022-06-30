@@ -262,9 +262,9 @@ extension MfArray: MfSubscriptable{
         case .Int:
             switch self.storedType {
             case .Float:
-                return self.ndim == 1 ? fancy1dgetcol_by_vDSP(self, indices, vDSP_vgathr) : fancyndgetcol_by_cblas(self, indices, cblas_scopy)
+                return self.ndim == 1 ? fancy1dgetcol_by_vDSP(self, indices, vDSP_vgathr) : fancyndget_by_cblas(self, indices, cblas_scopy)
             case .Double:
-                return self.ndim == 1 ? fancy1dgetcol_by_vDSP(self, indices, vDSP_vgathrD) : fancyndgetcol_by_cblas(self, indices, cblas_dcopy)
+                return self.ndim == 1 ? fancy1dgetcol_by_vDSP(self, indices, vDSP_vgathrD) : fancyndget_by_cblas(self, indices, cblas_dcopy)
             }
 
         default:
@@ -311,9 +311,9 @@ extension MfArray: MfSubscriptable{
         case .Int:
             switch self.storedType {
             case .Float:
-                fancysetcol_by_cblas(self, indices, assignedMfarray, cblas_scopy)
+                fancyset_by_cblas(self, indices, assignedMfarray, cblas_scopy)
             case .Double:
-                fancysetcol_by_cblas(self, indices, assignedMfarray, cblas_dcopy)
+                fancyset_by_cblas(self, indices, assignedMfarray, cblas_dcopy)
             }
             
         default:

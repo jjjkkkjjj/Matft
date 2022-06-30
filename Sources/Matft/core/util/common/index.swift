@@ -113,7 +113,7 @@ internal func get_offsets_from_indices(_ mfarray: MfArray, _ indices: inout [MfA
     var offsets = Array(repeating: 0, count: indSize)
     for (axis, inds) in indices.enumerated(){
         precondition(inds.mftype == .Int, "fancy indexing must be Int only, but got \(inds.mftype)")
-        let rowInd = inds.broadcast_to(shape: indShape).conv_order(mforder: .Row)
+        let rowInd = inds.broadcast_to(shape: indShape).to_contiguous(mforder: .Row)
         for (i, ind) in (rowInd.data as! [Int]).enumerated(){
             offsets[i] += get_positive_index(ind, axissize: mfarray.shape[axis], axis: axis) * mfarray.strides[axis]
         }

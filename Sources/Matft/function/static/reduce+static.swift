@@ -39,7 +39,7 @@ extension Matft{
             // conversion
             var saxes = Array(axis..<mfarray.ndim)
             var laxes = Array(0..<axis)
-            let movedMfArray = mfarray.transpose(axes: saxes + laxes).conv_order(mforder: .Row)// to Row order
+            let movedMfArray = mfarray.transpose(axes: saxes + laxes).to_contiguous(mforder: .Row)// to Row order
             
             // get initial value
             let first: MfArray
@@ -101,7 +101,7 @@ extension Matft{
         // conversion
         var saxes = Array(axis..<mfarray.ndim)
         var laxes = Array(0..<axis)
-        let movedMfArray = mfarray.transpose(axes: saxes + laxes).conv_order(mforder: .Row)// to Row order
+        let movedMfArray = mfarray.transpose(axes: saxes + laxes).to_contiguous(mforder: .Row)// to Row order
         let accums = Matft.nums_like(0, mfarray: movedMfArray) // note that this ret must be converted
         // get initial value
         let first = movedMfArray.first!

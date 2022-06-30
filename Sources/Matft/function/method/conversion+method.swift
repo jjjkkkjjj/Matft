@@ -124,8 +124,8 @@ extension MfArray{
        - parameters:
             - mforder: mforder
     */
-    public func conv_order(mforder: MfOrder) -> MfArray{
-        return Matft.conv_order(self, mforder: mforder)
+    public func to_contiguous(mforder: MfOrder) -> MfArray{
+        return Matft.to_contiguous(self, mforder: mforder)
     }
     
     /**

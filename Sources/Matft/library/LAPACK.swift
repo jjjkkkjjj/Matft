@@ -42,8 +42,8 @@ internal func solve_by_lapack<T: MfStorable>(_ coef: MfArray, _ b: MfArray, _ eq
     assert(coef.storedType == b.storedType, "must be same storedType")
     
     //get column flatten
-    let coef_column_major = to_column_major(coef) // copied and contiguous
-    let b_column_major = to_column_major(b) // copied and contiguous
+    let coef_column_major = coef.to_contiguous(mforder: .Column) // copied and contiguous
+    let b_column_major = b.to_contiguous(mforder: .Column) // copied and contiguous
     
     let ret = b_column_major.deepcopy() //even if original one is float, create copy for lapack calculation
     

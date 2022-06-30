@@ -35,7 +35,7 @@ extension Matft{
         let newstructure: MfStructure
         var mfarray = mfarray
         if !(mfarray.mfstructure.column_contiguous || mfarray.mfstructure.row_contiguous){// close to row major
-            mfarray = to_row_major(mfarray)
+            mfarray = mfarray.to_contiguous(mforder: .Row)
         }
         newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
         
@@ -292,12 +292,12 @@ extension Matft{
             - mfarray: mfarray
             - mforder: mforder
     */
-    public static func conv_order(_ mfarray: MfArray, mforder: MfOrder) -> MfArray{
-        switch mforder {
-        case .Row:
-            return to_row_major(mfarray)
-        case .Column:
-            return to_column_major(mfarray)
+    public static func to_contiguous(_ mfarray: MfArray, mforder: MfOrder) -> MfArray{
+        switch mfarray.storedType{
+        case .Float:
+            return contiguous_by_cblas(mfarray, cblas_func: cblas_scopy, mforder: mforder)
+        case .Double:
+            return contiguous_by_cblas(mfarray, cblas_func: cblas_dcopy, mforder: mforder)
         }
     }
     /**
@@ -307,7 +307,7 @@ extension Matft{
             - mforder: (Optional) mforder, default is Row
     */
     public static func flatten(_ mfarray: MfArray, mforder: MfOrder = .Row) -> MfArray{
-        let ret = Matft.conv_order(mfarray, mforder: mforder)
+        let ret = Matft.to_contiguous(mfarray, mforder: mforder)
         
         ret.mfstructure = MfStructure(shape: [ret.size], strides: [1])
         

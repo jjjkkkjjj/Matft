@@ -430,7 +430,7 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.expand_dims  | *numpy.expand_dims       |
 | *Matft.squeeze      | *numpy.squeeze           |
 | *Matft.broadcast_to | *numpy.broadcast_to      |
-| *Matft.conv_order   | *numpy.ascontiguousarray |
+| *Matft.to_contiguous| *numpy.ascontiguousarray |
 | *Matft.flatten      | *numpy.flatten           |
 | *Matft.flip         | *numpy.flip              |
 | *Matft.clip         | *numpy.clip              |
@@ -588,7 +588,7 @@ func reverse(){
 
     // reverse
     arr = arr[~<<-1]
-    arr = arr.conv_order(mforder: .Row)
+    arr = arr.to_contiguous(mforder: .Row)
     
     // MfArray to UIImage
     arr.withDataUnsafeMBPtrT(datatype: Float.self){
