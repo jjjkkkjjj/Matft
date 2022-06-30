@@ -16,17 +16,18 @@ extension Matft{
        - parameters:
             - mfarray: mfarray
             - mftype: the type of mfarray
+            - mforder: The order
     */
-    public static func astype(_ mfarray: MfArray, mftype: MfType) -> MfArray{
+    public static func astype(_ mfarray: MfArray, mftype: MfType, mforder: MfOrder = .Row) -> MfArray{
         //let newarray = Matft.shallowcopy(mfarray)
         //newarray.mfdata._mftype = mftype
         if mftype == .Bool{
-            return to_Bool(mfarray)
+            return to_Bool(mfarray).to_contiguous(mforder: mforder)
         }
         
         let newStoredType = MfType.storedType(mftype)
         if mfarray.storedType == newStoredType{
-            let ret = mfarray.deepcopy()
+            let ret = mfarray.to_contiguous(mforder: mforder)
             ret.mfdata.mftype = mftype
             return ret
         }
@@ -46,8 +47,14 @@ extension Matft{
                 [unowned mfarray] in
                 wrap_vDSP_convert(mfarray.storedSize, $0.baseAddress!, 1, dstptr, 1, vDSP_func)
             }
+            let dst = MfArray(mfdata: newdata, mfstructure: newstructure)
             
-            return MfArray(mfdata: newdata, mfstructure: newstructure)
+            if (dst.mfstructure.row_contiguous && mforder == .Row) || (dst.mfstructure.column_contiguous && mforder == .Column){
+                return dst
+            }
+            else{
+                return dst.to_contiguous(mforder: mforder)
+            }
         }
         
         switch newStoredType{

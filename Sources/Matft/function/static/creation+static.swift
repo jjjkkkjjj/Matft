@@ -219,32 +219,13 @@ extension Matft{
         
         retShape.insert(concatDim, at: 0)// return shape
         
-        let rmajorArrays = mfarrays.map{ Matft.to_contiguous($0, mforder: .Row) }
-        let retSize = shape2size(&retShape)
-        
-        let newdata = MfData(size: retSize, mftype: retMfType)
-        func _stack<T: MfStorable>(_ cblas_func: cblas_copy_func<T>){
-            let dstptrT = newdata.data.bindMemory(to: T.self, capacity: retSize)
-            var offset = 0
-            for array in rmajorArrays{
-                array.withDataUnsafeMBPtrT(datatype: T.self){
-                    [unowned array] in
-                    wrap_cblas_copy(array.storedSize, $0.baseAddress!, 1, dstptrT + offset, 1, cblas_func)
-                }
-                offset += array.storedSize
-            }
-        }
         switch MfType.storedType(retMfType){
         case .Float:
-            _stack(cblas_scopy)
+            return stack_by_cblas(mfarrays, ret_shape: retShape, ret_mftype: retMfType, mforder: .Row, cblas_scopy)
             
         case .Double:
-            _stack(cblas_dcopy)
+            return stack_by_cblas(mfarrays, ret_shape: retShape, ret_mftype: retMfType, mforder: .Row, cblas_dcopy)
         }
-        
-        let newstructure = MfStructure(shape: retShape, mforder: .Row)
-        
-        return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     /**
        Concatenate given arrays horizontally(for column)
@@ -272,32 +253,13 @@ extension Matft{
         
         retShape.insert(concatDim, at: retShape.endIndex)// return shape
         
-        let cmajorArrays = mfarrays.map{ Matft.to_contiguous($0, mforder: .Column) }
-        let retSize = shape2size(&retShape)
-        
-        let newdata = MfData(size: retSize, mftype: retMfType)
-        func _stack<T: MfStorable>(_ cblas_func: cblas_copy_func<T>){
-            let dstptrT = newdata.data.bindMemory(to: T.self, capacity: retSize)
-            var offset = 0
-            for array in cmajorArrays{
-                array.withDataUnsafeMBPtrT(datatype: T.self){
-                    [unowned array] in
-                    wrap_cblas_copy(array.storedSize, $0.baseAddress!, 1, dstptrT + offset, 1, cblas_func)
-                }
-                offset += array.storedSize
-            }
-        }
         switch MfType.storedType(retMfType){
         case .Float:
-            _stack(cblas_scopy)
+            return stack_by_cblas(mfarrays, ret_shape: retShape, ret_mftype: retMfType, mforder: .Column, cblas_scopy)
             
         case .Double:
-            _stack(cblas_dcopy)
+            return stack_by_cblas(mfarrays, ret_shape: retShape, ret_mftype: retMfType, mforder: .Column, cblas_dcopy)
         }
-        
-        let newstructure = MfStructure(shape: retShape, mforder: .Column)
-        
-        return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     /**
        Concatenate given arrays for arbitrary axis
@@ -338,47 +300,13 @@ extension Matft{
         
         retShape.insert(concatDim, at: axis)// return shape
         
-        var columnShape = retShape // the left side shape splited by axis, must have more than one elements
-        columnShape.removeSubrange(axis..<retShape.count)
-        let columnSize = shape2size(&columnShape)
-        var rowShape = retShape// the right side shape splited by axis, must have more than one elements
-        rowShape.removeSubrange(0...axis)
-        let rowSize = shape2size(&rowShape)
-        
-        let fasterOrder = rowSize >= columnSize ? MfOrder.Row : MfOrder.Column
-        let fasterBlockSize = rowSize >= columnSize ? rowSize : columnSize
-        let slowerBlockSize = rowSize >= columnSize ? columnSize : rowSize
-        
-        let majorArrays = mfarrays.map{ Matft.to_contiguous($0, mforder: fasterOrder).astype(retMfType) }
-        let retSize = shape2size(&retShape)
-        
-        let newdata = MfData(size: retSize, mftype: retMfType)
-        func _concat<T: MfStorable>(_ cblas_func: cblas_copy_func<T>){
-            let dstptrT = newdata.data.bindMemory(to: T.self, capacity: retSize)
-
-            var dst_offset = 0
-            for sb in 0..<slowerBlockSize{
-                for array in majorArrays{
-                    let concatSize = array.shape[axis]
-                    
-                    array.withDataUnsafeMBPtrT(datatype: T.self){
-                        wrap_cblas_copy(fasterBlockSize * concatSize, $0.baseAddress! + sb * fasterBlockSize * concatSize, 1, dstptrT + dst_offset, 1, cblas_func)
-                    }
-                    dst_offset += fasterBlockSize * concatSize
-                }
-            }
-        }
         switch MfType.storedType(retMfType){
         case .Float:
-            _concat(cblas_scopy)
-            
+            return concat_by_cblas(mfarrays, ret_shape: retShape, ret_mftype: retMfType, axis: axis, cblas_scopy)
         case .Double:
-            _concat(cblas_dcopy)
+            return concat_by_cblas(mfarrays, ret_shape: retShape, ret_mftype: retMfType, axis: axis, cblas_dcopy)
         }
         
-        let newstructure = MfStructure(shape: retShape, mforder: fasterOrder)
-        
-        return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     
     /**

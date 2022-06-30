@@ -13,9 +13,10 @@ extension MfArray{
        Create another typed mfarray. Created mfarray will be different object from original one
        - parameters:
             - mftype: the type of mfarray
+            - mforder: The order
     */
-    public func astype(_ mftype: MfType) -> MfArray{
-        return Matft.astype(self, mftype: mftype)
+    public func astype(_ mftype: MfType, mforder: MfOrder = .Row) -> MfArray{
+        return Matft.astype(self, mftype: mftype, mforder: mforder)
     }
     
     /**

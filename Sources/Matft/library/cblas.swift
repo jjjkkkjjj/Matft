@@ -201,6 +201,80 @@ internal func samesize_by_cblas<T: MfStorable>(_ src_mfarray: MfArray, cblas_fun
 }
 
 
+/// Stack vertically or horizontally
+/// - Parameters:
+///   - mfarrays: The mfarray array
+///   - ret_shape: The return shape array
+///   - ret_mftype: The return mftype
+///   - mforder: An order. Row major means vstack, Column major means hstack.
+///   - cblas_func: cblas_copy function
+/// - Returns: The stacked mfarray
+internal func stack_by_cblas<T: MfStorable>(_ mfarrays: [MfArray], ret_shape: [Int], ret_mftype: MfType, mforder: MfOrder, _ cblas_func: cblas_copy_func<T>) -> MfArray{
+    assert(mfarrays.count > 0)
+
+    var ret_shape = ret_shape
+    let majorArrays = mfarrays.map{ $0.astype(ret_mftype, mforder: mforder) }
+    let ret_size = shape2size(&ret_shape)
+    
+    let newdata: MfData = MfData(size: ret_size, mftype: ret_mftype)
+    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: ret_size)
+    var offset = 0
+    for mfarray in majorArrays {
+        mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            wrap_cblas_copy(mfarray.storedSize, $0.baseAddress!, 1, dstptrT + offset, 1, cblas_func)
+        }
+        
+        offset += mfarray.storedSize
+    }
+    
+    let newstructure = MfStructure(shape: ret_shape, mforder: mforder)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// Concatenate mfarrays along with a given axis
+/// - Parameters:
+///   - mfarrays: The mfarray array
+///   - ret_shape: The return shape array
+///   - ret_mftype: The return mftype
+///   - axis: An axis index
+///   - cblas_func: cblas_copy function
+/// - Returns: The concatenated mfarray
+internal func concat_by_cblas<T: MfStorable>(_ mfarrays: [MfArray], ret_shape: [Int], ret_mftype: MfType, axis: Int, _ cblas_func: cblas_copy_func<T>) -> MfArray{
+    var ret_shape = ret_shape
+    var column_shape = ret_shape // the left side shape splited by axis, must have more than one elements
+    column_shape.removeSubrange(axis..<ret_shape.count)
+    let column_size = shape2size(&column_shape)
+    var row_shape = ret_shape// the right side shape splited by axis, must have more than one elements
+    row_shape.removeSubrange(0...axis)
+    let row_size = shape2size(&row_shape)
+    
+    let faster_order = row_size >= column_size ? MfOrder.Row : MfOrder.Column
+    let fasterBlockSize = row_size >= column_size ? row_size : column_size
+    let slowerBlockSize = row_size >= column_size ? column_size : row_size
+    
+    let majorArrays = mfarrays.map{ Matft.astype($0, mftype: ret_mftype, mforder: faster_order) }
+    let ret_size = shape2size(&ret_shape)
+    
+    let newdata = MfData(size: ret_size, mftype: ret_mftype)
+    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: ret_size)
+    
+    var offset = 0
+    for sb in 0..<slowerBlockSize{
+        for mfarray in majorArrays {
+            let concat_size = mfarray.shape[axis]
+            mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+                wrap_cblas_copy(fasterBlockSize*concat_size, $0.baseAddress! + sb*fasterBlockSize*concat_size, 1, dstptrT + offset, 1, cblas_func)
+            }
+            
+            offset += fasterBlockSize*concat_size
+        }
+    }
+    let newstructure = MfStructure(shape: ret_shape, mforder: faster_order)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
 /// Multiply mfarray
 /// - Parameters:
 ///   - lmfarray: The left mfarray
