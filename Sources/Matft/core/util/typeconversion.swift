@@ -239,7 +239,7 @@ fileprivate func _array2ptrU<T: MfTypable, U: MfStorable>(_ flattenArray: inout 
     
     // convert into Float
     flattenArray.withUnsafeBufferPointer{
-        unsafePtrT2UnsafeMPtrU($0.baseAddress!, ptrU, vDSP_func, flattenArray.count)
+        wrap_vDSP_convert(flattenArray.count, $0.baseAddress!, 1, ptrU, 1, vDSP_func)
     }
     
     if toBool{

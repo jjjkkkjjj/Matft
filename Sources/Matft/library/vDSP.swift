@@ -9,12 +9,49 @@
 import Foundation
 import Accelerate
 
-//converter
 internal typealias vDSP_convert_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<U>, vDSP_Stride, vDSP_Length) -> Void
 
-internal func unsafePtrT2UnsafeMPtrU<T: MfTypable, U: MfTypable>(_ srcptr: UnsafePointer<T>,  _ dstptr: UnsafeMutablePointer<U>, _ vDSP_func: vDSP_convert_func<T, U>, _ count: Int){
-    vDSP_func(srcptr, vDSP_Stride(1), dstptr, vDSP_Stride(1), vDSP_Length(count))
+internal typealias vDSP_biopvv_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+internal typealias vDSP_biopvs_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+internal typealias vDSP_biopsv_func<T> = (UnsafePointer<T>, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+internal typealias vDSP_vcmprs_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+internal typealias vDSP_vminmg_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+internal typealias vDSP_viclip_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>,  UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+internal typealias vDSP_clip_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length, UnsafeMutablePointer<vDSP_Length>, UnsafeMutablePointer<vDSP_Length>) -> Void
+
+internal typealias vDSP_sort_func<T> = (UnsafeMutablePointer<T>, vDSP_Length, Int32) -> Void
+
+internal typealias vDSP_argsort_func<T> = (UnsafePointer<T>, UnsafeMutablePointer<vDSP_Length>, UnsafeMutablePointer<vDSP_Length>, vDSP_Length, Int32) -> Void
+
+internal typealias vDSP_stats_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Length) -> Void
+
+internal typealias vDSP_stats_index_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, UnsafeMutablePointer<vDSP_Length>, vDSP_Length) -> Void
+
+
+internal typealias vDSP_math_func<T, U> = vDSP_convert_func<T, U>
+
+internal typealias vDSP_vgathr_func<T> = (UnsafePointer<T>, UnsafePointer<vDSP_Length>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+
+
+/// Wrapper of vDSP conversion function
+/// - Parameters:
+///   - srcptr: A source pointer
+///   - srcStride: A source stride
+///   - dstptr: A destination pointer
+///   - dstStride: A destination stride
+///   - size: A size to be copied
+///   - vDSP_func: The vDSP conversion function
+@inline(__always)
+internal func wrap_vDSP_convert<T, U>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafeMutablePointer<U>, _ dstStride: Int, _ vDSP_func: vDSP_convert_func<T, U>){
+    vDSP_func(srcptr, vDSP_Stride(srcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
 }
+
 // same above
 fileprivate func _run_preop<T: MfTypable, U: MfTypable>(_ srcptr: UnsafePointer<T>,  _ dstptr: UnsafeMutablePointer<U>, _ count: Int, _ vDSP_func: vDSP_convert_func<T, U>){
     vDSP_func(srcptr, vDSP_Stride(1), dstptr, vDSP_Stride(1), vDSP_Length(count))
@@ -141,8 +178,7 @@ internal func biop_vv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: 
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
-//get stats for mfarray
-internal typealias vDSP_stats_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Length) -> Void
+
 fileprivate func _run_stats<T: MfStorable>(_ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, vDSP_func: vDSP_stats_func<T>, stride: Int, _ count: Int){
     
     vDSP_func(srcptr, vDSP_Stride(stride), dstptr, vDSP_Length(count))
@@ -190,8 +226,6 @@ internal func stats_all_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_func: vD
 }
 
 
-internal typealias vDSP_stats_index_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, UnsafeMutablePointer<vDSP_Length>, vDSP_Length) -> Void
-
 fileprivate func _run_stats_index<T: MfStorable>(_ srcptr: UnsafePointer<T>, vDSP_func: vDSP_stats_index_func<T>, stride: Int32, _ count: Int) -> Int32{
     var ret = vDSP_Length(0)
     var tmpdst = T.zero
@@ -227,7 +261,7 @@ internal func stats_index_axis_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: 
         
         //convert dataptr(int) to float
         i32array.withUnsafeBufferPointer{
-            unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptrF, vDSP_vflt32, retSize)
+            wrap_vDSP_convert(retSize, $0.baseAddress!, 1, dstptrF, 1, vDSP_vflt32)
         }
     }
     
@@ -249,8 +283,7 @@ internal func stats_index_all_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_fu
 }
 
 
-// sort
-internal typealias vDSP_sort_func<T> = (UnsafeMutablePointer<T>, vDSP_Length, Int32) -> Void
+
 fileprivate func _run_sort<T: MfStorable>(_ srcdstptr: UnsafeMutablePointer<T>, count: Int, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_func<T>){
     let order = Int32(order.rawValue)
     vDSP_func(srcdstptr, vDSP_Length(count), order)
@@ -360,10 +393,6 @@ internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ min: T, _ max: T
 }
 
 
-internal typealias vDSP_vminmg_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
-
-internal typealias vDSP_viclip_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>,  UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
-
 internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_vminmg_func: vDSP_vminmg_func<T>, vDSP_viclip_func: vDSP_viclip_func<T>, vForce_copysign_func: vForce_copysign_func<T>) -> MfArray{
     let size = mfarray.storedSize
     var sizei32 = Int32(size)
@@ -453,7 +482,6 @@ internal func arange_by_vDSP<T: MfStorable>(_ start: T, _ by: T, _ count: Int, _
 */
 
 //TODO: ret dim = ori dim - ind dim + 1.
-internal typealias vDSP_vcmprs_func<T: MfStorable> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
 internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, _ vDSP_func: vDSP_vcmprs_func<T>) -> MfArray{
     assert(indices.mftype == .Bool, "must be bool")
@@ -505,8 +533,6 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
-
-internal typealias vDSP_vgathr_func<T: MfStorable> = (UnsafePointer<T>, UnsafePointer<vDSP_Length>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
 /**
     - Important: this function is for fancy indexing

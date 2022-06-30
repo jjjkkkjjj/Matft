@@ -24,7 +24,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawPointer, mftype:
             return ret
         case .UInt8:
             let ptrui8 = allocate_unsafeMPtrT(type: UInt8.self, count: size)
-            unsafePtrT2UnsafeMPtrU(ptrF, ptrui8, vDSP_vfixru8, size)
+            wrap_vDSP_convert(size, ptrF, 1, ptrui8, 1, vDSP_vfixru8)
             let ret = Array(UnsafeMutableBufferPointer(start: ptrui8, count: size)) as [Any]
             
             //free
@@ -34,7 +34,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawPointer, mftype:
             return ret
         case .UInt16:
             let ptrui16 = allocate_unsafeMPtrT(type: UInt16.self, count: size)
-            unsafePtrT2UnsafeMPtrU(ptrF, ptrui16, vDSP_vfixru16, size)
+            wrap_vDSP_convert(size, ptrF, 1, ptrui16, 1, vDSP_vfixru16)
             let ret = Array(UnsafeMutableBufferPointer(start: ptrui16, count: size)) as [Any]
             
             //free
@@ -44,7 +44,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawPointer, mftype:
             return ret
         case .UInt32, .UInt64, .UInt:
             let ptrui32 = allocate_unsafeMPtrT(type: UInt32.self, count: size)
-            unsafePtrT2UnsafeMPtrU(ptrF, ptrui32, vDSP_vfixru32, size)
+            wrap_vDSP_convert(size, ptrF, 1, ptrui32, 1, vDSP_vfixru32)
             let ret = Array(UnsafeMutableBufferPointer(start: ptrui32, count: size))
             
             //free
@@ -60,7 +60,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawPointer, mftype:
             return ret as [Any]
         case .Int8:
             let ptri8 = allocate_unsafeMPtrT(type: Int8.self, count: size)
-            unsafePtrT2UnsafeMPtrU(ptrF, ptri8, vDSP_vfixr8, size)
+            wrap_vDSP_convert(size, ptrF, 1, ptri8, 1, vDSP_vfixr8)
             let ret = Array(UnsafeMutableBufferPointer(start: ptri8, count: size)) as [Any]
             
             //free
@@ -70,7 +70,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawPointer, mftype:
             return ret
         case .Int16:
             let ptri16 = allocate_unsafeMPtrT(type: Int16.self, count: size)
-            unsafePtrT2UnsafeMPtrU(ptrF, ptri16, vDSP_vfixr16, size)
+            wrap_vDSP_convert(size, ptrF, 1, ptri16, 1, vDSP_vfixr16)
             let ret = Array(UnsafeMutableBufferPointer(start: ptri16, count: size)) as [Any]
             
             //free
@@ -80,7 +80,7 @@ internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawPointer, mftype:
             return ret
         case .Int32, .Int64, .Int:
             let ptri32 = allocate_unsafeMPtrT(type: Int32.self, count: size)
-            unsafePtrT2UnsafeMPtrU(ptrF, ptri32, vDSP_vfixr32, size)
+            wrap_vDSP_convert(size, ptrF, 1, ptri32, 1, vDSP_vfixr32)
             let ret = Array(UnsafeMutableBufferPointer(start: ptri32, count: size))
             
             //free

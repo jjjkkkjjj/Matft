@@ -44,7 +44,7 @@ extension Matft{
             let dstptr = newdata.data.bindMemory(to: U.self, capacity: mfarray.storedSize)
             mfarray.withDataUnsafeMBPtrT(datatype: T.self){
                 [unowned mfarray] in
-                unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_func, mfarray.storedSize)
+                wrap_vDSP_convert(mfarray.storedSize, $0.baseAddress!, 1, dstptr, 1, vDSP_func)
             }
             
             return MfArray(mfdata: newdata, mfstructure: newstructure)
