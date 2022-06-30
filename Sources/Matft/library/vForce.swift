@@ -9,6 +9,33 @@
 import Foundation
 import Accelerate
 
+public typealias vForce_copysign_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
+
+public typealias vForce_math_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
+
+public typealias vForce_math_biop_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
+
+/// Math operation by vDSP
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - vForce_func: The vForce math function
+/// - Returns: The math-operated mfarray
+internal func math_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: vForce_math_func<T>) -> MfArray{
+    let mfarray = check_contiguous(mfarray)
+    var ret_size = Int32(mfarray.size)
+    
+    let newdata = MfData(size: mfarray.size, mftype: mfarray.mftype)
+    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: mfarray.size)
+
+    mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        vForce_func(dstptrT, $0.baseAddress!, &ret_size)
+    }
+    
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
 internal typealias vForce_vv_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
 
 internal func math_vv_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: vForce_vv_func<T>) -> MfArray{
@@ -47,5 +74,3 @@ internal func math_biop_vv_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mf
     let newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
-
-internal typealias vForce_copysign_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void

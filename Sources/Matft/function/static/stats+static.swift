@@ -20,9 +20,9 @@ extension Matft.stats{
     public static func mean(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return boolean2float(_stats_calc(mfarray.astype(.Float), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv))
+            return boolean2float(stats_by_vDSP(mfarray.astype(.Float), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv))
         case .Double:
-            return _stats_calc(mfarray.astype(.Double), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanvD)
+            return stats_by_vDSP(mfarray.astype(.Double), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanvD)
         }
     }
     /**
@@ -35,9 +35,9 @@ extension Matft.stats{
     public static func max(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxv)
+            return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxv)
         case .Double:
-            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxvD)
+            return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxvD)
         }
     }
     /**
@@ -49,9 +49,9 @@ extension Matft.stats{
     public static func argmax(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc_index(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_maxvi)
+            return stats_index_by_vDSP(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_maxvi)
         case .Double:
-            return _stats_calc_index(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_maxviD)
+            return stats_index_by_vDSP(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_maxviD)
         }
     }
     /**
@@ -64,9 +64,9 @@ extension Matft.stats{
     public static func min(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minv)
+            return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minv)
         case .Double:
-            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minvD)
+            return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minvD)
         }
     }
     /**
@@ -78,9 +78,9 @@ extension Matft.stats{
     public static func argmin(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return _stats_calc_index(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_minvi)
+            return stats_index_by_vDSP(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_minvi)
         case .Double:
-            return _stats_calc_index(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_minviD)
+            return stats_index_by_vDSP(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_minviD)
         }
     }
     
@@ -94,9 +94,9 @@ extension Matft.stats{
         let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(rettype) {
         case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmax)
+            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmax)
         case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmaxD)
+            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmaxD)
         }
     }
 
@@ -110,9 +110,9 @@ extension Matft.stats{
         let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(rettype) {
         case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmin)
+            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmin)
         case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vminD)
+            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vminD)
         }
     }
     
@@ -126,9 +126,9 @@ extension Matft.stats{
     public static func sum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return boolean2float(_stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sve))
+            return boolean2float(stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sve))
         case .Double:
-            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sveD)
+            return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sveD)
         }
     }
     /**
@@ -151,9 +151,9 @@ extension Matft.stats{
     public static func squaresum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         switch mfarray.storedType {
         case .Float:
-            return boolean2float(_stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesq))
+            return boolean2float(stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesq))
         case .Double:
-            return _stats_calc(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesqD)
+            return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesqD)
         }
     }
     
@@ -173,38 +173,3 @@ extension Matft.stats{
     }
 }
 
-
-fileprivate func _stats_calc<T: MfStorable>(_ typedArray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_func<T>) -> MfArray{
-    
-    if axis != nil && typedArray.ndim > 1{// for given axis
-        let axis = get_positive_axis(axis!, ndim: typedArray.ndim)
-        let ret = stats_axis_by_vDSP(typedArray, axis: axis, vDSP_func: vDSP_func)
-        return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
-    }
-    else{// for all elements
-        let ret = stats_all_by_vDSP(typedArray, vDSP_func: vDSP_func)
-        if keepDims{
-            let shape = Array(repeating: 1, count: typedArray.ndim)
-            return Matft.reshape(ret, newshape: shape)
-        }
-        return ret
-    }
-}
-
-fileprivate func _stats_calc_index<T: MfStorable>(_ mfarray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_index_func<T>) -> MfArray{
-    
-    if axis != nil && mfarray.ndim > 1{// for given axis
-        let axis = get_positive_axis(axis!, ndim: mfarray.ndim)
-        
-        let ret = stats_index_axis_by_vDSP(mfarray, axis: axis, vDSP_func: vDSP_func)
-        return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
-    }
-    else{// for all elements
-        let ret = stats_index_all_by_vDSP(mfarray.flatten(), vDSP_func: vDSP_func)
-        if keepDims{
-            let shape = Array(repeating: 1, count: mfarray.ndim)
-            return Matft.reshape(ret, newshape: shape)
-        }
-        return ret
-    }
-}

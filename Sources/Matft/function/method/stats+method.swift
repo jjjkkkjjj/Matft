@@ -90,39 +90,3 @@ extension MfArray{
         return Matft.stats.cumsum(self, axis: axis)
     }
 }
-
-
-fileprivate func _stats_calc<T: MfStorable>(_ typedArray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_func<T>) -> MfArray{
-    
-    if axis != nil && typedArray.ndim > 1{// for given axis
-        let axis = get_positive_axis(axis!, ndim: typedArray.ndim)
-        let ret = stats_axis_by_vDSP(typedArray, axis: axis, vDSP_func: vDSP_func)
-        return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
-    }
-    else{// for all elements
-        let ret = stats_all_by_vDSP(typedArray, vDSP_func: vDSP_func)
-        if keepDims{
-            let shape = Array(repeating: 1, count: typedArray.ndim)
-            return Matft.reshape(ret, newshape: shape)
-        }
-        return ret
-    }
-}
-
-fileprivate func _stats_calc_index<T: MfStorable>(_ mfarray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_index_func<T>) -> MfArray{
-    
-    if axis != nil && mfarray.ndim > 1{// for given axis
-        let axis = get_positive_axis(axis!, ndim: mfarray.ndim)
-        
-        let ret = stats_index_axis_by_vDSP(mfarray, axis: axis, vDSP_func: vDSP_func)
-        return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
-    }
-    else{// for all elements
-        let ret = stats_index_all_by_vDSP(mfarray.flatten(), vDSP_func: vDSP_func)
-        if keepDims{
-            let shape = Array(repeating: 1, count: mfarray.ndim)
-            return Matft.reshape(ret, newshape: shape)
-        }
-        return ret
-    }
-}

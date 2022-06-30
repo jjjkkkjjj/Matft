@@ -21,9 +21,9 @@ extension Matft{
         let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(rettype){
         case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
+            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
         case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
+            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
         }
     }
     /**
@@ -43,9 +43,9 @@ extension Matft{
         
         switch MfType.storedType(retmftype) {
         case .Float:
-            return biop_vs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsadd)
+            return biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsadd)
         case .Double:
-            return biop_vs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsaddD)
+            return biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsaddD)
         }
     }
     /**
@@ -65,9 +65,9 @@ extension Matft{
         
         switch MfType.storedType(retmftype) {
         case .Float:
-            return biop_vs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsadd)
+            return biopvs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsadd)
         case .Double:
-            return biop_vs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_vsaddD)
+            return biopvs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_vsaddD)
         }
     }
     /**
@@ -80,9 +80,9 @@ extension Matft{
         let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(rettype){
         case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
+            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
         case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD)
+            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD)
         }
     }
     /**
@@ -102,9 +102,9 @@ extension Matft{
         
         switch MfType.storedType(retmftype) {
         case .Float:
-            return biop_vs_by_vDSP(l_mfarray, -Float.from(r_scalar), vDSP_vsadd)
+            return biopvs_by_vDSP(l_mfarray, -Float.from(r_scalar), vDSP_vsadd)
         case .Double:
-            return biop_vs_by_vDSP(l_mfarray, -Double.from(r_scalar), vDSP_vsaddD)
+            return biopvs_by_vDSP(l_mfarray, -Double.from(r_scalar), vDSP_vsaddD)
         }
     }
     /**
@@ -124,9 +124,9 @@ extension Matft{
         
         switch MfType.storedType(retmftype) {
         case .Float:
-            return biop_vs_by_vDSP(-r_mfarray, Float.from(l_scalar), vDSP_vsadd)
+            return biopvs_by_vDSP(-r_mfarray, Float.from(l_scalar), vDSP_vsadd)
         case .Double:
-            return biop_vs_by_vDSP(-r_mfarray, Double.from(l_scalar), vDSP_vsaddD)
+            return biopvs_by_vDSP(-r_mfarray, Double.from(l_scalar), vDSP_vsaddD)
         }
     }
     /**
@@ -139,9 +139,9 @@ extension Matft{
         let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(rettype){
         case .Float:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul)
+            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul)
         case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmulD)
+            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmulD)
         }
     }
     /**
@@ -161,9 +161,9 @@ extension Matft{
         
         switch MfType.storedType(retmftype) {
         case .Float:
-            return biop_vs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsmul)
+            return biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsmul)
         case .Double:
-            return biop_vs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsmulD)
+            return biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsmulD)
         }
     }
     /**
@@ -183,9 +183,9 @@ extension Matft{
         
         switch MfType.storedType(retmftype) {
         case .Float:
-            return biop_vs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsmul)
+            return biopvs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsmul)
         case .Double:
-            return biop_vs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_vsmulD)
+            return biopvs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_vsmulD)
         }
     }
     /**
@@ -198,11 +198,11 @@ extension Matft{
         let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(rettype){
         case .Float:
-            let ret = biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv)
+            let ret = biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv)
             ret.mfdata.mftype = .Float
             return ret
         case .Double:
-            return biop_vv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
+            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
         }
     }
     /**
@@ -222,9 +222,9 @@ extension Matft{
         
         switch MfType.storedType(retmftype) {
         case .Float:
-            return biop_vs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsdiv)
+            return biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsdiv)
         case .Double:
-            return biop_vs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsdivD)
+            return biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsdivD)
         }
     }
     /**
@@ -244,9 +244,9 @@ extension Matft{
         
         switch MfType.storedType(retmftype) {
         case .Float:
-            return biop_sv_by_vDSP(Float.from(l_scalar), r_mfarray, vDSP_svdiv)
+            return biopsv_by_vDSP(Float.from(l_scalar), r_mfarray, vDSP_svdiv)
         case .Double:
-            return biop_sv_by_vDSP(Double.from(l_scalar), r_mfarray, vDSP_svdivD)
+            return biopsv_by_vDSP(Double.from(l_scalar), r_mfarray, vDSP_svdivD)
         }
     }
     
