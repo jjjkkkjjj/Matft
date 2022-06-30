@@ -74,7 +74,7 @@ extension Matft{
                 reverse_permutation.append(-1)
             }
             for i in 0..<ndim{
-                let axis = get_axis(axes[i], ndim: ndim)
+                let axis = get_positive_axis(axes[i], ndim: ndim)
 
                 precondition(reverse_permutation[axis] == -1, "repeated axis in transpose")
                 reverse_permutation[axis] = i
@@ -108,7 +108,7 @@ extension Matft{
        - Important: this function will create copy not view
     */
     public static func reshape(_ mfarray: MfArray, newshape: [Int], order: MfOrder? = nil) -> MfArray{
-        var newshape = get_shape(newshape, mfarray.size)
+        var newshape = get_positive_shape(newshape, mfarray.size)
         precondition(mfarray.size == shape2size(&newshape), "new shape's size:\(shape2size(&newshape)) must be same as mfarray's size:\(mfarray.size)")
         
         let order = order ?? .Row
@@ -140,7 +140,7 @@ extension Matft{
         let newarray = mfarray.shallowcopy()
         
         var newshape = mfarray.shape
-        let axis = get_axis_for_expand_dims(axis, ndim: mfarray.ndim)
+        let axis = get_positive_axis_for_expand_dims(axis, ndim: mfarray.ndim)
         
         newshape.insert(1, at: axis)
         var newstrides = mfarray.strides
@@ -163,7 +163,7 @@ extension Matft{
         var newshape = mfarray.shape
         var newstrides = mfarray.strides
         for axis in axes{
-            let axis = get_axis_for_expand_dims(axis, ndim: newshape.count)
+            let axis = get_positive_axis_for_expand_dims(axis, ndim: newshape.count)
             
             newshape.insert(1, at: axis)
             newstrides.insert(0, at: axis)
@@ -184,7 +184,7 @@ extension Matft{
         var newstrides = mfarray.strides
         
         if let axis = axis{
-            let axis = get_axis(axis, ndim: mfarray.ndim)
+            let axis = get_positive_axis(axis, ndim: mfarray.ndim)
             precondition(newshape.remove(at: axis) == 1, "cannot select an axis to squeeze out which has size not equal to one")
             newstrides.remove(at: axis)
         }
@@ -230,7 +230,7 @@ extension Matft{
         var newshape = mfarray.shape
         var newstrides = mfarray.strides
         for axis in axes{
-            let axis = get_axis(axis, ndim: mfarray.ndim)
+            let axis = get_positive_axis(axis, ndim: mfarray.ndim)
             precondition(newshape.remove(at: axis) == 1, "cannot select an axis to squeeze out which has size not equal to one")
             newstrides.remove(at: axis)
         }
@@ -322,7 +322,7 @@ extension Matft{
     */
     public static func flip(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         if let axis = axis{
-            let axis = get_axis(axis, ndim: mfarray.ndim)
+            let axis = get_positive_axis(axis, ndim: mfarray.ndim)
             var slices = Array<MfSlice>(repeating: MfSlice(start: 0, to: nil, by: 1), count: mfarray.ndim)
             slices[axis] = MfSlice(start: 0, to: nil, by: -1)
             return mfarray[slices]
@@ -342,7 +342,7 @@ extension Matft{
         
         var slices = Array<MfSlice>(repeating: MfSlice(start: 0, to: nil, by: 1), count: mfarray.ndim)
         for axis in axes{
-            let axis = get_axis(axis, ndim: mfarray.ndim)
+            let axis = get_positive_axis(axis, ndim: mfarray.ndim)
             slices[axis] = MfSlice(start: 0, to: nil, by: -1)
         }
         return mfarray[slices]
@@ -378,8 +378,8 @@ extension Matft{
             - axis2: Int
     */
     public static func swapaxes(_ mfarray: MfArray, axis1: Int, axis2: Int) -> MfArray{
-        let axis1 = get_axis(axis1, ndim: mfarray.ndim)
-        let axis2 = get_axis(axis2, ndim: mfarray.ndim)
+        let axis1 = get_positive_axis(axis1, ndim: mfarray.ndim)
+        let axis2 = get_positive_axis(axis2, ndim: mfarray.ndim)
         
         var axes = Array(stride(from: 0, to: mfarray.ndim, by: 1))
         //swap
@@ -396,8 +396,8 @@ extension Matft{
             - dst: Int
     */
     public static func moveaxis(_ mfarray: MfArray, src: Int, dst: Int) -> MfArray{
-        let src = get_axis(src, ndim: mfarray.ndim)
-        let dst = get_axis(dst, ndim: mfarray.ndim)
+        let src = get_positive_axis(src, ndim: mfarray.ndim)
+        let dst = get_positive_axis(dst, ndim: mfarray.ndim)
         
         var axes = Array(stride(from: 0, to: mfarray.ndim, by: 1))
         //move
@@ -417,8 +417,8 @@ extension Matft{
         precondition(src.count == dst.count, "must be same size")
         var sources: [Int] = [], dstinations: [Int] = []
         for (s, d) in zip(src, dst){
-            sources += [get_axis(s, ndim: mfarray.ndim)]
-            dstinations += [get_axis(d, ndim: mfarray.ndim)]
+            sources += [get_positive_axis(s, ndim: mfarray.ndim)]
+            dstinations += [get_positive_axis(d, ndim: mfarray.ndim)]
         }
         
         var order = Array(0..<mfarray.ndim).filter{ !sources.contains($0) }
@@ -447,7 +447,7 @@ extension Matft{
         let _axis: Int
         let _dst: MfArray
         if axis != nil && mfarray.ndim > 1{// for given axis
-            _axis = get_axis(axis!, ndim: mfarray.ndim)
+            _axis = get_positive_axis(axis!, ndim: mfarray.ndim)
             _dst = mfarray.deepcopy()
         }
         else{// for all elements
@@ -473,7 +473,7 @@ extension Matft{
         let _axis: Int
         let _dst: MfArray
         if axis != nil && mfarray.ndim > 1{// for given axis
-            _axis = get_axis(axis!, ndim: mfarray.ndim)
+            _axis = get_positive_axis(axis!, ndim: mfarray.ndim)
             _dst = mfarray.deepcopy()
         }
         else{// for all elements

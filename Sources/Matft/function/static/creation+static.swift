@@ -312,7 +312,7 @@ extension Matft{
         
         var retShape = mfarrays.first!.shape // shape except for given axis first, return shape later
         let retndim = mfarrays.first!.ndim
-        let axis = get_axis(axis, ndim: retndim)
+        let axis = get_positive_axis(axis, ndim: retndim)
         
         if axis == 0{// vstack is faster than this function
             return Matft.vstack(mfarrays)
@@ -440,7 +440,7 @@ extension Matft{
         var mfarr: MfArray, vals: MfArray, ax: Int
         if let axis = axis{
             mfarr = mfarray
-            ax = get_axis(axis, ndim: mfarr.ndim)
+            ax = get_positive_axis(axis, ndim: mfarr.ndim)
         }
         else{
             mfarr = mfarray.ndim != 1 ? mfarray.flatten() : mfarray
@@ -451,7 +451,7 @@ extension Matft{
         let dim = mfarr.shape[ax] //Inserted values number for each index
         var retShape = mfarr.shape
         retShape[ax] += indices.count
-        let sortedIndices = Array(Set(indices.map{ get_index_for_insert($0, dim: dim, axis: ax) }).sorted(by: <))
+        let sortedIndices = Array(Set(indices.map{ get_positive_index_for_insert($0, axissize: dim, axis: ax) }).sorted(by: <))
 
         var ret = Matft.nums(0, shape: retShape, mftype: mfarr.mftype)
         

@@ -546,7 +546,7 @@ internal func fancy1dgetcol_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices
     let dstptrT = newdata.data.bindMemory(to: T.self, capacity: indices.size)
     let _ = mfarray.withDataUnsafeMBPtrT(datatype: T.self){
         srcptr in
-        var offsets = (indices.data as! [Int]).map{ UInt(get_index($0, dim: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
+        var offsets = (indices.data as! [Int]).map{ UInt(get_positive_index($0, axissize: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
         vDSP_func(srcptr.baseAddress!, &offsets, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(indices.size))
     }
     let newstructure = MfStructure(shape: indices.shape, strides: indices.strides)

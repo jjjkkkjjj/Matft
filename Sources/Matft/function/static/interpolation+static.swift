@@ -207,7 +207,7 @@ public struct Lagrange: MfInterpProtocol{
 fileprivate func _preprocessing_interp(_ orig_x: MfArray, _ orig_y: MfArray, _ axis: Int, _ assume_sorted: Bool) -> (orig_x: MfArray, orig_y: MfArray, axis: Int){
     precondition(orig_x.ndim == 1, "x must be 1d")
     precondition(orig_y.ndim > 0, "y must be more than 1d")
-    let axis = get_axis(axis, ndim: orig_y.ndim)
+    let axis = get_positive_axis(axis, ndim: orig_y.ndim)
     precondition(orig_y.shape[axis] == orig_x.size, "The length of y along the interpolation axis must be equal to the length of x.")
     
     let x: MfArray, y: MfArray

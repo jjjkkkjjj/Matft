@@ -213,18 +213,3 @@ fileprivate func _optStrides(shape: inout [Int], l_strides: inout [Int], r_strid
  */
 
 
-internal func get_offsets_from_indices(_ mfarray: MfArray, _ indices: inout [MfArray]) -> (offsets: [Int], indShape: [Int], indSize: Int){
-    var indShape = indices.reduce(indices[0]){ biop_broadcast_to($0, $1).r }.shape
-    let indSize = shape2size(&indShape)
-    // note that all of mfarraies should have same size thanks to this process
-    var offsets = Array(repeating: 0, count: indSize)
-    for (axis, inds) in indices.enumerated(){
-        precondition(inds.mftype == .Int, "fancy indexing must be Int only, but got \(inds.mftype)")
-        let rowInd = inds.broadcast_to(shape: indShape).conv_order(mforder: .Row)
-        for (i, ind) in (rowInd.data as! [Int]).enumerated(){
-            offsets[i] += get_index(ind, dim: mfarray.shape[axis], axis: axis) * mfarray.strides[axis]
-        }
-    }
-    
-    return (offsets, indShape, indSize)
-}

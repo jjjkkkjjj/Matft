@@ -224,7 +224,7 @@ internal func fancyndgetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indice
     let _ = mfarray.withDataUnsafeMBPtrT(datatype: T.self){
         [unowned mfarray](srcptr) in
         
-        let offsets = (indices.data as! [Int]).map{ get_index($0, dim: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
+        let offsets = (indices.data as! [Int]).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
         for offset in offsets{
             copy_unsafeptrT(workSize, srcptr.baseAddress! + offset, 1, dstptrT, 1, cblas_func)
             dstptrT += workSize
@@ -289,7 +289,7 @@ internal func fancysetcol_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
     let indices = check_contiguous(indices, .Row)
     let assignedMfarray = check_contiguous(assignedMfarray.broadcast_to(shape: retShape), .Row).astype(mfarray.mftype)
     
-    let offsets = (indices.data as! [Int]).map{ get_index($0, dim: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
+    let offsets = (indices.data as! [Int]).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
     
     if mfarray.ndim == 1{
 

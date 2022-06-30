@@ -8,102 +8,198 @@
 
 import Foundation
 
-// note that i is index of data
-fileprivate func _get_index(i: Int, shape: inout [Int]) -> [Int]{
-    var ret = Array(repeating: 0, count: shape.count)
-    var quotient = i
-    let ndim = shape.count
+/// Get a positive index from a given index
+/// - Parameters:
+///   - index: An index. Negative index will be converted into positive one as return value
+///   - axissize: The axis size of a given index
+///   - axis: An axis
+/// - Returns: A positive index
+internal func get_positive_index(_ index: Int, axissize: Int, axis: Int) -> Int{
+    let ret_index = index >= 0 ? index : index + axissize
+    precondition(0 <= ret_index && ret_index < axissize, "\(index) is out of bounds for axis \(axis) with \(axissize)")
     
-    for axis in stride(from: ndim - 1, through: 0, by: -1){
-        ret[axis] = quotient % shape[axis]
-        quotient = Int(quotient / shape[axis])
-    }
-    
-    return ret
+    return ret_index
 }
 
-internal func get_indices(_ shape: inout [Int]) -> [[Int]]{
-    var ret: [[Int]] = []
-    
-    let size = shape2size(&shape)
-    
-    for i in 0..<size{
-        ret.append(_get_index(i: i, shape: &shape))
+/// Get a positive index for the insert function from a given index
+/// - Parameters:
+///   - index: An index. Negative index will be converted into positive one as return value
+///   - axissize: The axis size of a given index
+///   - axis: An axis
+/// - Returns: A positive index
+internal func get_positive_index_for_insert(_ index: Int, axissize: Int, axis: Int) -> Int{
+
+    let ret_index: Int
+    if index < axissize && index > -axissize - 1{
+        ret_index = get_positive_index(index, axissize: axissize, axis: axis)
     }
-    
-    //print(ret)
-    
-    return ret
-}
-//recursive function for getting limitted
-fileprivate func _recursive_leaveout_indices(shape: inout [Int], axis: Int, ini_num: Int, numbers: inout [Int?]){
-    
-    let ndim = shape.count
-    
-    if axis == ndim - 1{
-        if shape[axis] < 6{ //not leave out
-            for i in 0..<shape[axis]{
-                numbers.append(i + ini_num)
-            }
-        }
-        else{ //leave out
-            for i in 0..<3{ //first 3 elements
-                numbers.append(i + ini_num)
-            }
-            
-            numbers.append(nil) //skip
-            
-            for i in (shape[axis] - 3)..<shape[axis]{ //last 3 elements
-                numbers.append(i + ini_num)
-            }
-        }
-        return
+    else if index == axissize{
+        ret_index = index
+    }
+    else if index == -axissize - 1{
+        ret_index = 0
     }
     else{
+        preconditionFailure("Invalid index was passed. must not be \(-axissize - 1) <= index(\(index)) <= \(axissize) for axis \(axis)")
+    }
+    
+    return ret_index
+}
 
-        let restsize = shape2size(&shape)
-        
-        if shape[axis] < 6{ //not leave out
-            for i in 0..<shape[axis]{
-                _recursive_leaveout_indices(shape: &shape, axis: axis + 1, ini_num: i * restsize + ini_num, numbers: &numbers)
-            }
+/// Get a positive axis from a given axis
+/// - Parameters:
+///   - axis: An axis index. Negative axis will be converted into positive one as return value
+///   - ndim: The dimension
+/// - Returns: A positive axis
+internal func get_positive_axis(_ axis: Int, ndim: Int) -> Int{
+    let ret_axis = axis >= 0 ? axis : axis + ndim
+    precondition(0 <= ret_axis && ret_axis < ndim, "\(axis) is out of bounds")
+    
+    return ret_axis
+}
+
+/// get a positive axis for expand_dims
+/// - Parameters:
+///   - axis: An axis index. Negative axis will be converted into positive one as return value
+///   - ndim: The dimension
+/// - Returns: A positive axis
+internal func get_positive_axis_for_expand_dims(_ axis: Int, ndim: Int) -> Int{
+    let ret_axis: Int
+    if axis < ndim && axis > -ndim - 1{
+        ret_axis = get_positive_axis(axis, ndim: ndim)
+    }
+    else if axis == ndim{
+        ret_axis = axis
+    }
+    else if axis == -ndim - 1{
+        ret_axis = 0
+    }
+    else{
+        preconditionFailure("Invalid axis was passed. must not be \(-ndim - 1) <= axis(\(axis)) <= \(ndim)")
+    }
+    
+    return ret_axis
+}
+
+/// Get a positive shape from a given size
+/// - Parameters:
+///   - shape: A shape array. Negative axis will be converted into positive one as return value
+///   - size: The size
+/// - Returns: A positive shape array
+internal func get_positive_shape(_ shape: [Int], _ size: Int) -> [Int]{
+    let restsize = shape.filter{ $0 != -1 }.reduce(1, *)
+    return shape.map{
+        if $0 != -1{
+            return $0
         }
-        else{ //leave out
-            for i in 0..<3{ //first 3 elements
-                _recursive_leaveout_indices(shape: &shape, axis: axis + 1, ini_num: i * restsize + ini_num, numbers: &numbers)
-            }
-            
-            numbers.append(nil) //skip
-            
-            for i in (shape[axis] - 3)..<shape[axis]{  //last 3 elements
-                _recursive_leaveout_indices(shape: &shape, axis: axis + 1, ini_num: i * restsize + ini_num, numbers: &numbers)
-            }
+        else{
+            return size / restsize
         }
     }
 }
-//nil means skip
-internal func get_leaveout_indices(_ shape: inout [Int]) -> [[Int]?]{
-    var numbers: [Int?] = [] //list of indices of data
-    _recursive_leaveout_indices(shape: &shape, axis: 0, ini_num: 0, numbers: &numbers)
-    //print(numbers)
-    var ret: [[Int]?] = []
-    
-    for number in numbers{
-        if let number = number{
-            ret.append(_get_index(i: number, shape: &shape))
-        }
-        else{ // nil i.e. skip
-            ret.append(nil)
+
+/// Get offsets from indices array
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - indices: An indices mfarray array
+/// - Returns:
+///   - offsets: Offset values
+///   - ind_shape: Indices shape array
+///   - ind_size: Indices size
+internal func get_offsets_from_indices(_ mfarray: MfArray, _ indices: inout [MfArray]) -> (offsets: [Int], indShape: [Int], indSize: Int){
+    var indShape = indices.reduce(indices[0]){ biop_broadcast_to($0, $1).r }.shape
+    let indSize = shape2size(&indShape)
+    // note that all of mfarraies should have same size thanks to this process
+    var offsets = Array(repeating: 0, count: indSize)
+    for (axis, inds) in indices.enumerated(){
+        precondition(inds.mftype == .Int, "fancy indexing must be Int only, but got \(inds.mftype)")
+        let rowInd = inds.broadcast_to(shape: indShape).conv_order(mforder: .Row)
+        for (i, ind) in (rowInd.data as! [Int]).enumerated(){
+            offsets[i] += get_positive_index(ind, axissize: mfarray.shape[axis], axis: axis) * mfarray.strides[axis]
         }
     }
     
-    return ret
+    return (offsets, indShape, indSize)
 }
 
+/// Broadcasting mfarray for boolean indexing
+/// - Parameters:
+///   - mfarray: An input boolean mfarray
+///   - shape: The destination shape array
+/// - Returns: COPIED boolean indices mfarray
+internal func biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (l: MfArray, r: MfArray, t: MfType){
+    var l_mfarray = l_mfarray
+    var r_mfarray = r_mfarray
+    
+    // convert type
+    let rettype = MfType.priority(l_mfarray.mftype, r_mfarray.mftype)
+    if l_mfarray.mftype != rettype{
+        l_mfarray = l_mfarray.astype(rettype)
+    }
+    else if r_mfarray.mftype != rettype{
+        r_mfarray = r_mfarray.astype(rettype)
+    }
+    
+    // broadcast
+    let retndim: Int
+    var lshape = l_mfarray.shape
+    var lstrides = l_mfarray.strides
+    var rshape = r_mfarray.shape
+    var rstrides = r_mfarray.strides
+    
+    // align dimension
+    if l_mfarray.ndim < r_mfarray.ndim{ // l has smaller dim
+        retndim = r_mfarray.ndim
+        lshape = Array<Int>(repeating: 1, count: r_mfarray.ndim - l_mfarray.ndim) + lshape // the 1 concatenated elements means broadcastable
+        lstrides = Array<Int>(repeating: 0, count: r_mfarray.ndim - l_mfarray.ndim) + lstrides// the 0 concatenated elements means broadcastable
+    }
+    else if l_mfarray.ndim > r_mfarray.ndim{// r has smaller dim
+        retndim = l_mfarray.ndim
+        rshape = Array<Int>(repeating: 1, count: l_mfarray.ndim - r_mfarray.ndim) + rshape // the 1 concatenated elements means broadcastable
+        rstrides = Array<Int>(repeating: 0, count: l_mfarray.ndim - r_mfarray.ndim) + rstrides// the 0 concatenated elements means broadcastable
+    }
+    else{
+        retndim = l_mfarray.ndim
+    }
+
+    for axis in (0..<retndim).reversed(){
+        if lshape[axis] == rshape[axis]{
+            continue
+        }
+        else if lshape[axis] == 1{
+            lshape[axis] = rshape[axis] // aligned to r
+            lstrides[axis] = 0 // broad casted 0
+        }
+        else if rshape[axis] == 1{
+            rshape[axis] = lshape[axis] // aligned to l
+            rstrides[axis] = 0 // broad casted 0
+        }
+        else{
+            preconditionFailure("could not be broadcast together with shapes \(l_mfarray.shape) \(r_mfarray.shape)")
+        }
+    }
+    let l_mfstructure = MfStructure(shape: lshape, strides: lstrides)
+    let r_mfstructure = MfStructure(shape: rshape, strides: rstrides)
+    //print(Array<Int>(UnsafeBufferPointer<Int>(start: l_mfstructure._shape, count: l_mfstructure._ndim)))
+    //print(Array<Int>(UnsafeBufferPointer<Int>(start: r_mfstructure._shape, count: r_mfstructure._ndim)))
+
+    l_mfarray = MfArray(base: l_mfarray, mfstructure: l_mfstructure, offset: l_mfarray.offsetIndex)
+    r_mfarray = MfArray(base: r_mfarray, mfstructure: r_mfstructure, offset: r_mfarray.offsetIndex)
+    
+    return (l_mfarray, r_mfarray, rettype)
+}
+
+
+/// Index sequence for a flatten array
 internal struct FlattenIndSequence: Sequence{
     let shape: [Int]
     let strides: [Int]
     
+    
+    /// Initialization
+    /// - Parameters:
+    ///   - shape: A shape array
+    ///   - strides: A strides array
     public init(shape: inout [Int], strides: inout [Int]){
         assert(!shape.isEmpty && !strides.isEmpty, "shape and strides must not be empty")
         assert(shape.count == strides.count, "shape and strides must be samesize")
@@ -112,12 +208,14 @@ internal struct FlattenIndSequence: Sequence{
         self.strides = strides
     }
     
+    /// Generate an iterator
+    /// - Returns: Iterator on index for a flatten array
     func makeIterator() -> FlattenIndSequenceIterator {
         return FlattenIndSequenceIterator(self)
     }
 }
 
-// return index for flatten array from shape and strides
+/// Iterator on index for a flatten array from a given shape and strides
 internal struct FlattenIndSequenceIterator: IteratorProtocol{
     private let flattenIndSeq: FlattenIndSequence
     public var strides: [Int]{
@@ -168,6 +266,8 @@ internal struct FlattenIndSequenceIterator: IteratorProtocol{
 }
 
 
+/// Index sequence for a flatten array
+/// Note that this sequence is for print function of leave out version
 internal struct FlattenLOIndSequence: Sequence{
     let shape: [Int]
     let strides: [Int]
@@ -187,7 +287,8 @@ internal struct FlattenLOIndSequence: Sequence{
     }
 }
 
-// return index for flatten array from shape and strides
+/// Iterator on index for a flatten array from a given shape and strides
+/// Note that this sequence is for print function of leave out version
 internal struct FlattenLOIndSequenceIterator: IteratorProtocol{
     private let flattenLOIndSeq: FlattenLOIndSequence
     public var strides: [Int]{
@@ -215,123 +316,62 @@ internal struct FlattenLOIndSequenceIterator: IteratorProtocol{
     //return (nil nil) indicates skip
     mutating func next() -> (flattenIndex: Int?, indices: [Int]?)? {
         if self.isUpAxis{// flattenIndex = 0, indicesOfAxes = [0,...,0] must be returned
-            self.isUpAxis = false
-            return (self.flattenIndex, self.indicesOfAxes)
-        }
-        
-    
-        
-        for axis in (0..<self.indicesOfAxes.count).reversed(){
+                self.isUpAxis = false
+                return (self.flattenIndex, self.indicesOfAxes)
+            }
             
-            if self.indicesOfAxes[axis] < self.shape[axis] - 1{
+        
+            
+            for axis in (0..<self.indicesOfAxes.count).reversed(){
                 
-                if self.indicesOfAxes[axis] < 2 || self.indicesOfAxes[axis] >= self.shape[axis] - 4{ //0<=index<3 and dim-3-1<=index<dim
-                    self.indicesOfAxes[axis] += 1
+                if self.indicesOfAxes[axis] < self.shape[axis] - 1{
                     
-                    self.isUpAxis = false
-                    
-                    self.flattenIndex += self.strides[axis]
-                    
-                    return (self.flattenIndex, self.indicesOfAxes)
-                }
-                else{// skip
-                    let skipnum = self.shape[axis] - 6
-                    
-                    if axis == self.indicesOfAxes.count - 1{// last axis
-                        self.indicesOfAxes[axis] += skipnum
-                        self.flattenIndex += self.strides[axis] * skipnum
+                    if self.indicesOfAxes[axis] < 2 || self.indicesOfAxes[axis] >= self.shape[axis] - 4{ //0<=index<3 and dim-3-1<=index<dim
+                        self.indicesOfAxes[axis] += 1
                         
                         self.isUpAxis = false
-                    }
-                    else{
-                        self.indicesOfAxes[axis] += skipnum + 1
-                        self.flattenIndex += self.strides[axis] * (skipnum + 1)
                         
-                        self.isUpAxis = true // once return (nil, nil) (i.e. skip) and then re-start printing
+                        self.flattenIndex += self.strides[axis]
+                        
+                        return (self.flattenIndex, self.indicesOfAxes)
                     }
-                    return (nil, nil)
+                    else{// skip
+                        let skipnum = self.shape[axis] - 6
+                        
+                        if axis == self.indicesOfAxes.count - 1{// last axis
+                            self.indicesOfAxes[axis] += skipnum
+                            self.flattenIndex += self.strides[axis] * skipnum
+                            
+                            self.isUpAxis = false
+                        }
+                        else{
+                            self.indicesOfAxes[axis] += skipnum + 1
+                            self.flattenIndex += self.strides[axis] * (skipnum + 1)
+                            
+                            self.isUpAxis = true // once return (nil, nil) (i.e. skip) and then re-start printing
+                        }
+                        return (nil, nil)
+                    }
                 }
-            }
-            else{// next axis, i.e. self.indicesOfAxes[axis] == self.shape[axis] - 1
-                if axis >= 3 && axis < self.indicesOfAxes.count - 3{
-                    for _axis in (0..<self.indicesOfAxes.count - 3).reversed(){//shape[_axis] padding for each indicesAxes
-                        self.indicesOfAxes[_axis] = self.shape[_axis] - 1
+                else{// next axis, i.e. self.indicesOfAxes[axis] == self.shape[axis] - 1
+                    if axis >= 3 && axis < self.indicesOfAxes.count - 3{
+                        for _axis in (0..<self.indicesOfAxes.count - 3).reversed(){//shape[_axis] padding for each indicesAxes
+                            self.indicesOfAxes[_axis] = self.shape[_axis] - 1
+                        }
+                        
+                        self.isUpAxis = false
+                        
+                        return (nil, nil)
                     }
                     
-                    self.isUpAxis = false
-                    
-                    return (nil, nil)
+                    self.indicesOfAxes[axis] = 0
+
+                    // reset flattenIndex
+                    self.flattenIndex -= self.strides[axis]*(self.shape[axis] - 1)
                 }
-                
-                self.indicesOfAxes[axis] = 0
-
-                // reset flattenIndex
-                self.flattenIndex -= self.strides[axis]*(self.shape[axis] - 1)
             }
+            
+            return nil
+            
         }
-        
-        return nil
-        
-    }
 }
-
-
-/*
-internal struct Combination: Sequence{
-    var a: [Any]
-    public init (_ a: inout [Any]){
-        self.a = a
-    }
-    
-    func makeIterator() -> CombinationIterator {
-        return CombinationIterator(self.a)
-    }
-}
-
-internal struct CombinationIterator: IteratorProtocol{
-    var a: [Any]
-    var indices: [Int]
-    var iternum = 0
-    
-    public init(_ a: [Any]){
-        self.a = a
-        self.indices = Array(repeating: 0, count: a.count)
-    }
-    
-    mutating func next() -> [Int]? {
-        if self.iternum == 0{
-            self.iternum += 1
-            
-            return self.indices
-        }
-        else{
-            self.iternum += 1
-            
-            var next = self.a.count - 1
-            
-            if (next < 0){
-                return nil
-            }
-            
-            guard let a = self.a[next] as? [Int] else {
-                return nil
-            }
-            
-            while (next >= 0 && self.indices[next] + 1 >= a.count){
-                next -= 1
-            }
-            
-            if (next < 0){
-                return nil
-            }
-            
-            self.indices[next] += 1
-            for i in next + 1..<self.a.count{
-                self.indices[i] = 0
-            }
-            
-            return self.indices
-        }
-    }
-}
-*/

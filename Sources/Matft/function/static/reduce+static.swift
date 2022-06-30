@@ -24,7 +24,7 @@ extension Matft{
     public static func ufuncReduce(mfarray: MfArray, ufunc: biopufuncNoargs, axis: Int? = 0, keepDims: Bool = false, initial: MfArray? = nil) -> MfArray {
         
         if let axis = axis{
-            let axis = get_axis(axis, ndim: mfarray.ndim)
+            let axis = get_positive_axis(axis, ndim: mfarray.ndim)
             /*
              e.g.) ndim=6, axis=2
              shape = (a,b,c,d,e,f)
@@ -95,7 +95,7 @@ extension Matft{
             - axis: axis
      */
     public static func ufuncAccumulate(mfarray: MfArray, ufunc: biopufuncNoargs, axis: Int = 0) -> MfArray {
-        let axis = get_axis(axis, ndim: mfarray.ndim)
+        let axis = get_positive_axis(axis, ndim: mfarray.ndim)
         
         
         // conversion
