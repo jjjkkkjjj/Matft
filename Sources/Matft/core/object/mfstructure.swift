@@ -9,6 +9,8 @@
 import Foundation
 
 public class MfStructure{
+    // TODO: `var` causes bug! use `let` instead of `var`
+    // because mfstructure must be updated after changing it's shape or strides
     internal var shape: [Int]
     internal var strides: [Int]
     

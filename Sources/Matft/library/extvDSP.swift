@@ -114,16 +114,14 @@ internal func sign_by_evDSP<T: MfStorable>(_ mfarray: MfArray, lower: T, upper: 
     var upper = upper
     let size = mfarray.storedSize
     
-    let newdata = withDummyDataMRPtr(mfarray.mftype, storedSize: size){
-        dstptr in
-        let dstptrT = dstptr.bindMemory(to: T.self, capacity: size)
-        mfarray.withDataUnsafeMBPtrT(datatype: T.self){
-            srcptr in
-            evDSP_func(srcptr.baseAddress!, vDSP_Stride(1), &lower, &upper, dstptrT, vDSP_Stride(1), vDSP_Length(size))
-        }
+    let newdata = MfData(size: size, mftype: mfarray.mftype)
+    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: size)
+    mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        srcptr in
+        evDSP_func(srcptr.baseAddress!, vDSP_Stride(1), &lower, &upper, dstptrT, vDSP_Stride(1), vDSP_Length(size))
     }
     
-    let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     
-    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
 }

@@ -56,10 +56,10 @@ public class MfData{
         switch MfType.storedType(mftype){
         case .Float:
             // dynamic allocation
-            self.data = flattenArray2UnsafeMRPtrF(&flattenArray, toBool: mftype == .Bool)
+            self.data = allocate_UnsafeMRPtrF_from_flattenArray(&flattenArray, toBool: mftype == .Bool)
         case .Double:
             // dynamic allocation
-            self.data = flattenArray2UnsafeMRPtrD(&flattenArray, toBool: mftype == .Bool)
+            self.data = allocate_UnsafeMRPtrD_from_flattenArray(&flattenArray, toBool: mftype == .Bool)
         }
         self.storedSize = flattenArray.count
         self.mftype = mftype
@@ -73,6 +73,28 @@ public class MfData{
         self.offset = 0
     }
     
+
+    /// Create a zero padded MfData
+    /// - Parameters:
+    ///    - size: A size
+    ///    - mftype: Type
+    public init(size: Int, mftype: MfType){
+        // dynamic allocation
+        switch MfType.storedType(mftype){
+        case .Float:
+            let ptrF = allocate_unsafeMPtrT(type: Float.self, count: size)
+            
+            self.data = UnsafeMutableRawPointer(ptrF)
+        case .Double:
+            let ptrD = allocate_unsafeMPtrT(type: Double.self, count: size)
+            
+            self.data = UnsafeMutableRawPointer(ptrD)
+        }
+        
+        self.storedSize = size
+        self.mftype = mftype
+        self.offset = 0
+    }
     
     /// Create a MfData with VIEW based on base mfdata
     /// - Parameters:

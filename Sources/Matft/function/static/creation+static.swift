@@ -67,28 +67,25 @@ extension Matft{
         let size = shape2size(&shape)
         
         let retmftype = mftype ?? MfType.mftype(value: T.zero)
-        let newmfdata = withDummyDataMRPtr(retmftype, storedSize: size){
-            ptr in
-            func _create<U: MfStorable>(_ converted_value: U){
-                var arr = Array(repeating: converted_value, count: size)
-                let ptrU = ptr.bindMemory(to: U.self, capacity: size)
-                arr.withUnsafeMutableBufferPointer{
-                    ptrU.moveAssign(from: $0.baseAddress!, count: size)
-                }
+        let newdata = MfData(size: size, mftype: retmftype)
+        func _create<U: MfStorable>(_ converted_value: U){
+            var arr = Array(repeating: converted_value, count: size)
+            let ptrU = newdata.data.bindMemory(to: U.self, capacity: size)
+            arr.withUnsafeMutableBufferPointer{
+                ptrU.moveAssign(from: $0.baseAddress!, count: size)
             }
-            
-            switch MfType.storedType(retmftype){
-            case .Float:
-                _create(Float.from(value))
-            case .Double:
-                _create(Double.from(value))
-            }
-
         }
         
-        let newmfstructure = MfStructure(shape: shape, mforder: mforder)
+        switch MfType.storedType(retmftype){
+        case .Float:
+            _create(Float.from(value))
+        case .Double:
+            _create(Double.from(value))
+        }
         
-        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+        let newstructure = MfStructure(shape: shape, mforder: mforder)
+        
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     /**
        Create same value with passed mfarray's structure
@@ -164,39 +161,36 @@ extension Matft{
         let retmftype = mftype ?? v.mftype
         let shape = [dim, dim]
         
-        let newmfdata = withDummyDataMRPtr(retmftype, storedSize: size){
-            ptr in
-            func _create<T: MfStorable>(_ type: T.Type){
-                let ptrT = ptr.bindMemory(to: T.self, capacity: size)
-                var d = Array(repeating: T.zero, count: size)
-                v.withDataUnsafeMBPtrT(datatype: T.self){
-                    if k >= 0{
-                        for i in 0..<v.size{
-                            d[i*dim+i+k] = $0[i]
-                        }
-                    }
-                    else{
-                        for i in 0..<v.size{
-                            d[(i-k)*dim+i] = $0[i]
-                        }
+        let newdata = MfData(size: size, mftype: retmftype)
+        func _create<T: MfStorable>(_ type: T.Type){
+            let ptrT = newdata.data.bindMemory(to: T.self, capacity: size)
+            var d = Array(repeating: T.zero, count: size)
+            v.withDataUnsafeMBPtrT(datatype: T.self){
+                if k >= 0{
+                    for i in 0..<v.size{
+                        d[i*dim+i+k] = $0[i]
                     }
                 }
-                d.withUnsafeMutableBufferPointer{
-                    ptrT.moveAssign(from: $0.baseAddress!, count: size)
+                else{
+                    for i in 0..<v.size{
+                        d[(i-k)*dim+i] = $0[i]
+                    }
                 }
             }
-            switch MfType.storedType(retmftype){
-            case .Float:
-                _create(Float.self)
-            case .Double:
-                _create(Double.self)
+            d.withUnsafeMutableBufferPointer{
+                ptrT.moveAssign(from: $0.baseAddress!, count: size)
             }
-
+        }
+        switch MfType.storedType(retmftype){
+        case .Float:
+            _create(Float.self)
+        case .Double:
+            _create(Double.self)
         }
         
-        let newmfstructure = MfStructure(shape: shape, mforder: mforder)
+        let newstructure = MfStructure(shape: shape, mforder: mforder)
         
-        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
         
     }
     /**
@@ -228,31 +222,29 @@ extension Matft{
         let rmajorArrays = mfarrays.map{ Matft.conv_order($0, mforder: .Row) }
         let retSize = shape2size(&retShape)
         
-        let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
-            dstptr in
-            func _stack<T: MfStorable>(_ cblas_func: cblas_convorder_func<T>){
-                let dstptrT = dstptr.bindMemory(to: T.self, capacity: retSize)
-                var offset = 0
-                for array in rmajorArrays{
-                    array.withDataUnsafeMBPtrT(datatype: T.self){
-                        [unowned array] in
-                        copy_unsafeptrT(array.storedSize, $0.baseAddress!, 1, dstptrT + offset, 1, cblas_func)
-                    }
-                    offset += array.storedSize
+        let newdata = MfData(size: retSize, mftype: retMfType)
+        func _stack<T: MfStorable>(_ cblas_func: cblas_convorder_func<T>){
+            let dstptrT = newdata.data.bindMemory(to: T.self, capacity: retSize)
+            var offset = 0
+            for array in rmajorArrays{
+                array.withDataUnsafeMBPtrT(datatype: T.self){
+                    [unowned array] in
+                    copy_unsafeptrT(array.storedSize, $0.baseAddress!, 1, dstptrT + offset, 1, cblas_func)
                 }
-            }
-            switch MfType.storedType(retMfType){
-            case .Float:
-                _stack(cblas_scopy)
-                
-            case .Double:
-                _stack(cblas_dcopy)
+                offset += array.storedSize
             }
         }
+        switch MfType.storedType(retMfType){
+        case .Float:
+            _stack(cblas_scopy)
+            
+        case .Double:
+            _stack(cblas_dcopy)
+        }
         
-        let newmfstructure = MfStructure(shape: retShape, mforder: .Row)
+        let newstructure = MfStructure(shape: retShape, mforder: .Row)
         
-        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     /**
        Concatenate given arrays horizontally(for column)
@@ -283,31 +275,29 @@ extension Matft{
         let cmajorArrays = mfarrays.map{ Matft.conv_order($0, mforder: .Column) }
         let retSize = shape2size(&retShape)
         
-        let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
-            dstptr in
-            func _stack<T: MfStorable>(_ cblas_func: cblas_convorder_func<T>){
-                let dstptrT = dstptr.bindMemory(to: T.self, capacity: retSize)
-                var offset = 0
-                for array in cmajorArrays{
-                    array.withDataUnsafeMBPtrT(datatype: T.self){
-                        [unowned array] in
-                        copy_unsafeptrT(array.storedSize, $0.baseAddress!, 1, dstptrT + offset, 1, cblas_func)
-                    }
-                    offset += array.storedSize
+        let newdata = MfData(size: retSize, mftype: retMfType)
+        func _stack<T: MfStorable>(_ cblas_func: cblas_convorder_func<T>){
+            let dstptrT = newdata.data.bindMemory(to: T.self, capacity: retSize)
+            var offset = 0
+            for array in cmajorArrays{
+                array.withDataUnsafeMBPtrT(datatype: T.self){
+                    [unowned array] in
+                    copy_unsafeptrT(array.storedSize, $0.baseAddress!, 1, dstptrT + offset, 1, cblas_func)
                 }
-            }
-            switch MfType.storedType(retMfType){
-            case .Float:
-                _stack(cblas_scopy)
-                
-            case .Double:
-                _stack(cblas_dcopy)
+                offset += array.storedSize
             }
         }
+        switch MfType.storedType(retMfType){
+        case .Float:
+            _stack(cblas_scopy)
+            
+        case .Double:
+            _stack(cblas_dcopy)
+        }
         
-        let newmfstructure = MfStructure(shape: retShape, mforder: .Column)
+        let newstructure = MfStructure(shape: retShape, mforder: .Column)
         
-        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     /**
        Concatenate given arrays for arbitrary axis
@@ -362,35 +352,33 @@ extension Matft{
         let majorArrays = mfarrays.map{ Matft.conv_order($0, mforder: fasterOrder).astype(retMfType) }
         let retSize = shape2size(&retShape)
         
-        let newmfdata = withDummyDataMRPtr(retMfType, storedSize: retSize){
-            dstptr in
-            func _concat<T: MfStorable>(_ cblas_func: cblas_convorder_func<T>){
-                let dstptrT = dstptr.bindMemory(to: T.self, capacity: retSize)
-    
-                var dst_offset = 0
-                for sb in 0..<slowerBlockSize{
-                    for array in majorArrays{
-                        let concatSize = array.shape[axis]
-                        
-                        array.withDataUnsafeMBPtrT(datatype: T.self){
-                            copy_unsafeptrT(fasterBlockSize * concatSize, $0.baseAddress! + sb * fasterBlockSize * concatSize, 1, dstptrT + dst_offset, 1, cblas_func)
-                        }
-                        dst_offset += fasterBlockSize * concatSize
+        let newdata = MfData(size: retSize, mftype: retMfType)
+        func _concat<T: MfStorable>(_ cblas_func: cblas_convorder_func<T>){
+            let dstptrT = newdata.data.bindMemory(to: T.self, capacity: retSize)
+
+            var dst_offset = 0
+            for sb in 0..<slowerBlockSize{
+                for array in majorArrays{
+                    let concatSize = array.shape[axis]
+                    
+                    array.withDataUnsafeMBPtrT(datatype: T.self){
+                        copy_unsafeptrT(fasterBlockSize * concatSize, $0.baseAddress! + sb * fasterBlockSize * concatSize, 1, dstptrT + dst_offset, 1, cblas_func)
                     }
+                    dst_offset += fasterBlockSize * concatSize
                 }
             }
-            switch MfType.storedType(retMfType){
-            case .Float:
-                _concat(cblas_scopy)
-                
-            case .Double:
-                _concat(cblas_dcopy)
-            }
+        }
+        switch MfType.storedType(retMfType){
+        case .Float:
+            _concat(cblas_scopy)
+            
+        case .Double:
+            _concat(cblas_dcopy)
         }
         
-        let newmfstructure = MfStructure(shape: retShape, mforder: fasterOrder)
+        let newstructure = MfStructure(shape: retShape, mforder: fasterOrder)
         
-        return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     
     /**
@@ -544,9 +532,9 @@ extension Matft.mfdata{
         let stridesptr = create_unsafeMPtrT(type: Int.self, count: mfdata._ndim)
         stridesptr.assign(from: mfdata._strides, count: mfdata._ndim)
         
-        let newmfdata = MfData(refdata: mfdata, offset: 0, shapeptr: shapeptr, ndim: mfdata._ndim, mforder: mfdata._order, stridesptr: stridesptr)
+        let newdata = MfData(refdata: mfdata, offset: 0, shapeptr: shapeptr, ndim: mfdata._ndim, mforder: mfdata._order, stridesptr: stridesptr)
         
-        return newmfdata
+        return newdata
     }
 }
 */

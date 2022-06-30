@@ -760,18 +760,16 @@ fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray,
 
 // using argument like op: (T, T) -> Bool is too slow...
 fileprivate func _greater<T: MfStorable>(l_mfarray: MfArray, val: T) -> MfArray{
-    let newdata = withDummyDataMRPtr(.Bool, storedSize: l_mfarray.storedSize){
-        dstptr in
-        let dstptrT = dstptr.bindMemory(to: Float.self, capacity: l_mfarray.storedSize)
-        l_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
-            [unowned l_mfarray] ptr in
-            var retarr = ptr.map{ $0 > val ? Float.num(1) : Float.zero}
-            retarr.withUnsafeMutableBufferPointer{
-                dstptrT.moveAssign(from: $0.baseAddress!, count: l_mfarray.storedSize)
-            }
+    let newdata = MfData(size: l_mfarray.storedSize, mftype: .Bool)
+    let dstptrT = newdata.data.bindMemory(to: Float.self, capacity: l_mfarray.storedSize)
+    l_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        [unowned l_mfarray] ptr in
+        var retarr = ptr.map{ $0 > val ? Float.num(1) : Float.zero}
+        retarr.withUnsafeMutableBufferPointer{
+            dstptrT.moveAssign(from: $0.baseAddress!, count: l_mfarray.storedSize)
         }
     }
     
-    let newmfstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
-    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+    let newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
 }

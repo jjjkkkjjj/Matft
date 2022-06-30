@@ -32,23 +32,22 @@ extension Matft{
         }
         
         //copy shape and strides
-        let newmfstructure: MfStructure
+        let newstructure: MfStructure
         var mfarray = mfarray
         if !(mfarray.mfstructure.column_contiguous || mfarray.mfstructure.row_contiguous){// close to row major
             mfarray = to_row_major(mfarray)
         }
-        newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+        newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
         
         func _T2U<T: MfStorable, U: MfStorable>(_ vDSP_func: vDSP_convert_func<T, U>) -> MfArray{
-            let newdata = withDummyDataMRPtr(mftype, storedSize: mfarray.storedSize){
-                let dstptr = $0.bindMemory(to:  U.self, capacity: mfarray.storedSize)
-                mfarray.withDataUnsafeMBPtrT(datatype: T.self){
-                    [unowned mfarray] in
-                    unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_func, mfarray.storedSize)
-                }
+            let newdata = MfData(size: mfarray.storedSize, mftype: mftype)
+            let dstptr = newdata.data.bindMemory(to: U.self, capacity: mfarray.storedSize)
+            mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+                [unowned mfarray] in
+                unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_func, mfarray.storedSize)
             }
             
-            return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+            return MfArray(mfdata: newdata, mfstructure: newstructure)
         }
         
         switch newStoredType{
@@ -553,17 +552,15 @@ fileprivate func _unique<T: MfStorable>(_ flattendata: inout [T], restShape: ino
     }
     
     let newsize = uniquearray.count
-    let newdata = withDummyDataMRPtr(mftype, storedSize: newsize){
-        dstptr in
-        let dstptrT = dstptr.bindMemory(to: T.self, capacity: flattendata.count)
-        uniquearray.withUnsafeMutableBufferPointer{
-            dstptrT.moveAssign(from: $0.baseAddress!, count: newsize)
-        }
+    let newdata = MfData(size: newsize, mftype: mftype)
+    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: flattendata.count)
+    uniquearray.withUnsafeMutableBufferPointer{
+        dstptrT.moveAssign(from: $0.baseAddress!, count: newsize)
     }
     restShape.insert(newsize / stride, at: 0)
-    let newmfstructure = MfStructure(shape: restShape, mforder: .Row)
+    let newstructure = MfStructure(shape: restShape, mforder: .Row)
     
-    let ret = MfArray(mfdata: newdata, mfstructure: newmfstructure)
+    let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
     
     
     if let axis = axis{

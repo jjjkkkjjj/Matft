@@ -42,16 +42,14 @@ fileprivate func _get_swiftArray(_ data: inout [Any], shape: inout [Int], axis: 
  */
 internal func copyAll(_ mfarray: MfArray) -> MfArray{
     assert(mfarray.mfstructure.row_contiguous || mfarray.mfstructure.column_contiguous, "To call copyAll function, passed mfarray must be contiguous")
-    let newmfdata = withDummyDataMRPtr(mfarray.mftype, storedSize: mfarray.size){
-        dstptr in
-        mfarray.withDataUnsafeMRPtr{
-            [unowned mfarray] in
-            dstptr.copyMemory(from: $0, byteCount: mfarray.byteSize)
-        }
+    let newdata = MfData(size: mfarray.size, mftype: mfarray.mftype)
+    mfarray.withDataUnsafeMRPtr{
+        [unowned mfarray] in
+        newdata.data.copyMemory(from: $0, byteCount: mfarray.byteSize)
     }
-    let newmfstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     
-    return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
 internal func to_row_major(_ mfarray: MfArray) -> MfArray{

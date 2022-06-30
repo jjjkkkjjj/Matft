@@ -35,9 +35,9 @@ internal func to_Bool_mm_op<U: MfStorable>(l_mfarray: MfArray, r_mfarray: MfArra
             i += 1
         }
     }
-    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+    let newstructure = create_mfstructure(&retShape, mforder: .Row)
     
-    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 internal func to_Bool_ms_op<U: MfStorable>(l_mfarray: MfArray, r_scalar: U, op: (U, U) -> Bool) -> MfArray{
     let r_scalar = Float.from(r_scalar)
@@ -65,9 +65,9 @@ internal func to_Bool_sm_op<U: MfStorable>(l_scalar: U, r_mfarray: MfArray, op: 
             i += 1
         }
     }
-    let newmfstructure = create_mfstructure(&retShape, mforder: .Row)
+    let newstructure = create_mfstructure(&retShape, mforder: .Row)
     
-    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 */
 /**
@@ -101,21 +101,18 @@ internal func bool_broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
     var newerShape = Array(shape[mfarray.ndim..<new_ndim])
     let offset = shape2size(&newerShape)
     
-    let newdata = withDummyDataMRPtr(.Bool, storedSize: retSize){
-        var dstptrF = $0.bindMemory(to: Float.self, capacity: retSize)
-        
-        rowc_mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
-            srcptr in
-            for i in 0..<origSize{
-                dstptrF.assign(repeating: (srcptr.baseAddress! + i).pointee, count: offset)
-                dstptrF += offset
-            }
+    let newdata = MfData(size: retSize, mftype: .Bool)
+    var dstptrF = newdata.data.bindMemory(to: Float.self, capacity: retSize)
+    rowc_mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+        srcptr in
+        for i in 0..<origSize{
+            dstptrF.assign(repeating: (srcptr.baseAddress! + i).pointee, count: offset)
+            dstptrF += offset
         }
-        
     }
-    let newmfstructure = MfStructure(shape: retShape, mforder: .Row)
+    let newstructure = MfStructure(shape: retShape, mforder: .Row)
     
-    return MfArray(mfdata: newdata, mfstructure: newmfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
 internal func boolean2float(_ mfarray: MfArray) -> MfArray{

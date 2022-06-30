@@ -118,53 +118,52 @@ fileprivate func _run_inv<T: MfStorable>(_ squaredSize: Int, srcdstptr: UnsafeMu
 
 internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func: lapack_LU<T>, _ inv_lapack_func: lapack_inv<T>, _ retMfType: MfType) throws -> MfArray{
     
-    let newmfdata = try withDummyDataMRPtr(retMfType, storedSize: mfarray.size){
-        dstptr in
-        let dstptrF = dstptr.bindMemory(to: T.self, capacity: mfarray.size)
+    let newdata = MfData(size: mfarray.size, mftype: retMfType)
+    let dstptrF = newdata.data.bindMemory(to: T.self, capacity: mfarray.size)
+    
+    try mfarray.withMNStackedMajorPtr(type: T.self, mforder: .Row){
+        srcptr, row, col, offset in
+        //LU decomposition
+        var IPIV = try _run_lu(row, col, srcdstptr: srcptr, lapack_func: lu_lapack_func)
         
-        try _withNNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Row){
-            srcptr, squaredSize, offset in
-            //LU decomposition
-            var IPIV = try _run_lu(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: lu_lapack_func)
-            
-            //calculate inv
-            try _run_inv(squaredSize, srcdstptr: srcptr, &IPIV, lapack_func: inv_lapack_func)
-            
-            //move
-            (dstptrF + offset).moveAssign(from: srcptr, count: squaredSize*squaredSize)
-        }
+        //calculate inv
+        // note: row == col
+        try _run_inv(row, srcdstptr: srcptr, &IPIV, lapack_func: inv_lapack_func)
+        
+        //move
+        (dstptrF + offset).moveAssign(from: srcptr, count: row*col)
     }
     
-    let newmfstructure = MfStructure(shape: mfarray.shape, mforder: .Row)
+    let newstructure = MfStructure(shape: mfarray.shape, mforder: .Row)
     
-    return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
 
 internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func: lapack_LU<T>, _ retMfType: MfType, _ retSize: Int) throws -> MfArray{
-    let newmfdata = try withDummyDataMRPtr(retMfType, storedSize: retSize){
-        dstptr in
-        let dstptrF = dstptr.bindMemory(to: T.self, capacity: retSize)
+    let newdata = MfData(size: retSize, mftype: retMfType)
+    let dstptrF = newdata.data.bindMemory(to: T.self, capacity: retSize)
+    
+    var dstoffset = 0
+    try mfarray.withMNStackedMajorPtr(type: T.self, mforder: .Row){
+        srcptr, row, col, offset in
+        //LU decomposition
+        let IPIV = try _run_lu(row, col, srcdstptr: srcptr, lapack_func: lu_lapack_func)
         
-        var dstoffset = 0
-        try _withNNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Row){
-            srcptr, squaredSize, offset in
-            //LU decomposition
-            let IPIV = try _run_lu(squaredSize, squaredSize, srcdstptr: srcptr, lapack_func: lu_lapack_func)
-            
-            //calculate L and U's determinant
-            //Note that L and U's determinant are calculated by product of diagonal elements
-            // L's determinant is always one
-            //ref: https://stackoverflow.com/questions/47315471/compute-determinant-from-lu-decomposition-in-lapack
-            var det = T.num(1)
-            for i in 0..<squaredSize{
-                det *= IPIV[i] != __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*squaredSize).pointee : -(srcptr.advanced(by: i + i*squaredSize).pointee)
-            }
-            
-            //assign
-            (dstptrF + dstoffset).assign(from: &det, count: 1)
-            dstoffset += 1
+        //calculate L and U's determinant
+        //Note that L and U's determinant are calculated by product of diagonal elements
+        // L's determinant is always one
+        //ref: https://stackoverflow.com/questions/47315471/compute-determinant-from-lu-decomposition-in-lapack
+        var det = T.num(1)
+        // note: row == col
+        let squaredSize = row
+        for i in 0..<squaredSize{
+            det *= IPIV[i] != __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*squaredSize).pointee : -(srcptr.advanced(by: i + i*squaredSize).pointee)
         }
+        
+        //assign
+        (dstptrF + dstoffset).assign(from: &det, count: 1)
+        dstoffset += 1
     }
     
     var shape: [Int]
@@ -174,9 +173,9 @@ internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lu_lapack_func:
     else{
         shape = [1]
     }
-    let newmfstructure = MfStructure(shape: shape, mforder: .Row)
+    let newstructure = MfStructure(shape: shape, mforder: .Row)
     
-    return MfArray(mfdata: newmfdata, mfstructure: newmfstructure)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
 internal typealias lapack_eigen<T> = (UnsafeMutablePointer<Int8>, UnsafeMutablePointer<Int8>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
@@ -351,68 +350,62 @@ fileprivate func _run_eigen<T: MfStorable>(_ squaredSize: Int, copiedSrcPtr: Uns
     }
 }
 
+/// Eigen by lapack
+/// - Parameters:
+///   - mfarray: The source mfarray
+///   - lapack_func: The lapack LU factorization function
+/// - Throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
 internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfType, _ lapack_func: lapack_eigen<T>) throws -> (valRe: MfArray, valIm: MfArray, lvecRe: MfArray, lvecIm: MfArray, rvecRe: MfArray, rvecIm: MfArray){
-    let shape = mfarray.shape
-    let squaredSize = shape[mfarray.ndim - 1]
+    var shape = mfarray.shape
+    precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+    precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+    
+    //let square_num = shape[mfarray.ndim - 1]
+    let eigenvec_size = shape2size(&shape)
     //let eigValNum = mfarray.size / (squaredSize * squaredSize)
     
     // create mfarraies
     //eigenvectors
-    let lvecRe = Matft.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
-    let lvecIm = Matft.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
-    let rvecRe = Matft.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
-    let rvecIm = Matft.nums(T.zero, shape: shape, mftype: retMfType, mforder: .Row)
+    let lvecRe_data = MfData(size: eigenvec_size, mftype: retMfType)
+    let lvecIm_data = MfData(size: eigenvec_size, mftype: retMfType)
+    let rvecRe_data = MfData(size: eigenvec_size, mftype: retMfType)
+    let rvecIm_data = MfData(size: eigenvec_size, mftype: retMfType)
     
     //eigenvalues
-    let valshape = Array(shape.prefix(mfarray.ndim - 1))
-    let valRe = Matft.nums(T.zero, shape: valshape, mftype: retMfType, mforder: .Row)
-    let valIm = Matft.nums(T.zero, shape: valshape, mftype: retMfType, mforder: .Row)
+    let eigenval_shape = Array(shape.prefix(mfarray.ndim - 1))
+    //let eigenval_size = shape2size(&eigenval_shape)
+    let valRe_data = MfData(size: eigenvec_size, mftype: retMfType)
+    let valIm_data = MfData(size: eigenvec_size, mftype: retMfType)
     //offset for calculation
     var vec_offset = 0
     var val_offset = 0
     
-    try withDataMBPtr_multi(datatype: T.self, lvecRe, lvecIm){
-        lvecRePtr, lvecImPtr in
-        try withDataMBPtr_multi(datatype: T.self, rvecRe, rvecIm){
-            rvecRePtr, rvecImPtr in
-            try withDataMBPtr_multi(datatype: T.self, valRe, valIm){
-                valRePtr, valImPtr in
-                try _withNNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Column){
-                srcptr, _, offset in
-                    
-                    try _run_eigen(squaredSize, copiedSrcPtr: srcptr, lvecRePtr.baseAddress! + vec_offset, lvecImPtr.baseAddress! + vec_offset, rvecRePtr.baseAddress! + vec_offset, rvecImPtr.baseAddress! + vec_offset, valRePtr.baseAddress! + val_offset, valImPtr.baseAddress! + val_offset, lapack_func: lapack_func)
-                    
-                    //calculate offset
-                    val_offset += squaredSize
-                    vec_offset += offset
-                }
-            }
-        }
+    
+    let lvecRe_ptr = lvecRe_data.data.bindMemory(to: T.self, capacity: eigenvec_size)
+    let lvecIm_ptr = lvecIm_data.data.bindMemory(to: T.self, capacity: eigenvec_size)
+    let rvecRe_ptr = rvecRe_data.data.bindMemory(to: T.self, capacity: eigenvec_size)
+    let rvecIm_ptr = rvecIm_data.data.bindMemory(to: T.self, capacity: eigenvec_size)
+    let valRe_ptr = valRe_data.data.bindMemory(to: T.self, capacity: eigenvec_size)
+    let valIm_ptr = valIm_data.data.bindMemory(to: T.self, capacity: eigenvec_size)
+    
+    try mfarray.withMNStackedMajorPtr(type: T.self, mforder: .Column){
+        srcptr, row, col, offset in
+        // Note row == col
+        let square_num = row
+        try _run_eigen(square_num, copiedSrcPtr: srcptr, lvecRe_ptr + vec_offset, lvecIm_ptr + vec_offset, rvecRe_ptr + vec_offset, rvecIm_ptr + vec_offset, valRe_ptr + val_offset, valIm_ptr + val_offset, lapack_func: lapack_func)
+        
+        //calculate offset
+        val_offset += square_num
+        vec_offset += offset
     }
-    /*
-    try lvec.withDataUnsafeMBPtrT(datatype: T.self){
-        lvecptr in
-        try rvec.withDataUnsafeMBPtrT(datatype: T.self){
-            rvecptr in
-            try valRe.withDataUnsafeMBPtrT(datatype: T.self){
-                valReptr in
-                try valIm.withDataUnsafeMBPtrT(datatype: T.self){
-                    valImptr in
-                    try _withNNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Column){
-                    srcptr, _, offset in
-                        
-                        try _run_eigen(squaredSize, copiedSrcPtr: srcptr, lvecptr.baseAddress! + vec_offset, rvecptr.baseAddress! + vec_offset, valReptr.baseAddress! + val_offset, valImptr.baseAddress! + val_offset, lapack_func: lapack_func)
-                        
-                        //calculate offset
-                        val_offset += squaredSize
-                        vec_offset += offset
-                    }
-                }
-            }
-        }*/
     
     
-    return (valRe, valIm, lvecRe, lvecIm, rvecRe, rvecIm)
+    return (MfArray(mfdata: valRe_data, mfstructure: MfStructure(shape: eigenval_shape, mforder: .Row)),
+            MfArray(mfdata: valIm_data, mfstructure: MfStructure(shape: eigenval_shape, mforder: .Row)),
+            MfArray(mfdata: lvecRe_data, mfstructure: MfStructure(shape: shape, mforder: .Row)),
+            MfArray(mfdata: lvecIm_data, mfstructure: MfStructure(shape: shape, mforder: .Row)),
+            MfArray(mfdata: rvecRe_data, mfstructure: MfStructure(shape: shape, mforder: .Row)),
+            MfArray(mfdata: rvecIm_data, mfstructure: MfStructure(shape: shape, mforder: .Row)))
     
 }
 
@@ -492,27 +485,40 @@ fileprivate func _run_svd<T: MfStorable>(_ rowNum: Int, _ colNum: Int, _ srcptr:
     }
 }
 
+/// SVD by lapack
+/// - Parameters:
+///   - mfarray: The source mfarray
+///   - full_matrices: if true returned v and rt have the shapes (..., M, M) and (..., N, N) respectively. Otherwise, the shapes are (..., M, K) and (..., K, N), respectively, where K = min(M, N).
+///   - lapack_func: The lapack SVD factorization function
+/// - Throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
 internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfType, _ full_matrices: Bool, _ lapack_func: lapack_svd<T>) throws -> (v: MfArray, s: MfArray, rt: MfArray){
     let shape = mfarray.shape
     let M = shape[mfarray.ndim - 2]
     let N = shape[mfarray.ndim - 1]
     let ssize = min(M, N)
-    let stackedShape = Array(shape.prefix(mfarray.ndim - 2))
+    let stacked_shape = Array(shape.prefix(mfarray.ndim - 2))
     
-    let v: MfArray, s: MfArray, rt: MfArray
+    let v_data: MfData, s_data: MfData, rt_data: MfData
+    var v_shape: [Int], s_shape: [Int], rt_shape: [Int]
     let vcol: Int, rtrow: Int
     if full_matrices{
-        v = Matft.nums(T.zero, shape: stackedShape + [M, M], mftype: retMfType, mforder: .Row)
-        s = Matft.nums(T.zero, shape: stackedShape + [ssize], mftype: retMfType, mforder: .Row)
-        rt = Matft.nums(T.zero, shape: stackedShape + [N, N], mftype: retMfType, mforder: .Row)
+        v_shape = stacked_shape + [M, M]
+        s_shape = stacked_shape + [ssize]
+        rt_shape = stacked_shape + [N, N]
+        v_data = MfData(size: shape2size(&v_shape), mftype: retMfType)
+        s_data = MfData(size: shape2size(&s_shape), mftype: retMfType)
+        rt_data = MfData(size: shape2size(&rt_shape), mftype: retMfType)
         
         vcol = M
         rtrow = N
     }
     else{
-        v = Matft.nums(T.zero, shape: stackedShape + [ssize, M], mftype: retMfType, mforder: .Row) // returned shape = (..., M, ssize)
-        s = Matft.nums(T.zero, shape: stackedShape + [ssize], mftype: retMfType, mforder: .Row)
-        rt = Matft.nums(T.zero, shape: stackedShape + [N, ssize], mftype: retMfType, mforder: .Row) // returned shape = (..., ssize, N)
+        v_shape = stacked_shape + [ssize, M]
+        s_shape = stacked_shape + [ssize]
+        rt_shape = stacked_shape + [N, ssize]
+        v_data = MfData(size: shape2size(&v_shape), mftype: retMfType) // returned shape = (..., M, ssize)
+        s_data = MfData(size: shape2size(&s_shape), mftype: retMfType)
+        rt_data = MfData(size: shape2size(&rt_shape), mftype: retMfType) // returned shape = (..., ssize, N)
         
         vcol = ssize
         rtrow = ssize
@@ -523,68 +529,23 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ retMfType: MfTy
     var s_offset = 0
     var rt_offset = 0
     
-    try v.withDataUnsafeMBPtrT(datatype: T.self){
-        vptr in
-        try s.withDataUnsafeMBPtrT(datatype: T.self){
-            sptr in
-            try rt.withDataUnsafeMBPtrT(datatype: T.self){
-                rtptr in
-                try _withMNStackedMajorPtr(mfarray: mfarray, type: T.self, mforder: .Column){
-                    srcptr, _, _, _ in
-                    
-                    try _run_svd(M, N, srcptr, vptr.baseAddress! + v_offset, sptr.baseAddress! + s_offset, rtptr.baseAddress! + rt_offset, full_matrices, lapack_func: lapack_func)
-                    
-                    v_offset += M*vcol
-                    s_offset += ssize
-                    rt_offset += N*rtrow
-                }
-                
-            }
-        }
+    let vptr = v_data.data.bindMemory(to: T.self, capacity: shape2size(&v_shape))
+    let sptr = s_data.data.bindMemory(to: T.self, capacity: shape2size(&s_shape))
+    let rtptr = rt_data.data.bindMemory(to: T.self, capacity: shape2size(&rt_shape))
+    
+
+    try mfarray.withMNStackedMajorPtr(type: T.self, mforder: .Column){
+        srcptr, _, _, _ in
+        try _run_svd(M, N, srcptr, vptr + v_offset, sptr + s_offset, rtptr + rt_offset, full_matrices, lapack_func: lapack_func)
+        
+        v_offset += M*vcol
+        s_offset += ssize
+        rt_offset += N*rtrow
     }
+    
+    let v = MfArray(mfdata: v_data, mfstructure: MfStructure(shape: v_shape, mforder: .Row))
+    let s = MfArray(mfdata: s_data, mfstructure: MfStructure(shape: s_shape, mforder: .Row))
+    let rt = MfArray(mfdata: rt_data, mfstructure: MfStructure(shape: rt_shape, mforder: .Row))
     
     return (v.swapaxes(axis1: -1, axis2: -2), s, rt.swapaxes(axis1: -1, axis2: -2))
-}
-
-/**
-    - Important: This function for last shape is NxN
- */
-fileprivate func _withNNStackedMajorPtr<T: MfStorable>(mfarray: MfArray, type: T.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<T>, Int, Int) throws -> Void) rethrows -> Void{
-    let shape = mfarray.shape
-    let squaredSize = shape[mfarray.ndim - 1]
-    let matricesNum = mfarray.size / (squaredSize * squaredSize)
-    
-    // get stacked row major and copy
-    let rowMfarray = mforder == .Row ? to_row_major(mfarray) : to_row_major(mfarray.swapaxes(axis1: -1, axis2: -2))
-    
-    var offset = 0
-    try rowMfarray.withDataUnsafeMBPtrT(datatype: T.self){
-        for _ in 0..<matricesNum{
-            try body($0.baseAddress! + offset, squaredSize, offset)
-            
-            offset += squaredSize * squaredSize
-        }
-    }
-}
-
-/**
-    - Important: This function for last shape is MxN
- */
-fileprivate func _withMNStackedMajorPtr<T: MfStorable>(mfarray: MfArray, type: T.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<T>, Int, Int, Int) throws -> Void) rethrows -> Void{
-    let shape = mfarray.shape
-    let M = shape[mfarray.ndim - 2]
-    let N = shape[mfarray.ndim - 1]
-    let matricesNum = mfarray.size / (M * N)
-    
-    // get stacked row major and copy
-    let rowMfarray = mforder == .Row ? to_row_major(mfarray) : to_row_major(mfarray.swapaxes(axis1: -1, axis2: -2))
-    
-    var offset = 0
-    try rowMfarray.withDataUnsafeMBPtrT(datatype: T.self){
-        for _ in 0..<matricesNum{
-            try body($0.baseAddress! + offset, M, N, offset)
-            
-            offset += M * N
-        }
-    }
 }

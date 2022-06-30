@@ -42,25 +42,6 @@ extension MfArray{
 }
 
 
-internal func withDummyDataMRPtr(_ mftype: MfType, storedSize: Int, _ body: (UnsafeMutableRawPointer) throws -> Void) rethrows -> MfData{
-    
-    switch MfType.storedType(mftype) {
-    case .Float:
-        let dummyDataPtr = create_unsafeMRPtr(type: Float.self, count: storedSize)
-
-        try body(dummyDataPtr)
-        
-        return MfData(dataptr: dummyDataPtr, storedSize: storedSize, mftype: mftype)
-    case .Double:
-        let dummyDataPtr = create_unsafeMRPtr(type: Double.self, count: storedSize)
-        
-        try body(dummyDataPtr)
-        
-        return MfData(dataptr: dummyDataPtr, storedSize: storedSize, mftype: mftype)
-    }
-}
-
-
 
 internal func withDataMBPtr_multi<T, R>(datatype: T.Type, _ a: MfArray, _ b: MfArray, _ body: ((UnsafeMutableBufferPointer<T>, UnsafeMutableBufferPointer<T>) throws -> R)) rethrows -> R{
     return try a.withDataUnsafeMBPtrT(datatype: T.self){

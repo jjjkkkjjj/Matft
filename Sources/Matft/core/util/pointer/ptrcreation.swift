@@ -12,7 +12,7 @@ import Foundation
 /**
    - Important: this function allocate new memory, so don't forget deallocate!
 */
-internal func create_unsafeMPtrT<T: MfTypable>(type: T.Type, count: Int) -> UnsafeMutablePointer<T>{
+internal func allocate_unsafeMPtrT<T: MfTypable>(type: T.Type, count: Int) -> UnsafeMutablePointer<T>{
     typealias pointer = UnsafeMutablePointer<T>
     let ret = pointer.allocate(capacity: count)
     ret.initialize(repeating: T.zero, count: count)

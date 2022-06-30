@@ -62,7 +62,7 @@ internal func get_mftype(_ flattenArray: inout [Any]) -> MfType{
    - Important: this function allocate new memory, so don't forget deallocate!
 */
 internal func array2UnsafeMPtrT<T: MfTypable>(_ array: inout [T]) -> UnsafeMutablePointer<T>{
-    let ptr = create_unsafeMPtrT(type: T.self, count: array.count)
+    let ptr = allocate_unsafeMPtrT(type: T.self, count: array.count)
     array.withUnsafeBufferPointer{
         ptr.assign(from: $0.baseAddress!, count: $0.count)
     }
@@ -74,7 +74,7 @@ internal func array2UnsafeMPtrT<T: MfTypable>(_ array: inout [T]) -> UnsafeMutab
 ///     - flattenArray: An input flatten array
 ///     - toBool: Whether to be bool or not
 /// - Important: this function allocate new memory, so don't forget deallocate!
-internal func flattenArray2UnsafeMRPtrF(_ flattenArray: inout [Any], toBool: Bool) -> UnsafeMutableRawPointer{
+internal func allocate_UnsafeMRPtrF_from_flattenArray(_ flattenArray: inout [Any], toBool: Bool) -> UnsafeMutableRawPointer{
     
     //UInt
     if var flattenArray = flattenArray as? [UInt8]{
@@ -123,14 +123,14 @@ internal func flattenArray2UnsafeMRPtrF(_ flattenArray: inout [Any], toBool: Boo
         return _array2ptrU(&flatten32array, vDSP_func: vDSP_vflt32, toBool: toBool)
     }
     else if var flattenArray = flattenArray as? [Float]{
-        let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenArray.count)
+        let ptrF = allocate_unsafeMPtrT(type: Float.self, count: flattenArray.count)
         let _ = flattenArray.withUnsafeMutableBufferPointer{
             ptrF.assign(from: $0.baseAddress!, count: $0.count)
         }
         return UnsafeMutableRawPointer(ptrF)
     }
     else if let flattenArray = flattenArray as? [Bool]{
-        let ptrF = create_unsafeMPtrT(type: Float.self, count: flattenArray.count)
+        let ptrF = allocate_unsafeMPtrT(type: Float.self, count: flattenArray.count)
         //convert bool to float
         // true = 1, false = 0
         var flattenBoolarray = flattenArray.map{ $0 ? Float.num(1) : Float.zero }
@@ -153,7 +153,7 @@ internal func flattenArray2UnsafeMRPtrF(_ flattenArray: inout [Any], toBool: Boo
 ///     - flattenArray: An input flatten array
 ///     - toBool: Whether to be bool or not
 /// - Important: this function allocate new memory, so don't forget deallocate!
-internal func flattenArray2UnsafeMRPtrD(_ flattenArray: inout [Any], toBool: Bool) -> UnsafeMutableRawPointer {
+internal func allocate_UnsafeMRPtrD_from_flattenArray(_ flattenArray: inout [Any], toBool: Bool) -> UnsafeMutableRawPointer {
     
     //UInt
     if var flattenArray = flattenArray as? [UInt8]{
@@ -205,7 +205,7 @@ internal func flattenArray2UnsafeMRPtrD(_ flattenArray: inout [Any], toBool: Boo
         return _array2ptrU(&flattenArray, vDSP_func: vDSP_vspdp, toBool: toBool)
     }
     else if let flattenArray = flattenArray as? [Bool]{
-        let ptrD = create_unsafeMPtrT(type: Double.self, count: flattenArray.count)
+        let ptrD = allocate_unsafeMPtrT(type: Double.self, count: flattenArray.count)
         //convert bool to float
         // true = 1, false = 0
         var flattenBoolarray = flattenArray.map{ $0 ? Double.num(1) : Double.zero }
@@ -215,7 +215,7 @@ internal func flattenArray2UnsafeMRPtrD(_ flattenArray: inout [Any], toBool: Boo
         return UnsafeMutableRawPointer(ptrD)
     }
     else if var flattenArray = flattenArray as? [Double]{
-        let ptrD = create_unsafeMPtrT(type: Double.self, count: flattenArray.count)
+        let ptrD = allocate_unsafeMPtrT(type: Double.self, count: flattenArray.count)
         let _ = flattenArray.withUnsafeMutableBufferPointer{
             ptrD.assign(from: $0.baseAddress!, count: $0.count)
         }
@@ -235,7 +235,7 @@ fileprivate func _U2Binary<U: MfStorable>(_ ptrU: UnsafeMutableBufferPointer<U>)
 }
 
 fileprivate func _array2ptrU<T: MfTypable, U: MfStorable>(_ flattenArray: inout [T], vDSP_func: vDSP_convert_func<T, U>, toBool: Bool) -> UnsafeMutableRawPointer{
-    let ptrU = create_unsafeMPtrT(type: U.self, count: flattenArray.count)
+    let ptrU = allocate_unsafeMPtrT(type: U.self, count: flattenArray.count)
     
     // convert into Float
     flattenArray.withUnsafeBufferPointer{
