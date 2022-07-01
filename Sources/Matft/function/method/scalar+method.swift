@@ -21,7 +21,7 @@ extension MfArray{
         }
         
         func _T2U2Any<T: BinaryFloatingPoint>(_ type: T.Type) -> AnyObject{
-            let valueT = self.withDataUnsafeMBPtrT(datatype: T.self){
+            let valueT = self.withUnsafeMutableStartPointer(datatype: T.self){
                 dataptr in
                 dataptr[flattenIndex]
             }

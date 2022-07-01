@@ -9,14 +9,14 @@ import Foundation
 
 extension MfArray{
     
-    public func withDataUnsafeMRPtr<R>(_ body: (UnsafeMutableRawPointer) throws -> R) rethrows -> R{
+    public func withUnsafeMutableStartRawPointer<R>(_ body: (UnsafeMutableRawPointer) throws -> R) rethrows -> R{
         return try body(self.mfdata.data + self.mfdata.byteOffset)
     }
-    public func withDataUnsafeMBPtrT<T, R>(datatype: T.Type, _ body: (UnsafeMutableBufferPointer<T>) throws -> R) rethrows -> R{
-        let ret = try self.withDataUnsafeMRPtr{
+    public func withUnsafeMutableStartPointer<T, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+        let ret = try self.withUnsafeMutableStartRawPointer{
             [unowned self](ptr) -> R in
             let dataptr = ptr.bindMemory(to: T.self, capacity: self.storedSize)
-            return try body(UnsafeMutableBufferPointer(start: dataptr, count: self.storedSize))
+            return try body(dataptr)
         }
         
         return ret
@@ -24,15 +24,15 @@ extension MfArray{
     public func withContiguousDataUnsafeMPtrT<T>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> Void) rethrows -> Void{
         var shape = self.shape
         var strides = self.strides
-        try self.withDataUnsafeMBPtrT(datatype: T.self){
+        try self.withUnsafeMutableStartPointer(datatype: T.self){
             ptr in
             for ind in FlattenIndSequence(shape: &shape, strides: &strides){
-                try body(ptr.baseAddress! + ind.flattenIndex)
+                try body(ptr + ind.flattenIndex)
             }
         }
     }
     
-    internal func withMNStackedMajorPtr<T: MfStorable>(type: T.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<T>, Int, Int, Int) throws -> Void) rethrows -> Void{
+    internal func withMNStackedMajorPointer<T: MfStorable>(datatype: T.Type, mforder: MfOrder, _ body: (UnsafeMutablePointer<T>, Int, Int, Int) throws -> Void) rethrows -> Void{
         let shape = self.shape
         let M = shape[self.ndim - 2]
         let N = shape[self.ndim - 1]
@@ -42,9 +42,9 @@ extension MfArray{
         let rowMfarray = mforder == .Row ? self.to_contiguous(mforder: .Row) : self.swapaxes(axis1: -1, axis2: -2).to_contiguous(mforder: .Row)
         
         var offset = 0
-        try rowMfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        try rowMfarray.withUnsafeMutableStartPointer(datatype: T.self){
             for _ in 0..<matricesNum{
-                try body($0.baseAddress! + offset, M, N, offset)
+                try body($0 + offset, M, N, offset)
                 
                 offset += M * N
             }

@@ -43,9 +43,9 @@ extension Matft{
         func _T2U<T: MfStorable, U: MfStorable>(_ vDSP_func: vDSP_convert_func<T, U>) -> MfArray{
             let newdata = MfData(size: mfarray.storedSize, mftype: mftype)
             let dstptr = newdata.data.bindMemory(to: U.self, capacity: mfarray.storedSize)
-            mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
                 [unowned mfarray] in
-                wrap_vDSP_convert(mfarray.storedSize, $0.baseAddress!, 1, dstptr, 1, vDSP_func)
+                wrap_vDSP_convert(mfarray.storedSize, $0, 1, dstptr, 1, vDSP_func)
             }
             let dst = MfArray(mfdata: newdata, mfstructure: newstructure)
             

@@ -405,13 +405,6 @@ extension Matft{
     public static func greater(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         let diff = l_mfarray - r_mfarray
         return to_Bool(diff.clip(min: 0, max: nil))
-        /*
-        switch diff.storedType{
-        case .Float:
-            return _greater(l_mfarray: diff, val: Float.from(0))
-        case .Double:
-            return _greater(l_mfarray: diff, val: Double.from(0))
-        }*/
     }
     /**
         Check left scalar is greater than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
@@ -422,13 +415,6 @@ extension Matft{
     public static func greater<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         let diff = l_mfarray - r_scalar
         return to_Bool(diff.clip(min: 0, max: nil))
-        /*
-        switch l_mfarray.storedType {
-        case .Float:
-            return _greater(l_mfarray: l_mfarray, val: Float.from(r_scalar))
-        case .Double:
-            return _greater(l_mfarray: l_mfarray, val: Double.from(r_scalar))
-        }*/
     }
     /**
         Check left scalar is greater than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
@@ -756,20 +742,4 @@ fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray,
         }
     }
     
-}
-
-// using argument like op: (T, T) -> Bool is too slow...
-fileprivate func _greater<T: MfStorable>(l_mfarray: MfArray, val: T) -> MfArray{
-    let newdata = MfData(size: l_mfarray.storedSize, mftype: .Bool)
-    let dstptrT = newdata.data.bindMemory(to: Float.self, capacity: l_mfarray.storedSize)
-    l_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
-        [unowned l_mfarray] ptr in
-        var retarr = ptr.map{ $0 > val ? Float.num(1) : Float.zero}
-        retarr.withUnsafeMutableBufferPointer{
-            dstptrT.moveAssign(from: $0.baseAddress!, count: l_mfarray.storedSize)
-        }
-    }
-    
-    let newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
-    return MfArray(mfdata: newdata, mfstructure: newstructure)
 }

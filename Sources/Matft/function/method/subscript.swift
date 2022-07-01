@@ -218,10 +218,10 @@ extension MfArray: MfSubscriptable{
         //TODO: refactor
         if (array.size == newValue.size && array.size == 1){
             func _setscalar<T: MfStorable>(_ type: T.Type){
-                array.withDataUnsafeMBPtrT(datatype: T.self){
+                array.withUnsafeMutableStartPointer(datatype: T.self){
                     dstptr in
-                    newValue.withDataUnsafeMBPtrT(datatype: T.self){
-                        dstptr.baseAddress!.pointee = $0.baseAddress!.pointee
+                    newValue.withUnsafeMutableStartPointer(datatype: T.self){
+                        dstptr.pointee = $0.pointee
                     }
                 }
             }
@@ -349,12 +349,12 @@ fileprivate func _setter<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, 
     var srcoffset = 0
     var indoffset = 0
     
-    indicesT.withDataUnsafeMBPtrT(datatype: T.self){
+    indicesT.withUnsafeMutableStartPointer(datatype: T.self){
         indptr in
-        let indptr = indptr.baseAddress!
-        assignMfArray.withDataUnsafeMBPtrT(datatype: T.self){
+        let indptr = indptr
+        assignMfArray.withUnsafeMutableStartPointer(datatype: T.self){
             assptr in
-            let srcptr = assptr.baseAddress!
+            let srcptr = assptr
             mfarray.withContiguousDataUnsafeMPtrT(datatype: T.self){
                 if (indptr + indoffset).pointee != T.zero{
                     $0.assign(from: srcptr + srcoffset, count: 1)

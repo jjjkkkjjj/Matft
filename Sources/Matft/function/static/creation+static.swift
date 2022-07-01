@@ -165,7 +165,7 @@ extension Matft{
         func _create<T: MfStorable>(_ type: T.Type){
             let ptrT = newdata.data.bindMemory(to: T.self, capacity: size)
             var d = Array(repeating: T.zero, count: size)
-            v.withDataUnsafeMBPtrT(datatype: T.self){
+            v.withUnsafeMutableStartPointer(datatype: T.self){
                 if k >= 0{
                     for i in 0..<v.size{
                         d[i*dim+i+k] = $0[i]

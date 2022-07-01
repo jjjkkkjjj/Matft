@@ -27,7 +27,7 @@ public class MfArray{
             return base.data
         }
         else{
-            return self.withDataUnsafeMRPtr{
+            return self.withUnsafeMutableStartRawPointer{
                 [unowned self] in
                 unsafeMRBPtr2array_viaForD($0, mftype: self.mftype, size: self.storedSize)
             }
@@ -40,12 +40,12 @@ public class MfArray{
         else{
             switch self.storedType {
             case .Float:
-                return self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    Array($0) as [Any]
+                return self.withUnsafeMutableStartPointer(datatype: Float.self){
+                    Array(UnsafeMutableBufferPointer(start: $0, count: self.storedSize)) as [Any]
                 }
             case .Double:
-                return self.withDataUnsafeMBPtrT(datatype: Double.self){
-                    Array($0) as [Any]
+                return self.withUnsafeMutableStartPointer(datatype: Double.self){
+                    Array(UnsafeMutableBufferPointer(start: $0, count: self.storedSize)) as [Any]
                 }
             }
         }

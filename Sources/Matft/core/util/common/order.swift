@@ -52,19 +52,19 @@ internal func copy_all_mfarray(_ src_mfarray: MfArray) -> MfArray{
     
     switch src_mfarray.storedType{
     case .Float:
-        _ = src_mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+        _ = src_mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
             srcptr in
-            dst_mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+            dst_mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
                 dstptr in
-                memcpy(dstptr.baseAddress!, srcptr.baseAddress!, MemoryLayout<Float>.size*newsize)
+                memcpy(dstptr, srcptr, MemoryLayout<Float>.size*newsize)
             }
         }
     case .Double:
-        _ = src_mfarray.withDataUnsafeMBPtrT(datatype: Double.self){
+        _ = src_mfarray.withUnsafeMutableStartPointer(datatype: Double.self){
             srcptr in
-            dst_mfarray.withDataUnsafeMBPtrT(datatype: Double.self){
+            dst_mfarray.withUnsafeMutableStartPointer(datatype: Double.self){
                 dstptr in
-                memcpy(dstptr.baseAddress!, srcptr.baseAddress!, MemoryLayout<Double>.size*newsize)
+                memcpy(dstptr, srcptr, MemoryLayout<Double>.size*newsize)
             }
         }
     }

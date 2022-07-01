@@ -106,4 +106,13 @@ public enum StoredType: Int{
             return a
         }
     }
+    
+    public func to_mftype() -> MfType{
+        switch self{
+        case .Float:
+            return .Float
+        case .Double:
+            return .Double
+        }
+    }
 }

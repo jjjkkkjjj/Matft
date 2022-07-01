@@ -67,9 +67,9 @@ internal func wrap_cblas_matmul<T: MfStorable>(_ size: Int, _ mforder: MfOrder, 
 internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfArray, cblas_func: cblas_copy_func<T>) -> MfArray{
     
     
-    dsttmpMfarray.withDataUnsafeMBPtrT(datatype: T.self){
+    dsttmpMfarray.withUnsafeMutableStartPointer(datatype: T.self){
         [unowned dsttmpMfarray] (dstptr) in
-        mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
             [unowned mfarray] (srcptr) in
             /*
             var b = [5,6,7,2.0]
@@ -98,8 +98,8 @@ internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfA
             //print(dsttmpMfarray.strides, mfarray.strides)
             for cblasPrams in OptOffsetParamsSequence(shape: dsttmpMfarray.shape, bigger_strides: dsttmpMfarray.strides, smaller_strides: mfarray.strides){
                 //if negative offset, move proper position
-                let srcptr = cblasPrams.s_stride >= 0 ? srcptr.baseAddress! + cblasPrams.s_offset : srcptr.baseAddress! + (cblasPrams.blocksize - 1) * cblasPrams.s_stride + cblasPrams.s_offset
-                let dstptr = cblasPrams.b_stride >= 0 ? dstptr.baseAddress! + cblasPrams.b_offset : dstptr.baseAddress! + (cblasPrams.blocksize - 1) * cblasPrams.b_stride + cblasPrams.b_offset
+                let srcptr = cblasPrams.s_stride >= 0 ? srcptr + cblasPrams.s_offset : srcptr + (cblasPrams.blocksize - 1) * cblasPrams.s_stride + cblasPrams.s_offset
+                let dstptr = cblasPrams.b_stride >= 0 ? dstptr + cblasPrams.b_offset : dstptr + (cblasPrams.blocksize - 1) * cblasPrams.b_stride + cblasPrams.b_offset
                 wrap_cblas_copy(cblasPrams.blocksize, srcptr, cblasPrams.s_stride, dstptr, cblasPrams.b_stride, cblas_func)
                 //print(cblasPrams.blocksize, cblasPrams.b_offset, cblasPrams.b_stride, cblasPrams.s_offset, cblasPrams.s_stride)
             }
@@ -120,9 +120,9 @@ internal func copy_by_cblas<T: MfStorable>(_ src_mfarray: MfArray, _ dst_mfarray
     let bigger_strides = dst_mfarray.strides
     let smaller_strides = src_mfarray.strides
     
-    dst_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+    dst_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
         dstptr in
-        src_mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        src_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
             srcptr in
             /*
             var b = [5,6,7,2.0]
@@ -150,8 +150,8 @@ internal func copy_by_cblas<T: MfStorable>(_ src_mfarray: MfArray, _ dst_mfarray
             //print(dsttmpMfarray.strides, mfarray.strides)
             for cblasPrams in OptOffsetParamsSequence(shape: shape, bigger_strides: bigger_strides, smaller_strides: smaller_strides){
                 //if negative offset, move proper position
-                let srcptr = cblasPrams.s_stride >= 0 ? srcptr.baseAddress! + cblasPrams.s_offset : srcptr.baseAddress! + (cblasPrams.blocksize - 1) * cblasPrams.s_stride + cblasPrams.s_offset
-                let dstptr = cblasPrams.b_stride >= 0 ? dstptr.baseAddress! + cblasPrams.b_offset : dstptr.baseAddress! + (cblasPrams.blocksize - 1) * cblasPrams.b_stride + cblasPrams.b_offset
+                let srcptr = cblasPrams.s_stride >= 0 ? srcptr + cblasPrams.s_offset : srcptr + (cblasPrams.blocksize - 1) * cblasPrams.s_stride + cblasPrams.s_offset
+                let dstptr = cblasPrams.b_stride >= 0 ? dstptr + cblasPrams.b_offset : dstptr + (cblasPrams.blocksize - 1) * cblasPrams.b_stride + cblasPrams.b_offset
                 wrap_cblas_copy(cblasPrams.blocksize, srcptr, cblasPrams.s_stride, dstptr, cblasPrams.b_stride, cblas_func)
                 //print(cblasPrams.blocksize, cblasPrams.b_offset, cblasPrams.b_stride, cblasPrams.s_offset, cblasPrams.s_stride)
             }
@@ -220,8 +220,8 @@ internal func stack_by_cblas<T: MfStorable>(_ mfarrays: [MfArray], ret_shape: [I
     let dstptrT = newdata.data.bindMemory(to: T.self, capacity: ret_size)
     var offset = 0
     for mfarray in majorArrays {
-        mfarray.withDataUnsafeMBPtrT(datatype: T.self){
-            wrap_cblas_copy(mfarray.storedSize, $0.baseAddress!, 1, dstptrT + offset, 1, cblas_func)
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            wrap_cblas_copy(mfarray.storedSize, $0, 1, dstptrT + offset, 1, cblas_func)
         }
         
         offset += mfarray.storedSize
@@ -263,8 +263,8 @@ internal func concat_by_cblas<T: MfStorable>(_ mfarrays: [MfArray], ret_shape: [
     for sb in 0..<slowerBlockSize{
         for mfarray in majorArrays {
             let concat_size = mfarray.shape[axis]
-            mfarray.withDataUnsafeMBPtrT(datatype: T.self){
-                wrap_cblas_copy(fasterBlockSize*concat_size, $0.baseAddress! + sb*fasterBlockSize*concat_size, 1, dstptrT + offset, 1, cblas_func)
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                wrap_cblas_copy(fasterBlockSize*concat_size, $0 + sb*fasterBlockSize*concat_size, 1, dstptrT + offset, 1, cblas_func)
             }
             
             offset += fasterBlockSize*concat_size
@@ -302,12 +302,12 @@ internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarr
     
     let newdata = MfData(size: newsize, mftype: lmfarray.mftype)
     var dstptrT = newdata.data.bindMemory(to: T.self, capacity: newsize)
-    lmfarray.withDataUnsafeMBPtrT(datatype: T.self){
+    lmfarray.withUnsafeMutableStartPointer(datatype: T.self){
         lptr in
-        var lptr = lptr.baseAddress!
-        rmfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        var lptr = lptr
+        rmfarray.withUnsafeMutableStartPointer(datatype: T.self){
             rptr in
-            var rptr = rptr.baseAddress!
+            var rptr = rptr
             
             for _ in 0..<iterNum{
                 wrap_cblas_matmul(matNum, retorder, lptr, lshape[retndim - 2], lshape[retndim - 1], rptr, rshape[retndim - 2], rshape[retndim - 1], dstptrT, cblas_func)
@@ -370,12 +370,12 @@ internal func fancyndget_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: 
     
     let newdata = MfData(size: retSize, mftype: mfarray.mftype)
     var dstptrT = newdata.data.bindMemory(to: T.self, capacity: retSize)
-    let _ = mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+    let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
         [unowned mfarray](srcptr) in
         
         let offsets = (indices.data as! [Int]).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
         for offset in offsets{
-            wrap_cblas_copy(workSize, srcptr.baseAddress! + offset, 1, dstptrT, 1, cblas_func)
+            wrap_cblas_copy(workSize, srcptr + offset, 1, dstptrT, 1, cblas_func)
             dstptrT += workSize
         }
     }
@@ -420,11 +420,11 @@ internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
     
     let newdata = MfData(size: retSize, mftype: mfarray.mftype)
     var dstptrT = newdata.data.bindMemory(to: T.self, capacity: retSize)
-    let _ = mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+    let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
         srcptr in
         
         for offset in offsets{
-            wrap_cblas_copy(workSize, srcptr.baseAddress! + offset, 1, dstptrT, 1, cblas_func)
+            wrap_cblas_copy(workSize, srcptr + offset, 1, dstptrT, 1, cblas_func)
             dstptrT += workSize
         }
     }
@@ -453,27 +453,27 @@ internal func fancyset_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: Mf
     
     if mfarray.ndim == 1{
 
-        let _ = mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
             dstptr in
-            let _ = assignedMfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            let _ = assignedMfarray.withUnsafeMutableStartPointer(datatype: T.self){
                 srcptr in
                 for (i, offset) in offsets.enumerated(){
-                    (dstptr.baseAddress! + offset).assign(from: srcptr.baseAddress! + i, count: 1)
+                    (dstptr + offset).assign(from: srcptr + i, count: 1)
                 }
             }
         }
     }
     else{
-        let _ = mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
             [unowned mfarray](dstptr) in
-            let _ = assignedMfarray.withDataUnsafeMBPtrT(datatype: T.self){
+            let _ = assignedMfarray.withUnsafeMutableStartPointer(datatype: T.self){
                 [unowned assignedMfarray](srcptr) in
                 
                 let workMfarrayStrides = Array(mfarray.strides.suffix(from: 1))
                 let workAssignedMfarrayStrides = Array(assignedMfarray.strides.suffix(from: indices.ndim))
                 for cblasParams in OptOffsetParamsSequence(shape: workShape, bigger_strides: workAssignedMfarrayStrides, smaller_strides: workMfarrayStrides){
                     for (i, offset) in offsets.enumerated(){
-                        wrap_cblas_copy(cblasParams.blocksize, srcptr.baseAddress! + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr.baseAddress! + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
+                        wrap_cblas_copy(cblasParams.blocksize, srcptr + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
                     }
                 }
                 /*
@@ -521,13 +521,13 @@ internal func fancysetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
      >>> a[0,0]
      array([0, 1, 2])
      */
-    let _ = mfarray.withDataUnsafeMBPtrT(datatype: T.self){
+    let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
         [unowned mfarray](dstptr) in
-        let _ = assignedMfarray.withDataUnsafeMBPtrT(datatype: T.self){
+        let _ = assignedMfarray.withUnsafeMutableStartPointer(datatype: T.self){
             [unowned assignedMfarray](srcptr) in
             if workShape.count == 0{// indices.count == mfarray.ndim
                 for (i, offset) in offsets.enumerated(){
-                    (dstptr.baseAddress! + offset).assign(from: srcptr.baseAddress! + i, count: 1)
+                    (dstptr + offset).assign(from: srcptr + i, count: 1)
                 }
             }
             else{
@@ -535,7 +535,7 @@ internal func fancysetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
                 let workAssignedMfarrayStrides = Array(assignedMfarray.strides.suffix(workShape.count))
                 for cblasParams in OptOffsetParamsSequence(shape: workShape, bigger_strides: workAssignedMfarrayStrides, smaller_strides: workMfarrayStrides){
                     for (i, offset) in offsets.enumerated(){
-                        wrap_cblas_copy(cblasParams.blocksize, srcptr.baseAddress! + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr.baseAddress! + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
+                        wrap_cblas_copy(cblasParams.blocksize, srcptr + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
                     }
                 }
             }

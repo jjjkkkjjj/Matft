@@ -103,10 +103,10 @@ internal func bool_broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
     
     let newdata = MfData(size: retSize, mftype: .Bool)
     var dstptrF = newdata.data.bindMemory(to: Float.self, capacity: retSize)
-    rowc_mfarray.withDataUnsafeMBPtrT(datatype: Float.self){
+    rowc_mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
         srcptr in
         for i in 0..<origSize{
-            dstptrF.assign(repeating: (srcptr.baseAddress! + i).pointee, count: offset)
+            dstptrF.assign(repeating: (srcptr + i).pointee, count: offset)
             dstptrF += offset
         }
     }
