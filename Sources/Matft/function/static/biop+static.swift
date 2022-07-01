@@ -679,7 +679,7 @@ fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, th
         }
     }
     print(diff)*/
-    return !to_Bool(diff, thresholdF: thresholdF, thresholdD: thresholdD)
+    return to_IBool(diff, thresholdF: thresholdF, thresholdD: thresholdD)
 }
 
 fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> Bool{

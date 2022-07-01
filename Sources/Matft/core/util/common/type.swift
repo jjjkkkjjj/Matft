@@ -20,6 +20,20 @@ internal func to_Bool(_ mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: 
         fatalError("Bug was occurred. Bool's storedType is not double.")
     }
 }
+
+internal func to_IBool(_ mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray{
+    //convert float and contiguous
+    let ret = mfarray.astype(.Float)
+    // TODO: use vDSP_vthr?
+    switch ret.storedType {
+    case .Float:
+        let ret = toIBool_by_vDSP(ret)
+        return ret
+    case .Double:
+        fatalError("Bug was occurred. Bool's storedType is not double.")
+    }
+}
+
 /*
 internal func to_Bool_mm_op<U: MfStorable>(l_mfarray: MfArray, r_mfarray: MfArray, op: (U, U) -> Bool) -> MfArray{
     assert(l_mfarray.shape == r_mfarray.shape, "call biop_broadcast_to first!")
