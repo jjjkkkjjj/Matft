@@ -643,33 +643,33 @@ posb = a > 0
 
 | Matft                          |     time               | Numpy            |   time               |
 | ------------------------ | ----------------- | ----------------- |----------------- |
-|   `let _ = a+aneg`   |    `863μs`         |     `a+aneg`    |   `1.04ms`         |
-|   `let _ = b+aT`   |    `4.47ms`         |     `b+aT`    |   `4.31ms`         |
-|   `let _ = c+aT`   |    `5.30ms`         |     `c+aT`    |   `2.92ms`         |
+|   `let _ = a+aneg`   |    `596μs`         |     `a+aneg`    |   `1.04ms`         |
+|   `let _ = b+aT`   |    `4.46ms`         |     `b+aT`    |   `4.31ms`         |
+|   `let _ = c+aT`   |    `5.31ms`         |     `c+aT`    |   `2.92ms`         |
 
 - Math test
 
 | Matft                          |     time               | Numpy            |   time               |
 | ------------------------ | ----------------- | ----------------- |----------------- |
-|   `let _ = Matft.math.sin(a)`   |    `1.80ms`         |     `np.sin(a)`    |   `14.7ms`         |
-|   `let _ = Matft.math.sin(b)`   |    `8.24ms`         |     `np.sin(b)`    |   `15.8ms`         |
-|   `let _ = Matft.math.sign(a)`   |    `3.20ms`         |     `np.sign(a)`    |   `1.37ms`         |
-|   `let _ = Matft.math.sign(b)`   |    `2.78ms`         |     `np.sign(b)`    |   `1.42ms`         |
+|   `let _ = Matft.math.sin(a)`   |    `2.14ms`         |     `np.sin(a)`    |   `14.7ms`         |
+|   `let _ = Matft.math.sin(b)`   |    `7.02ms`         |     `np.sin(b)`    |   `15.8ms`         |
+|   `let _ = Matft.math.sign(a)`   |    `3.09ms`         |     `np.sign(a)`    |   `1.37ms`         |
+|   `let _ = Matft.math.sign(b)`   |    `8.33ms`         |     `np.sign(b)`    |   `1.42ms`         |
 
 - Bool test
 
 | Matft                          |     time               | Numpy            |   time               |
 | ------------------------ | ----------------- | ----------------- |----------------- |
-|   `let _ = a > 0`   |    `5.01ms`         |     `a > 0`    |   `855μs`         |
-|   `let _ = a > b`   |    `13.3ms`         |     `a > b`    |   `1.83ms`         |
-|   `let _ = a === 0`   |    `9.91ms`         |     `a == 0`    |   `603μs`         |
-|   `let _ = a === b`   |    `17.9ms`         |     `a == b`    |   `1.78ms`         |
+|   `let _ = a > 0`   |    `4.63ms`         |     `a > 0`    |   `855μs`         |
+|   `let _ = a > b`   |    `17.8ms`         |     `a > b`    |   `1.83ms`         |
+|   `let _ = a === 0`   |    `9.16ms`         |     `a == 0`    |   `603μs`         |
+|   `let _ = a === b`   |    `19.7ms`         |     `a == b`    |   `1.78ms`         |
 
 - Indexing test
 
 | Matft                          |     time               | Numpy            |   time               |
 | ------------------------ | ----------------- | ----------------- |----------------- |
-|   `let _ = a[posb]`   |    `1.07ms`         |     `a[posb]`    |   `1.29ms`         |
+|   `let _ = a[posb]`   |    `1.21ms`         |     `a[posb]`    |   `1.29ms`         |
 
 
 Matft achieved almost same performance as Numpy!!!
