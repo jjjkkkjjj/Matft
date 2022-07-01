@@ -265,6 +265,37 @@ internal func wrap_vDSP_gathr<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointe
     vDSP_func(srcptr, indptr, vDSP_Stride(indStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
 }
 
+/// Convert type and contiguous mfarray
+/// - Parameters:
+///   - src_mfarray: An input mfarray
+///   - mftype: The new mftype
+///   - mforder: The order
+///   - vDSP_func: vDSP_convert_func
+/// - Returns: Pre operated mfarray
+internal func contiguous_and_astype_by_vDSP<T: MfStorable, U: MfStorable>(_ src_mfarray: MfArray, mftype: MfType, mforder: MfOrder, vDSP_func: vDSP_convert_func<T, U>) -> MfArray{
+    var ret_shape = src_mfarray.shape
+    let ret_strides = shape2strides(&ret_shape, mforder: mforder)
+    
+    let newdata = MfData(size: src_mfarray.size, mftype: mftype)
+    
+    newdata.withUnsafeMutableStartPointer(datatype: U.self){
+        dstptrU in
+        src_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned src_mfarray] srcptrT in
+            
+            for vDSPPrams in OptOffsetParamsSequence(shape: ret_shape, bigger_strides: ret_strides, smaller_strides: src_mfarray.strides){
+                
+                wrap_vDSP_convert(vDSPPrams.blocksize, srcptrT + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrU + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+            }
+            
+        }
+    }
+    
+    let newstructure = MfStructure(shape: ret_shape, strides: ret_strides)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
 /// Pre operation mfarray by vDSP
 /// - Parameters:
 ///   - mfarray: An input mfarray

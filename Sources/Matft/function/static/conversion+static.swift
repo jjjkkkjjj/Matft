@@ -32,41 +32,12 @@ extension Matft{
             return ret
         }
         
-        //copy shape and strides
-        let newstructure: MfStructure
-        var mfarray = mfarray
-        if !(mfarray.mfstructure.column_contiguous || mfarray.mfstructure.row_contiguous){// close to row major
-            mfarray = mfarray.to_contiguous(mforder: .Row)
-        }
-        newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
-        
-        func _T2U<T: MfStorable, U: MfStorable>(_ vDSP_func: vDSP_convert_func<T, U>) -> MfArray{
-            let newdata = MfData(size: mfarray.storedSize, mftype: mftype)
-
-            newdata.withUnsafeMutableStartPointer(datatype: U.self){
-                dstptrU in
-                mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-                    [unowned mfarray] in
-                    wrap_vDSP_convert(mfarray.storedSize, $0, 1, dstptrU, 1, vDSP_func)
-                }
-            }
-            
-            let dst = MfArray(mfdata: newdata, mfstructure: newstructure)
-            
-            if (dst.mfstructure.row_contiguous && mforder == .Row) || (dst.mfstructure.column_contiguous && mforder == .Column){
-                return dst
-            }
-            else{
-                return dst.to_contiguous(mforder: mforder)
-            }
-        }
-        
         switch newStoredType{
         case .Float://double to float
-            return _T2U(vDSP_vdpsp)
+            return contiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vdpsp)
             
         case .Double://float to double
-            return _T2U(vDSP_vspdp)
+            return contiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vspdp)
         }
     }
     /**
