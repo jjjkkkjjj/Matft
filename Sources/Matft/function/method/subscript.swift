@@ -196,7 +196,6 @@ extension MfArray: MfSubscriptable{
         }
         
         let newstructure = MfStructure(shape: newshape, strides: newstrides)
-        //newarray.mfdata._storedSize = get_storedSize(newarray.shapeptr, newarray.stridesptr)
         //print(newarray.shape, newarray.mfdata._size, newarray.mfdata._storedSize)
         return MfArray(base: self, mfstructure: newstructure, offset: offset)
     }

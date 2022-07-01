@@ -24,7 +24,7 @@ internal func allocate_unsafeMPtrT<T: MfTypable>(type: T.Type, count: Int) -> Un
 /**
    - Important: this function allocate new memory, so don't forget deallocate!
 */
-internal func create_unsafeMRPtr<T: MfTypable>(type: T.Type, count: Int) -> UnsafeMutableRawPointer{
+internal func allocate_unsafeMRPtr<T: MfTypable>(type: T.Type, count: Int) -> UnsafeMutableRawPointer{
     typealias pointer = UnsafeMutableRawPointer
     let ret = pointer.allocate(byteCount: MemoryLayout<T>.stride * count, alignment: MemoryLayout<T>.alignment)
     ret.initializeMemory(as: T.self, repeating: T.zero, count: count)

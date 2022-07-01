@@ -74,7 +74,7 @@ internal func array2UnsafeMPtrT<T: MfTypable>(_ array: inout [T]) -> UnsafeMutab
 ///     - flattenArray: An input flatten array
 ///     - toBool: Whether to be bool or not
 /// - Important: this function allocate new memory, so don't forget deallocate!
-internal func allocate_UnsafeMRPtrF_from_flattenArray(_ flattenArray: inout [Any], toBool: Bool) -> UnsafeMutableRawPointer{
+internal func allocate_floatdata_from_flattenArray(_ flattenArray: inout [Any], toBool: Bool) -> UnsafeMutableRawPointer{
     
     //UInt
     if var flattenArray = flattenArray as? [UInt8]{
@@ -153,7 +153,7 @@ internal func allocate_UnsafeMRPtrF_from_flattenArray(_ flattenArray: inout [Any
 ///     - flattenArray: An input flatten array
 ///     - toBool: Whether to be bool or not
 /// - Important: this function allocate new memory, so don't forget deallocate!
-internal func allocate_UnsafeMRPtrD_from_flattenArray(_ flattenArray: inout [Any], toBool: Bool) -> UnsafeMutableRawPointer {
+internal func allocate_doubledata_from_flattenArray(_ flattenArray: inout [Any], toBool: Bool) -> UnsafeMutableRawPointer {
     
     //UInt
     if var flattenArray = flattenArray as? [UInt8]{

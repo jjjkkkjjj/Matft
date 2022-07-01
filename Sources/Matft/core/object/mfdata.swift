@@ -56,10 +56,10 @@ public class MfData{
         switch MfType.storedType(mftype){
         case .Float:
             // dynamic allocation
-            self.data = allocate_UnsafeMRPtrF_from_flattenArray(&flattenArray, toBool: mftype == .Bool)
+            self.data = allocate_floatdata_from_flattenArray(&flattenArray, toBool: mftype == .Bool)
         case .Double:
             // dynamic allocation
-            self.data = allocate_UnsafeMRPtrD_from_flattenArray(&flattenArray, toBool: mftype == .Bool)
+            self.data = allocate_doubledata_from_flattenArray(&flattenArray, toBool: mftype == .Bool)
         }
         self.storedSize = flattenArray.count
         self.mftype = mftype

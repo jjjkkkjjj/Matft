@@ -9,34 +9,6 @@
 import Foundation
 import Accelerate
 
-internal func toSwiftArray(_ mfarray: MfArray) -> [Any]{
-    let mfarray = !mfarray.mfstructure.row_contiguous ? mfarray.to_contiguous(mforder: .Row) : mfarray
-    
-    var shape = mfarray.shape
-    var data = mfarray.data
-    
-    return _get_swiftArray(&data, shape: &shape, axis: 0)
-}
-
-fileprivate func _get_swiftArray(_ data: inout [Any], shape: inout [Int], axis: Int) -> [Any]{
-    let dim = shape[axis]
-    let ndim = shape.count
-    let size = data.count
-    let offset = size / dim // note that this division must be divisible
-    
-    var ret: [Any] = []
-    for i in 0..<dim{
-        var slicedArray = Array(data[i*offset..<(i+1)*offset])
-        if axis + 1 < ndim{
-            ret += [_get_swiftArray(&slicedArray, shape: &shape, axis: axis + 1)]
-        }
-        else{
-            ret += slicedArray
-        }
-    }
-    return ret
-}
-
 
 /// Copy mfarray including structure
 /// - Parameter src_mfarray: The source mfarray
@@ -178,4 +150,48 @@ internal func check_matmul_contiguous(_ lmfarray: inout MfArray, _ rmfarray: ino
         }
     }
     return retorder
+}
+
+/// Whether to contain reverse or not
+/// - Returns: The boolean whether to contain reverse or not
+internal func isReverse(_ strides: inout [Int]) -> Bool{
+    return strides.contains{ $0 < 0 }
+}
+
+/// Get a swift array
+/// - Parameter mfarray: An input mfarray
+/// - Returns: A swift array
+@usableFromInline
+internal func toSwiftArray(_ mfarray: MfArray) -> [Any]{
+    let mfarray = !mfarray.mfstructure.row_contiguous ? mfarray.to_contiguous(mforder: .Row) : mfarray
+    
+    var shape = mfarray.shape
+    var data = mfarray.data
+    
+    return _get_swiftArray(&data, shape: &shape, axis: 0)
+}
+
+/// Get a swift array. This function is recursive one
+/// - Parameters:
+///   - data: An input and output data array
+///   - shape: A shape array
+///   - axis: The current axis
+/// - Returns: A swift array
+fileprivate func _get_swiftArray(_ data: inout [Any], shape: inout [Int], axis: Int) -> [Any]{
+    let dim = shape[axis]
+    let ndim = shape.count
+    let size = data.count
+    let offset = size / dim // note that this division must be divisible
+    
+    var ret: [Any] = []
+    for i in 0..<dim{
+        var slicedArray = Array(data[i*offset..<(i+1)*offset])
+        if axis + 1 < ndim{
+            ret += [_get_swiftArray(&slicedArray, shape: &shape, axis: axis + 1)]
+        }
+        else{
+            ret += slicedArray
+        }
+    }
+    return ret
 }

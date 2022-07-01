@@ -11,7 +11,7 @@ import Accelerate
 
 //convert rawpointer to flattenarray via float or Double array
 //All kinds of int and uint has been handled as float
-internal func unsafeMRBPtr2array_viaForD(_ ptr: UnsafeMutableRawPointer, mftype: MfType, size: Int) -> [Any]{
+internal func data2flattenArray(_ ptr: UnsafeMutableRawPointer, mftype: MfType, size: Int) -> [Any]{
     
     switch MfType.storedType(mftype) {
     case .Float://in case that storedtype is Float

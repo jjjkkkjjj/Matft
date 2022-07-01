@@ -29,7 +29,7 @@ public class MfArray{
         else{
             return self.withUnsafeMutableStartRawPointer{
                 [unowned self] in
-                unsafeMRBPtr2array_viaForD($0, mftype: self.mftype, size: self.storedSize)
+                data2flattenArray($0, mftype: self.mftype, size: self.storedSize)
             }
         }
     }
