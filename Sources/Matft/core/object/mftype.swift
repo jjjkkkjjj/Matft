@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Accelerate
 
 public enum MfType: Int{
     case None
@@ -23,6 +24,8 @@ public enum MfType: Int{
     case Int
     case Float
     case Double
+    case ComplexFloat
+    case ComplexDouble
     case Object
     
     static internal func mftype(value: Any) -> MfType{
@@ -53,6 +56,10 @@ public enum MfType: Int{
             return .Float
         case is Double:
             return .Double
+        case is DSPComplex:
+            return .ComplexFloat
+        case is DSPDoubleComplex:
+            return .ComplexDouble
         default:
             return .Object
         }
@@ -74,9 +81,21 @@ public enum MfType: Int{
         switch mftype {
         case .Double:
             return .Double
+        /*
+        case .ComplexFloat:
+            return .ComplexFloat
+        case .ComplexDouble:
+            return .ComplexDouble*/
         default: // all mftypes are stored as float except for double
             return .Float
         }
+    }
+    
+    static internal func isComplex(_ mftype: MfType) -> Bool{
+        return (mftype == .ComplexFloat) || (mftype == .ComplexDouble)
+    }
+    internal func isComplex() -> Bool{
+        return MfType.isComplex(self)
     }
     
     static public func is32bit() -> Bool{
@@ -94,9 +113,9 @@ public enum MfType: Int{
 
 public enum StoredType: Int{
     case Float
-    //case DSPComplexFloat
     case Double
-    //case DSPComplexDouble
+    //case ComplexFloat
+    //case ComplexDouble
     
     static public func priority(_ a: StoredType, _ b: StoredType) -> StoredType{
         if a.rawValue < b.rawValue{
@@ -113,6 +132,11 @@ public enum StoredType: Int{
             return .Float
         case .Double:
             return .Double
+        /*
+        case .ComplexFloat:
+            return .ComplexFloat
+        case .ComplexDouble:
+            return .ComplexDouble*/
         }
     }
 }

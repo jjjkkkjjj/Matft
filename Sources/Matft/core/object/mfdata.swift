@@ -21,11 +21,12 @@ public class MfData{
     internal let storedSize: Int
     /// The size of the stored data (byte)
     internal var storedByteSize: Int{
+        let num = self.mftype.isComplex() ? 2 : 1
         switch self.storedType {
         case .Float:
-            return self.storedSize * MemoryLayout<Float>.size
+            return self.storedSize * MemoryLayout<Float>.size * num
         case .Double:
-            return self.storedSize * MemoryLayout<Double>.size
+            return self.storedSize * MemoryLayout<Double>.size * num
         }
     }
     
@@ -39,11 +40,12 @@ public class MfData{
     /// The offset value (byte)
     internal var byteOffset: Int{
         get{
+            let num = self.mftype.isComplex() ? 2 : 1
             switch self.storedType {
             case .Float:
-                return self.offset * MemoryLayout<Float>.size
+                return self.offset * MemoryLayout<Float>.size * num
             case .Double:
-                return self.offset * MemoryLayout<Double>.size
+                return self.offset * MemoryLayout<Double>.size * num
             }
         }
     }

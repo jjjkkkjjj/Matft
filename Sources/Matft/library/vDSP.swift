@@ -11,7 +11,11 @@ import Accelerate
 
 internal typealias vDSP_convert_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<U>, vDSP_Stride, vDSP_Length) -> Void
 
+// vDSP_ctoz or vDSP_ztoc
+internal typealias vDSP_convertcz_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<U>, vDSP_Stride, vDSP_Length) -> Void
+
 internal typealias vDSP_biopvv_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+internal typealias vDSP_biopzvv_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
 internal typealias vDSP_biopvs_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
@@ -49,6 +53,19 @@ internal typealias vDSP_vgathr_func<T> = (UnsafePointer<T>, UnsafePointer<vDSP_L
 ///   - vDSP_func: The vDSP conversion function
 @inline(__always)
 internal func wrap_vDSP_convert<T, U>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafeMutablePointer<U>, _ dstStride: Int, _ vDSP_func: vDSP_convert_func<T, U>){
+    vDSP_func(srcptr, vDSP_Stride(srcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
+}
+
+/// Wrapper of vDSP conversion function
+/// - Parameters:
+///   - srcptr: A source pointer
+///   - srcStride: A source stride
+///   - dstptr: A destination pointer
+///   - dstStride: A destination stride
+///   - size: A size to be copied
+///   - vDSP_func: The vDSP conversion function
+@inline(__always)
+internal func wrap_vDSP_convertcz<T, U>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafePointer<U>, _ dstStride: Int, _ vDSP_func: vDSP_convertcz_func<T, U>){
     vDSP_func(srcptr, vDSP_Stride(srcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
 }
 
@@ -435,6 +452,50 @@ internal func biopvv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: M
 
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
+/*
+/// Binary operation by vDSP
+/// - Parameters:
+///   - l_mfarray: The left mfarray
+///   - r_mfarray: The right mfarray
+///   - vDSP_func: The vDSP biop function
+/// - Returns: The result mfarray
+internal func biopzvv_by_vDSP<T, U>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, datatype: T.Type, vDSP_func: vDSP_biopzvv_func<U>) -> MfArray{
+    // biggerL: flag whether l is bigger than r
+    //return mfarray must be either row or column major
+    let (l_mfarray, r_mfarray, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
+    
+    let newdata = MfData(size: retsize, mftype: l_mfarray.mftype)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned l_mfarray] (lptr) in
+            r_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                [unowned r_mfarray] (rptr) in
+                if biggerL{// l is bigger
+                    for vDSPPrams in OptOffsetParamsSequence(shape: l_mfarray.shape, bigger_strides: l_mfarray.strides, smaller_strides: r_mfarray.strides){
+                        var ltmp = Array(repeating: T.zero, count: <#T##Int#>)
+                        wrap_vDSP_biopvv(vDSPPrams.blocksize, lptr + vDSPPrams.b_offset, vDSPPrams.b_stride, rptr + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                    }
+                }
+                else{// r is bigger
+                    for vDSPPrams in OptOffsetParamsSequence(shape: r_mfarray.shape, bigger_strides: r_mfarray.strides, smaller_strides: l_mfarray.strides){
+                        wrap_vDSP_biopvv(vDSPPrams.blocksize, lptr + vDSPPrams.s_offset, vDSPPrams.s_stride, rptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                    }
+                }
+            }
+        }
+    }
+    
+    let newstructure: MfStructure
+    if biggerL{
+        newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
+    }
+    else{
+        newstructure = MfStructure(shape: r_mfarray.shape, strides: r_mfarray.strides)
+    }
+
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}*/
 
 
 /// Stats operation by vDSP

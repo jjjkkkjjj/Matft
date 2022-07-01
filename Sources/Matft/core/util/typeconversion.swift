@@ -53,6 +53,12 @@ internal func get_mftype(_ flattenArray: inout [Any]) -> MfType{
     else if flattenArray is [Double]{
         return .Double
     }
+    else if flattenArray is [DSPComplex]{
+        return .ComplexFloat
+    }
+    else if flattenArray is [DSPDoubleComplex]{
+        return .ComplexDouble
+    }
     else{
         fatalError("flattenArray couldn't cast MfTypable.")
     }
@@ -142,6 +148,21 @@ internal func allocate_floatdata_from_flattenArray(_ flattenArray: inout [Any], 
     else if var flattenArray = flattenArray as? [Double]{
         return _array2ptrU(&flattenArray, vDSP_func: vDSP_vdpsp, toBool: toBool)
     }
+    else if let flattenArray = flattenArray as? [DSPComplex]{
+        let ptrF = allocate_unsafeMPtrT(type: Float.self, count: flattenArray.count*2)
+        let _ = flattenArray.withUnsafeBytes{
+            ptrF.assign(from: $0.bindMemory(to: Float.self).baseAddress!, count: flattenArray.count*2)
+        }
+        return UnsafeMutableRawPointer(ptrF)
+    }
+    else if let flattenArray = flattenArray as? [DSPDoubleComplex]{
+        let ptrF = allocate_unsafeMPtrT(type: Float.self, count: flattenArray.count*2)
+        
+        let _ = flattenArray.withUnsafeBytes{
+            wrap_vDSP_convert(flattenArray.count*2, $0.bindMemory(to: Double.self).baseAddress!, 1, ptrF, 1, vDSP_vdpsp)
+        }
+        return UnsafeMutableRawPointer(ptrF)
+    }
     else{
         fatalError("flattenArray couldn't cast MfTypable.")
     }
@@ -218,6 +239,21 @@ internal func allocate_doubledata_from_flattenArray(_ flattenArray: inout [Any],
         let ptrD = allocate_unsafeMPtrT(type: Double.self, count: flattenArray.count)
         let _ = flattenArray.withUnsafeMutableBufferPointer{
             ptrD.assign(from: $0.baseAddress!, count: $0.count)
+        }
+        return UnsafeMutableRawPointer(ptrD)
+    }
+    else if let flattenArray = flattenArray as? [DSPComplex]{
+        let ptrD = allocate_unsafeMPtrT(type: Double.self, count: flattenArray.count*2)
+        
+        let _ = flattenArray.withUnsafeBytes{
+            wrap_vDSP_convert(flattenArray.count*2, $0.bindMemory(to: Float.self).baseAddress!, 1, ptrD, 1, vDSP_vspdp)
+        }
+        return UnsafeMutableRawPointer(ptrD)
+    }
+    else if let flattenArray = flattenArray as? [DSPDoubleComplex]{
+        let ptrD = allocate_unsafeMPtrT(type: Double.self, count: flattenArray.count*2)
+        let _ = flattenArray.withUnsafeBytes{
+            ptrD.assign(from: $0.bindMemory(to: Double.self).baseAddress!, count: flattenArray.count*2)
         }
         return UnsafeMutableRawPointer(ptrD)
     }
