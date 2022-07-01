@@ -124,11 +124,39 @@ fileprivate func _clousure_number(mfarray: MfArray, indices: inout [Int]) -> Int
     return clousureNum
 }
 
-
-
-extension MfFlags: CustomStringConvertible{
+extension MfData: CustomStringConvertible{
     public var description: String{
         var ret = ""
+        
+        ret += "Original Type\t: \(self.mftype)\n"
+        ret += "Stored Type\t\t: \(self.storedType)\n"
+        ret += "Raw Data:\n"
+        switch self.storedType{
+        case .Float:
+            let ptrF = self.data.bindMemory(to: Float.self, capacity: self.storedSize)
+            ret += "\(Array(UnsafeMutableBufferPointer(start: ptrF, count: self.storedSize)))\n"
+        case .Double:
+            let ptrD = self.data.bindMemory(to: Double.self, capacity: self.storedSize)
+            ret += "\(Array(UnsafeMutableBufferPointer(start: ptrD, count: self.storedSize)))\n"
+        }
+        
+        ret += "\n"
+        
+        ret += "isView\t: \(self._isView)\n"
+        ret += "offset\t: \(self.offset)\n"
+        
+        return ret
+    }
+}
+
+extension MfStructure: CustomStringConvertible{
+    public var description: String{
+        var ret = ""
+        ret += "shape\t: \(self.shape)\n"
+        ret += "strides\t: \(self.strides)\n"
+        
+        ret += "\n"
+        
         ret += "Row contiguous\t\t: \(self.row_contiguous)\n"
         ret += "Column contiguous\t: \(self.column_contiguous)\n"
         return ret

@@ -15,7 +15,7 @@ public class MfArray{
 
     public internal(set) var base: MfArray?
     public var offsetIndex: Int{
-        return self.mfdata._offset
+        return self.mfdata.offset
     }
     
 
@@ -27,9 +27,9 @@ public class MfArray{
             return base.data
         }
         else{
-            return self.withDataUnsafeMRPtr{
+            return self.withUnsafeMutableStartRawPointer{
                 [unowned self] in
-                unsafeMRBPtr2array_viaForD($0, mftype: self.mftype, size: self.storedSize)
+                data2flattenArray($0, mftype: self.mftype, size: self.storedSize)
             }
         }
     }
@@ -40,47 +40,43 @@ public class MfArray{
         else{
             switch self.storedType {
             case .Float:
-                return self.withDataUnsafeMBPtrT(datatype: Float.self){
-                    Array($0) as [Any]
+                return self.withUnsafeMutableStartPointer(datatype: Float.self){
+                    Array(UnsafeMutableBufferPointer(start: $0, count: self.storedSize)) as [Any]
                 }
             case .Double:
-                return self.withDataUnsafeMBPtrT(datatype: Double.self){
-                    Array($0) as [Any]
+                return self.withUnsafeMutableStartPointer(datatype: Double.self){
+                    Array(UnsafeMutableBufferPointer(start: $0, count: self.storedSize)) as [Any]
                 }
             }
         }
     }
     
     public var mftype: MfType{
-        return self.mfdata._mftype
+        return self.mfdata.mftype
     }
     public var storedType: StoredType{
-        return self.mfdata._storedType
+        return self.mfdata.storedType
     }
     public var storedSize: Int{
-        return self.mfdata._storedSize
+        return self.mfdata.storedSize
     }
     public var storedByteSize: Int{
-        return self.mfdata._storedByteSize
+        return self.mfdata.storedByteSize
     }
     
     //mfstructure getter
     public var shape: [Int]{
-        return self.withShapeUnsafeMBPtr{
-            Array($0)
-        }
+        return self.mfstructure.shape
     }
     public var strides: [Int]{
-        return self.withStridesUnsafeMBPtr{
-            Array($0)
-        }
+        return self.mfstructure.strides
     }
     
     public var ndim: Int{
-        return self.mfstructure._ndim
+        return self.mfstructure.shape.count
     }
     public var size: Int{
-        return self.mfstructure._size
+        return shape2size(&self.mfstructure.shape)
     }
     public var byteSize: Int{
         switch self.storedType {
@@ -90,65 +86,27 @@ public class MfArray{
             return self.size * MemoryLayout<Double>.size
         }
     }
-    public var mfflags: MfFlags{
-        return self.mfstructure._flags
-    }
 
     public init (_ array: [Any], mftype: MfType? = nil, shape: [Int]? = nil, mforder: MfOrder = .Row) {
         
-        var _mforder = mforder
-        
-        var (flatten, _shape) = array.withUnsafeBufferPointer{
-            flatten_array(ptr: $0, mforder: &_mforder)
+        var (flattenArray, shape_from_array) = array.withUnsafeBufferPointer{
+            flatten_array(ptr: $0, mforder: mforder)
         }
     
         if mftype == .Object || mftype == .None{
             //print(flatten)
-            fatalError("Matft does not support Object and None. Shape was \(_shape)")
+            preconditionFailure("Matft does not support Object and None. Shape was \(shape_from_array)")
         }
-        
-        let (ptr, _mftype) = flattenarray2UnsafeMRPtr_viaForD(&flatten, mftypeBool: (mftype ?? .None) == .Bool)
+        let mftype_from_array = get_mftype(&flattenArray)
+        let mftype = mftype ?? mftype_from_array
         
         // set mfdata and mfstructure
-        var shape = shape ?? _shape
-        precondition(shape2size(&shape) == flatten.count, "Invalid shape, size must be \(flatten.count), but got \(shape2size(&shape))")
-        let shapeptr = array2UnsafeMPtrT(&shape)
-        self.mfdata = MfData(dataptr: ptr, storedSize: flatten.count, mftype: _mftype)
-        self.mfstructure = MfStructure(shapeptr: shapeptr, mforder: _mforder, ndim: shape.count)
+        var shape = shape ?? shape_from_array
+        precondition(shape2size(&shape) == flattenArray.count, "Invalid shape, size must be \(flattenArray.count), but got \(shape2size(&shape))")
         
-        guard let mftype = mftype else { return }
+        self.mfdata = MfData(flattenArray: &flattenArray, mftype: mftype)
+        self.mfstructure = MfStructure(shape: shape, mforder: mforder)
         
-        if MfType.storedType(mftype) != MfType.storedType(_mftype){
-            switch MfType.storedType(mftype){
-            case .Float://double to float
-                let newdata = withDummyDataMRPtr(mftype, storedSize: self.storedSize){
-                    [unowned self] in
-                    let dstptr = $0.bindMemory(to:  Float.self, capacity: self.storedSize)
-                    self.withDataUnsafeMBPtrT(datatype: Double.self){
-                        [unowned self] in
-                        unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vdpsp, self.storedSize)
-                    }
-                }
-                
-                self.mfdata = newdata
-                
-            case .Double://float to double
-                let newdata = withDummyDataMRPtr(mftype, storedSize: self.storedSize){
-                    [unowned self] in
-                    let dstptr = $0.bindMemory(to:  Double.self, capacity: self.storedSize)
-                    self.withDataUnsafeMBPtrT(datatype: Float.self){
-                        [unowned self] in
-                         unsafePtrT2UnsafeMPtrU($0.baseAddress!, dstptr, vDSP_vspdp, self.storedSize)
-                    }
-                }
-                
-                self.mfdata = newdata
-            }
-        }
-        else if _mftype != mftype{
-            //same storedType
-            self.mfdata._mftype = mftype
-        }
     }
     public init (mfdata: MfData, mfstructure: MfStructure){
         self.mfdata = mfdata

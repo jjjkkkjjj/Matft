@@ -19,8 +19,8 @@ final class BoolPefTests: XCTestCase {
                 let _ = a > 0
             }
             /*
-             average: 0.005, relative standard deviation: 21.157%, values: [0.008025, 0.005333, 0.004917, 0.005099, 0.004411, 0.004362, 0.004531, 0.004916, 0.004222, 0.004360]
-            5.01ms
+             average: 0.005, relative standard deviation: 13.105%, values: [0.005919, 0.004773, 0.004801, 0.004345, 0.004045, 0.004657, 0.004171, 0.004112, 0.004063, 0.005502]
+            4.63ms
              */
         }
     }
@@ -33,8 +33,8 @@ final class BoolPefTests: XCTestCase {
                 let _ = a > b
             }
             /*
-             average: 0.013, relative standard deviation: 16.887%, values: [0.018914, 0.014113, 0.014571, 0.013467, 0.011153, 0.011144, 0.012473, 0.012131, 0.011092, 0.013995]
-             13.3ms
+             average: 0.018, relative standard deviation: 3.369%, values: [0.019256, 0.017742, 0.018757, 0.017547, 0.017825, 0.017720, 0.017430, 0.017445, 0.017328, 0.017551]
+             17.8ms
              */
         }
     }
@@ -47,8 +47,8 @@ final class BoolPefTests: XCTestCase {
                 let _ = a === 0
             }
             /*
-             'average: 0.010, relative standard deviation: 28.372%, values: [0.018112, 0.008027, 0.009588, 0.008938, 0.009636, 0.008126, 0.009601, 0.008486, 0.010103, 0.008544]
-            9.91ms
+             average: 0.005, relative standard deviation: 28.273%, values: [0.008474, 0.004336, 0.004922, 0.004191, 0.003911, 0.004051, 0.004746, 0.004058, 0.003964, 0.003893]
+            4.65ms
              */
         }
     }
@@ -61,8 +61,8 @@ final class BoolPefTests: XCTestCase {
                 let _ = a === b
             }
             /*
-             average: 0.018, relative standard deviation: 4.942%, values: [0.019387, 0.017090, 0.019169, 0.017611, 0.017275, 0.018815, 0.016749, 0.017909, 0.018322, 0.017130]
-            22.3ms
+             average: 0.020, relative standard deviation: 5.911%, values: [0.022530, 0.019385, 0.019731, 0.018503, 0.021188, 0.019174, 0.019055, 0.019295, 0.019675, 0.018707]
+            19.7ms
              */
         }
     }
