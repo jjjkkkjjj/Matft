@@ -279,11 +279,13 @@ internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP
     //print(mfarray.strides)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
-    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: mfarray.storedSize)
-    mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-        [unowned mfarray] in
-        wrap_vDSP_convert(mfarray.storedSize, $0, 1, dstptrT, 1, vDSP_func)
-        //vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_convert(mfarray.storedSize, $0, 1, dstptrT, 1, vDSP_func)
+            //vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
+        }
     }
     
     let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
@@ -312,10 +314,12 @@ internal func biopvs_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T,
     mfarray = check_contiguous(mfarray)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
-    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: mfarray.storedSize)
-    mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-        [unowned mfarray] in
-        wrap_vDSP_biopvs(mfarray.storedSize, $0, 1, &r_scalar, dstptrT, 1, vDSP_func)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_biopvs(mfarray.storedSize, $0, 1, &r_scalar, dstptrT, 1, vDSP_func)
+        }
     }
     
     let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
@@ -336,10 +340,12 @@ internal func biopsv_by_vDSP<T: MfStorable>(_ l_scalar: T, _ r_mfarray: MfArray,
     mfarray = check_contiguous(mfarray)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
-    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: mfarray.storedSize)
-    mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-        [unowned mfarray] in
-        wrap_vDSP_biopsv(mfarray.storedSize, &l_scalar, $0, 1, dstptrT, 1, vDSP_func)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_biopsv(mfarray.storedSize, &l_scalar, $0, 1, dstptrT, 1, vDSP_func)
+        }
     }
     
     let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
@@ -359,29 +365,30 @@ internal func biopvv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: M
     let (l_mfarray, r_mfarray, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
     
     let newdata = MfData(size: retsize, mftype: l_mfarray.mftype)
-    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: retsize)
-    
-    l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-        [unowned l_mfarray] (lptr) in
-        r_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            [unowned r_mfarray] (rptr) in
-            //print(l_mfarray, r_mfarray)
-            //print(l_mfarray.storedSize, r_mfarray.storedSize)
-            //print(biggerL)
-            if biggerL{// l is bigger
-                for vDSPPrams in OptOffsetParamsSequence(shape: l_mfarray.shape, bigger_strides: l_mfarray.strides, smaller_strides: r_mfarray.strides){
-                    /*
-                    let bptr = bptr.baseAddress! + vDSPPrams.b_offset
-                    let sptr = sptr.baseAddress! + vDSPPrams.s_offset
-                    dstptrT = dstptrT + vDSPPrams.b_offset*/
-                    wrap_vDSP_biopvv(vDSPPrams.blocksize, lptr + vDSPPrams.b_offset, vDSPPrams.b_stride, rptr + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
-                    //print(vDSPPrams.blocksize, vDSPPrams.b_offset,vDSPPrams.b_stride,vDSPPrams.s_offset, vDSPPrams.s_stride)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned l_mfarray] (lptr) in
+            r_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                [unowned r_mfarray] (rptr) in
+                //print(l_mfarray, r_mfarray)
+                //print(l_mfarray.storedSize, r_mfarray.storedSize)
+                //print(biggerL)
+                if biggerL{// l is bigger
+                    for vDSPPrams in OptOffsetParamsSequence(shape: l_mfarray.shape, bigger_strides: l_mfarray.strides, smaller_strides: r_mfarray.strides){
+                        /*
+                        let bptr = bptr.baseAddress! + vDSPPrams.b_offset
+                        let sptr = sptr.baseAddress! + vDSPPrams.s_offset
+                        dstptrT = dstptrT + vDSPPrams.b_offset*/
+                        wrap_vDSP_biopvv(vDSPPrams.blocksize, lptr + vDSPPrams.b_offset, vDSPPrams.b_stride, rptr + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                        //print(vDSPPrams.blocksize, vDSPPrams.b_offset,vDSPPrams.b_stride,vDSPPrams.s_offset, vDSPPrams.s_stride)
+                    }
                 }
-            }
-            else{// r is bigger
-                for vDSPPrams in OptOffsetParamsSequence(shape: r_mfarray.shape, bigger_strides: r_mfarray.strides, smaller_strides: l_mfarray.strides){
-                    wrap_vDSP_biopvv(vDSPPrams.blocksize, lptr + vDSPPrams.s_offset, vDSPPrams.s_stride, rptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
-                    //print(vDSPPrams.blocksize, vDSPPrams.b_offset,vDSPPrams.b_stride,vDSPPrams.s_offset, vDSPPrams.s_stride)
+                else{// r is bigger
+                    for vDSPPrams in OptOffsetParamsSequence(shape: r_mfarray.shape, bigger_strides: r_mfarray.strides, smaller_strides: l_mfarray.strides){
+                        wrap_vDSP_biopvv(vDSPPrams.blocksize, lptr + vDSPPrams.s_offset, vDSPPrams.s_stride, rptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                        //print(vDSPPrams.blocksize, vDSPPrams.b_offset,vDSPPrams.b_stride,vDSPPrams.s_offset, vDSPPrams.s_stride)
+                    }
                 }
             }
         }
@@ -421,15 +428,17 @@ internal func stats_by_vDSP<T: MfStorable>(_ typedMfarray: MfArray, axis: Int?, 
         let ret_size = shape2size(&ret_shape)
         
         let newdata = MfData(size: ret_size, mftype: mfarray.mftype)
-        let dstptrT = newdata.data.bindMemory(to: T.self, capacity: ret_size)
         var dst_offset = 0
-        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
-                wrap_vDSP_stats(count, $0 + flat.flattenIndex, stride, dstptrT + dst_offset, vDSP_func)
-                dst_offset += 1
+        
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptrT in
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
+                    wrap_vDSP_stats(count, $0 + flat.flattenIndex, stride, dstptrT + dst_offset, vDSP_func)
+                    dst_offset += 1
+                }
             }
         }
-        
         
         let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
         
@@ -438,10 +447,11 @@ internal func stats_by_vDSP<T: MfStorable>(_ typedMfarray: MfArray, axis: Int?, 
     }
     else{
         let newdata = MfData(size: 1, mftype: mfarray.mftype)
-        let dstptrT = newdata.data.bindMemory(to: T.self, capacity: 1)
-        
-        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            wrap_vDSP_stats(mfarray.size, $0, 1, dstptrT, vDSP_func)
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptrT in
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                wrap_vDSP_stats(mfarray.size, $0, 1, dstptrT, vDSP_func)
+            }
         }
         
         let ret_shape = keepDims ? Array(repeating: 1, count: mfarray.ndim) : [1]
@@ -473,16 +483,18 @@ internal func stats_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int?,
         let ret_size = shape2size(&ret_shape)
         
         let newdata = MfData(size: ret_size, mftype: mfarray.mftype)
-        let dstptrT = newdata.data.bindMemory(to: T.self, capacity: ret_size)
-        
         var dst_offset = 0
-        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
-                var uival = UInt.zero
-                wrap_vDSP_stats_index(count, $0 + flat.flattenIndex, stride, &uival, vDSP_func)
-                (dstptrT + dst_offset).pointee = T.from(uival / ui_stride)
-                
-                dst_offset += 1//koko
+        
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptrT in
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
+                    var uival = UInt.zero
+                    wrap_vDSP_stats_index(count, $0 + flat.flattenIndex, stride, &uival, vDSP_func)
+                    (dstptrT + dst_offset).pointee = T.from(uival / ui_stride)
+                    
+                    dst_offset += 1//koko
+                }
             }
         }
         
@@ -493,14 +505,15 @@ internal func stats_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int?,
     }
     else{
         let newdata = MfData(size: 1, mftype: mfarray.mftype)
-        let dstptrT = newdata.data.bindMemory(to: T.self, capacity: 1)
-        
         var uival = UInt.zero
-        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            wrap_vDSP_stats_index(mfarray.size, $0, 1, &uival, vDSP_func)
-        }
         
-        dstptrT.pointee = T.from(uival)
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptrT in
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                wrap_vDSP_stats_index(mfarray.size, $0, 1, &uival, vDSP_func)
+            }
+            dstptrT.pointee = T.from(uival)
+        }
         
         let ret_shape = keepDims ? Array(repeating: 1, count: mfarray.ndim) : [1]
         let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
@@ -559,26 +572,27 @@ internal func argsort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ 
 
     let retSize = shape2size(&retShape)
     let newdata = MfData(size: retSize, mftype: .Int)
-    let dstptrF = newdata.data.bindMemory(to: Float.self, capacity: retSize)
-    
-    srcmfarray.withUnsafeMutableStartPointer(datatype: T.self){
-        srcptr in
-        
-        for _ in 0..<mfarray.storedSize / count{
-            var uiarray = Array<UInt>(stride(from: 0, to: UInt(count), by: 1))
-            //let srcptr = stride >= 0 ? srcptr.baseAddress! : srcptr.baseAddress! - mfarray.offsetIndex
-            wrap_vDSP_argsort(count, srcptr + offset, &uiarray, order, vDSP_func)
+    newdata.withUnsafeMutableStartPointer(datatype: Float.self){
+        dstptrF in
+        srcmfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            srcptr in
             
-            // TODO: refactor
-            //convert dataptr(int) to float
-            var flarray = uiarray.map{ Float($0) }
-            flarray.withUnsafeMutableBufferPointer{
-                (dstptrF + offset).moveAssign(from: $0.baseAddress!, count: count)
+            for _ in 0..<mfarray.storedSize / count{
+                var uiarray = Array<UInt>(stride(from: 0, to: UInt(count), by: 1))
+                //let srcptr = stride >= 0 ? srcptr.baseAddress! : srcptr.baseAddress! - mfarray.offsetIndex
+                wrap_vDSP_argsort(count, srcptr + offset, &uiarray, order, vDSP_func)
+                
+                // TODO: refactor
+                //convert dataptr(int) to float
+                var flarray = uiarray.map{ Float($0) }
+                flarray.withUnsafeMutableBufferPointer{
+                    (dstptrF + offset).moveAssign(from: $0.baseAddress!, count: count)
+                }
+                
+                offset += count
             }
             
-            offset += count
         }
-        
     }
     
     let newstructure = MfStructure(shape: retShape, mforder: .Row)
@@ -610,10 +624,12 @@ internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ minval: T, _ max
     //print(mfarray.strides)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
-    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: mfarray.storedSize)
-    mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-        [unowned mfarray] in
-        wrap_vDSP_clip(mfarray.storedSize, $0, &minval, &maxval, dstptrT, vDSP_func)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_clip(mfarray.storedSize, $0, &minval, &maxval, dstptrT, vDSP_func)
+        }
     }
     
     let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
@@ -632,10 +648,12 @@ internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_vminmg_func: 
         
     let size = mfarray.storedSize
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
-    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: mfarray.storedSize)
-    mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-        wrap_vDSP_sign(size, $0, dstptrT, vDSP_vminmg_func, vDSP_viclip_func,
-            vForce_copysign_func)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            wrap_vDSP_sign(size, $0, dstptrT, vDSP_vminmg_func, vDSP_viclip_func,
+                vForce_copysign_func)
+        }
     }
     
     let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
@@ -650,10 +668,11 @@ internal func toBool_by_vDSP(_ mfarray: MfArray) -> MfArray{
     
     let size = mfarray.storedSize
     let newdata = MfData(size: mfarray.storedSize, mftype: .Bool)
-    let dstptrT = newdata.data.bindMemory(to: Float.self, capacity: mfarray.storedSize)
-    
-    mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
-        wrap_vDSP_toBool(size, $0, dstptrT, vDSP_vminmg, vDSP_viclip)
+    newdata.withUnsafeMutableStartPointer(datatype: Float.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
+            wrap_vDSP_toBool(size, $0, dstptrT, vDSP_vminmg, vDSP_viclip)
+        }
     }
     
     let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
@@ -668,10 +687,11 @@ internal func toIBool_by_vDSP(_ mfarray: MfArray) -> MfArray{
     
     let size = mfarray.storedSize
     let newdata = MfData(size: mfarray.storedSize, mftype: .Bool)
-    let dstptrT = newdata.data.bindMemory(to: Float.self, capacity: mfarray.storedSize)
-    
-    mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
-        wrap_vDSP_toIBool(size, $0, dstptrT, vDSP_vminmg, vDSP_viclip, vDSP_vsadd, vvfabsf)
+    newdata.withUnsafeMutableStartPointer(datatype: Float.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
+            wrap_vDSP_toIBool(size, $0, dstptrT, vDSP_vminmg, vDSP_viclip, vDSP_vsadd, vvfabsf)
+        }
     }
     
     let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
@@ -746,19 +766,20 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
     let retSize = shape2size(&retShape)
     
     let newdata = MfData(size: retSize, mftype: mfarray.mftype)
-    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: retSize)
-    
-    indicesT.withUnsafeMutableStartPointer(datatype: T.self){
-        //[unowned indicesT](indptr) in
-        indptr in
-        // note that indices and mfarray is row contiguous
-        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            srcptr in
-            
-            for vDSPPrams in OptOffsetParamsSequence(shape: indicesT.shape, bigger_strides: indicesT.strides, smaller_strides: mfarray.strides){
-                wrap_vDSP_cmprs(vDSPPrams.blocksize, srcptr + vDSPPrams.s_offset, vDSPPrams.s_stride, indptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        indicesT.withUnsafeMutableStartPointer(datatype: T.self){
+            //[unowned indicesT](indptr) in
+            indptr in
+            // note that indices and mfarray is row contiguous
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                srcptr in
+                
+                for vDSPPrams in OptOffsetParamsSequence(shape: indicesT.shape, bigger_strides: indicesT.strides, smaller_strides: mfarray.strides){
+                    wrap_vDSP_cmprs(vDSPPrams.blocksize, srcptr + vDSPPrams.s_offset, vDSPPrams.s_stride, indptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                }
+                //vDSP_func(srcptr.baseAddress!, vDSP_Stride(1), indptr.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(indicesT.size))
             }
-            //vDSP_func(srcptr.baseAddress!, vDSP_Stride(1), indptr.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(indicesT.size))
         }
     }
     
@@ -807,12 +828,15 @@ internal func fancy1dgetcol_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices
      //[0.0, 0.0, 3.0]
      */
     let newdata = MfData(size: indices.size, mftype: mfarray.mftype)
-    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: indices.size)
-    let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-        srcptr in
-        var offsets = (indices.data as! [Int]).map{ UInt(get_positive_index($0, axissize: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
-        wrap_vDSP_gathr(indices.size, srcptr, &offsets, 1, dstptrT, 1, vDSP_func)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            srcptr in
+            var offsets = (indices.data as! [Int]).map{ UInt(get_positive_index($0, axissize: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
+            wrap_vDSP_gathr(indices.size, srcptr, &offsets, 1, dstptrT, 1, vDSP_func)
+        }
     }
+    
     let newstructure = MfStructure(shape: indices.shape, strides: indices.strides)
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }

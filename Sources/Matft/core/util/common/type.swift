@@ -102,14 +102,19 @@ internal func bool_broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
     let offset = shape2size(&newerShape)
     
     let newdata = MfData(size: retSize, mftype: .Bool)
-    var dstptrF = newdata.data.bindMemory(to: Float.self, capacity: retSize)
-    rowc_mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
-        srcptr in
-        for i in 0..<origSize{
-            dstptrF.assign(repeating: (srcptr + i).pointee, count: offset)
-            dstptrF += offset
+
+    newdata.withUnsafeMutableStartPointer(datatype: Float.self){
+        dstptrF in
+        var dstptrF = dstptrF
+        rowc_mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
+            srcptr in
+            for i in 0..<origSize{
+                dstptrF.assign(repeating: (srcptr + i).pointee, count: offset)
+                dstptrF += offset
+            }
         }
     }
+    
     let newstructure = MfStructure(shape: retShape, mforder: .Row)
     
     return MfArray(mfdata: newdata, mfstructure: newstructure)

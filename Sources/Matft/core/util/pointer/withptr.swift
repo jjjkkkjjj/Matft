@@ -51,3 +51,19 @@ extension MfArray{
         }
     }
 }
+
+extension MfData{
+    public func withUnsafeMutableStartRawPointer<R>(_ body: (UnsafeMutableRawPointer) throws -> R) rethrows -> R{
+        return try body(self.data + self.byteOffset)
+    }
+    
+    public func withUnsafeMutableStartPointer<T, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+        let ret = try self.withUnsafeMutableStartRawPointer{
+            [unowned self](ptr) -> R in
+            let dataptr = ptr.bindMemory(to: T.self, capacity: self.storedSize)
+            return try body(dataptr)
+        }
+        
+        return ret
+    }
+}

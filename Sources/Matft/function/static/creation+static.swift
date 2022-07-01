@@ -70,9 +70,12 @@ extension Matft{
         let newdata = MfData(size: size, mftype: retmftype)
         func _create<U: MfStorable>(_ converted_value: U){
             var arr = Array(repeating: converted_value, count: size)
-            let ptrU = newdata.data.bindMemory(to: U.self, capacity: size)
-            arr.withUnsafeMutableBufferPointer{
-                ptrU.moveAssign(from: $0.baseAddress!, count: size)
+
+            newdata.withUnsafeMutableStartPointer(datatype: U.self){
+                ptrU in
+                arr.withUnsafeMutableBufferPointer{
+                    ptrU.moveAssign(from: $0.baseAddress!, count: size)
+                }
             }
         }
         
@@ -163,7 +166,6 @@ extension Matft{
         
         let newdata = MfData(size: size, mftype: retmftype)
         func _create<T: MfStorable>(_ type: T.Type){
-            let ptrT = newdata.data.bindMemory(to: T.self, capacity: size)
             var d = Array(repeating: T.zero, count: size)
             v.withUnsafeMutableStartPointer(datatype: T.self){
                 if k >= 0{
@@ -177,8 +179,11 @@ extension Matft{
                     }
                 }
             }
-            d.withUnsafeMutableBufferPointer{
-                ptrT.moveAssign(from: $0.baseAddress!, count: size)
+            newdata.withUnsafeMutableStartPointer(datatype: T.self){
+                ptrT in
+                d.withUnsafeMutableBufferPointer{
+                    ptrT.moveAssign(from: $0.baseAddress!, count: size)
+                }
             }
         }
         switch MfType.storedType(retmftype){

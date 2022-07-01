@@ -508,18 +508,20 @@ internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func_lu:
     precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
 
     let newdata = MfData(size: mfarray.size, mftype: mfarray.storedType.to_mftype())
-    let dstptr = newdata.data.bindMemory(to: T.self, capacity: mfarray.size)
-    try mfarray.withMNStackedMajorPointer(datatype: T.self, mforder: .Row){
-        srcptr, row, col, offset in
-        //LU decomposition
-        var IPIV = try wrap_lapack_LU(row, col, srcptr, lapack_func: lapack_func_lu)
-        
-        //calculate inv
-        // note that row == col
-        try wrap_lapack_inv(row, srcptr, &IPIV, lapack_func: lapack_func_inv)
-        
-        //move
-        (dstptr + offset).moveAssign(from: srcptr, count: row*col)
+    try newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        try mfarray.withMNStackedMajorPointer(datatype: T.self, mforder: .Row){
+            srcptr, row, col, offset in
+            //LU decomposition
+            var IPIV = try wrap_lapack_LU(row, col, srcptr, lapack_func: lapack_func_lu)
+            
+            //calculate inv
+            // note that row == col
+            try wrap_lapack_inv(row, srcptr, &IPIV, lapack_func: lapack_func_inv)
+            
+            //move
+            (dstptrT + offset).moveAssign(from: srcptr, count: row*col)
+        }
     }
     
     let newstructure = MfStructure(shape: shape, mforder: .Row)
@@ -542,29 +544,31 @@ internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func: la
     let ret_size = mfarray.size / (shape[mfarray.ndim - 1] * shape[mfarray.ndim - 1])
     
     let newdata = MfData(size: ret_size, mftype: mfarray.mftype)
-    let dstptr = newdata.data.bindMemory(to: T.self, capacity: ret_size)
     var dst_offset = 0
-
-    try mfarray.withMNStackedMajorPointer(datatype: T.self, mforder: .Row){
-        srcptr, row, col, offset in
-        // Note row == col
-        let square_num = row
-        
-        //LU decomposition
-        let IPIV = try wrap_lapack_LU(row, col, srcptr, lapack_func: lapack_func)
-        
-        //calculate L and U's determinant
-        //Note that L and U's determinant are calculated by product of diagonal elements
-        // L's determinant is always one
-        //ref: https://stackoverflow.com/questions/47315471/compute-determinant-from-lu-decomposition-in-lapack
-        var det = T.from(1)
-        for i in 0..<square_num{
-            det *= IPIV[i] != __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*square_num).pointee : -(srcptr.advanced(by: i + i*square_num).pointee)
+    
+    try newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        try mfarray.withMNStackedMajorPointer(datatype: T.self, mforder: .Row){
+            srcptr, row, col, offset in
+            // Note row == col
+            let square_num = row
+            
+            //LU decomposition
+            let IPIV = try wrap_lapack_LU(row, col, srcptr, lapack_func: lapack_func)
+            
+            //calculate L and U's determinant
+            //Note that L and U's determinant are calculated by product of diagonal elements
+            // L's determinant is always one
+            //ref: https://stackoverflow.com/questions/47315471/compute-determinant-from-lu-decomposition-in-lapack
+            var det = T.from(1)
+            for i in 0..<square_num{
+                det *= IPIV[i] != __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*square_num).pointee : -(srcptr.advanced(by: i + i*square_num).pointee)
+            }
+            
+            //assign
+            (dstptrT + dst_offset).assign(from: &det, count: 1)
+            dst_offset += 1
         }
-        
-        //assign
-        (dstptr + dst_offset).assign(from: &det, count: 1)
-        dst_offset += 1
     }
     
     let ret_shape: [Int]

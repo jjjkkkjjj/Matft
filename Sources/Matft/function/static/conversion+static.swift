@@ -42,11 +42,15 @@ extension Matft{
         
         func _T2U<T: MfStorable, U: MfStorable>(_ vDSP_func: vDSP_convert_func<T, U>) -> MfArray{
             let newdata = MfData(size: mfarray.storedSize, mftype: mftype)
-            let dstptr = newdata.data.bindMemory(to: U.self, capacity: mfarray.storedSize)
-            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-                [unowned mfarray] in
-                wrap_vDSP_convert(mfarray.storedSize, $0, 1, dstptr, 1, vDSP_func)
+
+            newdata.withUnsafeMutableStartPointer(datatype: U.self){
+                dstptrU in
+                mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                    [unowned mfarray] in
+                    wrap_vDSP_convert(mfarray.storedSize, $0, 1, dstptrU, 1, vDSP_func)
+                }
             }
+            
             let dst = MfArray(mfdata: newdata, mfstructure: newstructure)
             
             if (dst.mfstructure.row_contiguous && mforder == .Row) || (dst.mfstructure.column_contiguous && mforder == .Column){
@@ -560,10 +564,14 @@ fileprivate func _unique<T: MfStorable>(_ flattendata: inout [T], restShape: ino
     
     let newsize = uniquearray.count
     let newdata = MfData(size: newsize, mftype: mftype)
-    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: flattendata.count)
-    uniquearray.withUnsafeMutableBufferPointer{
-        dstptrT.moveAssign(from: $0.baseAddress!, count: newsize)
+
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        uniquearray.withUnsafeMutableBufferPointer{
+            dstptrT.moveAssign(from: $0.baseAddress!, count: newsize)
+        }
     }
+    
     restShape.insert(newsize / stride, at: 0)
     let newstructure = MfStructure(shape: restShape, mforder: .Row)
     

@@ -25,10 +25,11 @@ internal func math_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: v
     var ret_size = Int32(mfarray.size)
     
     let newdata = MfData(size: mfarray.size, mftype: mfarray.mftype)
-    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: mfarray.size)
-
-    mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-        vForce_func(dstptrT, $0, &ret_size)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            vForce_func(dstptrT, $0, &ret_size)
+        }
     }
     
     let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
@@ -46,11 +47,13 @@ internal func mathf_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: 
     mfarray = check_contiguous(mfarray)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
-    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: mfarray.storedSize)
-    mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-        [unowned mfarray] in
-        var storedSize = Int32(mfarray.storedSize)
-        vForce_func(dstptrT, $0, &storedSize)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned mfarray] in
+            var storedSize = Int32(mfarray.storedSize)
+            vForce_func(dstptrT, $0, &storedSize)
+        }
     }
     
     let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
@@ -69,12 +72,14 @@ internal func math_biop_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarr
     
     var storedSize = Int32(l_mfarray.storedSize)
     let newdata = MfData(size: l_mfarray.storedSize, mftype: l_mfarray.mftype)
-    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: l_mfarray.storedSize)
-    l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-        lptr in
-        r_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            rptr in
-            vForce_func(dstptrT, lptr, rptr, &storedSize)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            lptr in
+            r_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                rptr in
+                vForce_func(dstptrT, lptr, rptr, &storedSize)
+            }
         }
     }
 

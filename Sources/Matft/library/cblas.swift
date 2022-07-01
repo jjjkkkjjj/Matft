@@ -217,14 +217,17 @@ internal func stack_by_cblas<T: MfStorable>(_ mfarrays: [MfArray], ret_shape: [I
     let ret_size = shape2size(&ret_shape)
     
     let newdata: MfData = MfData(size: ret_size, mftype: ret_mftype)
-    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: ret_size)
+
     var offset = 0
-    for mfarray in majorArrays {
-        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            wrap_cblas_copy(mfarray.storedSize, $0, 1, dstptrT + offset, 1, cblas_func)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        for mfarray in majorArrays {
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                wrap_cblas_copy(mfarray.storedSize, $0, 1, dstptrT + offset, 1, cblas_func)
+            }
+            
+            offset += mfarray.storedSize
         }
-        
-        offset += mfarray.storedSize
     }
     
     let newstructure = MfStructure(shape: ret_shape, mforder: mforder)
@@ -257,19 +260,22 @@ internal func concat_by_cblas<T: MfStorable>(_ mfarrays: [MfArray], ret_shape: [
     let ret_size = shape2size(&ret_shape)
     
     let newdata = MfData(size: ret_size, mftype: ret_mftype)
-    let dstptrT = newdata.data.bindMemory(to: T.self, capacity: ret_size)
-    
     var offset = 0
-    for sb in 0..<slowerBlockSize{
-        for mfarray in majorArrays {
-            let concat_size = mfarray.shape[axis]
-            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-                wrap_cblas_copy(fasterBlockSize*concat_size, $0 + sb*fasterBlockSize*concat_size, 1, dstptrT + offset, 1, cblas_func)
+    
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        for sb in 0..<slowerBlockSize{
+            for mfarray in majorArrays {
+                let concat_size = mfarray.shape[axis]
+                mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                    wrap_cblas_copy(fasterBlockSize*concat_size, $0 + sb*fasterBlockSize*concat_size, 1, dstptrT + offset, 1, cblas_func)
+                }
+                
+                offset += fasterBlockSize*concat_size
             }
-            
-            offset += fasterBlockSize*concat_size
         }
     }
+    
     let newstructure = MfStructure(shape: ret_shape, mforder: faster_order)
     
     return MfArray(mfdata: newdata, mfstructure: newstructure)
@@ -301,23 +307,28 @@ internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarr
     let iterNum = newsize / matNum
     
     let newdata = MfData(size: newsize, mftype: lmfarray.mftype)
-    var dstptrT = newdata.data.bindMemory(to: T.self, capacity: newsize)
-    lmfarray.withUnsafeMutableStartPointer(datatype: T.self){
-        lptr in
-        var lptr = lptr
-        rmfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            rptr in
-            var rptr = rptr
-            
-            for _ in 0..<iterNum{
-                wrap_cblas_matmul(matNum, retorder, lptr, lshape[retndim - 2], lshape[retndim - 1], rptr, rshape[retndim - 2], rshape[retndim - 1], dstptrT, cblas_func)
+
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        var dstptrT = dstptrT
+        lmfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            lptr in
+            var lptr = lptr
+            rmfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                rptr in
+                var rptr = rptr
                 
-                lptr += l_matNum
-                rptr += r_matNum
-                dstptrT += matNum
+                for _ in 0..<iterNum{
+                    wrap_cblas_matmul(matNum, retorder, lptr, lshape[retndim - 2], lshape[retndim - 1], rptr, rshape[retndim - 2], rshape[retndim - 1], dstptrT, cblas_func)
+                    
+                    lptr += l_matNum
+                    rptr += r_matNum
+                    dstptrT += matNum
+                }
             }
         }
     }
+    
     
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
@@ -369,14 +380,18 @@ internal func fancyndget_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: 
     let workSize = shape2size(&workShape)
     
     let newdata = MfData(size: retSize, mftype: mfarray.mftype)
-    var dstptrT = newdata.data.bindMemory(to: T.self, capacity: retSize)
-    let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-        [unowned mfarray](srcptr) in
-        
-        let offsets = (indices.data as! [Int]).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
-        for offset in offsets{
-            wrap_cblas_copy(workSize, srcptr + offset, 1, dstptrT, 1, cblas_func)
-            dstptrT += workSize
+
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        var dstptrT = dstptrT
+        let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned mfarray](srcptr) in
+            
+            let offsets = (indices.data as! [Int]).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
+            for offset in offsets{
+                wrap_cblas_copy(workSize, srcptr + offset, 1, dstptrT, 1, cblas_func)
+                dstptrT += workSize
+            }
         }
     }
     
@@ -419,15 +434,19 @@ internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
      */
     
     let newdata = MfData(size: retSize, mftype: mfarray.mftype)
-    var dstptrT = newdata.data.bindMemory(to: T.self, capacity: retSize)
-    let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-        srcptr in
-        
-        for offset in offsets{
-            wrap_cblas_copy(workSize, srcptr + offset, 1, dstptrT, 1, cblas_func)
-            dstptrT += workSize
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        var dstptrT = dstptrT
+        let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            srcptr in
+            
+            for offset in offsets{
+                wrap_cblas_copy(workSize, srcptr + offset, 1, dstptrT, 1, cblas_func)
+                dstptrT += workSize
+            }
         }
     }
+    
     let newstructure = MfStructure(shape: retShape, mforder: .Row)
     
     return MfArray(mfdata: newdata, mfstructure: newstructure)
