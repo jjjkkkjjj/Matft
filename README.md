@@ -560,6 +560,13 @@ Matft supports only natural cubic spline. I'll implement other boundary conditio
 | -------------------------------- | ----------------- |
 | Matft.interp1d.cubicSpline       | scipy.interpolation.CubicSpline |
 
+- Image
+
+| Matft                            | Numpy              |
+| -------------------------------- | ----------------- |
+| Matft.image.cgimage2mfarray      | N/A |
+| Matft.image.mfarray2cgimage      | N/A |
+
 ## Example
 
 You can acheive an image processing by Matft! (Beta version)
@@ -567,53 +574,31 @@ Please refer to the example [here](./MatftDemo/MatftDemo/ViewController.swift).
 
 ```swift
 @IBOutlet weak var originalImageView: UIImageView!
-@IBOutlet weak var processedImageView: UIImageView!
+@IBOutlet weak var reverseImageView: UIImageView!
+@IBOutlet weak var swapImageView: UIImageView!
 
 func reverse(){
-    let size = CFDataGetLength(self.processedImageView.image!.cgImage!.dataProvider!.data)
-    let width = Int(self.processedImageView.image!.size.width)
-    let height = Int(self.processedImageView.image!.size.height)
-    
-    var arr = Matft.nums(Float.zero, shape: [height, width, 4])
-    var dst = Array<UInt8>(repeating: UInt8.zero, count: arr.size)
-    
-    // UIImage to MfArray
-    arr.withDataUnsafeMBPtrT(datatype: Float.self){
-    
-        let srcptr = CFDataGetBytePtr(self.processedImageView.image?.cgImage?.dataProvider?.data)!
-        
-        // unit8 to float
-        vDSP_vfltu8(srcptr, vDSP_Stride(1), $0.baseAddress!, vDSP_Stride(1), vDSP_Length(size))
-    }
+    var image = Matft.image.cgimage2mfarray(self.reverseImageView.image!.cgImage!)
 
     // reverse
-    arr = arr[~<<-1]
-    arr = arr.to_contiguous(mforder: .Row)
-    
-    // MfArray to UIImage
-    arr.withDataUnsafeMBPtrT(datatype: Float.self){
-        srcptr in
-        
-        dst.withUnsafeMutableBufferPointer{
-            // float to unit8
-            vDSP_vfixu8(srcptr.baseAddress!, vDSP_Stride(1), $0.baseAddress!, vDSP_Stride(1), vDSP_Length(arr.size))
-            
-            let colorSpace = CGColorSpaceCreateDeviceRGB()
-            let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
-            let provider = CGDataProvider(data: CFDataCreate(kCFAllocatorDefault, $0.baseAddress!, arr.size))
-            let cgimage =  CGImage(width: arr.shape[1], height: arr.shape[0], bitsPerComponent: 8*1, bitsPerPixel: 8*arr.shape[2], bytesPerRow: arr.shape[1]*arr.shape[2], space: colorSpace, bitmapInfo: bitmapInfo, provider: provider!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)
-            
-            self.processedImageView.image = UIImage(cgImage: cgimage!)
-        }
-        
-    }
-      
-  }
+    image = image[~<<-1]
+    self.reverseImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
+}
+
+
+func swapchannel(){
+    var image = Matft.image.cgimage2mfarray(self.swapImageView.image!.cgImage!)
+
+    // swap channel
+    //image = image[0~<, 0~<, MfArray([1,0,2,3])] // not supported
+    image = image.swapaxes(axis1: 0, axis2: -1)[MfArray([1,0,2,3])].swapaxes(axis1: 0, axis2: -1)
+    self.swapImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
+}
 ```
 
 For more complex conversion, see OpenCV [code](https://github.com/opencv/opencv/blob/4.x/modules/imgcodecs/src/apple_conversions.mm).
 
-<img width="513" alt="image-processing" src="https://user-images.githubusercontent.com/16914891/159737464-a2c35faf-1961-4f93-87f0-ded7d4a4de64.png">
+<img width="513" alt="image-processing" src="https://user-images.githubusercontent.com/16914891/176985133-fd4a1cfb-029a-42e9-be6d-778f4c181f1f.png">
 
 ## Performance
 
