@@ -911,6 +911,7 @@ internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDS
     let colorSpace: CGColorSpace
     let bitmapInfo: CGBitmapInfo
     if shape[2] == 1{// gray
+        preconditionFailure("Unfortunately grayscale image is currently not supported...")
         colorSpace = CGColorSpaceCreateDeviceGray()
         bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
     }
