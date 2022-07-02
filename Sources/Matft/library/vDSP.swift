@@ -8,6 +8,7 @@
 
 import Foundation
 import Accelerate
+import CoreGraphics
 
 internal typealias vDSP_convert_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<U>, vDSP_Stride, vDSP_Length) -> Void
 
@@ -886,3 +887,69 @@ internal func lim_by_vDSP<T: MfStorable>(_ mfarray: MfArray, point: T, to: T, _ 
     }
 }
 */
+
+
+/// Convert mfarray into CGImage
+/// - Parameters:
+///   - src_mfarray: An input mfarray
+///   - vDSP_func: vDSP_convert_func
+/// - Returns: CGImage
+internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDSP_func: vDSP_convert_func<T, UInt8>) -> CGImage{
+    precondition(src_mfarray.ndim == 3, "Couldn't convert mfarray's shape = \(src_mfarray.shape) into image")
+    
+    var shape = src_mfarray.shape
+    var dst = Array<UInt8>(repeating: UInt8.zero, count: src_mfarray.size)
+    let dst_strides = shape2strides(&shape, mforder: .Row)
+    
+    // StoredType to UInt8
+    dst.withUnsafeMutableBufferPointer{
+        dstptrU in
+        src_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned src_mfarray] srcptrT in
+            
+            for vDSPPrams in OptOffsetParamsSequence(shape: src_mfarray.shape, bigger_strides: dst_strides, smaller_strides: src_mfarray.strides){
+                
+                wrap_vDSP_convert(vDSPPrams.blocksize, srcptrT + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrU.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+            }
+            
+        }
+    }
+    
+    let height = shape[0]
+    let width = shape[1]
+    let channel = shape[2]
+    let cgimage = dst.withUnsafeMutableBufferPointer{
+        (ptr) -> CGImage in
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
+        let provider = CGDataProvider(data: CFDataCreate(kCFAllocatorDefault, ptr.baseAddress!, src_mfarray.size))
+        let cgimage =  CGImage(width: width, height: height, bitsPerComponent: 8*1, bitsPerPixel: 8*channel, bytesPerRow: width*channel, space: colorSpace, bitmapInfo: bitmapInfo, provider: provider!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)!
+        
+        return cgimage
+    }
+    
+    return cgimage
+}
+
+/// Convert mfarray into CGImage
+/// - Parameters:
+///   - src_mfarray: An input mfarray
+///   - vDSP_func: vDSP_convert_func
+/// - Returns: CGImage
+internal func cgimage2mfarray_by_vDSP<T: MfStorable>(_ cgimage: CGImage, mftype: MfType, vDSP_func: vDSP_convert_func<UInt8, T>) -> MfArray{
+    let size = CFDataGetLength(cgimage.dataProvider!.data)
+    let width = Int(cgimage.width)
+    let height = Int(cgimage.height)
+    let channel = Int(cgimage.bitsPerPixel/8)
+    
+    let newdata = MfData(size: size, mftype: mftype)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        let srcptr = CFDataGetBytePtr(cgimage.dataProvider?.data)!
+        
+        wrap_vDSP_convert(size, srcptr, 1, $0, 1, vDSP_func)
+    }
+    
+    let newstructure = MfStructure(shape: [height, width, channel], mforder: .Row)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}

@@ -41,6 +41,11 @@ public class Matft{
     public class interp1d{}
     
     /**
+       Image
+     */
+    public class image{}
+    
+    /**
        The kernel of mfarray.
     */
     //internal class mfdata{}
