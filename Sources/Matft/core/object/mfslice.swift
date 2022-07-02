@@ -27,4 +27,6 @@ extension Int: MfSlicable{
 
 public enum SubscriptOps: MfSlicable{
     case newaxis
+    case all
+    case reverse
 }
