@@ -889,25 +889,48 @@ internal func lim_by_vDSP<T: MfStorable>(_ mfarray: MfArray, point: T, to: T, _ 
 */
 
 
-/// Convert mfarray into CGImage
+/// Convert mfarray into CGImage. Supported color space is Gray (h, w), (h, w, 1)  or RGB (h, w, 4)
 /// - Parameters:
 ///   - src_mfarray: An input mfarray
 ///   - vDSP_func: vDSP_convert_func
 /// - Returns: CGImage
 internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDSP_func: vDSP_convert_func<T, UInt8>) -> CGImage{
-    precondition(src_mfarray.ndim == 3, "Couldn't convert mfarray's shape = \(src_mfarray.shape) into image")
+    // check condition
+    let mfarray: MfArray
+    if src_mfarray.ndim == 2{
+        mfarray = src_mfarray.expand_dims(axis: 2)
+    }
+    else{
+        mfarray = src_mfarray
+    }
     
-    var shape = src_mfarray.shape
+    precondition(mfarray.ndim == 3, "Couldn't convert mfarray's shape = \(src_mfarray.shape) into image. Passed mfarray must be 2d or 3d, but got \(src_mfarray.ndim)d")
+    
+    var shape = mfarray.shape
+    let colorSpace: CGColorSpace
+    let bitmapInfo: CGBitmapInfo
+    if shape[2] == 1{// gray
+        colorSpace = CGColorSpaceCreateDeviceGray()
+        bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue)
+    }
+    else if shape[2] == 4{
+        colorSpace = CGColorSpaceCreateDeviceRGB()
+        bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
+    }
+    else{
+        preconditionFailure("Unsupported channel number: \(mfarray.shape[2])")
+    }
+    
     var dst = Array<UInt8>(repeating: UInt8.zero, count: src_mfarray.size)
     let dst_strides = shape2strides(&shape, mforder: .Row)
     
     // StoredType to UInt8
     dst.withUnsafeMutableBufferPointer{
         dstptrU in
-        src_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            [unowned src_mfarray] srcptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned mfarray] srcptrT in
             
-            for vDSPPrams in OptOffsetParamsSequence(shape: src_mfarray.shape, bigger_strides: dst_strides, smaller_strides: src_mfarray.strides){
+            for vDSPPrams in OptOffsetParamsSequence(shape: shape, bigger_strides: dst_strides, smaller_strides: mfarray.strides){
                 
                 wrap_vDSP_convert(vDSPPrams.blocksize, srcptrT + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrU.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
             }
@@ -920,8 +943,6 @@ internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDS
     let channel = shape[2]
     let cgimage = dst.withUnsafeMutableBufferPointer{
         (ptr) -> CGImage in
-        let colorSpace = CGColorSpaceCreateDeviceRGB()
-        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
         let provider = CGDataProvider(data: CFDataCreate(kCFAllocatorDefault, ptr.baseAddress!, src_mfarray.size))
         let cgimage =  CGImage(width: width, height: height, bitsPerComponent: 8*1, bitsPerPixel: 8*channel, bytesPerRow: width*channel, space: colorSpace, bitmapInfo: bitmapInfo, provider: provider!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)!
         
@@ -951,5 +972,5 @@ internal func cgimage2mfarray_by_vDSP<T: MfStorable>(_ cgimage: CGImage, mftype:
     
     let newstructure = MfStructure(shape: [height, width, channel], mforder: .Row)
     
-    return MfArray(mfdata: newdata, mfstructure: newstructure)
+    return MfArray(mfdata: newdata, mfstructure: newstructure).squeeze()
 }
