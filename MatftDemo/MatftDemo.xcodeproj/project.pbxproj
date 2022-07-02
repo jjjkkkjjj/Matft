@@ -41,9 +41,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		01C46B2428704B7900BE4D98 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 		D6C2675024249310005731C6 = {
 			isa = PBXGroup;
 			children = (
+				01C46B2428704B7900BE4D98 /* Packages */,
 				D6C2675B24249310005731C6 /* MatftDemo */,
 				D6C2675A24249310005731C6 /* Products */,
 				D6D08D012424A6E7000F04D6 /* Frameworks */,
@@ -366,7 +374,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/jjjkkkjjj/Matft";
 			requirement = {
-				branch = master;
+				branch = image;
 				kind = branch;
 			};
 		};
