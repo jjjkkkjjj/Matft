@@ -921,16 +921,16 @@ internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDS
         preconditionFailure("Unsupported channel number: \(mfarray.shape[2])")
     }
     
-    var dst = Array<UInt8>(repeating: UInt8.zero, count: src_mfarray.size)
+    var dst = Array<UInt8>(repeating: UInt8.zero, count: mfarray.size)
     let dst_strides = shape2strides(&shape, mforder: .Row)
     
     // StoredType to UInt8
     dst.withUnsafeMutableBufferPointer{
         dstptrU in
-        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            [unowned mfarray] srcptrT in
+        src_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned src_mfarray] srcptrT in
             
-            for vDSPPrams in OptOffsetParamsSequence(shape: shape, bigger_strides: dst_strides, smaller_strides: mfarray.strides){
+            for vDSPPrams in OptOffsetParamsSequence(shape: src_mfarray.shape, bigger_strides: dst_strides, smaller_strides: src_mfarray.strides){
                 
                 wrap_vDSP_convert(vDSPPrams.blocksize, srcptrT + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrU.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
             }
