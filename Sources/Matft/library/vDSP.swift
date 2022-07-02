@@ -894,6 +894,7 @@ internal func lim_by_vDSP<T: MfStorable>(_ mfarray: MfArray, point: T, to: T, _ 
 ///   - src_mfarray: An input mfarray
 ///   - vDSP_func: vDSP_convert_func
 /// - Returns: CGImage
+/// ref: https://stackoverflow.com/questions/34677133/how-to-reconstruct-grayscale-image-from-intensity-values
 internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDSP_func: vDSP_convert_func<T, UInt8>) -> CGImage{
     // check condition
     let mfarray: MfArray
@@ -911,7 +912,7 @@ internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDS
     let bitmapInfo: CGBitmapInfo
     if shape[2] == 1{// gray
         colorSpace = CGColorSpaceCreateDeviceGray()
-        bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue)
+        bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
     }
     else if shape[2] == 4{
         colorSpace = CGColorSpaceCreateDeviceRGB()
@@ -921,16 +922,16 @@ internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDS
         preconditionFailure("Unsupported channel number: \(mfarray.shape[2])")
     }
     
-    var dst = Array<UInt8>(repeating: UInt8.zero, count: mfarray.size)
+    var dst = Array<UInt8>(repeating: UInt8.zero, count: src_mfarray.size)
     let dst_strides = shape2strides(&shape, mforder: .Row)
     
     // StoredType to UInt8
     dst.withUnsafeMutableBufferPointer{
         dstptrU in
-        src_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            [unowned src_mfarray] srcptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned mfarray] srcptrT in
             
-            for vDSPPrams in OptOffsetParamsSequence(shape: src_mfarray.shape, bigger_strides: dst_strides, smaller_strides: src_mfarray.strides){
+            for vDSPPrams in OptOffsetParamsSequence(shape: shape, bigger_strides: dst_strides, smaller_strides: mfarray.strides){
                 
                 wrap_vDSP_convert(vDSPPrams.blocksize, srcptrT + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrU.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
             }
@@ -944,7 +945,7 @@ internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDS
     let cgimage = dst.withUnsafeMutableBufferPointer{
         (ptr) -> CGImage in
         let provider = CGDataProvider(data: CFDataCreate(kCFAllocatorDefault, ptr.baseAddress!, src_mfarray.size))
-        let cgimage =  CGImage(width: width, height: height, bitsPerComponent: 8*1, bitsPerPixel: 8*channel, bytesPerRow: width*channel, space: colorSpace, bitmapInfo: bitmapInfo, provider: provider!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)!
+        let cgimage =  CGImage(width: width, height: height, bitsPerComponent: 8*1, bitsPerPixel: 8*channel, bytesPerRow: dst_strides[0], space: colorSpace, bitmapInfo: bitmapInfo, provider: provider!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)!
         
         return cgimage
     }
@@ -958,10 +959,11 @@ internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDS
 ///   - vDSP_func: vDSP_convert_func
 /// - Returns: CGImage
 internal func cgimage2mfarray_by_vDSP<T: MfStorable>(_ cgimage: CGImage, mftype: MfType, vDSP_func: vDSP_convert_func<UInt8, T>) -> MfArray{
-    let size = CFDataGetLength(cgimage.dataProvider!.data)
+    //let size = CFDataGetLength(cgimage.dataProvider!.data)
     let width = Int(cgimage.width)
     let height = Int(cgimage.height)
     let channel = Int(cgimage.bitsPerPixel/8)
+    let size = width*height*channel
     
     let newdata = MfData(size: size, mftype: mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
