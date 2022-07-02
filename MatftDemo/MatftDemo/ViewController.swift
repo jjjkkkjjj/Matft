@@ -32,7 +32,7 @@ class ViewController: UIViewController {
         var image = Matft.image.cgimage2mfarray(self.reverseImageView.image!.cgImage!)
 
         // reverse
-        image = image[~<<-1]
+        image = image[Matft.reverse] // same as image[~<<-1]
         self.reverseImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
     }
     
@@ -41,8 +41,7 @@ class ViewController: UIViewController {
         var image = Matft.image.cgimage2mfarray(self.swapImageView.image!.cgImage!)
 
         // swap channel
-        //image = image[0~<, 0~<, MfArray([1,0,2,3])] // not supported
-        image = image.swapaxes(axis1: 0, axis2: -1)[MfArray([1,0,2,3])].swapaxes(axis1: 0, axis2: -1)
+        image = image[Matft.all, Matft.all, MfArray([1,0,2,3])] // same as image[0~<, 0~<, MfArray([1,0,2,3])]
         self.swapImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
     }
 }

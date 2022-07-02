@@ -62,6 +62,7 @@ Note: You can use [Protocol version(beta version)](https://github.com/jjjkkkjjj/
   - Arithmetic
   - Statistic
   - Linear Algebra
+- Image Conversion
 
 ...etc.
 
@@ -202,9 +203,17 @@ You can set **MfSlice** (see below's list) to subscript.
   - ```swift
     Matft.newaxis
     ```
-
+    
   - ```swift
     ~< //this is prefix, postfix and infix operator. same as python's slice, ":"
+    ```
+    
+  - ```swift
+    Matft.all // same as python's slice :, matft's 0~<
+    ```
+
+  - ```swift
+    Matft.reverse // same as python's slice ::-1, matft's ~<<-1
     ```
 
 #### (Positive) Indexing
@@ -267,6 +276,14 @@ You can set **MfSlice** (see below's list) to subscript.
   [	21,		22,		23],
   [	24,		25,		26]]], type=Int, shape=[2, 3, 3]
   */
+  
+  print(a[Matft.all, 0]) //same as a[:, 0] for numpy
+  /*
+  mfarray = 
+  [[    0,      1,      2],
+  [ 9,      10,     11],
+  [18,      19,     20]], type=Int, shape=[3, 3]
+  */
   ```
 
 #### Negative Indexing
@@ -291,7 +308,8 @@ You can set **MfSlice** (see below's list) to subscript.
   mfarray = 
   	[], type=Int, shape=[0, 3, 3]
   */
-  print(a[~<~<-1])
+  print(a[Matft.reverse])
+  //print(a[~<~<-1]) //alias
   //print(a[~<<-1]) //alias
   /*
   mfarray = 
@@ -581,7 +599,7 @@ func reverse(){
     var image = Matft.image.cgimage2mfarray(self.reverseImageView.image!.cgImage!)
 
     // reverse
-    image = image[~<<-1]
+    image = image[Matft.reverse] // same as image[~<<-1]
     self.reverseImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
 }
 
@@ -590,8 +608,7 @@ func swapchannel(){
     var image = Matft.image.cgimage2mfarray(self.swapImageView.image!.cgImage!)
 
     // swap channel
-    //image = image[0~<, 0~<, MfArray([1,0,2,3])] // not supported
-    image = image.swapaxes(axis1: 0, axis2: -1)[MfArray([1,0,2,3])].swapaxes(axis1: 0, axis2: -1)
+    image = image[Matft.all, Matft.all, MfArray([1,0,2,3])] // same as image[0~<, 0~<, MfArray([1,0,2,3])]
     self.swapImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
 }
 ```
