@@ -480,7 +480,8 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.mul<br />*       | numpy.multiply<br />*      |
 | Matft.inner<br />*+    | numpy.inner<br />n/a       |
 | Matft.cross<br />*^    | numpy.cross<br />n/a       |
-|Matft.matmul<br />*&　　　|numpy.matmul<br />@　|
+| Matft.matmul<br />*&　　| numpy.matmul<br />@　      |
+| Matft.dot　　　         | numpy.dot   　             |
 | Matft.equal<br />===   | numpy.equal<br />==        |
 | Matft.not_equal<br />!==   | numpy.not_equal<br />!=        |
 | Matft.less<br />< | numpy.less<br />< |

@@ -39,6 +39,7 @@ internal typealias vDSP_math_func<T, U> = vDSP_convert_func<T, U>
 
 internal typealias vDSP_vgathr_func<T> = (UnsafePointer<T>, UnsafePointer<vDSP_Length>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
+internal typealias vDSP_dotpr_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Length) -> Void
 
 /// Wrapper of vDSP conversion function
 /// - Parameters:
@@ -264,6 +265,20 @@ internal func wrap_vDSP_cmprs<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointe
 @inline(__always)
 internal func wrap_vDSP_gathr<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ indptr: UnsafePointer<vDSP_Length>, _ indStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_vgathr_func<T>){
     vDSP_func(srcptr, indptr, vDSP_Stride(indStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
+}
+
+/// Wrapper of vDSP dot product operation function
+/// - Parameters:
+///   - size: A size
+///   - lsrcptr: A left  source pointer
+///   - lsrcStride: A left source stride
+///   - rsrcptr: A right source pointer
+///   - rsrcStride: A right source stride
+///   - dstptr: A destination pointer
+///   - vDSP_func: The vDSP conversion function
+@inline(__always)
+internal func wrap_vDSP_dotpr<T>(_ size: Int, _ lsrcptr: UnsafePointer<T>, _ lsrcStride: Int, _ rsrcptr: UnsafePointer<T>, _ rsrcStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_func: vDSP_dotpr_func<T>){
+    vDSP_func(lsrcptr, vDSP_Stride(lsrcStride), rsrcptr, vDSP_Stride(rsrcStride), dstptr, vDSP_Length(size))
 }
 
 /// Convert type and contiguous mfarray
@@ -888,6 +903,55 @@ internal func lim_by_vDSP<T: MfStorable>(_ mfarray: MfArray, point: T, to: T, _ 
 }
 */
 
+/// Dot product between multiple dimensional arraies
+/// - Parameters:
+///   - l_mfarray: A left mfarray
+///   - r_mfarray: A right mfarray
+///   - vDSP_func: vDSP_dotpr_func
+/// - Returns: Dot producted mfarray
+internal func dotpr_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, vDSP_func: vDSP_dotpr_func<T>) -> MfArray{
+    let l_shape = l_mfarray.shape
+    let r_shape = r_mfarray.shape
+    assert(l_shape[0] == r_shape[1])
+    
+    // calculate loop size
+    let size = l_shape[0]
+    
+    // to row major
+    let l_mfarray = check_contiguous(l_mfarray, .Row)
+    let r_mfarray = r_mfarray.swapaxes(axis1: -1, axis2: -2).to_contiguous(mforder: .Row)
+    
+    // calculate shape
+    var l_rest_shape = Array(l_shape.prefix(l_shape.count - 1))
+    var r_rest_shape = Array(r_shape.prefix(r_shape.count - 2) + r_shape.suffix(1))
+    var ret_shape = l_rest_shape + r_rest_shape
+    
+    // calculate size
+    let l_rest_size = l_rest_shape.count > 0 ? shape2size(&l_rest_shape) : 1
+    let r_rest_size = shape2size(&r_rest_shape)
+    let ret_size = shape2size(&ret_shape)
+    
+    let newdata = MfData(size: ret_size, mftype: l_mfarray.mftype)
+    
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptr in
+        l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            lptr in
+            r_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                rptr in
+                for l_ind in 0..<l_rest_size{
+                    for r_ind in 0..<r_rest_size{
+                        wrap_vDSP_dotpr(size, lptr + l_ind*size, 1, rptr + r_ind*size, 1, dstptr + (l_ind*r_rest_size + r_ind), vDSP_func)
+                    }
+                }
+            }
+        }
+    }
+    
+    let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
 
 /// Convert mfarray into CGImage. Supported color space is Gray (h, w), (h, w, 1)  or RGB (h, w, 4)
 /// - Parameters:
