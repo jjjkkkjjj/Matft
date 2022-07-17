@@ -9,7 +9,7 @@
 import Foundation
 import Accelerate
 
-public class MfArray{
+open class MfArray{
     public internal(set) var mfdata: MfData // Only setter is private
     public internal(set) var mfstructure: MfStructure
 
@@ -17,8 +17,6 @@ public class MfArray{
     public var offsetIndex: Int{
         return self.mfdata.offset
     }
-    
-
     
     //mfdata getter
     //return base's data
@@ -128,5 +126,123 @@ public class MfArray{
 }
 
 
+open class MfComplexArray{
+    private var _real: MfArray? // Only setter is private
+    public var real: MfArray?{
+        get {
+            return self._real
+        }
+    }
+    
+    private var _imag: MfArray?
+    public var imag: MfArray?{
+        get {
+            return self._imag
+        }
+    }
+    private var __basemfarray: MfArray{ // real or imag to access meta data in mfstructure and mfdata
+        get {
+            if let real = self._real{
+                return real
+            }
+            else if let imag = self._imag{
+                return imag
+            }
+            else{
+                fatalError("Bug!!")
+            }
+        }
+    }
+    
+    internal func set_data(_ real: MfArray?, _ imag: MfArray?){
+        precondition(real?.shape == imag?.shape, "real and imag shape are not same.")
+        precondition(real?.mftype == imag?.mftype, "real and imag shape are not same type.")
+        
+        let _ = _check_same_structure(real, imag)
+        self._real = real
+        self._imag = imag
+    }
+    
+    public internal(set) var base: MfComplexArray?
+    public var offsetIndex: Int{
+        return self.__basemfarray.offsetIndex
+    }
+    public var mftype: MfType{
+        return self.__basemfarray.mftype
+    }
+    public var storedType: StoredType{
+        return self.__basemfarray.storedType
+    }
+    public var storedSize: Int{
+        return self.__basemfarray.storedSize
+    }
+    public var storedByteSize: Int{
+        return self.__basemfarray.storedByteSize
+    }
+    
+    //mfstructure getter
+    public var shape: [Int]{
+        return self.__basemfarray.shape
+    }
+    public var strides: [Int]{
+        return self.__basemfarray.strides
+    }
+    
+    public var ndim: Int{
+        return self.__basemfarray.ndim
+    }
+    public var size: Int{
+        return self.__basemfarray.size
+    }
+    public var byteSize: Int{
+        return self.__basemfarray.byteSize
+    }
+    
+    public init(real: MfArray?, imag: MfArray?, mftype: MfType? = nil,  mforder: MfOrder = .Row){
+        
+        let retmftype: MfType
+        if let real = real, let imag = imag {
+            retmftype = mftype ?? MfType.priority(real.mftype, imag.mftype)
+            
+        }
+        else if let real = real{
+            retmftype = mftype ?? real.mftype
+        }
+        else if let imag = imag {
+            retmftype = mftype ?? imag.mftype
+        }
+        else{
+            preconditionFailure("set either real or image!")
+        }
+        
+        // copy
+        self.set_data(real?.astype(retmftype, mforder: mforder), imag?.astype(retmftype, mforder: mforder))
+        //self._real = real.astype(mftype, mforder: mforder)
+        //self._imag = imag.astype(mftype, mforder: mforder)
+    }
+    
+    deinit {
+        self.base = nil
+        //self.mfdata.free()
+        //self.mfstructure.free()
+    }
+}
 
-
+fileprivate func _check_same_structure(_ real: MfArray?, _ imag: MfArray?) -> MfArray{
+    if let real = real, let imag = imag {
+        precondition((real.shape == imag.shape) &&
+                     (real.strides == imag.strides) &&
+                     (real.mftype == imag.mftype) &&
+                     (real.offsetIndex == imag.offsetIndex), "Not same structure")
+        return real
+    }
+    else if let real = real {
+        return real
+    }
+    else if let imag = imag {
+        return imag
+    }
+    else{
+        preconditionFailure("set either real or imag!")
+    }
+}

@@ -2,7 +2,7 @@ import XCTest
 //@testable import Matft
 import Matft
 
-final class MatMulTests: XCTestCase {
+final class VectorOpTests: XCTestCase {
     
     func testSameShape() {
         do{
@@ -149,5 +149,36 @@ final class MatMulTests: XCTestCase {
                                                         [ 564,  540,  516],
                                                         [ 978,  936,  894]]]))
         
+    }
+    
+    func testdot(){
+        do{
+            let a = Matft.arange(start: 0, to: 50, by: 1, shape: [2, 5, 5])
+            let b = Matft.arange(start: 0, to: 5, by: 1)
+            
+            XCTAssertEqual(Matft.dot(b, a), MfArray([[150, 160, 170, 180, 190],
+                                                     [400, 410, 420, 430, 440]]))
+            
+            XCTAssertEqual(Matft.dot(a, b), MfArray([[ 30,  80, 130, 180, 230],
+                                                     [280, 330, 380, 430, 480]]))
+        }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 30, by: 1, shape: [2,3,5])
+            let b = Matft.arange(start: 0, to: 5, by: 1)
+            
+            XCTAssertEqual(Matft.dot(a, b), MfArray([[ 30,  80, 130],
+                                                     [180, 230, 280]]))
+        }
+        
+        do{
+            let a = MfArray([[1, 0], [0, 1]])
+            let b = MfArray([[4, 1], [2, 2]])
+            
+            XCTAssertEqual(Matft.dot(a, b), MfArray([[4, 1],
+                                                     [2, 2]]))
+            XCTAssertEqual(Matft.dot(b, a), MfArray([[4, 1],
+                                                     [2, 2]]))
+        }
     }
 }

@@ -14,94 +14,35 @@ import CoreGraphics
 class ViewController: UIViewController {
 
     @IBOutlet weak var originalImageView: UIImageView!
-    @IBOutlet weak var processedImageView: UIImageView!
+    @IBOutlet weak var reverseImageView: UIImageView!
+    @IBOutlet weak var swapImageView: UIImageView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.originalImageView.image = UIImage(named: "rena.jpeg")
-        self.processedImageView.image = UIImage(named: "rena.jpeg")
+        self.reverseImageView.image = UIImage(named: "rena.jpeg")
+        self.swapImageView.image = UIImage(named: "rena.jpeg")
 
         self.reverse()
+        self.swapchannel()
     }
     
     func reverse(){
-        let size = CFDataGetLength(self.processedImageView.image!.cgImage!.dataProvider!.data)
-        let width = Int(self.processedImageView.image!.size.width)
-        let height = Int(self.processedImageView.image!.size.height)
-        
-        var arr = Matft.nums(Float.zero, shape: [height, width, 4])
-        var dst = Array<UInt8>(repeating: UInt8.zero, count: arr.size)
-        
-        arr.withDataUnsafeMBPtrT(datatype: Float.self){
-        
-            let srcptr = CFDataGetBytePtr(self.processedImageView.image?.cgImage?.dataProvider?.data)!
-            
-            // unit8 to float
-            vDSP_vfltu8(srcptr, vDSP_Stride(1), $0.baseAddress!, vDSP_Stride(1), vDSP_Length(size))
-        }
+        var image = Matft.image.cgimage2mfarray(self.reverseImageView.image!.cgImage!)
 
         // reverse
-        arr = arr[~<<-1]
-        arr = arr.to_contiguous(mforder: .Row)
-        
-        arr.withDataUnsafeMBPtrT(datatype: Float.self){
-            srcptr in
-            
-            dst.withUnsafeMutableBufferPointer{
-                // float to unit8
-                vDSP_vfixu8(srcptr.baseAddress!, vDSP_Stride(1), $0.baseAddress!, vDSP_Stride(1), vDSP_Length(arr.size))
-                
-                let colorSpace = CGColorSpaceCreateDeviceRGB()
-                let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
-                let provider = CGDataProvider(data: CFDataCreate(kCFAllocatorDefault, $0.baseAddress!, arr.size))
-                let cgimage =  CGImage(width: arr.shape[1], height: arr.shape[0], bitsPerComponent: 8*1, bitsPerPixel: 8*arr.shape[2], bytesPerRow: arr.shape[1]*arr.shape[2], space: colorSpace, bitmapInfo: bitmapInfo, provider: provider!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)
-                
-                self.processedImageView.image = UIImage(cgImage: cgimage!)
-            }
-            
-        }
-         
+        image = image[Matft.reverse] // same as image[~<<-1]
+        self.reverseImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
     }
     
-    /*
+    
     func swapchannel(){
-        let size = CFDataGetLength(self.processedImageView.image!.cgImage!.dataProvider!.data)
-        let width = Int(self.processedImageView.image!.size.width)
-        let height = Int(self.processedImageView.image!.size.height)
-        
-        var arr = Matft.nums(Float.zero, shape: [height, width, 4])
-        var dst = Array<UInt8>(repeating: UInt8.zero, count: arr.size)
-        
-        arr.withDataUnsafeMBPtrT(datatype: Float.self){
-        
-            let srcptr = CFDataGetBytePtr(self.processedImageView.image?.cgImage?.dataProvider?.data)!
-            
-            // unit8 to float
-            vDSP_vfltu8(srcptr, vDSP_Stride(1), $0.baseAddress!, vDSP_Stride(1), vDSP_Length(size))
-        }
+        var image = Matft.image.cgimage2mfarray(self.swapImageView.image!.cgImage!)
 
-        // reverse
-        arr = arr[0~<, 0~<, ~<<-1]
-        arr = arr.to_contiguous(mforder: .Row)
-        
-        arr.withDataUnsafeMBPtrT(datatype: Float.self){
-            srcptr in
-            
-            dst.withUnsafeMutableBufferPointer{
-                // float to unit8
-                vDSP_vfixu8(srcptr.baseAddress!, vDSP_Stride(1), $0.baseAddress!, vDSP_Stride(1), vDSP_Length(arr.size))
-                
-                let colorSpace = CGColorSpaceCreateDeviceRGB()
-                let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
-                let provider = CGDataProvider(data: CFDataCreate(kCFAllocatorDefault, $0.baseAddress!, arr.size))
-                let cgimage =  CGImage(width: arr.shape[1], height: arr.shape[0], bitsPerComponent: 8*1, bitsPerPixel: 8*arr.shape[2], bytesPerRow: arr.shape[1]*arr.shape[2], space: colorSpace, bitmapInfo: bitmapInfo, provider: provider!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)
-                
-                self.processedImageView.image = UIImage(cgImage: cgimage!)
-            }
-            
-        }
-         
-    }*/
+        // swap channel
+        image = image[Matft.all, Matft.all, MfArray([1,0,2,3])] // same as image[0~<, 0~<, MfArray([1,0,2,3])]
+        self.swapImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
+    }
 }
 

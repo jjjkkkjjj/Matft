@@ -62,6 +62,7 @@ Note: You can use [Protocol version(beta version)](https://github.com/jjjkkkjjj/
   - Arithmetic
   - Statistic
   - Linear Algebra
+- Image Conversion
 
 ...etc.
 
@@ -202,9 +203,17 @@ You can set **MfSlice** (see below's list) to subscript.
   - ```swift
     Matft.newaxis
     ```
-
+    
   - ```swift
     ~< //this is prefix, postfix and infix operator. same as python's slice, ":"
+    ```
+    
+  - ```swift
+    Matft.all // same as python's slice :, matft's 0~<
+    ```
+
+  - ```swift
+    Matft.reverse // same as python's slice ::-1, matft's ~<<-1
     ```
 
 #### (Positive) Indexing
@@ -267,6 +276,14 @@ You can set **MfSlice** (see below's list) to subscript.
   [	21,		22,		23],
   [	24,		25,		26]]], type=Int, shape=[2, 3, 3]
   */
+  
+  print(a[Matft.all, 0]) //same as a[:, 0] for numpy
+  /*
+  mfarray = 
+  [[    0,      1,      2],
+  [ 9,      10,     11],
+  [18,      19,     20]], type=Int, shape=[3, 3]
+  */
   ```
 
 #### Negative Indexing
@@ -291,7 +308,8 @@ You can set **MfSlice** (see below's list) to subscript.
   mfarray = 
   	[], type=Int, shape=[0, 3, 3]
   */
-  print(a[~<~<-1])
+  print(a[Matft.reverse])
+  //print(a[~<~<-1]) //alias
   //print(a[~<<-1]) //alias
   /*
   mfarray = 
@@ -462,7 +480,8 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.mul<br />*       | numpy.multiply<br />*      |
 | Matft.inner<br />*+    | numpy.inner<br />n/a       |
 | Matft.cross<br />*^    | numpy.cross<br />n/a       |
-|Matft.matmul<br />*&　　　|numpy.matmul<br />@　|
+| Matft.matmul<br />*&　　| numpy.matmul<br />@　      |
+| Matft.dot　　　         | numpy.dot   　             |
 | Matft.equal<br />===   | numpy.equal<br />==        |
 | Matft.not_equal<br />!==   | numpy.not_equal<br />!=        |
 | Matft.less<br />< | numpy.less<br />< |
@@ -560,6 +579,13 @@ Matft supports only natural cubic spline. I'll implement other boundary conditio
 | -------------------------------- | ----------------- |
 | Matft.interp1d.cubicSpline       | scipy.interpolation.CubicSpline |
 
+- Image
+
+| Matft                            | Numpy              |
+| -------------------------------- | ----------------- |
+| Matft.image.cgimage2mfarray      | N/A |
+| Matft.image.mfarray2cgimage      | N/A |
+
 ## Example
 
 You can acheive an image processing by Matft! (Beta version)
@@ -567,53 +593,30 @@ Please refer to the example [here](./MatftDemo/MatftDemo/ViewController.swift).
 
 ```swift
 @IBOutlet weak var originalImageView: UIImageView!
-@IBOutlet weak var processedImageView: UIImageView!
+@IBOutlet weak var reverseImageView: UIImageView!
+@IBOutlet weak var swapImageView: UIImageView!
 
 func reverse(){
-    let size = CFDataGetLength(self.processedImageView.image!.cgImage!.dataProvider!.data)
-    let width = Int(self.processedImageView.image!.size.width)
-    let height = Int(self.processedImageView.image!.size.height)
-    
-    var arr = Matft.nums(Float.zero, shape: [height, width, 4])
-    var dst = Array<UInt8>(repeating: UInt8.zero, count: arr.size)
-    
-    // UIImage to MfArray
-    arr.withDataUnsafeMBPtrT(datatype: Float.self){
-    
-        let srcptr = CFDataGetBytePtr(self.processedImageView.image?.cgImage?.dataProvider?.data)!
-        
-        // unit8 to float
-        vDSP_vfltu8(srcptr, vDSP_Stride(1), $0.baseAddress!, vDSP_Stride(1), vDSP_Length(size))
-    }
+    var image = Matft.image.cgimage2mfarray(self.reverseImageView.image!.cgImage!)
 
     // reverse
-    arr = arr[~<<-1]
-    arr = arr.to_contiguous(mforder: .Row)
-    
-    // MfArray to UIImage
-    arr.withDataUnsafeMBPtrT(datatype: Float.self){
-        srcptr in
-        
-        dst.withUnsafeMutableBufferPointer{
-            // float to unit8
-            vDSP_vfixu8(srcptr.baseAddress!, vDSP_Stride(1), $0.baseAddress!, vDSP_Stride(1), vDSP_Length(arr.size))
-            
-            let colorSpace = CGColorSpaceCreateDeviceRGB()
-            let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
-            let provider = CGDataProvider(data: CFDataCreate(kCFAllocatorDefault, $0.baseAddress!, arr.size))
-            let cgimage =  CGImage(width: arr.shape[1], height: arr.shape[0], bitsPerComponent: 8*1, bitsPerPixel: 8*arr.shape[2], bytesPerRow: arr.shape[1]*arr.shape[2], space: colorSpace, bitmapInfo: bitmapInfo, provider: provider!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)
-            
-            self.processedImageView.image = UIImage(cgImage: cgimage!)
-        }
-        
-    }
-      
-  }
+    image = image[Matft.reverse] // same as image[~<<-1]
+    self.reverseImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
+}
+
+
+func swapchannel(){
+    var image = Matft.image.cgimage2mfarray(self.swapImageView.image!.cgImage!)
+
+    // swap channel
+    image = image[Matft.all, Matft.all, MfArray([1,0,2,3])] // same as image[0~<, 0~<, MfArray([1,0,2,3])]
+    self.swapImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
+}
 ```
 
 For more complex conversion, see OpenCV [code](https://github.com/opencv/opencv/blob/4.x/modules/imgcodecs/src/apple_conversions.mm).
 
-<img width="513" alt="image-processing" src="https://user-images.githubusercontent.com/16914891/159737464-a2c35faf-1961-4f93-87f0-ded7d4a4de64.png">
+<img width="513" alt="image-processing" src="https://user-images.githubusercontent.com/16914891/176985133-fd4a1cfb-029a-42e9-be6d-778f4c181f1f.png">
 
 ## Performance
 

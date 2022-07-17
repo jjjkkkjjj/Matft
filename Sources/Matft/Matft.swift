@@ -41,6 +41,11 @@ public class Matft{
     public class interp1d{}
     
     /**
+       Image
+     */
+    public class image{}
+    
+    /**
        The kernel of mfarray.
     */
     //internal class mfdata{}
@@ -50,5 +55,19 @@ public class Matft{
     */
     public static var newaxis: SubscriptOps{
         return .newaxis
+    }
+    
+    /**
+       Using in subscript, get all values (alias for `0~<`)
+    */
+    public static var all: SubscriptOps{
+        return .all
+    }
+    
+    /**
+       Using in subscript, get all reversed values (alias for `0~<<-1`)
+    */
+    public static var reverse: SubscriptOps{
+        return .reverse
     }
 }

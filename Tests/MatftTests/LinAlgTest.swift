@@ -187,9 +187,9 @@ final class LinAlgTests: XCTestCase {
                              [ 0.89382228,  0.53009567,  1.59680764],
                              [-0.61128203, -0.75155814,  0.00382533]], mftype: .Float)
             let ret = try! Matft.linalg.pinv(a)
-            XCTAssertEqual(ret.round(decimals: 5), MfArray([[-0.34872843,  0.42493471,  0.39808427, -0.62075487],
+            XCTAssertEqual(ret.round(decimals: 3), MfArray([[-0.34872843,  0.42493471,  0.39808427, -0.62075487],
                                                             [-0.24171501, -0.14397516,  0.0288316 , -0.16416708],
-                                                            [ 0.40742503, -0.2408292 ,  0.30600237,  0.23674046]], mftype: .Float).round(decimals: 5))
+                                                            [ 0.40742503, -0.2408292 ,  0.30600237,  0.23674046]], mftype: .Float).round(decimals: 3))
         }
         
         do{

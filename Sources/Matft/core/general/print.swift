@@ -32,7 +32,7 @@ extension MfArray: CustomStringConvertible{
                     desc += "\t\(flattenData[flattenIndex + self.offsetIndex]),\t"
                     
                     if indices.last! == shape.last! - 1{
-                        let clousureNum = _clousure_number(mfarray: self, indices: &indices)
+                        let clousureNum = _clousure_number(shape: &shape, indices: &indices)
                         //remove "\t" and ","
                         desc = String(desc.dropLast(2))
                         //append "]", "," "\n" and "["
@@ -43,7 +43,7 @@ extension MfArray: CustomStringConvertible{
                 else{ //skip
                     if var lastIndices = lastIndices, lastIndices.last! == shape.last! - 1{// \t and \n
                         
-                        let clousureNum = _clousure_number(mfarray: self, indices: &lastIndices)
+                        let clousureNum = _clousure_number(shape: &shape, indices: &lastIndices)
 
                         //remove \n and [
                         desc = String(desc.dropLast(2 * clousureNum))
@@ -69,7 +69,7 @@ extension MfArray: CustomStringConvertible{
                 desc += "\t\(flattenData[ret.flattenIndex + self.offsetIndex]),\t"
 
                 if ret.indices.last! == shape.last! - 1{
-                    let clousureNum = _clousure_number(mfarray: self, indices: &ret.indices)
+                    let clousureNum = _clousure_number(shape: &shape, indices: &ret.indices)
                     //remove "\t" and ","
                     desc = String(desc.dropLast(2))
                     //append "]", "," "\n" and "["
@@ -110,9 +110,8 @@ fileprivate func _clousure_number(mfarray: MfArray, ind: Int) -> Int{
 }*/
 
 //count clousure "[" number
-fileprivate func _clousure_number(mfarray: MfArray, indices: inout [Int]) -> Int{
+fileprivate func _clousure_number(shape: inout [Int], indices: inout [Int]) -> Int{
     var clousureNum = 1
-    let shape = mfarray.shape
     for axis in (0..<indices.count - 1).reversed(){
         if indices[axis] == shape[axis] - 1{
             clousureNum += 1
@@ -160,5 +159,85 @@ extension MfStructure: CustomStringConvertible{
         ret += "Row contiguous\t\t: \(self.row_contiguous)\n"
         ret += "Column contiguous\t: \(self.column_contiguous)\n"
         return ret
+    }
+}
+
+extension MfComplexArray: CustomStringConvertible{
+    public var description: String{
+        var desc = "mfcomplexarray = \n"
+        if self.size == 0{
+            desc += "\t[], type=Complex\(self.mftype), shape=\(self.shape)"
+            return desc
+        }
+        
+        desc += String(repeating: "[", count: self.ndim)
+        
+        let real_flattenData = self.real?.data
+        let imag_flattenData = self.imag?.data
+        let imag = imag_flattenData == nil ? "" : "j"
+        var shape = self.shape
+        var strides = self.strides
+        
+        if self.size > 1000{//if size > 1000, some elements left out will be viewed
+            let flattenLOIndSeq = FlattenLOIndSequence(storedSize: self.storedSize, shape: &shape, strides: &strides)
+            
+            var lastIndices: [Int]? = nil
+            for (flattenIndex, indices) in flattenLOIndSeq{
+                
+                if var indices = indices, let flattenIndex = flattenIndex{
+                    desc += "\t\(real_flattenData?[flattenIndex + self.offsetIndex] ?? "") \(imag_flattenData?[flattenIndex + self.offsetIndex] ?? "")\(imag),\t"
+                    
+                    if indices.last! == shape.last! - 1{
+                        let clousureNum = _clousure_number(shape: &shape, indices: &indices)
+                        //remove "\t" and ","
+                        desc = String(desc.dropLast(2))
+                        //append "]", "," "\n" and "["
+                        desc += String(repeating: "]", count: clousureNum) + "," + String(repeating: "\n", count: clousureNum) + String(repeating: "[", count: clousureNum)
+                    }
+                    lastIndices = indices
+                }
+                else{ //skip
+                    if var lastIndices = lastIndices, lastIndices.last! == shape.last! - 1{// \t and \n
+                        
+                        let clousureNum = _clousure_number(shape: &shape, indices: &lastIndices)
+
+                        //remove \n and [
+                        desc = String(desc.dropLast(2 * clousureNum))
+                        // first half \n
+                        desc += String(repeating: "\n", count: clousureNum)
+                        // append skip center of \n
+                        desc += "...,\t"
+                        // second half \n
+                        desc += String(repeating: "\n", count: clousureNum)
+                        // recreate [
+                        desc += String(repeating: "[", count: clousureNum)
+                    }
+                    else{ // \t only
+                        desc += "\t...,\t"
+                    }
+                }
+            }
+        }
+        else{ // all elements will be viewed
+            let flattenIndSeq = FlattenIndSequence(shape: &shape, strides: &strides)
+            
+            for var ret in flattenIndSeq{
+                desc += "\t\(real_flattenData?[ret.flattenIndex + self.offsetIndex] ?? "") \(imag_flattenData?[ret.flattenIndex + self.offsetIndex] ?? "")\(imag),\t"
+
+                if ret.indices.last! == shape.last! - 1{
+                    let clousureNum = _clousure_number(shape: &shape, indices: &ret.indices)
+                    //remove "\t" and ","
+                    desc = String(desc.dropLast(2))
+                    //append "]", "," "\n" and "["
+                    desc += String(repeating: "]", count: clousureNum) + "," + String(repeating: "\n", count: clousureNum) + String(repeating: "[", count: clousureNum)
+                }
+            }
+        }
+        //remove redundunt "[", "\n" and "\n"
+        desc = String(desc.dropLast((self.ndim - 1)*2 + 2))
+        //append mfarray  info
+        desc += " type=Complex\(self.mftype), shape=\(self.shape)"
+        
+        return desc
     }
 }

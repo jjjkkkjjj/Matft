@@ -266,6 +266,63 @@ extension Matft{
     }
     
     /**
+       Dot product.
+        - If both a and b are 1-D arrays, it is inner product of vectors (without complex conjugation).
+        - If both a and b are 2-D arrays, it is matrix multiplication, but using matmul or `a *& b` is preferred.
+        - If a is an N-D array and b is a 1-D array, it is a sum product over the last axis of a and b.
+        - If a is an N-D array and b is an M-D array (where M>=2), it is a sum product over the last axis of a and the second-to-last axis of b:
+     
+       - parameters:
+           - l_mfarray: left mfarray
+           - r_mfarray: right mfarray
+    */
+    public static func dot(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+
+        if l_mfarray.ndim == r_mfarray.ndim && l_mfarray.ndim == 1{
+            // inner product
+            return Matft.inner(l_mfarray, r_mfarray)
+        }
+        else if l_mfarray.ndim == r_mfarray.ndim && l_mfarray.ndim == 2{
+            // matrix multiplication
+            return Matft.matmul(l_mfarray, r_mfarray)
+        }
+        else if r_mfarray.ndim == 1{
+            return Matft.inner(l_mfarray, r_mfarray)
+        }
+        else{
+            // r_mfarray.ndim > 1
+            var l_shape = l_mfarray.shape
+            var r_shape = r_mfarray.shape
+            
+            var l_mfarray = l_mfarray
+            var r_mfarray = r_mfarray
+            if l_shape[0] == 1 && r_shape[1] > 1{
+                l_shape[0] = r_shape[1]
+                l_mfarray = l_mfarray.broadcast_to(shape: l_shape)
+                l_shape[0] = 1 // revert for error message
+            }
+            else if r_shape[1] == 1 && l_shape[0] > 1{
+                r_shape[1] = r_shape[0]
+                r_mfarray = r_mfarray.broadcast_to(shape: r_shape)
+                r_shape[1] = 1 // revert for error message
+            }
+            
+            precondition(l_shape[0] == r_shape[1], "shapes \(l_shape) and \(r_shape) not aligned: \(l_shape[0]) (dim 0) != \(r_shape[1]) (dim 1)")
+            
+            let retmftype = MfType.priority(l_mfarray.mftype, r_mfarray.mftype)
+            l_mfarray = l_mfarray.mftype == retmftype ? l_mfarray : l_mfarray.astype(retmftype, mforder: .Row)
+            r_mfarray = r_mfarray.mftype == retmftype ? r_mfarray : r_mfarray.astype(retmftype, mforder: .Row)
+            
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return dotpr_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_dotpr)
+            case .Double:
+                return dotpr_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_dotprD)
+            }
+        }
+    }
+    
+    /**
        Inner product
        - parameters:
            - l_mfarray: left mfarray

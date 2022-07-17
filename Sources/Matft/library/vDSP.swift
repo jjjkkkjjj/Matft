@@ -8,6 +8,7 @@
 
 import Foundation
 import Accelerate
+import CoreGraphics
 
 internal typealias vDSP_convert_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<U>, vDSP_Stride, vDSP_Length) -> Void
 
@@ -42,6 +43,7 @@ internal typealias vDSP_math_func<T, U> = vDSP_convert_func<T, U>
 
 internal typealias vDSP_vgathr_func<T> = (UnsafePointer<T>, UnsafePointer<vDSP_Length>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
+internal typealias vDSP_dotpr_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Length) -> Void
 
 /// Wrapper of vDSP conversion function
 /// - Parameters:
@@ -280,6 +282,20 @@ internal func wrap_vDSP_cmprs<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointe
 @inline(__always)
 internal func wrap_vDSP_gathr<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ indptr: UnsafePointer<vDSP_Length>, _ indStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_vgathr_func<T>){
     vDSP_func(srcptr, indptr, vDSP_Stride(indStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
+}
+
+/// Wrapper of vDSP dot product operation function
+/// - Parameters:
+///   - size: A size
+///   - lsrcptr: A left  source pointer
+///   - lsrcStride: A left source stride
+///   - rsrcptr: A right source pointer
+///   - rsrcStride: A right source stride
+///   - dstptr: A destination pointer
+///   - vDSP_func: The vDSP conversion function
+@inline(__always)
+internal func wrap_vDSP_dotpr<T>(_ size: Int, _ lsrcptr: UnsafePointer<T>, _ lsrcStride: Int, _ rsrcptr: UnsafePointer<T>, _ rsrcStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_func: vDSP_dotpr_func<T>){
+    vDSP_func(lsrcptr, vDSP_Stride(lsrcStride), rsrcptr, vDSP_Stride(rsrcStride), dstptr, vDSP_Length(size))
 }
 
 /// Convert type and contiguous mfarray
@@ -947,3 +963,142 @@ internal func lim_by_vDSP<T: MfStorable>(_ mfarray: MfArray, point: T, to: T, _ 
     }
 }
 */
+
+/// Dot product between multiple dimensional arraies
+/// - Parameters:
+///   - l_mfarray: A left mfarray
+///   - r_mfarray: A right mfarray
+///   - vDSP_func: vDSP_dotpr_func
+/// - Returns: Dot producted mfarray
+internal func dotpr_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, vDSP_func: vDSP_dotpr_func<T>) -> MfArray{
+    let l_shape = l_mfarray.shape
+    let r_shape = r_mfarray.shape
+    assert(l_shape[0] == r_shape[1])
+    
+    // calculate loop size
+    let size = l_shape[0]
+    
+    // to row major
+    let l_mfarray = check_contiguous(l_mfarray, .Row)
+    let r_mfarray = r_mfarray.swapaxes(axis1: -1, axis2: -2).to_contiguous(mforder: .Row)
+    
+    // calculate shape
+    var l_rest_shape = Array(l_shape.prefix(l_shape.count - 1))
+    var r_rest_shape = Array(r_shape.prefix(r_shape.count - 2) + r_shape.suffix(1))
+    var ret_shape = l_rest_shape + r_rest_shape
+    
+    // calculate size
+    let l_rest_size = l_rest_shape.count > 0 ? shape2size(&l_rest_shape) : 1
+    let r_rest_size = shape2size(&r_rest_shape)
+    let ret_size = shape2size(&ret_shape)
+    
+    let newdata = MfData(size: ret_size, mftype: l_mfarray.mftype)
+    
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptr in
+        l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            lptr in
+            r_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                rptr in
+                for l_ind in 0..<l_rest_size{
+                    for r_ind in 0..<r_rest_size{
+                        wrap_vDSP_dotpr(size, lptr + l_ind*size, 1, rptr + r_ind*size, 1, dstptr + (l_ind*r_rest_size + r_ind), vDSP_func)
+                    }
+                }
+            }
+        }
+    }
+    
+    let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// Convert mfarray into CGImage. Supported color space is Gray (h, w), (h, w, 1)  or RGB (h, w, 4)
+/// - Parameters:
+///   - src_mfarray: An input mfarray
+///   - vDSP_func: vDSP_convert_func
+/// - Returns: CGImage
+/// ref: https://stackoverflow.com/questions/34677133/how-to-reconstruct-grayscale-image-from-intensity-values
+internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDSP_func: vDSP_convert_func<T, UInt8>) -> CGImage{
+    // check condition
+    let mfarray: MfArray
+    if src_mfarray.ndim == 2{
+        mfarray = src_mfarray.expand_dims(axis: 2)
+    }
+    else{
+        mfarray = src_mfarray
+    }
+    
+    precondition(mfarray.ndim == 3, "Couldn't convert mfarray's shape = \(src_mfarray.shape) into image. Passed mfarray must be 2d or 3d, but got \(src_mfarray.ndim)d")
+    
+    var shape = mfarray.shape
+    let colorSpace: CGColorSpace
+    let bitmapInfo: CGBitmapInfo
+    if shape[2] == 1{// gray
+        preconditionFailure("Unfortunately grayscale image is currently not supported...")
+        colorSpace = CGColorSpaceCreateDeviceGray()
+        bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
+    }
+    else if shape[2] == 4{
+        colorSpace = CGColorSpaceCreateDeviceRGB()
+        bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
+    }
+    else{
+        preconditionFailure("Unsupported channel number: \(mfarray.shape[2])")
+    }
+    
+    var dst = Array<UInt8>(repeating: UInt8.zero, count: src_mfarray.size)
+    let dst_strides = shape2strides(&shape, mforder: .Row)
+    
+    // StoredType to UInt8
+    dst.withUnsafeMutableBufferPointer{
+        dstptrU in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned mfarray] srcptrT in
+            
+            for vDSPPrams in OptOffsetParamsSequence(shape: shape, bigger_strides: dst_strides, smaller_strides: mfarray.strides){
+                
+                wrap_vDSP_convert(vDSPPrams.blocksize, srcptrT + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrU.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+            }
+            
+        }
+    }
+    
+    let height = shape[0]
+    let width = shape[1]
+    let channel = shape[2]
+    let cgimage = dst.withUnsafeMutableBufferPointer{
+        (ptr) -> CGImage in
+        let provider = CGDataProvider(data: CFDataCreate(kCFAllocatorDefault, ptr.baseAddress!, src_mfarray.size))
+        let cgimage =  CGImage(width: width, height: height, bitsPerComponent: 8*1, bitsPerPixel: 8*channel, bytesPerRow: dst_strides[0], space: colorSpace, bitmapInfo: bitmapInfo, provider: provider!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)!
+        
+        return cgimage
+    }
+    
+    return cgimage
+}
+
+/// Convert mfarray into CGImage
+/// - Parameters:
+///   - src_mfarray: An input mfarray
+///   - vDSP_func: vDSP_convert_func
+/// - Returns: CGImage
+internal func cgimage2mfarray_by_vDSP<T: MfStorable>(_ cgimage: CGImage, mftype: MfType, vDSP_func: vDSP_convert_func<UInt8, T>) -> MfArray{
+    //let size = CFDataGetLength(cgimage.dataProvider!.data)
+    let width = Int(cgimage.width)
+    let height = Int(cgimage.height)
+    let channel = Int(cgimage.bitsPerPixel/8)
+    let size = width*height*channel
+    
+    let newdata = MfData(size: size, mftype: mftype)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        let srcptr = CFDataGetBytePtr(cgimage.dataProvider?.data)!
+        
+        wrap_vDSP_convert(size, srcptr, 1, $0, 1, vDSP_func)
+    }
+    
+    let newstructure = MfStructure(shape: [height, width, channel], mforder: .Row)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure).squeeze()
+}

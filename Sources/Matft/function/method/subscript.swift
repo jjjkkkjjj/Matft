@@ -100,6 +100,8 @@ extension MfArray: MfSubscriptable{
         
         var offset = self.offsetIndex
         //Indexing ref: https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
+        var fancy_axes: [Int] = []
+        var fancy_ops: [MfArray] = []
         while orig_axis < self.ndim {
             if let _index = indices[orig_axis] as? Int { // normal indexing
                 let index = get_positive_index(_index, axissize: orig_shape[orig_axis], axis: orig_axis)
@@ -182,12 +184,44 @@ extension MfArray: MfSubscriptable{
                 case .newaxis:
                     newshape.append(1)
                     newstrides.append(0)
+                    
+                    orig_axis += 0 // not move
+                    new_axis += 1
+                    
+                case .all:
+                    let orig_dim = orig_shape[orig_axis]
+                    
+                    newshape.append(orig_dim)
+                    newstrides.append(orig_strides[orig_axis] * 1)
+                    
+                    orig_axis += 1
+                    new_axis += 1
+                    
+                case .reverse:
+                    let orig_dim = orig_shape[orig_axis]
+                    
+                    newshape.append(orig_dim)
+                    newstrides.append(orig_strides[orig_axis] * -1)
+                    offset += (orig_dim - 1) * orig_strides[orig_axis]
+                    
+                    orig_axis += 1
+                    new_axis += 1
                 /*
                 default:
                     fatalError("\(subop) is invalid in getter")*/
                 }
+            }
+            else if let subop = indices[orig_axis] as? MfArray{// fancy indexing
+                // get all values first, fancyget later
+                let orig_dim = orig_shape[orig_axis]
                 
-                orig_axis += 0 // not move
+                fancy_axes.append(new_axis)
+                fancy_ops.append(subop)
+                
+                newshape.append(orig_dim)
+                newstrides.append(orig_strides[orig_axis] * 1)
+                
+                orig_axis += 1
                 new_axis += 1
             }
             else{
@@ -197,7 +231,16 @@ extension MfArray: MfSubscriptable{
         
         let newstructure = MfStructure(shape: newshape, strides: newstrides)
         //print(newarray.shape, newarray.mfdata._size, newarray.mfdata._storedSize)
-        return MfArray(base: self, mfstructure: newstructure, offset: offset)
+        var ret = MfArray(base: self, mfstructure: newstructure, offset: offset)
+        if fancy_axes.count == 0{
+            return ret
+        }
+        else{
+            for (fancy_axis, subop) in zip(fancy_axes, fancy_ops){
+                ret = ret.swapaxes(axis1: 0, axis2: fancy_axis)[subop].swapaxes(axis1: fancy_axis, axis2: 0)
+            }
+            return ret
+        }
     }
     
     private func _set_mfarray(indices: inout [Any], newValue: MfArray){
