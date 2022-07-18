@@ -52,6 +52,23 @@ extension MfArray{
     }
 }
 
+
+extension MfComplexArray{
+    public func withUnsafeMutableStartRawPointer<R>(_ body: (UnsafeMutableRawPointer, UnsafeMutableRawPointer) throws -> R) rethrows -> R{
+        return try body(self.mfdata.data_real + self.mfdata.byteOffset, self.mfdata.data_imag + self.mfdata.byteOffset)
+    }
+    public func withUnsafeMutableStartPointer<T, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>, UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+        let ret = try self.withUnsafeMutableStartRawPointer{
+            [unowned self](ptrr, ptri) -> R in
+            let datarptr = ptrr.bindMemory(to: T.self, capacity: self.storedSize)
+            let dataiptr = ptri.bindMemory(to: T.self, capacity: self.storedSize)
+            return try body(datarptr, dataiptr)
+        }
+        
+        return ret
+    }
+}
+
 extension MfData{
     public func withUnsafeMutableStartRawPointer<R>(_ body: (UnsafeMutableRawPointer) throws -> R) rethrows -> R{
         return try body(self.data + self.byteOffset)

@@ -172,9 +172,10 @@ extension MfComplexArray: CustomStringConvertible{
         
         desc += String(repeating: "[", count: self.ndim)
         
-        let real_flattenData = self.real?.data
-        let imag_flattenData = self.imag?.data
-        let imag = imag_flattenData == nil ? "" : "j"
+        let data = self.data
+        let real_flattenData = data.real
+        let imag_flattenData = data.imag
+        let imag = "j"
         var shape = self.shape
         var strides = self.strides
         
@@ -185,7 +186,7 @@ extension MfComplexArray: CustomStringConvertible{
             for (flattenIndex, indices) in flattenLOIndSeq{
                 
                 if var indices = indices, let flattenIndex = flattenIndex{
-                    desc += "\t\(real_flattenData?[flattenIndex + self.offsetIndex] ?? "") \(imag_flattenData?[flattenIndex + self.offsetIndex] ?? "")\(imag),\t"
+                    desc += "\t\(real_flattenData[flattenIndex + self.offsetIndex]) \(imag_flattenData[flattenIndex + self.offsetIndex])\(imag),\t"
                     
                     if indices.last! == shape.last! - 1{
                         let clousureNum = _clousure_number(shape: &shape, indices: &indices)
@@ -222,7 +223,7 @@ extension MfComplexArray: CustomStringConvertible{
             let flattenIndSeq = FlattenIndSequence(shape: &shape, strides: &strides)
             
             for var ret in flattenIndSeq{
-                desc += "\t\(real_flattenData?[ret.flattenIndex + self.offsetIndex] ?? "") \(imag_flattenData?[ret.flattenIndex + self.offsetIndex] ?? "")\(imag),\t"
+                desc += "\t\(real_flattenData[ret.flattenIndex + self.offsetIndex]) \(imag_flattenData[ret.flattenIndex + self.offsetIndex])\(imag),\t"
 
                 if ret.indices.last! == shape.last! - 1{
                     let clousureNum = _clousure_number(shape: &shape, indices: &ret.indices)
