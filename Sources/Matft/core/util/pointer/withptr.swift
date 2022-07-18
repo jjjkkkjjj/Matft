@@ -11,7 +11,11 @@ import Accelerate
 extension MfArray{
     
     public func withUnsafeMutableStartRawPointer<R>(_ body: (UnsafeMutableRawPointer) throws -> R) rethrows -> R{
-        return try body(self.mfdata.data + self.mfdata.byteOffset)
+        return try body(self.mfdata.data_real + self.mfdata.byteOffset)
+    }
+    public func withUnsafeMutableStartRawImagPointer<R>(_ body: (UnsafeMutableRawPointer?) throws -> R) rethrows -> R{
+        guard let data_imag = self.mfdata.data_imag else { return try body(nil) }
+        return try body(data_imag + self.mfdata.byteOffset)
     }
     public func withUnsafeMutableStartPointer<T, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
         let ret = try self.withUnsafeMutableStartRawPointer{
@@ -92,7 +96,7 @@ extension MfComplexArray{
 
 extension MfData{
     public func withUnsafeMutableStartRawPointer<R>(_ body: (UnsafeMutableRawPointer) throws -> R) rethrows -> R{
-        return try body(self.data + self.byteOffset)
+        return try body(self.data_real + self.byteOffset)
     }
     
     public func withUnsafeMutableStartPointer<T, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{

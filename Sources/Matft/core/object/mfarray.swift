@@ -16,37 +16,6 @@ open class MfArray: MfStructuredProtocol{
 
     public internal(set) var base: MfArray?
     
-    //mfdata getter
-    //return base's data
-    public var data: [Any]{
-        if let base = self.base{
-            return base.data
-        }
-        else{
-            return self.withUnsafeMutableStartRawPointer{
-                [unowned self] in
-                data2flattenArray($0, mftype: self.mftype, size: self.storedSize)
-            }
-        }
-    }
-    internal var storedData: [Any]{
-        if let base = self.base{
-            return base.storedData
-        }
-        else{
-            switch self.storedType {
-            case .Float:
-                return self.withUnsafeMutableStartPointer(datatype: Float.self){
-                    Array(UnsafeMutableBufferPointer(start: $0, count: self.storedSize)) as [Any]
-                }
-            case .Double:
-                return self.withUnsafeMutableStartPointer(datatype: Double.self){
-                    Array(UnsafeMutableBufferPointer(start: $0, count: self.storedSize)) as [Any]
-                }
-            }
-        }
-    }
-    
 
     public init (_ array: [Any], mftype: MfType? = nil, shape: [Int]? = nil, mforder: MfOrder = .Row) {
         
@@ -69,6 +38,12 @@ open class MfArray: MfStructuredProtocol{
         self.mfstructure = MfStructure(shape: shape, mforder: mforder)
         
     }
+    public init(real: MfArray, imag: MfArray, mftype: MfType? = nil,  mforder: MfOrder = .Row){
+
+        let (real, imag) = _check_same_structure(real, imag, mftype: mftype)
+        self.mfdata = MFDATA(ref_realdata: real.mfdata, ref_imagdata: imag.mfdata, offset: real.offsetIndex)
+        self.mfstructure = MfStructure(shape: real.shape, strides: real.strides)
+    }
     public init (mfdata: MfData, mfstructure: MfStructure){
         self.mfdata = mfdata
         self.mfstructure = mfstructure
@@ -88,6 +63,80 @@ open class MfArray: MfStructuredProtocol{
 }
 
 
+extension MfArray{
+    //mfdata getter
+    //return base's data
+    public var data: [Any]{
+        if let base = self.base{
+            return base.data
+        }
+        else{
+            return self.withUnsafeMutableStartRawPointer{
+                [unowned self] in
+                data2flattenArray($0, mftype: self.mftype, size: self.storedSize)
+            }
+        }
+    }
+    /// Alias for data
+    public var data_real: [Any]{
+        return self.data
+    }
+    /// imag data
+    public var data_imag: [Any]?{
+        if self.mfdata._isReal{
+            return nil
+        }
+        
+        if let base = self.base{
+            return base.data
+        }
+        else{
+            return self.withUnsafeMutableStartRawImagPointer{
+                [unowned self] in
+                data2flattenArray($0!, mftype: self.mftype, size: self.storedSize)
+            }
+        }
+    }
+    
+    internal var storedData: [Any]{
+        if let base = self.base{
+            return base.storedData
+        }
+        else{
+            switch self.storedType {
+            case .Float:
+                return self.withUnsafeMutableStartPointer(datatype: Float.self){
+                    Array(UnsafeMutableBufferPointer(start: $0, count: self.storedSize)) as [Any]
+                }
+            case .Double:
+                return self.withUnsafeMutableStartPointer(datatype: Double.self){
+                    Array(UnsafeMutableBufferPointer(start: $0, count: self.storedSize)) as [Any]
+                }
+            }
+        }
+    }
+    
+    public var real: MfArray{
+        if self.mfdata._isReal{
+            return self
+        }
+        else{
+            let mfdata = MfData(data_real_ptr: self.mfdata.data_real, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
+            return MfArray(mfdata: mfdata, mfstructure: self.mfstructure)
+        }
+    }
+    public var imag: MfArray?{
+        if self.mfdata._isReal{
+            return nil
+        }
+        else{
+            let mfdata = MfData(data_real_ptr: self.mfdata.data_imag!, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
+            return MfArray(mfdata: mfdata, mfstructure: self.mfstructure)
+        }
+    }
+}
+
+
 open class MfComplexArray: MfStructuredProtocol{
     typealias MFDATA = MfComplexData
     public internal(set) var mfdata: MfComplexData // Only setter is private
@@ -96,11 +145,11 @@ open class MfComplexArray: MfStructuredProtocol{
     public internal(set) var base: MfComplexArray?
     
     public var real: MfArray{
-        let mfdata = MfData(dataptr: self.mfdata.data_real, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
+        let mfdata = MfData(data_real_ptr: self.mfdata.data_real, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
         return MfArray(mfdata: mfdata, mfstructure: self.mfstructure)
     }
     public var imag: MfArray{
-        let mfdata = MfData(dataptr: self.mfdata.data_imag, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
+        let mfdata = MfData(data_real_ptr: self.mfdata.data_imag, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
         return MfArray(mfdata: mfdata, mfstructure: self.mfstructure)
     }
     

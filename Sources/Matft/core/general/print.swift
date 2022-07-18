@@ -19,8 +19,13 @@ extension MfArray: CustomStringConvertible{
         desc += String(repeating: "[", count: self.ndim)
         
         let flattenData = self.data
+        let flattenImagData = self.data_imag
+        let isRaal = self.mfdata._isReal
         var shape = self.shape
         var strides = self.strides
+        
+        var formatter = NumberFormatter()
+        formatter.positivePrefix = formatter.plusSign
         
         if self.size > 1000{//if size > 1000, some elements left out will be viewed
             let flattenLOIndSeq = FlattenLOIndSequence(storedSize: self.storedSize, shape: &shape, strides: &strides)
@@ -29,7 +34,12 @@ extension MfArray: CustomStringConvertible{
             for (flattenIndex, indices) in flattenLOIndSeq{
                 
                 if var indices = indices, let flattenIndex = flattenIndex{
-                    desc += "\t\(flattenData[flattenIndex + self.offsetIndex]),\t"
+                    if isRaal{
+                        desc += "\t\(flattenData[flattenIndex + self.offsetIndex]),\t"
+                    }
+                    else{
+                        desc += "\t\(flattenData[flattenIndex + self.offsetIndex]) \(formatter.string(for: flattenImagData![flattenIndex + self.offsetIndex]) ?? "")j,\t"
+                    }
                     
                     if indices.last! == shape.last! - 1{
                         let clousureNum = _clousure_number(shape: &shape, indices: &indices)
@@ -66,7 +76,12 @@ extension MfArray: CustomStringConvertible{
             let flattenIndSeq = FlattenIndSequence(shape: &shape, strides: &strides)
             
             for var ret in flattenIndSeq{
-                desc += "\t\(flattenData[ret.flattenIndex + self.offsetIndex]),\t"
+                if isRaal{
+                    desc += "\t\(flattenData[ret.flattenIndex + self.offsetIndex]),\t"
+                }
+                else{
+                    desc += "\t\(flattenData[ret.flattenIndex + self.offsetIndex]) \(formatter.string(for: flattenImagData![ret.flattenIndex + self.offsetIndex]) ?? "")j,\t"
+                }
 
                 if ret.indices.last! == shape.last! - 1{
                     let clousureNum = _clousure_number(shape: &shape, indices: &ret.indices)
@@ -129,14 +144,30 @@ extension MfData: CustomStringConvertible{
         
         ret += "Original Type\t: \(self.mftype)\n"
         ret += "Stored Type\t\t: \(self.storedType)\n"
-        ret += "Raw Data:\n"
+        ret += "isReal\t: \(self._isReal)\n"
+        
         switch self.storedType{
         case .Float:
-            let ptrF = self.data.bindMemory(to: Float.self, capacity: self.storedSize)
+            let ptrF = self.data_real.bindMemory(to: Float.self, capacity: self.storedSize)
+            ret += "Raw Data:\n"
             ret += "\(Array(UnsafeMutableBufferPointer(start: ptrF, count: self.storedSize)))\n"
+            
+            if !self._isReal{
+                let ptriF = self.data_imag!.bindMemory(to: Float.self, capacity: self.storedSize)
+                ret += "Raw Imag Data:\n"
+                ret += "\(Array(UnsafeMutableBufferPointer(start: ptriF, count: self.storedSize)))\n"
+            }
+            
         case .Double:
-            let ptrD = self.data.bindMemory(to: Double.self, capacity: self.storedSize)
+            let ptrD = self.data_real.bindMemory(to: Double.self, capacity: self.storedSize)
+            ret += "Raw Data:\n"
             ret += "\(Array(UnsafeMutableBufferPointer(start: ptrD, count: self.storedSize)))\n"
+            
+            if !self._isReal{
+                let ptriD = self.data_imag!.bindMemory(to: Double.self, capacity: self.storedSize)
+                ret += "Raw Imag Data:\n"
+                ret += "\(Array(UnsafeMutableBufferPointer(start: ptriD, count: self.storedSize)))\n"
+            }
         }
         
         ret += "\n"
