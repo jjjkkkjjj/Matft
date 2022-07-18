@@ -36,5 +36,21 @@ extension Matft.complex{
         }
     }
     
-    
+    /**
+       Return the conjugate of the complex mfarray
+       - parameters:
+           - mfarray:  mfarray
+    */
+    public static func conjugate(_ mfarray: MfArray) -> MfArray{
+        if mfarray.isReal{
+            return mfarray.deepcopy(.Row)
+        }
+        
+        switch mfarray.storedType{
+        case .Float:
+            return conjugate_by_vDSP(mfarray, vDSP_zvconj)
+        case .Double:
+            return conjugate_by_vDSP(mfarray, vDSP_zvconjD)
+        }
+    }
 }

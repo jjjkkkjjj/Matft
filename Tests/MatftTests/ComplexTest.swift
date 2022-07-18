@@ -69,4 +69,22 @@ final class ComplexTests: XCTestCase {
                                                              [-0.78539816, -0.78539816, -0.78539816, -0.78539816]]] as [[[Float]]]))
         }
     }
+    
+    func testConjugate() {
+        do{
+            let real = Matft.arange(start: 0, to: 16, by: 1).reshape([2,2,4])
+            
+            XCTAssertEqual(Matft.complex.conjugate(real), real)
+        }
+        
+        do {
+            let real = Matft.arange(start: 0, to: 16, by: 1).reshape([2,2,4])
+            let imag = Matft.arange(start: 0, to: -16, by: -1).reshape([2,2,4])
+            let a = MfArray(real: real, imag: imag)
+            let conj = Matft.complex.conjugate(a)
+            
+            XCTAssertEqual(conj.real, real)
+            XCTAssertEqual(conj.imag!, -imag)
+        }
+    }
 }

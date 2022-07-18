@@ -408,6 +408,33 @@ internal func zvphas_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vDSP_
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
+/// Conjugate operation mfarray by vDSP
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - vDSP_func: vDSP_conjugate_func
+/// - Returns: Pre operated mfarray
+internal func conjugate_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vDSP_func: vDSP_convertcz_func<T, T>) -> MfArray{
+    //return mfarray must be either row or column major
+    var mfarray = mfarray
+    //print(mfarray)
+    mfarray = check_contiguous(mfarray)
+    //print(mfarray)
+    //print(mfarray.strides)
+    
+    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
+    newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_convertcz(mfarray.storedSize, $0, 1, dstptrT, 1, vDSP_func)
+            //vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
+        }
+    }
+    
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
 /// Math operation mfarray by vDSP
 /// - Parameters:
 ///   - mfarray: An input mfarray
