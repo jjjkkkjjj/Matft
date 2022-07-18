@@ -476,16 +476,18 @@ mfarray =
 
 Below is Matft's function list. As I mentioned above, almost functions are similar to Numpy. Also, these function use Accelerate framework inside, the perfomance may keep high.
 
-\* means method function exists too. Shortly, you can use `a.shallowcopy()` where `a` is `MfArray`.
+`*` means method function exists too. Shortly, you can use `a.shallowcopy()` where `a` is `MfArray`.
 
-^ means method function only. Shortly, you can use `a.tolist()` **not** `Matft.tolist` where `a` is `MfArray`.
+`^` means method function only. Shortly, you can use `a.tolist()` **not** `Matft.tolist` where `a` is `MfArray`.
+
+`#` means support complex operation
 
 - Creation
 
 | Matft                      | Numpy             |
 | -------------------------- | ---------------- |
-| *Matft.shallowcopy | *numpy.copy       |
-| *Matft.deepcopy    | copy.deepcopy     |
+| *#Matft.shallowcopy | *numpy.copy       |
+| *#Matft.deepcopy    | copy.deepcopy     |
 | Matft.nums         | numpy.ones * N    |
 | Matft.nums_like | numpy.ones_like * N |
 | Matft.arange       | numpy.arange      |
@@ -503,17 +505,17 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 
 | Matft                       | Numpy                    |
 | --------------------------- | ----------------------- |
-| *Matft.astype       | *numpy.astype            |
-| *Matft.transpose    | *numpy.transpose         |
-| *Matft.expand_dims  | *numpy.expand_dims       |
-| *Matft.squeeze      | *numpy.squeeze           |
-| *Matft.broadcast_to | *numpy.broadcast_to      |
-| *Matft.to_contiguous| *numpy.ascontiguousarray |
-| *Matft.flatten      | *numpy.flatten           |
-| *Matft.flip         | *numpy.flip              |
-| *Matft.clip         | *numpy.clip              |
-| *Matft.swapaxes     | *numpy.swapaxes          |
-| *Matft.moveaxis     | *numpy.moveaxis          |
+| *#Matft.astype       | *numpy.astype            |
+| *#Matft.transpose    | *numpy.transpose         |
+| *#Matft.expand_dims  | *numpy.expand_dims       |
+| *#Matft.squeeze      | *numpy.squeeze           |
+| *#Matft.broadcast_to | *numpy.broadcast_to      |
+| *#Matft.to_contiguous| *numpy.ascontiguousarray |
+| *#Matft.flatten      | *numpy.flatten           |
+| *#Matft.flip         | *numpy.flip              |
+| *#Matft.clip         | *numpy.clip              |
+| *#Matft.swapaxes     | *numpy.swapaxes          |
+| *#Matft.moveaxis     | *numpy.moveaxis          |
 | *Matft.sort         | *numpy.sort              |
 | *Matft.argsort      | *numpy.argsort           |
 | ^MfArray.toArray | ^numpy.ndarray.tolist |
@@ -534,10 +536,10 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 
 | Matft                          | Numpy                      |
 | ------------------------------ | ------------------------- |
-| Matft.add<br />+       | numpy.add<br />+           |
-| Matft.sub<br />-       | numpy.sub<br />-           |
-| Matft.div<br />/       | numpy.div<br />.           |
-| Matft.mul<br />*       | numpy.multiply<br />*      |
+| #Matft.add<br />+       | numpy.add<br />+           |
+| #Matft.sub<br />-       | numpy.sub<br />-           |
+| #Matft.div<br />/       | numpy.div<br />.           |
+| #Matft.mul<br />*       | numpy.multiply<br />*      |
 | Matft.inner<br />*+    | numpy.inner<br />n/a       |
 | Matft.cross<br />*^    | numpy.cross<br />n/a       |
 | Matft.matmul<br />*&　　| numpy.matmul<br />@　      |
@@ -548,15 +550,15 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.less_equal<br /><= | numpy.less_equal<br /><= |
 | Matft.greater<br />> | numpy.greater<br />> |
 | Matft.greater_equal<br />>= | numpy.greater_equal<br />>= |
-| Matft.allEqual<br />== | numpy.array_equal<br />n/a |
-| Matft.neg<br />-       | numpy.negative<br />-      |
+| #Matft.allEqual<br />== | numpy.array_equal<br />n/a |
+| #Matft.neg<br />-       | numpy.negative<br />-      |
 
 - Universal Fucntion Reduction
 
 | Matft                                                        | Numpy                                                   |
 | ------------------------------------------------------------ | ------------------------------------------------------- |
-| *Matft.ufuncReduce<br />e.g.) Matft.ufuncReduce(a, Matft.add) | numpy.add.reduce<br />e.g.) numpy.add.reduce(a)         |
-| *Matft.ufuncAccumulate<br />e.g.) Matft.ufuncAccumulate(a, Matft.add) | numpy.add.accumulate<br />e.g.) numpy.add.accumulate(a) |
+| *#Matft.ufuncReduce<br />e.g.) Matft.ufuncReduce(a, Matft.add) | numpy.add.reduce<br />e.g.) numpy.add.reduce(a)         |
+| *#Matft.ufuncAccumulate<br />e.g.) Matft.ufuncAccumulate(a, Matft.add) | numpy.add.accumulate<br />e.g.) numpy.add.accumulate(a) |
 
 - Math function
 
@@ -585,7 +587,7 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.math.trunc | numpy.trunc |
 | *Matft.math.nearest | numpy.nearest |
 | *Matft.math.round | numpy.round |
-| Matft.math.abs | numpy.abs |
+| #Matft.math.abs | numpy.abs |
 | Matft.math.reciprocal | numpy.reciprocal |
 | Matft.math.power | numpy.power |
 | Matft.math.arctan2 | numpy.arctan2 |

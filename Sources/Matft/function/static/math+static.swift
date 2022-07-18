@@ -465,17 +465,20 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func abs(_ mfarray: MfArray) -> MfArray{
-        unsupport_complex(mfarray)
-        
-        switch mfarray.storedType {
-        case .Float:
-            let ret = mathf_by_vForce(mfarray, vvfabsf)
-            ret.mfdata.mftype = .Float
-            return ret
-        case .Double:
-            let ret = mathf_by_vForce(mfarray, vvfabs)
-            ret.mfdata.mftype = .Double
-            return ret
+        if mfarray.isReal{
+            switch mfarray.storedType {
+            case .Float:
+                let ret = mathf_by_vForce(mfarray, vvfabsf)
+                ret.mfdata.mftype = .Float
+                return ret
+            case .Double:
+                let ret = mathf_by_vForce(mfarray, vvfabs)
+                ret.mfdata.mftype = .Double
+                return ret
+            }
+        }
+        else{
+            return Matft.complex.abs(mfarray)
         }
     }
     /**
