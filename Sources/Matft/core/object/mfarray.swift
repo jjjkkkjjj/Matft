@@ -134,6 +134,13 @@ extension MfArray{
             return MfArray(mfdata: mfdata, mfstructure: self.mfstructure)
         }
     }
+    
+    public var isReal: Bool{
+        return self.mfdata._isReal
+    }
+    public var isComplex: Bool{
+        return !self.mfdata._isReal
+    }
 }
 
 

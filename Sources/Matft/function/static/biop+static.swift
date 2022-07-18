@@ -18,23 +18,25 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func add(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
-        switch MfType.storedType(rettype){
-        case .Float:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
-        case .Double:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
+        let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
+        
+        if isReal{
+            switch MfType.storedType(rettype){
+            case .Float:
+                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
+            case .Double:
+                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
+            }
+        }
+        else{
+            switch MfType.storedType(rettype){
+            case .Float:
+                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvadd)
+            case .Double:
+                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvaddD)
+            }
         }
     }
-    /*
-    public static func add(_ l_mfarray: MfComplexArray, _ r_mfarray: MfComplexArray) -> MfComplexArray{
-        switch l_mfarray.storedType{
-        case .Float:
-            return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvadd)
-        case .Double:
-            return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvaddD)
-        }
-    }*/
     
     /**
        Element-wise addition of  mfarray and scalar
@@ -87,12 +89,23 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func sub(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
-        switch MfType.storedType(rettype){
-        case .Float:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
-        case .Double:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD)
+        let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
+        
+        if isReal{
+            switch MfType.storedType(rettype){
+            case .Float:
+                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
+            case .Double:
+                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD)
+            }
+        }
+        else{
+            switch MfType.storedType(rettype){
+            case .Float:
+                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvsub)
+            case .Double:
+                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvsubD)
+            }
         }
     }
     /**
@@ -146,12 +159,23 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func mul(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
-        switch MfType.storedType(rettype){
-        case .Float:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul)
-        case .Double:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmulD)
+        let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
+        
+        if isReal{
+            switch MfType.storedType(rettype){
+            case .Float:
+                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul)
+            case .Double:
+                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmulD)
+            }
+        }
+        else{
+            switch MfType.storedType(rettype){
+            case .Float:
+                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvmul_)
+            case .Double:
+                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvmulD_)
+            }
         }
     }
     /**
@@ -205,14 +229,25 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func div(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
-        switch MfType.storedType(rettype){
-        case .Float:
-            let ret = biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv)
-            ret.mfdata.mftype = .Float
-            return ret
-        case .Double:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
+        let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
+        
+        if isReal{
+            switch MfType.storedType(rettype){
+            case .Float:
+                let ret = biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv)
+                ret.mfdata.mftype = .Float
+                return ret
+            case .Double:
+                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
+            }
+        }
+        else{
+            switch MfType.storedType(rettype){
+            case .Float:
+                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvdiv)
+            case .Double:
+                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvdivD)
+            }
         }
     }
     /**
@@ -679,7 +714,7 @@ fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: ino
 
 
 fileprivate func _cross_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-    var (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
+    var (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
     
     let orig_shape_for3d = l_mfarray.shape
     let lastdim = orig_shape_for3d[l_mfarray.ndim - 1]
@@ -760,37 +795,114 @@ fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray,
     switch diff.storedType {
     case .Float:
         if let data = diff.data as? [UInt8]{
-            return data.allSatisfy{ $0 == UInt8.zero }
+            let ret = data.allSatisfy{ $0 == UInt8.zero }
+            if diff.isComplex{
+                let data_img = diff.data_imag as! [UInt8]
+                return ret && data_img.allSatisfy{ $0 == UInt8.zero }
+            }
+            else{
+                return ret
+            }
         }
         else if let data = diff.data as? [UInt16]{
-            return data.allSatisfy{ $0 == UInt8.zero }
+            let ret = data.allSatisfy{ $0 == UInt16.zero }
+            if diff.isComplex{
+                let data_img = diff.data_imag as! [UInt16]
+                return ret && data_img.allSatisfy{ $0 == UInt16.zero }
+            }
+            else{
+                return ret
+            }
         }
         else if let data = diff.data as? [UInt32]{
-            return data.allSatisfy{ $0 == UInt32.zero }
+            let ret = data.allSatisfy{ $0 == UInt32.zero }
+            if diff.isComplex{
+                let data_img = diff.data_imag as! [UInt32]
+                return ret && data_img.allSatisfy{ $0 == UInt32.zero }
+            }
+            else{
+                return ret
+            }
         }
         else if let data = diff.data as? [UInt64]{
-            return data.allSatisfy{ $0 == UInt64.zero }
+            let ret = data.allSatisfy{ $0 == UInt64.zero }
+            if diff.isComplex{
+                let data_img = diff.data_imag as! [UInt64]
+                return ret && data_img.allSatisfy{ $0 == UInt64.zero }
+            }
+            else{
+                return ret
+            }
         }
         else if let data = diff.data as? [UInt]{
-            return data.allSatisfy{ $0 == UInt.zero }
+            let ret = data.allSatisfy{ $0 == UInt.zero }
+            if diff.isComplex{
+                let data_img = diff.data_imag as! [UInt]
+                return ret && data_img.allSatisfy{ $0 == UInt.zero }
+            }
+            else{
+                return ret
+            }
         }
         else if let data = diff.data as? [Int8]{
-            return data.allSatisfy{ $0 == Int8.zero }
+            let ret = data.allSatisfy{ $0 == Int8.zero }
+            if diff.isComplex{
+                let data_img = diff.data_imag as! [Int8]
+                return ret && data_img.allSatisfy{ $0 == Int8.zero }
+            }
+            else{
+                return ret
+            }
         }
         else if let data = diff.data as? [Int16]{
-            return data.allSatisfy{ $0 == Int16.zero }
+            let ret = data.allSatisfy{ $0 == Int16.zero }
+            if diff.isComplex{
+                let data_img = diff.data_imag as! [Int16]
+                return ret && data_img.allSatisfy{ $0 == Int16.zero }
+            }
+            else{
+                return ret
+            }
         }
         else if let data = diff.data as? [Int32]{
-            return data.allSatisfy{ $0 == Int32.zero }
+            let ret = data.allSatisfy{ $0 == Int32.zero }
+            if diff.isComplex{
+                let data_img = diff.data_imag as! [Int32]
+                return ret && data_img.allSatisfy{ $0 == Int32.zero }
+            }
+            else{
+                return ret
+            }
         }
         else if let data = diff.data as? [Int64]{
-            return data.allSatisfy{ $0 == Int64.zero }
+            let ret = data.allSatisfy{ $0 == Int64.zero }
+            if diff.isComplex{
+                let data_img = diff.data_imag as! [Int64]
+                return ret && data_img.allSatisfy{ $0 == Int64.zero }
+            }
+            else{
+                return ret
+            }
         }
         else if let data = diff.data as? [Int]{
-            return data.allSatisfy{ $0 == Int.zero }
+            let ret = data.allSatisfy{ $0 == Int.zero }
+            if diff.isComplex{
+                let data_img = diff.data_imag as! [Int]
+                return ret && data_img.allSatisfy{ $0 == Int.zero }
+            }
+            else{
+                return ret
+            }
         }
         else if let data = diff.data as? [Float]{
-            return data.allSatisfy{ abs($0) <= thresholdF }
+            let ret = data.allSatisfy{ abs($0) <= thresholdF }
+            if diff.isComplex{
+                let data_img = diff.data_imag as! [Float]
+                return ret && data_img.allSatisfy{ abs($0) <= thresholdF }
+            }
+            else{
+                return ret
+            }
         }
         else{
             // bool
@@ -798,11 +910,25 @@ fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray,
                 return false
             }
             
-            return data.allSatisfy{ $0 == Float.zero }
+            let ret = data.allSatisfy{ $0 == Float.zero }
+            if diff.isComplex{
+                let data_img = diff.data_imag as! [Float]
+                return ret && data_img.allSatisfy{ abs($0) <= thresholdF }
+            }
+            else{
+                return ret
+            }
         }
     case .Double:
         if let data = diff.data as? [Double]{
-            return data.allSatisfy{ abs($0) <= thresholdD }
+            let ret = data.allSatisfy{ abs($0) <= thresholdD }
+            if diff.isComplex{
+                let data_img = diff.data_imag as! [Double]
+                return ret && data_img.allSatisfy{ abs($0) <= thresholdD }
+            }
+            else{
+                return ret
+            }
         }
         else{
             return false

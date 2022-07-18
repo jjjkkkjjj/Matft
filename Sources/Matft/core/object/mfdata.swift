@@ -129,6 +129,7 @@ public class MfData: MfDataProtocol{
     public init(refdata: MfData, offset: Int){
         self._base = refdata
         self.data_real = refdata.data_real
+        self.data_imag = refdata.data_imag
         self.storedSize = refdata.storedSize
         self.mftype = refdata.mftype
         self.offset = offset

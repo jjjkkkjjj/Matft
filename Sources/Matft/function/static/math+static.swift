@@ -475,7 +475,7 @@ extension Matft.math{//use math_vv_by_vecLib
             - exponents: mfarray
     */
     public static func power(bases: MfArray, exponents: MfArray) -> MfArray{
-        let (bases, exponents, rettype) = biop_broadcast_to(bases, exponents)
+        let (bases, exponents, rettype, isReal) = biop_broadcast_to(bases, exponents)
         
         switch MfType.storedType(rettype) {
         case .Float:
@@ -496,7 +496,7 @@ extension Matft.math{//use math_vv_by_vecLib
             - x2: x coordinates mfarray
     */
     public static func arctan2(x1: MfArray, x2: MfArray) -> MfArray{
-        let (x1, x2, rettype) = biop_broadcast_to(x1, x2)
+        let (x1, x2, rettype, isReal) = biop_broadcast_to(x1, x2)
         
         switch MfType.storedType(rettype) {
         case .Float:

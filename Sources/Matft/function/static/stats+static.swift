@@ -91,7 +91,7 @@ extension Matft.stats{
             - r_mfarray: mfarray
     */
     public static func maximum(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
+        let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(rettype) {
         case .Float:
             return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmax)
@@ -107,7 +107,7 @@ extension Matft.stats{
             - r_mfarray: mfarray
     */
     public static func minimum(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype) = biop_broadcast_to(l_mfarray, r_mfarray)
+        let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
         switch MfType.storedType(rettype) {
         case .Float:
             return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmin)
