@@ -53,11 +53,21 @@ extension Matft{
             l_mfarray = l_mfarray.astype(retmftype)
         }
         
-        switch MfType.storedType(retmftype) {
-        case .Float:
-            return biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsadd)
-        case .Double:
-            return biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsaddD)
+        if l_mfarray.isReal{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsadd)
+            case .Double:
+                return biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsaddD)
+            }
+        }
+        else{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopzvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_zrvadd)
+            case .Double:
+                return biopzvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_zrvaddD)
+            }
         }
     }
     /**
@@ -75,11 +85,21 @@ extension Matft{
             r_mfarray = r_mfarray.astype(retmftype)
         }
         
-        switch MfType.storedType(retmftype) {
-        case .Float:
-            return biopvs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsadd)
-        case .Double:
-            return biopvs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_vsaddD)
+        if r_mfarray.isReal{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopvs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsadd)
+            case .Double:
+                return biopvs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_vsaddD)
+            }
+        }
+        else{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopzvs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_zrvadd)
+            case .Double:
+                return biopzvs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_zrvaddD)
+            }
         }
     }
     /**
@@ -123,11 +143,21 @@ extension Matft{
             l_mfarray = l_mfarray.astype(retmftype)
         }
         
-        switch MfType.storedType(retmftype) {
-        case .Float:
-            return biopvs_by_vDSP(l_mfarray, -Float.from(r_scalar), vDSP_vsadd)
-        case .Double:
-            return biopvs_by_vDSP(l_mfarray, -Double.from(r_scalar), vDSP_vsaddD)
+        if l_mfarray.isReal{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopvs_by_vDSP(l_mfarray, -Float.from(r_scalar), vDSP_vsadd)
+            case .Double:
+                return biopvs_by_vDSP(l_mfarray, -Double.from(r_scalar), vDSP_vsaddD)
+            }
+        }
+        else{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopzvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_zrvsub)
+            case .Double:
+                return biopzvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_zrvsubD)
+            }
         }
     }
     /**
@@ -145,11 +175,21 @@ extension Matft{
             r_mfarray = r_mfarray.astype(retmftype)
         }
         
-        switch MfType.storedType(retmftype) {
-        case .Float:
-            return biopvs_by_vDSP(-r_mfarray, Float.from(l_scalar), vDSP_vsadd)
-        case .Double:
-            return biopvs_by_vDSP(-r_mfarray, Double.from(l_scalar), vDSP_vsaddD)
+        if r_mfarray.isReal{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopvs_by_vDSP(-r_mfarray, Float.from(l_scalar), vDSP_vsadd)
+            case .Double:
+                return biopvs_by_vDSP(-r_mfarray, Double.from(l_scalar), vDSP_vsaddD)
+            }
+        }
+        else{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopzvs_by_vDSP(-r_mfarray, Float.from(l_scalar), vDSP_zrvadd)
+            case .Double:
+                return biopzvs_by_vDSP(-r_mfarray, Double.from(l_scalar), vDSP_zrvaddD)
+            }
         }
     }
     /**
@@ -193,11 +233,21 @@ extension Matft{
             l_mfarray = l_mfarray.astype(retmftype)
         }
         
-        switch MfType.storedType(retmftype) {
-        case .Float:
-            return biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsmul)
-        case .Double:
-            return biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsmulD)
+        if l_mfarray.isReal{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsmul)
+            case .Double:
+                return biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsmulD)
+            }
+        }
+        else{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopzvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_zrvmul)
+            case .Double:
+                return biopzvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_zrvmulD)
+            }
         }
     }
     /**
@@ -215,11 +265,21 @@ extension Matft{
             r_mfarray = r_mfarray.astype(retmftype)
         }
         
-        switch MfType.storedType(retmftype) {
-        case .Float:
-            return biopvs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsmul)
-        case .Double:
-            return biopvs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_vsmulD)
+        if r_mfarray.isReal{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopvs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsmul)
+            case .Double:
+                return biopvs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_vsmulD)
+            }
+        }
+        else{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopzvs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_zrvmul)
+            case .Double:
+                return biopzvs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_zrvmulD)
+            }
         }
     }
     /**
@@ -265,11 +325,21 @@ extension Matft{
             l_mfarray = l_mfarray.astype(retmftype)
         }
         
-        switch MfType.storedType(retmftype) {
-        case .Float:
-            return biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsdiv)
-        case .Double:
-            return biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsdivD)
+        if l_mfarray.isReal{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsdiv)
+            case .Double:
+                return biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsdivD)
+            }
+        }
+        else{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopzvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_zrvdiv)
+            case .Double:
+                return biopzvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_zrvdivD)
+            }
         }
     }
     /**
@@ -287,11 +357,21 @@ extension Matft{
             r_mfarray = r_mfarray.astype(retmftype)
         }
         
-        switch MfType.storedType(retmftype) {
-        case .Float:
-            return biopsv_by_vDSP(Float.from(l_scalar), r_mfarray, vDSP_svdiv)
-        case .Double:
-            return biopsv_by_vDSP(Double.from(l_scalar), r_mfarray, vDSP_svdivD)
+        if r_mfarray.isReal{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopsv_by_vDSP(Float.from(l_scalar), r_mfarray, vDSP_svdiv)
+            case .Double:
+                return biopsv_by_vDSP(Double.from(l_scalar), r_mfarray, vDSP_svdivD)
+            }
+        }
+        else{
+            switch MfType.storedType(retmftype) {
+            case .Float:
+                return biopzsv_by_vDSP(Float.from(l_scalar), r_mfarray, vDSP_ztrans)
+            case .Double:
+                return biopzsv_by_vDSP(Double.from(l_scalar), r_mfarray, vDSP_ztransD)
+            }
         }
     }
     
