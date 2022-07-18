@@ -637,6 +637,7 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | -------------------------------- | ----------------- |
 | Matft.complex.angle       | numpy.angle |
 | Matft.complex.conjugate         | numpy.conj / numpy.conjugate   |
+| Matft.complex.abs         | numpy.abs / numpy.absolute   |
 
 - Interpolation
 

@@ -26,11 +26,11 @@ extension Matft.complex{
         
         switch src_mfarray.storedType{
         case .Float:
-            let ret = zvphas_by_vDSP(src_mfarray, vDSP_zvphas)
+            let ret = z2r_by_vDSP(src_mfarray, vDSP_zvphas)
             ret.mfdata.mftype = .Float
             return ret
         case .Double:
-            let ret = zvphas_by_vDSP(src_mfarray, vDSP_zvphasD)
+            let ret = z2r_by_vDSP(src_mfarray, vDSP_zvphasD)
             ret.mfdata.mftype = .Double
             return ret
         }
@@ -51,6 +51,24 @@ extension Matft.complex{
             return conjugate_by_vDSP(mfarray, vDSP_zvconj)
         case .Double:
             return conjugate_by_vDSP(mfarray, vDSP_zvconjD)
+        }
+    }
+    
+    /**
+       Complex absolute
+       - parameters:
+           - mfarray:  mfarray
+    */
+    public static func abs(_ mfarray: MfArray) -> MfArray{
+        if mfarray.isReal{
+            return Matft.math.abs(mfarray)
+        }
+        
+        switch mfarray.storedType{
+        case .Float:
+            return z2r_by_vDSP(mfarray, vDSP_zvabs)
+        case .Double:
+            return z2r_by_vDSP(mfarray, vDSP_zvabsD)
         }
     }
 }

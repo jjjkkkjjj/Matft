@@ -111,4 +111,19 @@ final class ComplexTests: XCTestCase {
             XCTAssertEqual(ret.imag!, -imag)
         }
     }
+    
+    func testAbsolute(){
+        do{
+            let real = Matft.arange(start: 0, to: 16, by: 1).reshape([2,2,4])
+            let imag = Matft.arange(start: 0, to: -16, by: -1).reshape([2,2,4])
+            let a = MfArray(real: real, imag: imag)
+            let ret = Matft.complex.abs(a)
+            
+            XCTAssertEqual(ret, MfArray([[[ 0.0        ,  1.41421356,  2.82842712,  4.24264069],
+                                          [ 5.65685425,  7.07106781,  8.48528137,  9.89949494]],
+
+                                         [[11.3137085 , 12.72792206, 14.14213562, 15.55634919],
+                                          [16.97056275, 18.38477631, 19.79898987, 21.21320344]]] as [[[Float]]]))
+        }
+    }
 }
