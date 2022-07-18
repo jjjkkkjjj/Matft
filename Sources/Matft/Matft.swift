@@ -46,6 +46,11 @@ public class Matft{
     public class image{}
     
     /**
+       Complex
+     */
+    public class complex{}
+    
+    /**
        The kernel of mfarray.
     */
     //internal class mfdata{}

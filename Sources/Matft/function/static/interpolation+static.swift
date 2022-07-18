@@ -18,6 +18,9 @@ extension Matft.interp1d{
             - bc_type: Boundary condition type. Natural is supported only.
     */
     public static func cubicSpline(x: MfArray, y: MfArray, axis: Int = -1, assume_sorted: Bool = true, bc_type: CubicSpline.BoundaryCondition = .natural) -> CubicSpline{
+        unsupport_complex(x)
+        unsupport_complex(y)
+        
         let input = _preprocessing_interp(x, y, axis, assume_sorted)
         var spline = CubicSpline(orig_x: input.orig_x, orig_y: input.orig_y, axis: input.axis, assume_sorted: assume_sorted, bc_type: bc_type)
         return spline.fit()

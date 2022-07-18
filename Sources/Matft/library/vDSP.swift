@@ -12,11 +12,17 @@ import CoreGraphics
 
 internal typealias vDSP_convert_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<U>, vDSP_Stride, vDSP_Length) -> Void
 
+// vDSP_ctoz or vDSP_ztoc
+internal typealias vDSP_convertz_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<U>, vDSP_Stride, vDSP_Length) -> Void
+
 internal typealias vDSP_biopvv_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+internal typealias vDSP_biopzvv_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
 internal typealias vDSP_biopvs_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+internal typealias vDSP_biopzvs_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<U>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
 internal typealias vDSP_biopsv_func<T> = (UnsafePointer<T>, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
+internal typealias vDSP_biopzsv_func<T, U> = (UnsafePointer<T>, UnsafePointer<U>, UnsafePointer<U>, vDSP_Length) -> Void
 
 internal typealias vDSP_vcmprs_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
@@ -41,6 +47,17 @@ internal typealias vDSP_vgathr_func<T> = (UnsafePointer<T>, UnsafePointer<vDSP_L
 
 internal typealias vDSP_dotpr_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Length) -> Void
 
+internal typealias vDSP_z2r_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<U>, vDSP_Stride, vDSP_Length) -> Void
+
+@inline(__always)
+internal func vDSP_zvmul_(_ __A: UnsafePointer<DSPSplitComplex>, _ __IA: vDSP_Stride, _ __B: UnsafePointer<DSPSplitComplex>, _ __IB: vDSP_Stride, _ __C: UnsafePointer<DSPSplitComplex>, _ __IC: vDSP_Stride, _ __N: vDSP_Length) -> Void{
+    vDSP_zvmul(__A, __IA, __B, __IB, __C, __IC, __N, Int32(1))
+}
+@inline(__always)
+internal func vDSP_zvmulD_(_ __A: UnsafePointer<DSPDoubleSplitComplex>, _ __IA: vDSP_Stride, _ __B: UnsafePointer<DSPDoubleSplitComplex>, _ __IB: vDSP_Stride, _ __C: UnsafePointer<DSPDoubleSplitComplex>, _ __IC: vDSP_Stride, _ __N: vDSP_Length) -> Void{
+    vDSP_zvmulD(__A, __IA, __B, __IB, __C, __IC, __N, Int32(1))
+}
+
 /// Wrapper of vDSP conversion function
 /// - Parameters:
 ///   - srcptr: A source pointer
@@ -51,6 +68,19 @@ internal typealias vDSP_dotpr_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePo
 ///   - vDSP_func: The vDSP conversion function
 @inline(__always)
 internal func wrap_vDSP_convert<T, U>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafeMutablePointer<U>, _ dstStride: Int, _ vDSP_func: vDSP_convert_func<T, U>){
+    vDSP_func(srcptr, vDSP_Stride(srcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
+}
+
+/// Wrapper of vDSP conversion function
+/// - Parameters:
+///   - srcptr: A source pointer
+///   - srcStride: A source stride
+///   - dstptr: A destination pointer
+///   - dstStride: A destination stride
+///   - size: A size to be copied
+///   - vDSP_func: The vDSP conversion function
+@inline(__always)
+internal func wrap_vDSP_convertz<T, U>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafePointer<U>, _ dstStride: Int, _ vDSP_func: vDSP_convertz_func<T, U>){
     vDSP_func(srcptr, vDSP_Stride(srcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
 }
 
@@ -69,6 +99,20 @@ internal func wrap_vDSP_biopvv<T>(_ size: Int, _ lsrcptr: UnsafePointer<T>, _ ls
     vDSP_func(rsrcptr, vDSP_Stride(rsrcStride), lsrcptr, vDSP_Stride(lsrcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
 }
 
+/// Wrapper of vDSP binary operation function
+/// - Parameters:
+///   - size: A size
+///   - lsrcptr: A left  source pointer
+///   - lsrcStride: A left source stride
+///   - rsrcptr: A right source pointer
+///   - rsrcStride: A right source stride
+///   - dstptr: A destination pointer
+///   - dstStride: A destination stride
+///   - vDSP_func: The vDSP conversion function
+@inline(__always)
+internal func wrap_vDSP_biopzvv<T>(_ size: Int, _ lsrcptr: UnsafePointer<T>, _ lsrcStride: Int, _ rsrcptr: UnsafePointer<T>, _ rsrcStride: Int, _ dstptr: UnsafePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_biopzvv_func<T>){
+    vDSP_func(rsrcptr, vDSP_Stride(rsrcStride), lsrcptr, vDSP_Stride(lsrcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
+}
 
 /// Wrapper of vDSP binary operation function
 /// - Parameters:
@@ -84,6 +128,20 @@ internal func wrap_vDSP_biopvs<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ src
     vDSP_func(srcptr, vDSP_Stride(srcStride), scalar, dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
 }
 
+/// Wrapper of vDSP binary complex operation function
+/// - Parameters:
+///   - size: A size
+///   - srcptr: A source pointer
+///   - srcStride: A source stride
+///   - scalar: A source scalar pointer
+///   - dstptr: A destination pointer
+///   - dstStride: A destination stride
+///   - vDSP_func: The vDSP conversion function
+@inline(__always)
+internal func wrap_vDSP_biopzvs<T: vDSP_ComplexTypable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ realptr: UnsafePointer<T.T>, _ realStride: Int, _ dstptr: UnsafePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_biopzvs_func<T, T.T>){
+    vDSP_func(srcptr, vDSP_Stride(srcStride), realptr, vDSP_Stride(realStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
+}
+
 /// Wrapper of vDSP binary operation function
 /// - Parameters:
 ///   - size: A size
@@ -96,6 +154,19 @@ internal func wrap_vDSP_biopvs<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ src
 @inline(__always)
 internal func wrap_vDSP_biopsv<T>(_ size: Int, _ scalar: UnsafePointer<T>, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_biopsv_func<T>){
     vDSP_func(scalar, srcptr, vDSP_Stride(srcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
+}
+
+/// Wrapper of vDSP binary operation function
+/// - Parameters:
+///   - size: A size
+///   - scalar: A source scalar pointer
+///   - srcptr: A source pointer
+///   - dstptr: A destination pointer
+///   - vDSP_func: The vDSP conversion function
+@inline(__always)
+internal func wrap_vDSP_biopzsv<T: vDSP_ComplexTypable>(_ size: Int, _ scalar: UnsafePointer<T.T>, _ srcptr: UnsafePointer<T>, _ dstptr: UnsafePointer<T>, _ vDSP_func: vDSP_biopzsv_func<T.T, T>){
+    var arrscalar = Array(repeating: scalar.pointee, count: size)
+    vDSP_func(&arrscalar, srcptr, dstptr, vDSP_Length(size))
 }
 
 /// Wrapper of vDSP boolean conversion function
@@ -312,6 +383,69 @@ internal func contiguous_and_astype_by_vDSP<T: MfStorable, U: MfStorable>(_ src_
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
+/// Convert type and contiguous mfarray
+/// - Parameters:
+///   - src_mfarray: An input mfarray
+///   - mftype: The new mftype
+///   - mforder: The order
+///   - vDSP_func: vDSP_convertz_func
+/// - Returns: Pre operated mfarray
+internal func zcontiguous_and_astype_by_vDSP<T: vDSP_ComplexTypable, U: vDSP_ComplexTypable>(_ src_mfarray: MfArray, mftype: MfType, mforder: MfOrder, src_type: T.Type, dst_type: U.Type,  vDSP_func: vDSP_convert_func<T.T, U.T>) -> MfArray{
+    var ret_shape = src_mfarray.shape
+    let ret_strides = shape2strides(&ret_shape, mforder: mforder)
+    
+    let newdata = MfData(size: src_mfarray.size, mftype: mftype, complex: true)
+    
+    newdata.withUnsafeMutablevDSPPointer(datatype: U.self){
+        dstptrU in
+        let dstptrr = dstptrU.pointee.realp
+        let dstptri = dstptrU.pointee.imagp
+        src_mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+            [unowned src_mfarray] srcptrT in
+            let srcptrr = srcptrT.pointee.realp
+            let srcptri = srcptrT.pointee.imagp
+            
+            for vDSPPrams in OptOffsetParamsSequence(shape: ret_shape, bigger_strides: ret_strides, smaller_strides: src_mfarray.strides){
+                
+                wrap_vDSP_convert(vDSPPrams.blocksize, srcptrr + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrr + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                wrap_vDSP_convert(vDSPPrams.blocksize, srcptri + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptri + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+            }
+            
+        }
+    }
+    
+    let newstructure = MfStructure(shape: ret_shape, strides: ret_strides)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// Copy mfarray by vDSP
+/// - Parameters:
+///   - mfarray: The source mfarray
+///   - mforder: The order
+///   - vDSP_func: vDSP_copy_function
+internal func zcontiguous_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vDSP_func: vDSP_convertz_func<T, T>, mforder: MfOrder) -> MfArray{
+    let shape = mfarray.shape
+    
+    let newdata = MfData(size: mfarray.size, mftype: mfarray.mftype, complex: true)
+    let newstructure = MfStructure(shape: shape, mforder: mforder)
+
+    let bigger_strides = newstructure.strides
+    let smaller_strides = mfarray.strides
+    
+    newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
+        dstptr in
+        mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+            srcptr in
+            for vDSPPrams in OptOffsetParamsSequence(shape: shape, bigger_strides: bigger_strides, smaller_strides: smaller_strides){
+                wrap_vDSP_convertz(vDSPPrams.blocksize, srcptr + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptr + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+            }
+        }
+    }
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
 /// Pre operation mfarray by vDSP
 /// - Parameters:
 ///   - mfarray: An input mfarray
@@ -331,6 +465,87 @@ internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
             [unowned mfarray] in
             wrap_vDSP_convert(mfarray.storedSize, $0, 1, dstptrT, 1, vDSP_func)
+            //vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
+        }
+    }
+    
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// ZPre operation mfarray by vDSP
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - vDSP_func: vDSP_convert_func
+/// - Returns: Pre operated mfarray
+internal func zpreop_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vDSP_func: vDSP_convertz_func<T, T>) -> MfArray{
+    //return mfarray must be either row or column major
+    var mfarray = mfarray
+    //print(mfarray)
+    mfarray = check_contiguous(mfarray)
+    //print(mfarray)
+    //print(mfarray.strides)
+    
+    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
+    newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_convertz(mfarray.storedSize, $0, 1, dstptrT, 1, vDSP_func)
+            //vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
+        }
+    }
+    
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// Phase operation mfarray by vDSP
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - vDSP_func: vDSP_z2r_func
+/// - Returns: Pre operated mfarray
+internal func z2r_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vDSP_func: vDSP_convert_func<T, T.T>) -> MfArray{
+    //return mfarray must be either row or column major
+    var mfarray = mfarray
+    //print(mfarray)
+    mfarray = check_contiguous(mfarray)
+    //print(mfarray)
+    //print(mfarray.strides)
+    
+    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: false)
+    newdata.withUnsafeMutableStartPointer(datatype: T.T.self){
+        dstptrT in
+        mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_convert(mfarray.storedSize, $0, 1, dstptrT, 1, vDSP_func)
+            //vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
+        }
+    }
+    
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// Conjugate operation mfarray by vDSP
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - vDSP_func: vDSP_conjugate_func
+/// - Returns: Pre operated mfarray
+internal func conjugate_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vDSP_func: vDSP_convertz_func<T, T>) -> MfArray{
+    //return mfarray must be either row or column major
+    var mfarray = mfarray
+    //print(mfarray)
+    mfarray = check_contiguous(mfarray)
+    //print(mfarray)
+    //print(mfarray.strides)
+    
+    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
+    newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_convertz(mfarray.storedSize, $0, 1, dstptrT, 1, vDSP_func)
             //vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
         }
     }
@@ -373,6 +588,31 @@ internal func biopvs_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T,
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
+/// ZBinary operation by vDSP
+/// - Parameters:
+///   - l_mfarray: The left mfarray
+///   - r_scalr: The right scalar
+///   - vDSP_func: The vDSP biop function
+/// - Returns: The result mfarray
+internal func biopzvs_by_vDSP<T: vDSP_ComplexTypable>(_ l_mfarray: MfArray, _ r_scalar: T.T, _ vDSP_func: vDSP_biopzvs_func<T, T.T>) -> MfArray{
+    var mfarray = l_mfarray
+    var r_scalar = r_scalar
+    
+    mfarray = check_contiguous(mfarray)
+    
+    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
+    newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_biopzvs(mfarray.storedSize, $0, 1, &r_scalar, 0, dstptrT, 1, vDSP_func)
+        }
+    }
+    
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
 
 /// Binary operation by vDSP
 /// - Parameters:
@@ -392,6 +632,31 @@ internal func biopsv_by_vDSP<T: MfStorable>(_ l_scalar: T, _ r_mfarray: MfArray,
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
             [unowned mfarray] in
             wrap_vDSP_biopsv(mfarray.storedSize, &l_scalar, $0, 1, dstptrT, 1, vDSP_func)
+        }
+    }
+    
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// ZBinary operation by vDSP
+/// - Parameters:
+///   - l_scalar: The left scalar
+///   - r_mfarray: The right mfarray
+///   - vDSP_func: The vDSP biop function
+/// - Returns: The result mfarray
+internal func biopzsv_by_vDSP<T: vDSP_ComplexTypable>(_ l_scalar: T.T, _ r_mfarray: MfArray, _ vDSP_func: vDSP_biopzsv_func<T.T, T>) -> MfArray{
+    var mfarray = r_mfarray
+    var l_scalar = l_scalar
+    
+    mfarray = check_contiguous(mfarray)
+    
+    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
+    newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_biopzsv(mfarray.storedSize, &l_scalar, $0, dstptrT, vDSP_func)
         }
     }
     
@@ -435,6 +700,51 @@ internal func biopvv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: M
                     for vDSPPrams in OptOffsetParamsSequence(shape: r_mfarray.shape, bigger_strides: r_mfarray.strides, smaller_strides: l_mfarray.strides){
                         wrap_vDSP_biopvv(vDSPPrams.blocksize, lptr + vDSPPrams.s_offset, vDSPPrams.s_stride, rptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
                         //print(vDSPPrams.blocksize, vDSPPrams.b_offset,vDSPPrams.b_stride,vDSPPrams.s_offset, vDSPPrams.s_stride)
+                    }
+                }
+            }
+        }
+    }
+    
+    let newstructure: MfStructure
+    if biggerL{
+        newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
+    }
+    else{
+        newstructure = MfStructure(shape: r_mfarray.shape, strides: r_mfarray.strides)
+    }
+
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+
+/// Binary operation by vDSP
+/// - Parameters:
+///   - l_mfarray: The left mfarray
+///   - r_mfarray: The right mfarray
+///   - vDSP_func: The vDSP biop function
+/// - Returns: The result mfarray
+internal func biopzvv_by_vDSP<T: vDSP_ComplexTypable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, vDSP_func: vDSP_biopzvv_func<T>) -> MfArray{
+    // biggerL: flag whether l is bigger than r
+    //return mfarray must be either row or column major
+    let (l_mfarray, r_mfarray, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
+
+    let newdata = MfData(size: retsize, mftype: l_mfarray.mftype, complex: true)
+    newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
+        dstptrT in
+        l_mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+            [unowned l_mfarray] (lptr) in
+            r_mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+                [unowned r_mfarray] (rptr) in
+                if biggerL{// l is bigger
+                    for vDSPPrams in OptOffsetParamsSequence(shape: l_mfarray.shape, bigger_strides: l_mfarray.strides, smaller_strides: r_mfarray.strides){
+                        
+                        wrap_vDSP_biopzvv(vDSPPrams.blocksize, lptr + vDSPPrams.b_offset, vDSPPrams.b_stride, rptr + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                    }
+                }
+                else{// r is bigger
+                    for vDSPPrams in OptOffsetParamsSequence(shape: r_mfarray.shape, bigger_strides: r_mfarray.strides, smaller_strides: l_mfarray.strides){
+                        wrap_vDSP_biopzvv(vDSPPrams.blocksize, lptr + vDSPPrams.s_offset, vDSPPrams.s_stride, rptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
                     }
                 }
             }

@@ -219,6 +219,7 @@ extension Matft{
             
             retMfType = MfType.priority(retMfType, mfarrays[i].mftype)
             
+            unsupport_complex(mfarrays[i])
             precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
         }
         
@@ -253,6 +254,7 @@ extension Matft{
             
             retMfType = MfType.priority(retMfType, mfarrays[i].mftype)
             
+            unsupport_complex(mfarrays[i])
             precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
         }
         
@@ -300,6 +302,7 @@ extension Matft{
             
             retMfType = MfType.priority(retMfType, mfarrays[i].mftype)
             
+            unsupport_complex(mfarrays[i])
             precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
         }
         
@@ -370,6 +373,9 @@ extension Matft{
     static public func insert(_ mfarray: MfArray, indices: [Int], values: MfArray, axis: Int? = nil) -> MfArray{
         //https://github.com/numpy/numpy/blob/v1.19.0/numpy/lib/function_base.py#L4421-L4609
         // convert corrext index, sort index and then remove duplicated index
+        unsupport_complex(mfarray)
+        unsupport_complex(values)
+        
         var mfarr: MfArray, vals: MfArray, ax: Int
         if let axis = axis{
             mfarr = mfarray

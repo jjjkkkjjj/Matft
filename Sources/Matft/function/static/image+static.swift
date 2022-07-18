@@ -18,6 +18,8 @@ extension Matft.image{
        - Returns: CGImage
     */
     public static func mfarray2cgimage(_ mfarray: MfArray) -> CGImage{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType{
         case .Float:
             return mfarray2cgimage_by_vDSP(mfarray, vDSP_func: vDSP_vfixu8)

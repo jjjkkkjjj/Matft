@@ -9,44 +9,30 @@
 import Foundation
 import Accelerate
 
-public class MfData{
+public class MfData: MfDataProtocol{
     private var _base: MfData? // must be referenced because refdata could be freed automatically?
-    internal var data: UnsafeMutableRawPointer
+    private var _isOwner: Bool = true
+    internal var data_real: UnsafeMutableRawPointer
+    internal var data_imag: UnsafeMutableRawPointer?
     
     internal var mftype: MfType
-    internal var storedType: StoredType{
-        return MfType.storedType(self.mftype)
-    }
+
     /// The size of the stored data
-    internal let storedSize: Int
-    /// The size of the stored data (byte)
-    internal var storedByteSize: Int{
-        switch self.storedType {
-        case .Float:
-            return self.storedSize * MemoryLayout<Float>.size
-        case .Double:
-            return self.storedSize * MemoryLayout<Double>.size
-        }
-    }
+    internal var storedSize: Int
     
     /// Whether to be VIEW or not
     internal var _isView: Bool{
-        return self._base != nil
+        return !(self._base == nil && self._isOwner)
+    }
+    
+    /// Whether to be real or not
+    internal var _isReal: Bool{
+        return self.data_imag == nil
     }
     
     /// The offset value
-    internal let offset: Int
-    /// The offset value (byte)
-    internal var byteOffset: Int{
-        get{
-            switch self.storedType {
-            case .Float:
-                return self.offset * MemoryLayout<Float>.size
-            case .Double:
-                return self.offset * MemoryLayout<Double>.size
-            }
-        }
-    }
+    internal var offset: Int
+
     
     /// Initialization from flatten array. Allocate memories with stored type's size, which will store a given flatten array
     /// - Parameters:
@@ -56,21 +42,52 @@ public class MfData{
         switch MfType.storedType(mftype){
         case .Float:
             // dynamic allocation
-            self.data = allocate_floatdata_from_flattenArray(&flattenArray, toBool: mftype == .Bool)
+            self.data_real = allocate_floatdata_from_flattenArray(&flattenArray, toBool: mftype == .Bool)
         case .Double:
             // dynamic allocation
-            self.data = allocate_doubledata_from_flattenArray(&flattenArray, toBool: mftype == .Bool)
+            self.data_real = allocate_doubledata_from_flattenArray(&flattenArray, toBool: mftype == .Bool)
         }
         self.storedSize = flattenArray.count
         self.mftype = mftype
         self.offset = 0
     }
     
-    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, mftype: MfType){
-        self.data = dataptr
-        self.storedSize = storedSize
+    /// Initialization from flatten array. Allocate memories with stored type's size, which will store a given flatten array
+    /// - Parameters:
+    ///     - flatten_realArray: An input flatten real array
+    ///     - flatten_imagArray: An input flatten imag array
+    ///     - mftype: Type
+    public init(flatten_realArray: inout [Any], flatten_imagArray: inout [Any], mftype: MfType){
+        precondition(flatten_realArray.count == flatten_imagArray.count, "Unsame flatten array between real: \(flatten_realArray.count) and imag: \(flatten_imagArray.count)")
+        switch MfType.storedType(mftype){
+        case .Float:
+            // dynamic allocation
+            self.data_real = allocate_floatdata_from_flattenArray(&flatten_realArray, toBool: mftype == .Bool)
+            self.data_imag = allocate_floatdata_from_flattenArray(&flatten_imagArray, toBool: mftype == .Bool)
+        case .Double:
+            // dynamic allocation
+            self.data_real = allocate_doubledata_from_flattenArray(&flatten_realArray, toBool: mftype == .Bool)
+            self.data_imag = allocate_floatdata_from_flattenArray(&flatten_imagArray, toBool: mftype == .Bool)
+        }
+        self.storedSize = flatten_realArray.count
         self.mftype = mftype
         self.offset = 0
+    }
+    
+    /// Pass a pointer directly.
+    /// - Parameters:
+    ///    - data_real_ptr: A real data pointer
+    ///    - data_imag_ptr: A imag data pointer
+    ///    - storedSize: A size
+    ///    - mftype: Type
+    /// - Important: The given dataptr will NOT be freed. So don't forget to free manually.
+    internal init(data_real_ptr: UnsafeMutableRawPointer, data_imag_ptr: UnsafeMutableRawPointer? = nil, storedSize: Int, mftype: MfType, offset: Int){
+        self._isOwner = false
+        self.data_real = data_real_ptr
+        self.data_imag = data_imag_ptr
+        self.storedSize = storedSize
+        self.mftype = mftype
+        self.offset = offset
     }
     
 
@@ -78,17 +95,26 @@ public class MfData{
     /// - Parameters:
     ///    - size: A size
     ///    - mftype: Type
-    public init(size: Int, mftype: MfType){
+    public init(size: Int, mftype: MfType, complex: Bool = false){
         // dynamic allocation
         switch MfType.storedType(mftype){
         case .Float:
             let ptrF = allocate_unsafeMPtrT(type: Float.self, count: size)
+            self.data_real = UnsafeMutableRawPointer(ptrF)
             
-            self.data = UnsafeMutableRawPointer(ptrF)
+            if complex{
+                let ptriF = allocate_unsafeMPtrT(type: Float.self, count: size)
+                self.data_imag = UnsafeMutableRawPointer(ptriF)
+            }
+            
         case .Double:
             let ptrD = allocate_unsafeMPtrT(type: Double.self, count: size)
+            self.data_real = UnsafeMutableRawPointer(ptrD)
             
-            self.data = UnsafeMutableRawPointer(ptrD)
+            if complex{
+                let ptriD = allocate_unsafeMPtrT(type: Double.self, count: size)
+                self.data_imag = UnsafeMutableRawPointer(ptriD)
+            }
         }
         
         self.storedSize = size
@@ -98,22 +124,62 @@ public class MfData{
     
     /// Create a MfData with VIEW based on base mfdata
     /// - Parameters:
-    ///   - base: The base mfdata
+    ///   - refdata: The base mfdata
     ///   - offset: The offset value from base's data
     public init(refdata: MfData, offset: Int){
         self._base = refdata
-        self.data = refdata.data
+        self.data_real = refdata.data_real
+        self.data_imag = refdata.data_imag
         self.storedSize = refdata.storedSize
         self.mftype = refdata.mftype
         self.offset = offset
     }
     
+    /// Create a MfData with VIEW based on base mfdata
+    /// - Parameters:
+    ///   - ref_realdata: The base real mfdata
+    ///   - ref_imagdata: The base imag mfdata
+    ///   - offset: The offset value from base's data
+    public init(ref_realdata: MfData, ref_imagdata: MfData, offset: Int) {
+        assert(ref_realdata.storedSize == ref_imagdata.storedSize, "Must have same size!")
+        assert(ref_realdata.offset == ref_imagdata.offset, "Must have same offset!")
+        assert(ref_realdata.mftype == ref_imagdata.mftype, "Must have same mftype!")
+        
+        let size = ref_realdata.storedSize
+        let bytesize = ref_realdata.storedByteSize
+        let datarptr, dataiptr: UnsafeMutableRawPointer
+        switch ref_realdata.storedType{
+        case .Float:
+            datarptr = allocate_unsafeMRPtr(type: Float.self, count: size)
+            dataiptr = allocate_unsafeMRPtr(type: Float.self, count: size)
+            
+        case .Double:
+            datarptr = allocate_unsafeMRPtr(type: Double.self, count: size)
+            dataiptr = allocate_unsafeMRPtr(type: Double.self, count: size)
+        }
+        
+        memcpy(datarptr, ref_realdata.data_real + ref_realdata.byteOffset, bytesize)
+        memcpy(dataiptr, ref_imagdata.data_real + ref_imagdata.byteOffset, bytesize)
+        
+        self.data_real = datarptr
+        self.data_imag = dataiptr
+        self.storedSize = size
+        self.mftype = ref_realdata.mftype
+        self.offset = 0
+    }
+    
     deinit {
         if !self._isView{
             func _deallocate<T: MfStorable>(_ type: T.Type){
-                let dataptr = self.data.bindMemory(to: T.self, capacity: self.storedSize)
+                let dataptr = self.data_real.bindMemory(to: T.self, capacity: self.storedSize)
                 dataptr.deinitialize(count: self.storedSize)
                 dataptr.deallocate()
+                
+                if let data_img = self.data_imag{
+                    let dataiptr = data_img.bindMemory(to: T.self, capacity: self.storedSize)
+                    dataiptr.deinitialize(count: self.storedSize)
+                    dataiptr.deallocate()
+                }
             }
             switch self.storedType {
             case .Float:
@@ -126,6 +192,8 @@ public class MfData{
         self._base = nil
     }
 }
+
+
 
 /// Convert a given array with Any type into a flatten array with specific type
 /// - Parameters:

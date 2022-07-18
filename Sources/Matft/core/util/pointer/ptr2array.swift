@@ -98,6 +98,11 @@ internal func data2flattenArray(_ ptr: UnsafeMutableRawPointer, mftype: MfType, 
             let ret = Array(UnsafeMutableBufferPointer(start: ptrF, count: size)) as [Any]
             
             return ret
+        case .ComplexFloat:
+            let ptrCF = ptr.bindMemory(to: DSPComplex.self, capacity: size*2)
+            let ret = Array(UnsafeMutableBufferPointer(start: ptrCF, count: size)) as [Any]
+            
+            return ret
         default:
             fatalError("Unsupported type \(mftype).")
         }
@@ -109,6 +114,11 @@ internal func data2flattenArray(_ ptr: UnsafeMutableRawPointer, mftype: MfType, 
                 let ret = Array(UnsafeMutableBufferPointer(start: ptrD, count: size)) as [Any]
 
                 return ret
+        case .ComplexDouble:
+            let ptrCD = ptr.bindMemory(to: DSPDoubleComplex.self, capacity: size*2)
+            let ret = Array(UnsafeMutableBufferPointer(start: ptrCD, count: size*2)) as [Any]
+            
+            return ret
             default:
                 fatalError("Unsupported type \(mftype).")
         }

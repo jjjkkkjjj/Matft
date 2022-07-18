@@ -6,11 +6,16 @@
 //
 
 import Foundation
+import Accelerate
 
 extension MfArray{
     
     public func withUnsafeMutableStartRawPointer<R>(_ body: (UnsafeMutableRawPointer) throws -> R) rethrows -> R{
-        return try body(self.mfdata.data + self.mfdata.byteOffset)
+        return try body(self.mfdata.data_real + self.mfdata.byteOffset)
+    }
+    public func withUnsafeMutableStartRawImagPointer<R>(_ body: (UnsafeMutableRawPointer?) throws -> R) rethrows -> R{
+        guard let data_imag = self.mfdata.data_imag else { return try body(nil) }
+        return try body(data_imag + self.mfdata.byteOffset)
     }
     public func withUnsafeMutableStartPointer<T, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
         let ret = try self.withUnsafeMutableStartRawPointer{
@@ -21,6 +26,39 @@ extension MfArray{
         
         return ret
     }
+    public func withUnsafeMutableStartImagPointer<T, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>?) throws -> R) rethrows -> R{
+        let ret = try self.withUnsafeMutableStartRawImagPointer{
+            [unowned self](ptr) -> R in
+            let dataptr = ptr?.bindMemory(to: T.self, capacity: self.storedSize)
+            return try body(dataptr)
+        }
+        
+        return ret
+    }
+    
+    public func withUnsafeMutablevDSPPointer<T: vDSP_ComplexTypable, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+        
+        let ret = try self.withUnsafeMutableStartPointer(datatype: T.T.self){ ptrrT in
+            return try self.withUnsafeMutableStartImagPointer(datatype: T.T.self){
+                ptriT -> R in
+                var ptr = T(realp: ptrrT, imagp: ptriT!)
+                return try body(&ptr)
+            }
+        }
+        
+        return ret
+    }
+    internal func withUnsafeMutableblasPointer<T: blas_ComplexTypable, R>(datatype: T.Type, vDSP_func: vDSP_convertz_func<T.vDSPType, T>, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+        
+        let ret = try self.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){ [unowned self](ptr) -> R in
+            var arr = Array(repeating: T(real: T.T.zero, imag: T.T.zero), count: self.storedSize)
+            wrap_vDSP_convertz(arr.count, ptr, 1, &arr, 1, vDSP_func)
+            return try body(&arr)
+        }
+        
+        return ret
+    }
+    
     public func withContiguousDataUnsafeMPtrT<T>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> Void) rethrows -> Void{
         var shape = self.shape
         var strides = self.strides
@@ -52,16 +90,53 @@ extension MfArray{
     }
 }
 
+
 extension MfData{
     public func withUnsafeMutableStartRawPointer<R>(_ body: (UnsafeMutableRawPointer) throws -> R) rethrows -> R{
-        return try body(self.data + self.byteOffset)
+        return try body(self.data_real + self.byteOffset)
     }
-    
+    public func withUnsafeMutableStartRawImagPointer<R>(_ body: (UnsafeMutableRawPointer?) throws -> R) rethrows -> R{
+        guard let data_imag = self.data_imag else { return try body(nil) }
+        return try body(data_imag + self.byteOffset)
+    }
     public func withUnsafeMutableStartPointer<T, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
         let ret = try self.withUnsafeMutableStartRawPointer{
             [unowned self](ptr) -> R in
             let dataptr = ptr.bindMemory(to: T.self, capacity: self.storedSize)
             return try body(dataptr)
+        }
+        
+        return ret
+    }
+    
+    public func withUnsafeMutableStartImagPointer<T, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>?) throws -> R) rethrows -> R{
+        let ret = try self.withUnsafeMutableStartRawImagPointer{
+            [unowned self](ptr) -> R in
+            let dataptr = ptr?.bindMemory(to: T.self, capacity: self.storedSize)
+            return try body(dataptr)
+        }
+        
+        return ret
+    }
+    
+    public func withUnsafeMutablevDSPPointer<T: vDSP_ComplexTypable, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+        
+        let ret = try self.withUnsafeMutableStartPointer(datatype: T.T.self){ ptrrT in
+            return try self.withUnsafeMutableStartImagPointer(datatype: T.T.self){
+                ptriT -> R in
+                var ptr = T(realp: ptrrT, imagp: ptriT!)
+                return try body(&ptr)
+            }
+        }
+        
+        return ret
+    }
+    internal func withUnsafeMutableblasPointer<T: blas_ComplexTypable, R>(datatype: T.Type, vDSP_func: vDSP_convertz_func<T.vDSPType, T>, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+        
+        let ret = try self.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){ [unowned self](ptr) -> R in
+            var arr = Array(repeating: T(real: T.T.zero, imag: T.T.zero), count: self.storedSize)
+            wrap_vDSP_convertz(arr.count, ptr, 1, &arr, 1, vDSP_func)
+            return try body(&arr)
         }
         
         return ret

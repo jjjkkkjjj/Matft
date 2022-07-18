@@ -45,6 +45,9 @@ extension Matft.linalg{
             */
      */
     public static func solve(_ coef: MfArray, b: MfArray) throws -> MfArray{
+        unsupport_complex(coef)
+        unsupport_complex(b)
+        
         let returnedType = StoredType.priority(coef.storedType, b.storedType)
 
         switch returnedType{
@@ -64,6 +67,8 @@ extension Matft.linalg{
        An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
     */
     public static func inv(_ mfarray: MfArray) throws -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             return try inv_by_lapack(mfarray, sgetrf_, sgetri_, .Float)
@@ -81,6 +86,8 @@ extension Matft.linalg{
        An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
     */
     public static func det(_ mfarray: MfArray) throws -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             return try det_by_lapack(mfarray, sgetrf_)
@@ -122,6 +129,8 @@ extension Matft.linalg{
        An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge`
     */
     public static func eigen(_ mfarray: MfArray) throws -> (valRe: MfArray, valIm: MfArray, lvecRe: MfArray, lvecIm: MfArray, rvecRe: MfArray, rvecIm: MfArray){
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             return try eigen_by_lapack(mfarray, sgeev_)
@@ -141,6 +150,8 @@ extension Matft.linalg{
        An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge`
     */
     public static func svd(_ mfarray: MfArray, full_matrices: Bool = true) throws -> (v: MfArray, s: MfArray, rt: MfArray){
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             return try svd_by_lapack(mfarray, full_matrices, sgesdd_)
@@ -159,6 +170,8 @@ extension Matft.linalg{
     */
     public static func pinv(_ mfarray: MfArray, rcond: Float = 1e-15) throws -> MfArray{
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+        unsupport_complex(mfarray)
+        
         // v's shape = (...,N,X)
         // s's shape = (min(X,Y),)
         // rt.shape = (...,Y,M)
@@ -193,6 +206,7 @@ extension Matft.linalg{
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        unsupport_complex(mfarray)
         
         let svd = try Matft.linalg.svd(mfarray)
         // M(=mfarray) = USV
@@ -215,6 +229,7 @@ extension Matft.linalg{
         let shape = mfarray.shape
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+        unsupport_complex(mfarray)
         
         let svd = try Matft.linalg.svd(mfarray)
         // M(=mfarray) = USV
@@ -242,6 +257,8 @@ extension Matft.linalg{
          dlange_(<#T##__norm: UnsafeMutablePointer<Int8>!##UnsafeMutablePointer<Int8>!#>, <#T##__m: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>, <#T##__n: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>, <#T##__a: UnsafeMutablePointer<__CLPK_doublereal>!##UnsafeMutablePointer<__CLPK_doublereal>!#>, <#T##__lda: UnsafeMutablePointer<__CLPK_integer>!##UnsafeMutablePointer<__CLPK_integer>!#>, <#T##__work: UnsafeMutablePointer<__CLPK_doublereal>!##UnsafeMutablePointer<__CLPK_doublereal>!#>)
          cblas_dnrm2(<#T##__N: Int32##Int32#>, <#T##__X: UnsafePointer<Double>!##UnsafePointer<Double>!#>, <#T##__incX: Int32##Int32#>)
          */
+        unsupport_complex(mfarray)
+        
         if ord == Float.infinity{
             return Matft.math.abs(mfarray).max(axis: axis, keepDims: keepDims)
         }
@@ -267,6 +284,7 @@ extension Matft.linalg{
         var axes: (row: Int, col: Int) = (get_positive_axis(axes.row, ndim: mfarray.ndim), get_positive_axis(axes.col, ndim: mfarray.ndim))
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
+        unsupport_complex(mfarray)
         
         var ret: MfArray
         if ord == 2{
@@ -322,6 +340,7 @@ extension Matft.linalg{
         let axes: (row: Int, col: Int) = (get_positive_axis(axes.row, ndim: mfarray.ndim), get_positive_axis(axes.col, ndim: mfarray.ndim))
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
+        unsupport_complex(mfarray)
         
         let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponents: 2)
         
@@ -346,6 +365,7 @@ extension Matft.linalg{
         var axes: (row: Int, col: Int) = (get_positive_axis(axes.row, ndim: mfarray.ndim), get_positive_axis(axes.col, ndim: mfarray.ndim))
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
+        unsupport_complex(mfarray)
         
         var ret = _multi_svd_norm(mfarray: mfarray, axes: &axes, op: Matft.stats.sum)
         

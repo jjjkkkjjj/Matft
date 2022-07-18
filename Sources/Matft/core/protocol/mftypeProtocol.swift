@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Accelerate
 /*
 public protocol MfTypable: Numeric{}
 
@@ -291,3 +292,255 @@ extension Double: MfStorable{
         return Int(number)
     }
 }
+
+// DSPSplitComplex
+public protocol vDSP_ComplexTypable{
+    associatedtype T: MfStorable
+    associatedtype blasType: blas_ComplexTypable
+    
+    var realp: UnsafeMutablePointer<T> { get set }
+    var imagp: UnsafeMutablePointer<T> { get set }
+    
+    init(realp: UnsafeMutablePointer<T>, imagp: UnsafeMutablePointer<T>)
+}
+
+extension DSPSplitComplex: vDSP_ComplexTypable{
+    public typealias blasType = DSPComplex
+}
+extension DSPDoubleSplitComplex: vDSP_ComplexTypable{
+    public typealias blasType = DSPDoubleComplex
+}
+
+// DSPComplex
+public protocol blas_ComplexTypable{
+    associatedtype T: MfStorable
+    associatedtype vDSPType: vDSP_ComplexTypable
+    
+    var real: T { get set }
+    var imag: T { get set }
+    init(real: T, imag: T)
+}
+extension DSPComplex: blas_ComplexTypable{
+    public typealias vDSPType = DSPSplitComplex
+}
+extension DSPDoubleComplex: blas_ComplexTypable{
+    public typealias vDSPType = DSPDoubleSplitComplex
+}
+
+
+/*
+extension DSPComplex: MfStorable{
+    
+    public static func == (lhs: DSPComplex, rhs: DSPComplex) -> Bool {
+        return (lhs.real == rhs.real) && (lhs.imag == rhs.imag)
+    }
+
+    public static func num(_ number: Int) -> DSPComplex {
+        let val = Float(number)
+        return DSPComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPComplex where T : MfTypable {
+        let val = Float.from(value)
+        return DSPComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPComplex where T : MfNumeric, T : BinaryInteger {
+        let val = Float.from(value)
+        return DSPComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPComplex where T : MfBinary {
+        let val = Float.from(value)
+        return DSPComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPComplex where T : MfNumeric, T : BinaryFloatingPoint {
+        let val = Float.from(value)
+        return DSPComplex(real: val, imag: val)
+    }
+    
+    public static func from(_ str: String) -> DSPComplex? {
+        guard let val = Float(str) else { return nil }
+        return DSPComplex(real: val, imag: val)
+    }
+    
+    public static func from(_ str: String.SubSequence) -> DSPComplex? {
+        guard let val = Float(str) else { return nil }
+        return DSPComplex(real: val, imag: val)
+    }
+    
+    public static func toInt(_ number: DSPComplex) -> Int {
+        return Int(number.real)
+    }
+    
+    public static var zero: DSPComplex {
+        return DSPComplex(real: Float.zero, imag: Float.zero)
+    }
+    
+    
+}
+
+extension DSPDoubleComplex: MfStorable{
+    
+    public static func == (lhs: DSPDoubleComplex, rhs: DSPDoubleComplex) -> Bool {
+        return (lhs.real == rhs.real) && (lhs.imag == rhs.imag)
+    }
+
+    public static func num(_ number: Int) -> DSPDoubleComplex {
+        let val = Double(number)
+        return DSPDoubleComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPDoubleComplex where T : MfTypable {
+        let val = Double.from(value)
+        return DSPDoubleComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPDoubleComplex where T : MfNumeric, T : BinaryInteger {
+        let val = Double.from(value)
+        return DSPDoubleComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPDoubleComplex where T : MfBinary {
+        let val = Double.from(value)
+        return DSPDoubleComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPDoubleComplex where T : MfNumeric, T : BinaryFloatingPoint {
+        let val = Double.from(value)
+        return DSPDoubleComplex(real: val, imag: val)
+    }
+    
+    public static func from(_ str: String) -> DSPDoubleComplex? {
+        guard let val = Double(str) else { return nil }
+        return DSPDoubleComplex(real: val, imag: val)
+    }
+    
+    public static func from(_ str: String.SubSequence) -> DSPDoubleComplex? {
+        guard let val = Double(str) else { return nil }
+        return DSPDoubleComplex(real: val, imag: val)
+    }
+    
+    public static func toInt(_ number: DSPDoubleComplex) -> Int {
+        return Int(number.real)
+    }
+    
+    public static var zero: DSPDoubleComplex {
+        return DSPDoubleComplex(real: Double.zero, imag: Double.zero)
+    }
+    
+    
+}
+
+
+extension DSPSplitComplex: MfStorable{
+    
+    public static func == (lhs: DSPSplitComplex, rhs: DSPSplitComplex) -> Bool {
+        if !((lhs.imagp.count == rhs.realp.count) && (lhs.imagp.count == rhs.imagp.count)){
+            return false
+        }
+        DSPSplitComplex
+        return zip(lhs, rhs).allSatisfy{
+            $0.0 == $0.1 && $1.0 == $1.1
+        }
+    }
+
+    public static func num(_ number: Int) -> DSPSplitComplex {
+        let val = Float(number)
+        return DSPSplitComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPSplitComplex where T : MfTypable {
+        let val = Float.from(value)
+        return DSPSplitComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPSplitComplex where T : MfNumeric, T : BinaryInteger {
+        let val = Float.from(value)
+        return DSPSplitComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPSplitComplex where T : MfBinary {
+        let val = Float.from(value)
+        return DSPSplitComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPSplitComplex where T : MfNumeric, T : BinaryFloatingPoint {
+        let val = Float.from(value)
+        return DSPSplitComplex(real: val, imag: val)
+    }
+    
+    public static func from(_ str: String) -> DSPSplitComplex? {
+        guard let val = Float(str) else { return nil }
+        return DSPSplitComplex(real: val, imag: val)
+    }
+    
+    public static func from(_ str: String.SubSequence) -> DSPSplitComplex? {
+        guard let val = Float(str) else { return nil }
+        return DSPSplitComplex(real: val, imag: val)
+    }
+    
+    public static func toInt(_ number: DSPSplitComplex) -> Int {
+        return Int(number.real)
+    }
+    
+    public static var zero: DSPSplitComplex {
+        return DSPSplitComplex(real: Float.zero, imag: Float.zero)
+    }
+    
+    
+}
+
+extension DSPDoubleComplex: MfStorable{
+    
+    public static func == (lhs: DSPDoubleComplex, rhs: DSPDoubleComplex) -> Bool {
+        return (lhs.real == rhs.real) && (lhs.imag == rhs.imag)
+    }
+
+    public static func num(_ number: Int) -> DSPDoubleComplex {
+        let val = Double(number)
+        return DSPDoubleComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPDoubleComplex where T : MfTypable {
+        let val = Double.from(value)
+        return DSPDoubleComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPDoubleComplex where T : MfNumeric, T : BinaryInteger {
+        let val = Double.from(value)
+        return DSPDoubleComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPDoubleComplex where T : MfBinary {
+        let val = Double.from(value)
+        return DSPDoubleComplex(real: val, imag: val)
+    }
+    
+    public static func from<T>(_ value: T) -> DSPDoubleComplex where T : MfNumeric, T : BinaryFloatingPoint {
+        let val = Double.from(value)
+        return DSPDoubleComplex(real: val, imag: val)
+    }
+    
+    public static func from(_ str: String) -> DSPDoubleComplex? {
+        guard let val = Double(str) else { return nil }
+        return DSPDoubleComplex(real: val, imag: val)
+    }
+    
+    public static func from(_ str: String.SubSequence) -> DSPDoubleComplex? {
+        guard let val = Double(str) else { return nil }
+        return DSPDoubleComplex(real: val, imag: val)
+    }
+    
+    public static func toInt(_ number: DSPDoubleComplex) -> Int {
+        return Int(number.real)
+    }
+    
+    public static var zero: DSPDoubleComplex {
+        return DSPDoubleComplex(real: Double.zero, imag: Double.zero)
+    }
+    
+    
+}
+*/

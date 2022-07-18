@@ -616,12 +616,12 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func: 
     var val_offset = 0
     
     
-    let lvecRe_ptr = lvecRe_data.data.bindMemory(to: T.self, capacity: eigenvec_size)
-    let lvecIm_ptr = lvecIm_data.data.bindMemory(to: T.self, capacity: eigenvec_size)
-    let rvecRe_ptr = rvecRe_data.data.bindMemory(to: T.self, capacity: eigenvec_size)
-    let rvecIm_ptr = rvecIm_data.data.bindMemory(to: T.self, capacity: eigenvec_size)
-    let valRe_ptr = valRe_data.data.bindMemory(to: T.self, capacity: eigenvec_size)
-    let valIm_ptr = valIm_data.data.bindMemory(to: T.self, capacity: eigenvec_size)
+    let lvecRe_ptr = lvecRe_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
+    let lvecIm_ptr = lvecIm_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
+    let rvecRe_ptr = rvecRe_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
+    let rvecIm_ptr = rvecIm_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
+    let valRe_ptr = valRe_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
+    let valIm_ptr = valIm_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
     
     try mfarray.withMNStackedMajorPointer(datatype: T.self, mforder: .Column){
         srcptr, row, col, offset in
@@ -690,9 +690,9 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ full_matrices: 
     var s_offset = 0
     var rt_offset = 0
     
-    let vptr = v_data.data.bindMemory(to: T.self, capacity: shape2size(&v_shape))
-    let sptr = s_data.data.bindMemory(to: T.self, capacity: shape2size(&s_shape))
-    let rtptr = rt_data.data.bindMemory(to: T.self, capacity: shape2size(&rt_shape))
+    let vptr = v_data.data_real.bindMemory(to: T.self, capacity: shape2size(&v_shape))
+    let sptr = s_data.data_real.bindMemory(to: T.self, capacity: shape2size(&s_shape))
+    let rtptr = rt_data.data_real.bindMemory(to: T.self, capacity: shape2size(&rt_shape))
     
     
     try mfarray.withMNStackedMajorPointer(datatype: T.self, mforder: .Column){

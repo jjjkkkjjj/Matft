@@ -20,6 +20,35 @@ extension MfArray{
     }
     
     /**
+        Convert real mfarray into complex mfarray
+        - parameters:
+            - isplace: Whether to operate in-place
+    */
+    internal func to_complex(_ inplace: Bool = true) -> MfArray{
+        if self.isComplex{
+            return self
+        }
+        
+        let mfarray: MfArray
+        if inplace{
+            mfarray = self
+        }
+        else{
+            mfarray = self.deepcopy(.Row)
+        }
+        
+        switch mfarray.storedType{
+        case .Float:
+            let ptri = allocate_unsafeMRPtr(type: Float.self, count: mfarray.storedSize)
+            mfarray.mfdata.data_imag = ptri
+        case .Double:
+            let ptri = allocate_unsafeMRPtr(type: Double.self, count: mfarray.storedSize)
+            mfarray.mfdata.data_imag = ptri
+        }
+        return mfarray
+    }
+    
+    /**
        Create any ordered transposed mfarray. Created mfarray will be sharing data with original one
        - parameters:
             - axes: (Optional) the indices of shape. In case this is left out, get transposed mfarray

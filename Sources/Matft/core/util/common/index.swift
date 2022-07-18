@@ -127,7 +127,7 @@ internal func get_offsets_from_indices(_ mfarray: MfArray, _ indices: inout [MfA
 ///   - mfarray: An input boolean mfarray
 ///   - shape: The destination shape array
 /// - Returns: COPIED boolean indices mfarray
-internal func biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (l: MfArray, r: MfArray, t: MfType){
+internal func biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (l: MfArray, r: MfArray, t: MfType, isReal: Bool){
     var l_mfarray = l_mfarray
     var r_mfarray = r_mfarray
     
@@ -139,6 +139,16 @@ internal func biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (
     else if r_mfarray.mftype != rettype{
         r_mfarray = r_mfarray.astype(rettype)
     }
+    if l_mfarray.isReal != r_mfarray.isReal{
+        if l_mfarray.isReal{
+            let _ = l_mfarray.to_complex()
+        }
+        if r_mfarray.isReal{
+            let _ = r_mfarray.to_complex()
+        }
+    }
+
+    assert(l_mfarray.isReal == r_mfarray.isReal)
     
     // broadcast
     let retndim: Int
@@ -186,7 +196,7 @@ internal func biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (
     l_mfarray = MfArray(base: l_mfarray, mfstructure: l_mfstructure, offset: l_mfarray.offsetIndex)
     r_mfarray = MfArray(base: r_mfarray, mfstructure: r_mfstructure, offset: r_mfarray.offsetIndex)
     
-    return (l_mfarray, r_mfarray, rettype)
+    return (l_mfarray, r_mfarray, rettype, l_mfarray.isReal)
 }
 
 
