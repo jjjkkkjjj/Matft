@@ -56,10 +56,6 @@ public enum MfType: Int{
             return .Float
         case is Double:
             return .Double
-        case is DSPComplex:
-            return .ComplexFloat
-        case is DSPDoubleComplex:
-            return .ComplexDouble
         default:
             return .Object
         }
@@ -89,13 +85,6 @@ public enum MfType: Int{
         default: // all mftypes are stored as float except for double
             return .Float
         }
-    }
-    
-    static internal func isComplex(_ mftype: MfType) -> Bool{
-        return (mftype == .ComplexFloat) || (mftype == .ComplexDouble)
-    }
-    internal func isComplex() -> Bool{
-        return MfType.isComplex(self)
     }
     
     static public func is32bit() -> Bool{

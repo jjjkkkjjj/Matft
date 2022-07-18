@@ -9,26 +9,14 @@
 import Foundation
 import Accelerate
 
-public class MfData{
+public class MfData: MfDataProtocol{
     private var _base: MfData? // must be referenced because refdata could be freed automatically?
     internal var data: UnsafeMutableRawPointer
     
     internal var mftype: MfType
-    internal var storedType: StoredType{
-        return MfType.storedType(self.mftype)
-    }
+
     /// The size of the stored data
     internal let storedSize: Int
-    /// The size of the stored data (byte)
-    internal var storedByteSize: Int{
-        let num = self.mftype.isComplex() ? 2 : 1
-        switch self.storedType {
-        case .Float:
-            return self.storedSize * MemoryLayout<Float>.size * num
-        case .Double:
-            return self.storedSize * MemoryLayout<Double>.size * num
-        }
-    }
     
     /// Whether to be VIEW or not
     internal var _isView: Bool{
@@ -37,18 +25,7 @@ public class MfData{
     
     /// The offset value
     internal let offset: Int
-    /// The offset value (byte)
-    internal var byteOffset: Int{
-        get{
-            let num = self.mftype.isComplex() ? 2 : 1
-            switch self.storedType {
-            case .Float:
-                return self.offset * MemoryLayout<Float>.size * num
-            case .Double:
-                return self.offset * MemoryLayout<Double>.size * num
-            }
-        }
-    }
+
     
     /// Initialization from flatten array. Allocate memories with stored type's size, which will store a given flatten array
     /// - Parameters:

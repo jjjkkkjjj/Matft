@@ -77,12 +77,11 @@ open class MfArray{
         return shape2size(&self.mfstructure.shape)
     }
     public var byteSize: Int{
-        let num = self.mftype.isComplex() ? 2 : 1
         switch self.storedType {
         case .Float:
-            return self.size * MemoryLayout<Float>.size * num
+            return self.size * MemoryLayout<Float>.size
         case .Double:
-            return self.size * MemoryLayout<Double>.size * num
+            return self.size * MemoryLayout<Double>.size
         }
     }
 
