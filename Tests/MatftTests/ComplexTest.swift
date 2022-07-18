@@ -99,4 +99,16 @@ final class ComplexTests: XCTestCase {
             XCTAssertEqual(ret.imag!, imag.astype(.Double))
         }
     }
+    
+    func testNegative(){
+        do{
+            let real = Matft.arange(start: 0, to: 16, by: 1).reshape([2,2,4])
+            let imag = Matft.arange(start: 0, to: -16, by: -1).reshape([2,2,4])
+            let a = MfArray(real: real, imag: imag)
+            let ret = -a
+            
+            XCTAssertEqual(ret.real, -real)
+            XCTAssertEqual(ret.imag!, -imag)
+        }
+    }
 }

@@ -38,11 +38,21 @@ fileprivate enum PreOp{
 fileprivate func _prefix_operation(_ mfarray: MfArray, _ preop: PreOp) -> MfArray{
     switch preop {
     case .neg:
-        switch mfarray.storedType{
-        case .Float:
-            return preop_by_vDSP(mfarray, vDSP_vneg)
-        case .Double:
-            return preop_by_vDSP(mfarray, vDSP_vnegD)
+        if mfarray.isReal{
+            switch mfarray.storedType{
+            case .Float:
+                return preop_by_vDSP(mfarray, vDSP_vneg)
+            case .Double:
+                return preop_by_vDSP(mfarray, vDSP_vnegD)
+            }
+        }
+        else{
+            switch mfarray.storedType{
+            case .Float:
+                return zpreop_by_vDSP(mfarray, vDSP_zvneg)
+            case .Double:
+                return zpreop_by_vDSP(mfarray, vDSP_zvnegD)
+            }
         }
     }
 }
