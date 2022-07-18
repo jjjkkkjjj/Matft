@@ -24,7 +24,7 @@ extension MfArray: CustomStringConvertible{
         var shape = self.shape
         var strides = self.strides
         
-        var formatter = NumberFormatter()
+        let formatter = NumberFormatter()
         formatter.positivePrefix = formatter.plusSign
         
         if self.size > 1000{//if size > 1000, some elements left out will be viewed

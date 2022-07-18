@@ -55,4 +55,18 @@ final class ComplexTests: XCTestCase {
             
         }
     }
+    
+    func testAngle() {
+        do {
+            let real = Matft.arange(start: 0, to: 16, by: 1).reshape([2,2,4])
+            let imag = Matft.arange(start: 0, to: -16, by: -1).reshape([2,2,4])
+            let a = MfArray(real: real, imag: imag)
+            
+            XCTAssertEqual(Matft.complex.angle(a), MfArray([[[ 0.0        , -0.78539816, -0.78539816, -0.78539816],
+                                                             [-0.78539816, -0.78539816, -0.78539816, -0.78539816]],
+
+                                                            [[-0.78539816, -0.78539816, -0.78539816, -0.78539816],
+                                                             [-0.78539816, -0.78539816, -0.78539816, -0.78539816]]] as [[[Float]]]))
+        }
+    }
 }

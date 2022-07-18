@@ -45,6 +45,8 @@ internal typealias vDSP_vgathr_func<T> = (UnsafePointer<T>, UnsafePointer<vDSP_L
 
 internal typealias vDSP_dotpr_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Length) -> Void
 
+internal typealias vDSP_zvphas_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<U>, vDSP_Stride, vDSP_Length) -> Void
+
 @inline(__always)
 internal func vDSP_zvmul_(_ __A: UnsafePointer<DSPSplitComplex>, _ __IA: vDSP_Stride, _ __B: UnsafePointer<DSPSplitComplex>, _ __IB: vDSP_Stride, _ __C: UnsafePointer<DSPSplitComplex>, _ __IC: vDSP_Stride, _ __N: vDSP_Length) -> Void{
     vDSP_zvmul(__A, __IA, __B, __IB, __C, __IC, __N, Int32(1))
@@ -369,6 +371,33 @@ internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_convert(mfarray.storedSize, $0, 1, dstptrT, 1, vDSP_func)
+            //vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
+        }
+    }
+    
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// Phase operation mfarray by vDSP
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - vDSP_func: vDSP_zvphas_func
+/// - Returns: Pre operated mfarray
+internal func zvphas_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vDSP_func: vDSP_convert_func<T, T.T>) -> MfArray{
+    //return mfarray must be either row or column major
+    var mfarray = mfarray
+    //print(mfarray)
+    mfarray = check_contiguous(mfarray)
+    //print(mfarray)
+    //print(mfarray.strides)
+    
+    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: false)
+    newdata.withUnsafeMutableStartPointer(datatype: T.T.self){
+        dstptrT in
+        mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
             [unowned mfarray] in
             wrap_vDSP_convert(mfarray.storedSize, $0, 1, dstptrT, 1, vDSP_func)
             //vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))

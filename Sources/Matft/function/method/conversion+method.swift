@@ -21,20 +21,31 @@ extension MfArray{
     
     /**
         Convert real mfarray into complex mfarray
+        - parameters:
+            - isplace: Whether to operate in-place
     */
-    internal func to_complex(){
-        if self.mfdata._isReal{
-            return
+    internal func to_complex(_ inplace: Bool = true) -> MfArray{
+        if self.isComplex{
+            return self
         }
         
-        switch self.storedType{
-        case .Float:
-            let ptri = allocate_unsafeMRPtr(type: Float.self, count: self.storedSize)
-            self.mfdata.data_imag = ptri
-        case .Double:
-            let ptri = allocate_unsafeMRPtr(type: Double.self, count: self.storedSize)
-            self.mfdata.data_imag = ptri
+        let mfarray: MfArray
+        if inplace{
+            mfarray = self
         }
+        else{
+            mfarray = self.deepcopy(.Row)
+        }
+        
+        switch mfarray.storedType{
+        case .Float:
+            let ptri = allocate_unsafeMRPtr(type: Float.self, count: mfarray.storedSize)
+            mfarray.mfdata.data_imag = ptri
+        case .Double:
+            let ptri = allocate_unsafeMRPtr(type: Double.self, count: mfarray.storedSize)
+            mfarray.mfdata.data_imag = ptri
+        }
+        return mfarray
     }
     
     /**

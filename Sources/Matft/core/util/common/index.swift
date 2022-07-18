@@ -141,10 +141,10 @@ internal func biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (
     }
     if l_mfarray.isReal != r_mfarray.isReal{
         if l_mfarray.isReal{
-            l_mfarray.to_complex()
+            let _ = l_mfarray.to_complex()
         }
         if r_mfarray.isReal{
-            r_mfarray.to_complex()
+            let _ = r_mfarray.to_complex()
         }
     }
 
