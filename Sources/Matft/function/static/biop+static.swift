@@ -24,13 +24,18 @@ extension Matft{
             return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
         case .Double:
             return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
-        /*
-        case .ComplexFloat:
-            return biopzvv_by_vDSP(l_mfarray, r_mfarray, datatype: DSPComplex.self, vDSP_func: vDSP_zvadd)
-        case .ComplexDouble:
-            return biopzvv_by_vDSP(l_mfarray, r_mfarray, datatype: DSPDoubleComplex.self, vDSP_func: vDSP_zvaddD)*/
         }
     }
+    
+    public static func add(_ l_mfarray: MfComplexArray, _ r_mfarray: MfComplexArray) -> MfComplexArray{
+        switch l_mfarray.storedType{
+        case .Float:
+            return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvadd)
+        case .Double:
+            return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvaddD)
+        }
+    }
+    
     /**
        Element-wise addition of  mfarray and scalar
        - parameters:

@@ -293,6 +293,39 @@ extension Double: MfStorable{
     }
 }
 
+// DSPSplitComplex
+public protocol vDSP_ComplexTypable{
+    associatedtype T: MfStorable
+    associatedtype blasType: blas_ComplexTypable
+    
+    var realp: UnsafeMutablePointer<T> { get set }
+    var imagp: UnsafeMutablePointer<T> { get set }
+    
+    init(realp: UnsafeMutablePointer<T>, imagp: UnsafeMutablePointer<T>)
+}
+
+extension DSPSplitComplex: vDSP_ComplexTypable{
+    public typealias blasType = DSPComplex
+}
+extension DSPDoubleSplitComplex: vDSP_ComplexTypable{
+    public typealias blasType = DSPDoubleComplex
+}
+
+// DSPComplex
+public protocol blas_ComplexTypable{
+    associatedtype T: MfStorable
+    associatedtype vDSPType: vDSP_ComplexTypable
+    
+    var real: T { get set }
+    var imag: T { get set }
+    init(real: T, imag: T)
+}
+extension DSPComplex: blas_ComplexTypable{
+    public typealias vDSPType = DSPSplitComplex
+}
+extension DSPDoubleComplex: blas_ComplexTypable{
+    public typealias vDSPType = DSPDoubleSplitComplex
+}
 
 
 /*

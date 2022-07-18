@@ -86,6 +86,20 @@ internal func wrap_vDSP_biopvv<T>(_ size: Int, _ lsrcptr: UnsafePointer<T>, _ ls
     vDSP_func(rsrcptr, vDSP_Stride(rsrcStride), lsrcptr, vDSP_Stride(lsrcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
 }
 
+/// Wrapper of vDSP binary operation function
+/// - Parameters:
+///   - size: A size
+///   - lsrcptr: A left  source pointer
+///   - lsrcStride: A left source stride
+///   - rsrcptr: A right source pointer
+///   - rsrcStride: A right source stride
+///   - dstptr: A destination pointer
+///   - dstStride: A destination stride
+///   - vDSP_func: The vDSP conversion function
+@inline(__always)
+internal func wrap_vDSP_biopzvv<T>(_ size: Int, _ lsrcptr: UnsafePointer<T>, _ lsrcStride: Int, _ rsrcptr: UnsafePointer<T>, _ rsrcStride: Int, _ dstptr: UnsafePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_biopzvv_func<T>){
+    vDSP_func(rsrcptr, vDSP_Stride(rsrcStride), lsrcptr, vDSP_Stride(lsrcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(size))
+}
 
 /// Wrapper of vDSP binary operation function
 /// - Parameters:
@@ -468,34 +482,38 @@ internal func biopvv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: M
 
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
-/*
+
+
 /// Binary operation by vDSP
 /// - Parameters:
 ///   - l_mfarray: The left mfarray
 ///   - r_mfarray: The right mfarray
 ///   - vDSP_func: The vDSP biop function
 /// - Returns: The result mfarray
-internal func biopzvv_by_vDSP<T, U>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, datatype: T.Type, vDSP_func: vDSP_biopzvv_func<U>) -> MfArray{
+internal func biopzvv_by_vDSP<T: vDSP_ComplexTypable>(_ l_mfarray: MfComplexArray, _ r_mfarray: MfComplexArray, vDSP_func: vDSP_biopzvv_func<T>) -> MfComplexArray{
     // biggerL: flag whether l is bigger than r
     //return mfarray must be either row or column major
+    /*
     let (l_mfarray, r_mfarray, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
-    
-    let newdata = MfData(size: retsize, mftype: l_mfarray.mftype)
-    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+
+    let newdata = MfComplexData(size: retsize, mftype: l_mfarray.mftype)*/
+    let newdata = MfComplexData(size: l_mfarray.size, mftype: l_mfarray.mftype)
+    let biggerL = true
+    newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
         dstptrT in
-        l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+        l_mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
             [unowned l_mfarray] (lptr) in
-            r_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            r_mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
                 [unowned r_mfarray] (rptr) in
                 if biggerL{// l is bigger
                     for vDSPPrams in OptOffsetParamsSequence(shape: l_mfarray.shape, bigger_strides: l_mfarray.strides, smaller_strides: r_mfarray.strides){
-                        var ltmp = Array(repeating: T.zero, count: <#T##Int#>)
-                        wrap_vDSP_biopvv(vDSPPrams.blocksize, lptr + vDSPPrams.b_offset, vDSPPrams.b_stride, rptr + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                        
+                        wrap_vDSP_biopzvv(vDSPPrams.blocksize, lptr + vDSPPrams.b_offset, vDSPPrams.b_stride, rptr + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
                     }
                 }
                 else{// r is bigger
                     for vDSPPrams in OptOffsetParamsSequence(shape: r_mfarray.shape, bigger_strides: r_mfarray.strides, smaller_strides: l_mfarray.strides){
-                        wrap_vDSP_biopvv(vDSPPrams.blocksize, lptr + vDSPPrams.s_offset, vDSPPrams.s_stride, rptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                        wrap_vDSP_biopzvv(vDSPPrams.blocksize, lptr + vDSPPrams.s_offset, vDSPPrams.s_stride, rptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
                     }
                 }
             }
@@ -510,8 +528,8 @@ internal func biopzvv_by_vDSP<T, U>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, 
         newstructure = MfStructure(shape: r_mfarray.shape, strides: r_mfarray.strides)
     }
 
-    return MfArray(mfdata: newdata, mfstructure: newstructure)
-}*/
+    return MfComplexArray(mfdata: newdata, mfstructure: newstructure)
+}
 
 
 /// Stats operation by vDSP

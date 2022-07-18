@@ -25,4 +25,16 @@ final class ComplexTests: XCTestCase {
             XCTAssertEqual(a.imag, imag)
         }
     }
+    
+    func testAdd() {
+        do {
+            let real = Matft.arange(start: 0, to: 16, by: 1).reshape([2,2,4])
+            let imag = Matft.arange(start: 0, to: -16, by: -1).reshape([2,2,4])
+            let a = MfComplexArray(real: real, imag: imag)
+
+            let ret = Matft.add(a, a)
+            XCTAssertEqual(ret.real, real+real)
+            XCTAssertEqual(ret.imag, imag+imag)
+        }
+    }
 }

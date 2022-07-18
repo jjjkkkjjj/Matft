@@ -142,6 +142,10 @@ open class MfComplexArray: MfStructuredProtocol{
         self.mfdata = MFDATA(ref_realdata: real.mfdata, ref_imagdata: imag.mfdata, offset: real.offsetIndex)
         self.mfstructure = MfStructure(shape: real.shape, strides: real.strides)
     }
+    public init (mfdata: MfComplexData, mfstructure: MfStructure){
+        self.mfdata = mfdata
+        self.mfstructure = mfstructure
+    }
     
     deinit {
         self.base = nil
