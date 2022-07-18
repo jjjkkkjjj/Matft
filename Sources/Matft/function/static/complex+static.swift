@@ -54,3 +54,11 @@ extension Matft.complex{
         }
     }
 }
+
+/// Check it is real or not. if the mfarray is complex, raise precondition failure.
+/// - Parameters:
+///     - mfarray: A source mfarray
+@inline(__always)
+internal func unsupport_complex(_ mfarray: MfArray){
+    precondition(mfarray.isComplex, "")
+}

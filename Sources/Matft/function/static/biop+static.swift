@@ -716,6 +716,8 @@ fileprivate func _matmul_broadcast_to(_ lmfarray: inout MfArray, _ rmfarray: ino
 fileprivate func _cross_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
     var (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
     
+    precondition(isReal, "Complex is not supported")
+    
     let orig_shape_for3d = l_mfarray.shape
     let lastdim = orig_shape_for3d[l_mfarray.ndim - 1]
     

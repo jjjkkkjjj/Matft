@@ -21,6 +21,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func sin(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvsinf)
@@ -38,6 +40,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func asin(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvasinf)
@@ -55,6 +59,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func sinh(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvsinhf)
@@ -72,6 +78,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func asinh(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvasinhf)
@@ -89,6 +97,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func cos(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvcosf)
@@ -106,6 +116,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func acos(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvacosf)
@@ -123,6 +135,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func cosh(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvcoshf)
@@ -140,6 +154,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func acosh(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvacoshf)
@@ -157,6 +173,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func tan(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvtanf)
@@ -174,6 +192,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func atan(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvatanf)
@@ -191,6 +211,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func tanh(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvtanhf)
@@ -208,6 +230,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func atanh(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvatanhf)
@@ -230,6 +254,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func sqrt(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvsqrtf)
@@ -247,6 +273,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func rsqrt(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvrsqrtf)
@@ -264,6 +292,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func exp(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvexpf)
@@ -281,6 +311,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func log(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvlogf)
@@ -298,6 +330,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func log2(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvlog2f)
@@ -315,6 +349,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func log10(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvlog10f)
@@ -337,6 +373,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func ceil(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvceilf)
@@ -354,6 +392,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func floor(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvfloorf)
@@ -371,6 +411,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func trunc(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvintf)
@@ -388,6 +430,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func nearest(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvnintf)
@@ -405,6 +449,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - decimals: (Optional) Int, default is 0, which is equivelent to nearest
     */
     public static func round(_ mfarray: MfArray, decimals: Int = 0) -> MfArray{
+        unsupport_complex(mfarray)
+        
         let pow = powf(10, Float(decimals))
         let n =  Matft.math.nearest(mfarray * pow)
         return n / pow
@@ -419,6 +465,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func abs(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvfabsf)
@@ -436,6 +484,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func reciprocal(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvrecf)
@@ -457,6 +507,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - exponents: mfarray
     */
     public static func power(bases: Float, exponents: MfArray) -> MfArray{
+        unsupport_complex(exponents)
+        
         return Matft.math.power(bases: Matft.nums(bases, shape: [1]), exponents: exponents)
     }
     /**
@@ -466,6 +518,8 @@ extension Matft.math{//use math_vv_by_vecLib
             - exponents: Float
     */
     public static func power(bases: MfArray, exponents: Float) -> MfArray{
+        unsupport_complex(bases)
+        
         return Matft.math.power(bases: bases, exponents: Matft.nums(exponents, shape: [1]))
     }
     /**
@@ -476,6 +530,8 @@ extension Matft.math{//use math_vv_by_vecLib
     */
     public static func power(bases: MfArray, exponents: MfArray) -> MfArray{
         let (bases, exponents, rettype, isReal) = biop_broadcast_to(bases, exponents)
+        
+        precondition(isReal, "Complex is not supported")
         
         switch MfType.storedType(rettype) {
         case .Float:
@@ -498,6 +554,8 @@ extension Matft.math{//use math_vv_by_vecLib
     public static func arctan2(x1: MfArray, x2: MfArray) -> MfArray{
         let (x1, x2, rettype, isReal) = biop_broadcast_to(x1, x2)
         
+        precondition(isReal, "Complex is not supported")
+        
         switch MfType.storedType(rettype) {
         case .Float:
             let ret = math_biop_by_vForce(x1, x2, vvatan2f)
@@ -518,6 +576,8 @@ extension Matft.math{//use vDSP
             - mfarray: mfarray
     */
     public static func square(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             return math_by_vDSP(mfarray, vDSP_vsq)
@@ -551,6 +611,7 @@ extension Matft.math{//use vDSP
         case .Double:
             return _sign(low: Double(-1), high: Double(1))
         }*/
+        unsupport_complex(mfarray)
         
         switch mfarray.storedType {
         case .Float:

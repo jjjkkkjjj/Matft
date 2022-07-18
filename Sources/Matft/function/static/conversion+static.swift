@@ -425,6 +425,7 @@ extension Matft{
             - order: (Optional) ascending or descending. default is ascending
     */
     public static func sort(_ mfarray: MfArray, axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray{
+        unsupport_complex(mfarray)
         
         let _axis: Int
         let _dst: MfArray
@@ -451,6 +452,7 @@ extension Matft{
             - order: (Optional) ascending or descending. default is ascending
     */
     public static func argsort(_ mfarray: MfArray, axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray{
+        unsupport_complex(mfarray)
         
         let _axis: Int
         let _dst: MfArray
@@ -477,6 +479,8 @@ extension Matft{
             - axis: (Optional) axis, if not given, get summation for all elements
     */
     public static func orderedUnique(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
+        unsupport_complex(mfarray)
+        
         // get stride to calculate unique array
         let stride: Int
         var srcmfarray: MfArray

@@ -18,6 +18,8 @@ extension Matft.stats{
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
     public static func mean(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             return boolean2float(stats_by_vDSP(mfarray.astype(.Float), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv))
@@ -33,6 +35,8 @@ extension Matft.stats{
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
     public static func max(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxv)
@@ -47,6 +51,8 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get index of maximum for all elements (flattenarray)
     */
     public static func argmax(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             return stats_index_by_vDSP(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_maxvi)
@@ -62,6 +68,8 @@ extension Matft.stats{
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
     public static func min(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minv)
@@ -76,6 +84,8 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get index of minimum for all elements (flattenarray)
     */
     public static func argmin(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             return stats_index_by_vDSP(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_minvi)
@@ -92,6 +102,9 @@ extension Matft.stats{
     */
     public static func maximum(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
+        
+        precondition(isReal, "Complex is not supported")
+        
         switch MfType.storedType(rettype) {
         case .Float:
             return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmax)
@@ -108,6 +121,9 @@ extension Matft.stats{
     */
     public static func minimum(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
+        
+        precondition(isReal, "Complex is not supported")
+        
         switch MfType.storedType(rettype) {
         case .Float:
             return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmin)
@@ -124,6 +140,8 @@ extension Matft.stats{
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
     public static func sum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             return boolean2float(stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sve))
@@ -139,6 +157,8 @@ extension Matft.stats{
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
     public static func sumsqrt(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+        unsupport_complex(mfarray)
+        
         return Matft.math.sqrt(Matft.stats.sum(mfarray, axis: axis, keepDims: keepDims))
     }
     /**
@@ -149,6 +169,8 @@ extension Matft.stats{
             - keepDims: (Optional) whether to keep original dimension, default is true
     */
     public static func squaresum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+        unsupport_complex(mfarray)
+        
         switch mfarray.storedType {
         case .Float:
             return boolean2float(stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesq))
@@ -164,6 +186,8 @@ extension Matft.stats{
             - axis: (Optional) axis, if not given, get cumulative summation for flatten array
     */
     public static func cumsum(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
+        unsupport_complex(mfarray)
+        
         if let axis = axis{
             return mfarray.ufuncAccumulate(Matft.add, axis: axis)
         }
