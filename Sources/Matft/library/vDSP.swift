@@ -490,15 +490,12 @@ internal func biopvv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: M
 ///   - r_mfarray: The right mfarray
 ///   - vDSP_func: The vDSP biop function
 /// - Returns: The result mfarray
-internal func biopzvv_by_vDSP<T: vDSP_ComplexTypable>(_ l_mfarray: MfComplexArray, _ r_mfarray: MfComplexArray, vDSP_func: vDSP_biopzvv_func<T>) -> MfComplexArray{
+internal func biopzvv_by_vDSP<T: vDSP_ComplexTypable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, vDSP_func: vDSP_biopzvv_func<T>) -> MfArray{
     // biggerL: flag whether l is bigger than r
     //return mfarray must be either row or column major
-    /*
     let (l_mfarray, r_mfarray, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
 
-    let newdata = MfComplexData(size: retsize, mftype: l_mfarray.mftype)*/
-    let newdata = MfComplexData(size: l_mfarray.size, mftype: l_mfarray.mftype)
-    let biggerL = true
+    let newdata = MfData(size: retsize, mftype: l_mfarray.mftype, complex: true)
     newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
         dstptrT in
         l_mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
@@ -528,7 +525,7 @@ internal func biopzvv_by_vDSP<T: vDSP_ComplexTypable>(_ l_mfarray: MfComplexArra
         newstructure = MfStructure(shape: r_mfarray.shape, strides: r_mfarray.strides)
     }
 
-    return MfComplexArray(mfdata: newdata, mfstructure: newstructure)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
 

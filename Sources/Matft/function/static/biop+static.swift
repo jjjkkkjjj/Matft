@@ -26,7 +26,7 @@ extension Matft{
             return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
         }
     }
-    
+    /*
     public static func add(_ l_mfarray: MfComplexArray, _ r_mfarray: MfComplexArray) -> MfComplexArray{
         switch l_mfarray.storedType{
         case .Float:
@@ -34,7 +34,7 @@ extension Matft{
         case .Double:
             return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvaddD)
         }
-    }
+    }*/
     
     /**
        Element-wise addition of  mfarray and scalar
