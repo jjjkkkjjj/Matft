@@ -21,17 +21,22 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func sin(_ mfarray: MfArray) -> MfArray{
-        unsupport_complex(mfarray)
-        
-        switch mfarray.storedType {
-        case .Float:
-            let ret = mathf_by_vForce(mfarray, vvsinf)
-            ret.mfdata.mftype = .Float
-            return ret
-        case .Double:
-            let ret = mathf_by_vForce(mfarray, vvsin)
-            ret.mfdata.mftype = .Double
-            return ret
+        if mfarray.isReal{
+            switch mfarray.storedType {
+            case .Float:
+                let ret = mathf_by_vForce(mfarray, vvsinf)
+                ret.mfdata.mftype = .Float
+                return ret
+            case .Double:
+                let ret = mathf_by_vForce(mfarray, vvsin)
+                ret.mfdata.mftype = .Double
+                return ret
+            }
+        }
+        else{
+            let x = mfarray.real
+            let y = mfarray.imag!
+            return MfArray(real: Matft.math.sin(x)*Matft.math.cosh(y), imag: Matft.math.cos(x)*Matft.math.sinh(y))
         }
     }
     /**
@@ -97,17 +102,22 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func cos(_ mfarray: MfArray) -> MfArray{
-        unsupport_complex(mfarray)
-        
-        switch mfarray.storedType {
-        case .Float:
-            let ret = mathf_by_vForce(mfarray, vvcosf)
-            ret.mfdata.mftype = .Float
-            return ret
-        case .Double:
-            let ret = mathf_by_vForce(mfarray, vvcos)
-            ret.mfdata.mftype = .Double
-            return ret
+        if mfarray.isReal{
+            switch mfarray.storedType {
+            case .Float:
+                let ret = mathf_by_vForce(mfarray, vvcosf)
+                ret.mfdata.mftype = .Float
+                return ret
+            case .Double:
+                let ret = mathf_by_vForce(mfarray, vvcos)
+                ret.mfdata.mftype = .Double
+                return ret
+            }
+        }
+        else{
+            let x = mfarray.real
+            let y = mfarray.imag!
+            return MfArray(real: Matft.math.cos(x)*Matft.math.cosh(y), imag: -Matft.math.sin(x)*Matft.math.sinh(y))
         }
     }
     /**
@@ -173,17 +183,25 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func tan(_ mfarray: MfArray) -> MfArray{
-        unsupport_complex(mfarray)
-        
-        switch mfarray.storedType {
-        case .Float:
-            let ret = mathf_by_vForce(mfarray, vvtanf)
-            ret.mfdata.mftype = .Float
-            return ret
-        case .Double:
-            let ret = mathf_by_vForce(mfarray, vvtan)
-            ret.mfdata.mftype = .Double
-            return ret
+        if mfarray.isReal{
+            switch mfarray.storedType {
+            case .Float:
+                let ret = mathf_by_vForce(mfarray, vvtanf)
+                ret.mfdata.mftype = .Float
+                return ret
+            case .Double:
+                let ret = mathf_by_vForce(mfarray, vvtan)
+                ret.mfdata.mftype = .Double
+                return ret
+            }
+        }
+        else{
+            let x = mfarray.real
+            let y = mfarray.imag!
+            let cosx = Matft.math.cos(x)
+            let sinhy = Matft.math.sinh(y)
+            let denomitar = cosx*cosx + sinhy*sinhy
+            return MfArray(real: Matft.math.sin(x)*cosx/denomitar, imag: Matft.math.cosh(x)*sinhy/denomitar)
         }
     }
     /**
@@ -311,17 +329,20 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func log(_ mfarray: MfArray) -> MfArray{
-        unsupport_complex(mfarray)
-        
-        switch mfarray.storedType {
-        case .Float:
-            let ret = mathf_by_vForce(mfarray, vvlogf)
-            ret.mfdata.mftype = .Float
-            return ret
-        case .Double:
-            let ret = mathf_by_vForce(mfarray, vvlog)
-            ret.mfdata.mftype = .Double
-            return ret
+        if mfarray.isReal{
+            switch mfarray.storedType {
+            case .Float:
+                let ret = mathf_by_vForce(mfarray, vvlogf)
+                ret.mfdata.mftype = .Float
+                return ret
+            case .Double:
+                let ret = mathf_by_vForce(mfarray, vvlog)
+                ret.mfdata.mftype = .Double
+                return ret
+            }
+        }
+        else{
+            return MfArray(real: Matft.math.log(Matft.complex.abs(mfarray)), imag: Matft.complex.angle(mfarray))
         }
     }
     /**

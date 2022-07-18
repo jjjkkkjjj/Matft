@@ -564,22 +564,22 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 
 | Matft                    | Numpy       |
 | ------------------------ | ---------- |
-| Matft.math.sin   | numpy.sin   |
+| #Matft.math.sin   | numpy.sin   |
 | Matft.math.asin  | numpy.asin  |
 | Matft.math.sinh  | numpy.sinh  |
 | Matft.math.asinh | numpy.asinh |
-| Matft.math.sin   | numpy.cos   |
+| #Matft.math.cos   | numpy.cos   |
 | Matft.math.acos  | numpy.acos  |
 | Matft.math.cosh  | numpy.cosh  |
 | Matft.math.acosh | numpy.acosh |
-| Matft.math.tan   | numpy.tan   |
+| #Matft.math.tan   | numpy.tan   |
 | Matft.math.atan  | numpy.atan  |
 | Matft.math.tanh  | numpy.tanh  |
 | Matft.math.atanh | numpy.atanh |
 | Matft.math.sqrt | numpy.sqrt |
 | Matft.math.rsqrt | numpy.rsqrt |
 | Matft.math.exp | numpy.exp |
-| Matft.math.log | numpy.log |
+| #Matft.math.log | numpy.log |
 | Matft.math.log2 | numpy.log2 |
 | Matft.math.log10 | numpy.log10 |
 | *Matft.math.ceil | numpy.ceil |

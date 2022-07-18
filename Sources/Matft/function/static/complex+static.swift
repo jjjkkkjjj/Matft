@@ -66,9 +66,13 @@ extension Matft.complex{
         
         switch mfarray.storedType{
         case .Float:
-            return z2r_by_vDSP(mfarray, vDSP_zvabs)
+            let ret = z2r_by_vDSP(mfarray, vDSP_zvabs)
+            ret.mfdata.mftype = .Float
+            return ret
         case .Double:
-            return z2r_by_vDSP(mfarray, vDSP_zvabsD)
+            let ret = z2r_by_vDSP(mfarray, vDSP_zvabsD)
+            ret.mfdata.mftype = .Double
+            return ret
         }
     }
 }
