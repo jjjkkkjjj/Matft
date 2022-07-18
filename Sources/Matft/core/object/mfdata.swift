@@ -11,6 +11,7 @@ import Accelerate
 
 public class MfData: MfDataProtocol{
     private var _base: MfData? // must be referenced because refdata could be freed automatically?
+    private var _isOwner: Bool = true
     internal var data: UnsafeMutableRawPointer
     
     internal var mftype: MfType
@@ -20,7 +21,7 @@ public class MfData: MfDataProtocol{
     
     /// Whether to be VIEW or not
     internal var _isView: Bool{
-        return self._base != nil
+        return !(self._base == nil && self._isOwner)
     }
     
     /// The offset value
@@ -45,11 +46,18 @@ public class MfData: MfDataProtocol{
         self.offset = 0
     }
     
-    public init(dataptr: UnsafeMutableRawPointer, storedSize: Int, mftype: MfType){
+    /// Pass a pointer directly.
+    /// - Parameters:
+    ///    - dataptr: A data pointer
+    ///    - storedSize: A size
+    ///    - mftype: Type
+    /// - Important: The given dataptr will NOT be freed. So don't forget to free manually.
+    internal init(dataptr: UnsafeMutableRawPointer, storedSize: Int, mftype: MfType, offset: Int){
+        self._isOwner = false
         self.data = dataptr
         self.storedSize = storedSize
         self.mftype = mftype
-        self.offset = 0
+        self.offset = offset
     }
     
 
@@ -108,6 +116,7 @@ public class MfData: MfDataProtocol{
 
 public class MfComplexData: MfDataProtocol{
     private var _base: MfComplexData?
+    private var _isOwner: Bool = true
     
     internal var data_real: UnsafeMutableRawPointer
     internal var data_imag: UnsafeMutableRawPointer
@@ -119,7 +128,7 @@ public class MfComplexData: MfDataProtocol{
     
     /// Whether to be VIEW or not
     internal var _isView: Bool{
-        return self._base != nil
+        return !(self._base == nil && self._isOwner)
     }
     
     /// The offset value
@@ -147,7 +156,15 @@ public class MfComplexData: MfDataProtocol{
         self.offset = 0
     }
     
+    /// Pass a pointer directly.
+    /// - Parameters:
+    ///    - dataptr: A real data pointer
+    ///    - data_imag_ptr: A imag data pointer
+    ///    - storedSize: A size
+    ///    - mftype: Type
+    /// - Important: The given dataptr will NOT be freed. So don't forget to free manually.
     public init(data_real_ptr: UnsafeMutableRawPointer, data_imag_ptr: UnsafeMutableRawPointer, storedSize: Int, mftype: MfType){
+        self._isOwner = false
         self.data_real = data_real_ptr
         self.data_imag = data_imag_ptr
         self.storedSize = storedSize

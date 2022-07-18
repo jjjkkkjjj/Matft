@@ -20,6 +20,9 @@ final class ComplexTests: XCTestCase {
             let a = MfComplexArray(real: real, imag: imag)
 
             print(a)
+            
+            XCTAssertEqual(a.real, real)
+            XCTAssertEqual(a.imag, imag)
         }
     }
 }

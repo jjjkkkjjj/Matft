@@ -95,6 +95,15 @@ open class MfComplexArray: MfStructuredProtocol{
 
     public internal(set) var base: MfComplexArray?
     
+    public var real: MfArray{
+        let mfdata = MfData(dataptr: self.mfdata.data_real, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
+        return MfArray(mfdata: mfdata, mfstructure: self.mfstructure)
+    }
+    public var imag: MfArray{
+        let mfdata = MfData(dataptr: self.mfdata.data_imag, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
+        return MfArray(mfdata: mfdata, mfstructure: self.mfstructure)
+    }
+    
     //mfdata getter
     //return base's data
     public var data: (real: [Any], imag: [Any]){
