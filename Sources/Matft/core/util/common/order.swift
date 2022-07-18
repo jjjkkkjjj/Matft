@@ -18,7 +18,7 @@ internal func copy_all_mfarray(_ src_mfarray: MfArray) -> MfArray{
     assert(src_mfarray.mfstructure.row_contiguous || src_mfarray.mfstructure.column_contiguous, "To call copyAll function, passed mfarray must be contiguous")
     
     let newsize = src_mfarray.size
-    let newdata = MfData(size: newsize, mftype: src_mfarray.mftype)
+    let newdata = MfData(size: newsize, mftype: src_mfarray.mftype, complex: src_mfarray.isComplex)
     let newstructure = MfStructure(shape: src_mfarray.shape, strides: src_mfarray.strides)
     let dst_mfarray = MfArray(mfdata: newdata, mfstructure: newstructure)
     
@@ -31,12 +31,30 @@ internal func copy_all_mfarray(_ src_mfarray: MfArray) -> MfArray{
                 memcpy(dstptr, srcptr, MemoryLayout<Float>.size*newsize)
             }
         }
+        if src_mfarray.isComplex{
+            _ = src_mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
+                srcptr in
+                dst_mfarray.withUnsafeMutableStartImagPointer(datatype: Float.self){
+                    dstptr in
+                    memcpy(dstptr, srcptr, MemoryLayout<Float>.size*newsize)
+                }
+            }
+        }
     case .Double:
         _ = src_mfarray.withUnsafeMutableStartPointer(datatype: Double.self){
             srcptr in
             dst_mfarray.withUnsafeMutableStartPointer(datatype: Double.self){
                 dstptr in
                 memcpy(dstptr, srcptr, MemoryLayout<Double>.size*newsize)
+            }
+        }
+        if src_mfarray.isComplex{
+            _ = src_mfarray.withUnsafeMutableStartPointer(datatype: Double.self){
+                srcptr in
+                dst_mfarray.withUnsafeMutableStartImagPointer(datatype: Double.self){
+                    dstptr in
+                    memcpy(dstptr, srcptr, MemoryLayout<Double>.size*newsize)
+                }
             }
         }
     }

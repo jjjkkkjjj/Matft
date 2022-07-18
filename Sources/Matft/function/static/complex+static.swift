@@ -60,5 +60,5 @@ extension Matft.complex{
 ///     - mfarray: A source mfarray
 @inline(__always)
 internal func unsupport_complex(_ mfarray: MfArray){
-    precondition(mfarray.isComplex, "")
+    precondition(mfarray.isReal, "")
 }

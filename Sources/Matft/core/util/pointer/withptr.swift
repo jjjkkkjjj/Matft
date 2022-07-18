@@ -48,11 +48,11 @@ extension MfArray{
         
         return ret
     }
-    internal func withUnsafeMutableblasPointer<T: blas_ComplexTypable, R>(datatype: T.Type, vDSP_func: vDSP_convertcz_func<T.vDSPType, T>, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+    internal func withUnsafeMutableblasPointer<T: blas_ComplexTypable, R>(datatype: T.Type, vDSP_func: vDSP_convertz_func<T.vDSPType, T>, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
         
         let ret = try self.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){ [unowned self](ptr) -> R in
             var arr = Array(repeating: T(real: T.T.zero, imag: T.T.zero), count: self.storedSize)
-            wrap_vDSP_convertcz(arr.count, ptr, 1, &arr, 1, vDSP_func)
+            wrap_vDSP_convertz(arr.count, ptr, 1, &arr, 1, vDSP_func)
             return try body(&arr)
         }
         
@@ -131,11 +131,11 @@ extension MfData{
         
         return ret
     }
-    internal func withUnsafeMutableblasPointer<T: blas_ComplexTypable, R>(datatype: T.Type, vDSP_func: vDSP_convertcz_func<T.vDSPType, T>, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+    internal func withUnsafeMutableblasPointer<T: blas_ComplexTypable, R>(datatype: T.Type, vDSP_func: vDSP_convertz_func<T.vDSPType, T>, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
         
         let ret = try self.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){ [unowned self](ptr) -> R in
             var arr = Array(repeating: T(real: T.T.zero, imag: T.T.zero), count: self.storedSize)
-            wrap_vDSP_convertcz(arr.count, ptr, 1, &arr, 1, vDSP_func)
+            wrap_vDSP_convertz(arr.count, ptr, 1, &arr, 1, vDSP_func)
             return try body(&arr)
         }
         

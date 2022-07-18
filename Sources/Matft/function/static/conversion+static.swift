@@ -17,13 +17,16 @@ extension Matft{
             - mfarray: mfarray
             - mftype: the type of mfarray
             - mforder: The order
+            - complex: Whether to be complex or not.
     */
-    public static func astype(_ mfarray: MfArray, mftype: MfType, mforder: MfOrder = .Row) -> MfArray{
+    public static func astype(_ mfarray: MfArray, mftype: MfType, mforder: MfOrder = .Row, complex: Bool = false) -> MfArray{
         //let newarray = Matft.shallowcopy(mfarray)
         //newarray.mfdata._mftype = mftype
         if mftype == .Bool{
             return to_Bool(mfarray).to_contiguous(mforder: mforder)
         }
+        
+        let mfarray = complex && mfarray.isReal ? mfarray.to_complex(false) : mfarray
         
         let newStoredType = MfType.storedType(mftype)
         if mfarray.storedType == newStoredType{
@@ -32,12 +35,23 @@ extension Matft{
             return ret
         }
         
-        switch newStoredType{
-        case .Float://double to float
-            return contiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vdpsp)
-            
-        case .Double://float to double
-            return contiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vspdp)
+        if mfarray.isReal{
+            switch newStoredType{
+            case .Float://double to float
+                return contiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vdpsp)
+                
+            case .Double://float to double
+                return contiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vspdp)
+            }
+        }
+        else{
+            switch newStoredType{
+            case .Float://double to float
+                return zcontiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, src_type: DSPDoubleSplitComplex.self, dst_type: DSPSplitComplex.self, vDSP_func: vDSP_vdpsp)
+                
+            case .Double://float to double
+                return zcontiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, src_type: DSPSplitComplex.self, dst_type: DSPDoubleSplitComplex.self, vDSP_func: vDSP_vspdp)
+            }
         }
     }
     /**
@@ -275,11 +289,21 @@ extension Matft{
             - mforder: mforder
     */
     public static func to_contiguous(_ mfarray: MfArray, mforder: MfOrder) -> MfArray{
-        switch mfarray.storedType{
-        case .Float:
-            return contiguous_by_cblas(mfarray, cblas_func: cblas_scopy, mforder: mforder)
-        case .Double:
-            return contiguous_by_cblas(mfarray, cblas_func: cblas_dcopy, mforder: mforder)
+        if mfarray.isReal{
+            switch mfarray.storedType{
+            case .Float:
+                return contiguous_by_cblas(mfarray, cblas_func: cblas_scopy, mforder: mforder)
+            case .Double:
+                return contiguous_by_cblas(mfarray, cblas_func: cblas_dcopy, mforder: mforder)
+            }
+        }
+        else{
+            switch mfarray.storedType{
+            case .Float:
+                return zcontiguous_by_vDSP(mfarray, vDSP_zvmov, mforder: mforder)
+            case .Double:
+                return zcontiguous_by_vDSP(mfarray, vDSP_zvmovD, mforder: mforder)
+            }
         }
     }
     /**

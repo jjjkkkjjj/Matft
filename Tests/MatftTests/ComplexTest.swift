@@ -87,4 +87,16 @@ final class ComplexTests: XCTestCase {
             XCTAssertEqual(conj.imag!, -imag)
         }
     }
+    
+    func testAstype(){
+        do{
+            let real = Matft.arange(start: 0, to: 16, by: 1).reshape([2,2,4])
+            let imag = Matft.arange(start: 0, to: -16, by: -1).reshape([2,2,4])
+            let a = MfArray(real: real, imag: imag)
+            let ret = a.astype(.Double)
+            
+            XCTAssertEqual(ret.real, real.astype(.Double))
+            XCTAssertEqual(ret.imag!, imag.astype(.Double))
+        }
+    }
 }
