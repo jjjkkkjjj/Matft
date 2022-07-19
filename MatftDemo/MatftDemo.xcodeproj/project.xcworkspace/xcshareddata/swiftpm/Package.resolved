@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/jjjkkkjjj/Matft",
         "state": {
           "branch": "master",
-          "revision": "82e84fd07c1aa576dcf78193a3ecc353d2ae18dd",
+          "revision": "a67308bc564a8a9af2c22edf7900978bff8e49c9",
           "version": null
         }
       },
@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/apple/swift-collections",
         "state": {
           "branch": null,
-          "revision": "9d8719c8bebdc79740b6969c912ac706eb721d7a",
-          "version": "0.0.7"
+          "revision": "48254824bb4248676bf7ce56014ff57b142b77eb",
+          "version": "1.0.2"
         }
       }
     ]
