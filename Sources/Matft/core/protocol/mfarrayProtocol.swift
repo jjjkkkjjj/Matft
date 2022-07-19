@@ -8,11 +8,8 @@
 
 import Foundation
 
-
-public protocol MfStructuredProtocol{
-    associatedtype MFDATA: MfDataProtocol
-    var mfdata: MFDATA { get set }
-    var mfstructure: MfStructure { get set }
+public protocol HasMfDataProtocol{
+    var mfdata: MfData { get }
     
     /// The offset index
     var offsetIndex: Int { get }
@@ -24,20 +21,9 @@ public protocol MfStructuredProtocol{
     var storedSize: Int { get }
     /// The size of the stored data (byte)
     var storedByteSize: Int { get }
-    
-    /// The shape of ndarray
-    var shape: [Int] { get }
-    /// The strides of data representing ndarray
-    var strides: [Int] { get }
-    /// The dimension number
-    var ndim: Int { get }
-    /// The total element size
-    var size: Int { get }
-    /// The  total byte size
-    var byteSize: Int { get }
 }
 
-extension MfStructuredProtocol{
+extension HasMfDataProtocol{
     public var offsetIndex: Int{
         return self.mfdata.offset
     }
@@ -53,7 +39,24 @@ extension MfStructuredProtocol{
     public var storedByteSize: Int{
         return self.mfdata.storedByteSize
     }
+}
+
+public protocol HasMfStructurProtocol{
+    var mfstructure: MfStructure { get }
     
+    /// The shape of ndarray
+    var shape: [Int] { get }
+    /// The strides of data representing ndarray
+    var strides: [Int] { get }
+    /// The dimension number
+    var ndim: Int { get }
+    /// The total element size
+    var size: Int { get }
+    /// The  total byte size
+    var byteSize: Int { get }
+}
+
+extension HasMfStructurProtocol{
     
     public var shape: [Int]{
         return self.mfstructure.shape
@@ -68,6 +71,10 @@ extension MfStructuredProtocol{
     public var size: Int{
         return shape2size(&self.mfstructure.shape)
     }
+}
+
+public protocol MfArrayProtocol: HasMfDataProtocol, HasMfStructurProtocol{}
+extension MfArrayProtocol{
     public var byteSize: Int{
         switch self.storedType {
         case .Float:
@@ -77,6 +84,7 @@ extension MfStructuredProtocol{
         }
     }
 }
+
 
 internal protocol MfDataProtocol{
     //var _base: Self? { get set }

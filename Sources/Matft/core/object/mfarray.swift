@@ -9,8 +9,8 @@
 import Foundation
 import Accelerate
 
-open class MfArray: MfStructuredProtocol{
-    typealias MFDATA = MfData
+open class MfArray: MfArrayProtocol{
+    public typealias MFDATA = MfData
     public internal(set) var mfdata: MfData // Only setter is private
     public internal(set) var mfstructure: MfStructure
 
