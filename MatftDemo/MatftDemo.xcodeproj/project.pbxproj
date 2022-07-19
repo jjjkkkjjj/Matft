@@ -374,7 +374,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/jjjkkkjjj/Matft";
 			requirement = {
-				branch = image;
+				branch = master;
 				kind = branch;
 			};
 		};

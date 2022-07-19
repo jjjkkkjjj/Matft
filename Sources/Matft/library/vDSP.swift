@@ -895,6 +895,7 @@ internal func lim_by_vDSP<T: MfStorable>(_ mfarray: MfArray, point: T, to: T, _ 
 ///   - vDSP_func: vDSP_convert_func
 /// - Returns: CGImage
 /// ref: https://stackoverflow.com/questions/34677133/how-to-reconstruct-grayscale-image-from-intensity-values
+/// OpenCV: https://github.com/opencv/opencv/blob/ed69bcae2d171d9426cd3688a8b0ee14b8a140cd/modules/imgcodecs/src/apple_conversions.mm#L47
 internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDSP_func: vDSP_convert_func<T, UInt8>) -> CGImage{
     // check condition
     let mfarray: MfArray
@@ -959,21 +960,46 @@ internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDS
 ///   - src_mfarray: An input mfarray
 ///   - vDSP_func: vDSP_convert_func
 /// - Returns: CGImage
+/// OpenCV: https://github.com/opencv/opencv/blob/ed69bcae2d171d9426cd3688a8b0ee14b8a140cd/modules/imgcodecs/src/apple_conversions.mm#L47
 internal func cgimage2mfarray_by_vDSP<T: MfStorable>(_ cgimage: CGImage, mftype: MfType, vDSP_func: vDSP_convert_func<UInt8, T>) -> MfArray{
-    //let size = CFDataGetLength(cgimage.dataProvider!.data)
     let width = Int(cgimage.width)
     let height = Int(cgimage.height)
     let channel = Int(cgimage.bitsPerPixel/8)
+
+    //====== cgimage to tmp UInt8 array ======//
+    let colorModel: CGColorSpaceModel = cgimage.colorSpace!.model
+    let bitmapInfo: CGBitmapInfo
+    let colorSpace: CGColorSpace
     let size = width*height*channel
+    if (colorModel == CGColorSpaceModel.monochrome){
+        bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
+        colorSpace = CGColorSpaceCreateDeviceGray()
+    }
+    else if (colorModel == CGColorSpaceModel.indexed){
+        bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
+        colorSpace = CGColorSpaceCreateDeviceRGB()
+    }
+    else{
+        bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
+        colorSpace = cgimage.colorSpace!
+    }
     
+    var arr = Array<UInt8>(repeating: UInt8.zero, count: size)
+    arr.withUnsafeMutableBytes{
+        let contextRef = CGContext(data: $0.baseAddress!, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width*channel, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
+        contextRef?.draw(cgimage, in: CGRect(x: 0, y: 0, width: width, height: height))
+    }
+    
+    //====== tmp UInt8 array to newdata ======//
     let newdata = MfData(size: size, mftype: mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
-        let srcptr = CFDataGetBytePtr(cgimage.dataProvider?.data)!
-        
-        wrap_vDSP_convert(size, srcptr, 1, $0, 1, vDSP_func)
+        dstptr in
+        arr.withUnsafeBufferPointer{
+            srcptr in
+            wrap_vDSP_convert(size, srcptr.baseAddress!, 1, dstptr, 1, vDSP_func)
+        }
     }
     
     let newstructure = MfStructure(shape: [height, width, channel], mforder: .Row)
-    
     return MfArray(mfdata: newdata, mfstructure: newstructure).squeeze()
 }
