@@ -379,26 +379,57 @@ internal func fancyndget_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: 
     
     let workSize = shape2size(&workShape)
     
-    let newdata = MfData(size: retSize, mftype: mfarray.mftype)
+    if mfarray.isReal{
+        let newdata = MfData(size: retSize, mftype: mfarray.mftype)
 
-    newdata.withUnsafeMutableStartPointer(datatype: T.self){
-        dstptrT in
-        var dstptrT = dstptrT
-        let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            [unowned mfarray](srcptr) in
-            
-            let offsets = (indices.data as! [Int]).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
-            for offset in offsets{
-                wrap_cblas_copy(workSize, srcptr + offset, 1, dstptrT, 1, cblas_func)
-                dstptrT += workSize
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptrT in
+            var dstptrT = dstptrT
+            let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                [unowned mfarray](srcptr) in
+                
+                let offsets = (indices.data as! [Int]).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
+                for offset in offsets{
+                    wrap_cblas_copy(workSize, srcptr + offset, 1, dstptrT, 1, cblas_func)
+                    dstptrT += workSize
+                }
             }
         }
+        
+        let newstructure = MfStructure(shape: retShape, mforder: .Row)
+        
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
-    
-    let newstructure = MfStructure(shape: retShape, mforder: .Row)
-    
-    return MfArray(mfdata: newdata, mfstructure: newstructure)
+    else{
+        let newdata = MfData(size: retSize, mftype: mfarray.mftype, complex: true)
+
+        newdata.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+            dstptrT in
+            var dstptrTr = dstptrT.pointee.realp as! UnsafeMutablePointer<T>
+            var dstptrTi = dstptrT.pointee.imagp as! UnsafeMutablePointer<T>
+            let _ = mfarray.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+                [unowned mfarray](srcptr) in
+                let srcptrr = srcptr.pointee.realp as! UnsafeMutablePointer<T>
+                let srcptri = srcptr.pointee.imagp as! UnsafeMutablePointer<T>
+                
+                let offsets = (indices.data as! [Int]).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
+                for offset in offsets{
+                    wrap_cblas_copy(workSize, srcptrr + offset, 1, dstptrTr, 1, cblas_func)
+                    dstptrTr += workSize
+                    
+                    wrap_cblas_copy(workSize, srcptri + offset, 1, dstptrTi, 1, cblas_func)
+                    dstptrTi += workSize
+                }
+            }
+        }
+        
+        let newstructure = MfStructure(shape: retShape, mforder: .Row)
+        
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
+    }
 }
+
+
 
 /// Getter function for the fancy indexing on a given Interger indices.
 /// - Parameters:
@@ -433,23 +464,51 @@ internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
      array([0, 1, 2])
      */
     
-    let newdata = MfData(size: retSize, mftype: mfarray.mftype)
-    newdata.withUnsafeMutableStartPointer(datatype: T.self){
-        dstptrT in
-        var dstptrT = dstptrT
-        let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            srcptr in
-            
-            for offset in offsets{
-                wrap_cblas_copy(workSize, srcptr + offset, 1, dstptrT, 1, cblas_func)
-                dstptrT += workSize
+    if mfarray.isReal{
+        let newdata = MfData(size: retSize, mftype: mfarray.mftype)
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptrT in
+            var dstptrT = dstptrT
+            let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                srcptr in
+                
+                for offset in offsets{
+                    wrap_cblas_copy(workSize, srcptr + offset, 1, dstptrT, 1, cblas_func)
+                    dstptrT += workSize
+                }
             }
         }
+        
+        let newstructure = MfStructure(shape: retShape, mforder: .Row)
+        
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
-    
-    let newstructure = MfStructure(shape: retShape, mforder: .Row)
-    
-    return MfArray(mfdata: newdata, mfstructure: newstructure)
+    else{
+        let newdata = MfData(size: retSize, mftype: mfarray.mftype, complex: true)
+
+        newdata.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+            dstptrT in
+            var dstptrTr = dstptrT.pointee.realp as! UnsafeMutablePointer<T>
+            var dstptrTi = dstptrT.pointee.imagp as! UnsafeMutablePointer<T>
+            let _ = mfarray.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+                srcptr in
+                let srcptrr = srcptr.pointee.realp as! UnsafeMutablePointer<T>
+                let srcptri = srcptr.pointee.imagp as! UnsafeMutablePointer<T>
+                
+                for offset in offsets{
+                    wrap_cblas_copy(workSize, srcptrr + offset, 1, dstptrTr, 1, cblas_func)
+                    dstptrTr += workSize
+                    
+                    wrap_cblas_copy(workSize, srcptri + offset, 1, dstptrTi, 1, cblas_func)
+                    dstptrTi += workSize
+                }
+            }
+        }
+        
+        let newstructure = MfStructure(shape: retShape, mforder: .Row)
+        
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
+    }
 }
 
 /// Setter function for the fancy indexing on a given Interger indices.

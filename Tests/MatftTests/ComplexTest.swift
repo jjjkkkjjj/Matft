@@ -277,4 +277,45 @@ final class ComplexTests: XCTestCase {
                                                    1.80660525e+04]]] as [[[Float]]]).round(decimals: 1))
         }
     }
+    
+    func testSubscript(){
+        do{
+            let real = Matft.arange(start: 1, to: 17, by: 1).reshape([2,2,4])
+            let imag = Matft.arange(start: 1, to: -15, by: -1).reshape([2,2,4])
+            let a = MfArray(real: real, imag: imag)
+            
+            var b = a[0, Matft.all]
+            XCTAssertEqual(b.real, real[0, Matft.all])
+            XCTAssertEqual(b.imag!, imag[0, Matft.all])
+            
+            b = a[0, Matft.all].T
+            XCTAssertEqual(b.real, real[0, Matft.all].T)
+            XCTAssertEqual(b.imag!, imag[0, Matft.all].T)
+            
+            b = a[0, Matft.reverse]
+            XCTAssertEqual(b.real, real[0, Matft.reverse])
+            XCTAssertEqual(b.imag!, imag[0, Matft.reverse])
+            
+            b = a[0, Matft.reverse].T
+            XCTAssertEqual(b.real, real[0, Matft.reverse].T)
+            XCTAssertEqual(b.imag!, imag[0, Matft.reverse].T)
+            
+            b = a[0, Matft.all, 1~<2]
+            XCTAssertEqual(b.real, real[0, Matft.all, 1~<2])
+            XCTAssertEqual(b.imag!, imag[0, Matft.all, 1~<2])
+            
+            b = a[real > 5]
+            XCTAssertEqual(b.real, real[real > 5])
+            XCTAssertEqual(b.imag!, imag[real > 5])
+            
+            let indices = MfArray([1, -1])
+            b = a[indices]
+            XCTAssertEqual(b.real, real[indices])
+            XCTAssertEqual(b.imag!, imag[indices])
+            
+            b = a[indices, indices]
+            XCTAssertEqual(b.real, real[indices, indices])
+            XCTAssertEqual(b.imag!, imag[indices, indices])
+        }
+    }
 }

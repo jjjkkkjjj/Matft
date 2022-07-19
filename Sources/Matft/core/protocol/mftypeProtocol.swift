@@ -195,6 +195,7 @@ extension Bool: MfBinary, StoredFloat {
 
 public protocol MfStorable: MfTypable, FloatingPoint{
     associatedtype vDSPType: vDSP_ComplexTypable
+    associatedtype blasType: blas_ComplexTypable
     
     static func num(_ number: Int) -> Self
     static func from<T: MfTypable>(_ value: T) -> Self
@@ -205,6 +206,7 @@ public protocol MfStorable: MfTypable, FloatingPoint{
 
 extension Float: MfStorable{
     public typealias vDSPType = DSPSplitComplex
+    public typealias blasType = DSPComplex
     
     public static func num(_ number: Int) -> Float {
         return Float(number)
@@ -251,6 +253,7 @@ extension Float: MfStorable{
 }
 extension Double: MfStorable{
     public typealias vDSPType = DSPDoubleSplitComplex
+    public typealias blasType = DSPDoubleComplex
     
     public static func num(_ number: Int) -> Double {
         return Double(number)

@@ -426,6 +426,18 @@ But this is beta version. so, any bug may be ocurred.
 
 Please report me by issue!
 
+**TODO**
+
+- [x] Arithmetic Operation
+- [x] Angle, Conjugate and Absolute
+- [x] Math (partial: `sin,cos,tan,exp,log`)
+- [x] Basic Subscription Getter
+- [ ] Basic Subscription Setter
+- [x] Boolean Indexing Getter
+- [ ] Boolean Indexing Setter
+- [x] Fancy Indexing Getter
+- [ ] Fancy Indexing Setter
+
 ```swift
 let real = Matft.arange(start: 0, to: 16, by: 1).reshape([2,2,4])
 let imag = Matft.arange(start: 0, to: -16, by: -1).reshape([2,2,4])

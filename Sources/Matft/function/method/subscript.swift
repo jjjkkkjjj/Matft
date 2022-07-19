@@ -244,6 +244,9 @@ extension MfArray: MfSubscriptable{
     }
     
     private func _set_mfarray(indices: inout [Any], newValue: MfArray){
+        unsupport_complex(self)
+        unsupport_complex(newValue)
+        
         for index in indices{
             if let _ = index as? SubscriptOps{
                 fatalError("SubscriptOps must not be passed to setter")
@@ -289,6 +292,7 @@ extension MfArray: MfSubscriptable{
     
     
     private func _get_mfarray(indices: MfArray) -> MfArray{
+        unsupport_complex(indices)
         
         switch indices.mftype {
         case .Bool:
@@ -318,6 +322,8 @@ extension MfArray: MfSubscriptable{
     
     
     private func _fancygetall_mfarray(indices: inout [MfArray]) -> MfArray{
+        let _ = indices.map{ unsupport_complex($0) }
+        
         switch self.storedType {
         case .Float:
             return fancygetall_by_cblas(self, &indices, cblas_scopy)
@@ -328,6 +334,9 @@ extension MfArray: MfSubscriptable{
     }
     
     private func _fancysetall_mfarray(indices: inout [MfArray], assignedMfarray: MfArray) -> Void{
+        unsupport_complex(self)
+        unsupport_complex(assignedMfarray)
+        
         switch self.storedType {
         case .Float:
             fancysetall_by_cblas(self, &indices, assignedMfarray, cblas_scopy)

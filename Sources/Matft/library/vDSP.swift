@@ -1122,28 +1122,59 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
     var retShape = [true_num] + lastShape
     let retSize = shape2size(&retShape)
     
-    let newdata = MfData(size: retSize, mftype: mfarray.mftype)
-    newdata.withUnsafeMutableStartPointer(datatype: T.self){
-        dstptrT in
-        indicesT.withUnsafeMutableStartPointer(datatype: T.self){
-            //[unowned indicesT](indptr) in
-            indptr in
-            // note that indices and mfarray is row contiguous
-            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-                srcptr in
-                
-                for vDSPPrams in OptOffsetParamsSequence(shape: indicesT.shape, bigger_strides: indicesT.strides, smaller_strides: mfarray.strides){
-                    wrap_vDSP_cmprs(vDSPPrams.blocksize, srcptr + vDSPPrams.s_offset, vDSPPrams.s_stride, indptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+    if mfarray.isReal{
+        let newdata = MfData(size: retSize, mftype: mfarray.mftype)
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptrT in
+            indicesT.withUnsafeMutableStartPointer(datatype: T.self){
+                //[unowned indicesT](indptr) in
+                indptr in
+                // note that indices and mfarray is row contiguous
+                mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                    srcptr in
+                    
+                    for vDSPPrams in OptOffsetParamsSequence(shape: indicesT.shape, bigger_strides: indicesT.strides, smaller_strides: mfarray.strides){
+                        wrap_vDSP_cmprs(vDSPPrams.blocksize, srcptr + vDSPPrams.s_offset, vDSPPrams.s_stride, indptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                    }
+                    //vDSP_func(srcptr.baseAddress!, vDSP_Stride(1), indptr.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(indicesT.size))
                 }
-                //vDSP_func(srcptr.baseAddress!, vDSP_Stride(1), indptr.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(indicesT.size))
             }
         }
+        
+        
+        let newstructure = MfStructure(shape: retShape, mforder: .Row)
+        
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
-    
-    
-    let newstructure = MfStructure(shape: retShape, mforder: .Row)
-    
-    return MfArray(mfdata: newdata, mfstructure: newstructure)
+    else{
+        let newdata = MfData(size: retSize, mftype: mfarray.mftype, complex: true)
+        newdata.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+            dstptrT in
+            indicesT.withUnsafeMutableStartPointer(datatype: T.self){
+                //[unowned indicesT](indptr) in
+                indptr in
+                // note that indices and mfarray is row contiguous
+                mfarray.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+                    srcptr in
+                    let srcptrr = srcptr.pointee.realp as! UnsafeMutablePointer<T>
+                    let srcptri = srcptr.pointee.imagp as! UnsafeMutablePointer<T>
+                    let dstptrTr = dstptrT.pointee.realp as! UnsafeMutablePointer<T>
+                    let dstptrTi = dstptrT.pointee.imagp as! UnsafeMutablePointer<T>
+                    
+                    for vDSPPrams in OptOffsetParamsSequence(shape: indicesT.shape, bigger_strides: indicesT.strides, smaller_strides: mfarray.strides){
+                        wrap_vDSP_cmprs(vDSPPrams.blocksize, srcptrr + vDSPPrams.s_offset, vDSPPrams.s_stride, indptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrTr + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                        wrap_vDSP_cmprs(vDSPPrams.blocksize, srcptri + vDSPPrams.s_offset, vDSPPrams.s_stride, indptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrTi + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                    }
+                    //vDSP_func(srcptr.baseAddress!, vDSP_Stride(1), indptr.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(indicesT.size))
+                }
+            }
+        }
+        
+        
+        let newstructure = MfStructure(shape: retShape, mforder: .Row)
+        
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
+    }
 }
 
 
@@ -1184,18 +1215,40 @@ internal func fancy1dgetcol_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices
      print(c)
      //[0.0, 0.0, 3.0]
      */
-    let newdata = MfData(size: indices.size, mftype: mfarray.mftype)
-    newdata.withUnsafeMutableStartPointer(datatype: T.self){
-        dstptrT in
-        let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            srcptr in
-            var offsets = (indices.data as! [Int]).map{ UInt(get_positive_index($0, axissize: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
-            wrap_vDSP_gathr(indices.size, srcptr, &offsets, 1, dstptrT, 1, vDSP_func)
+    if mfarray.isReal{
+        let newdata = MfData(size: indices.size, mftype: mfarray.mftype)
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptrT in
+            let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                srcptr in
+                var offsets = (indices.data as! [Int]).map{ UInt(get_positive_index($0, axissize: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
+                wrap_vDSP_gathr(indices.size, srcptr, &offsets, 1, dstptrT, 1, vDSP_func)
+            }
         }
+        
+        let newstructure = MfStructure(shape: indices.shape, strides: indices.strides)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
-    
-    let newstructure = MfStructure(shape: indices.shape, strides: indices.strides)
-    return MfArray(mfdata: newdata, mfstructure: newstructure)
+    else{
+        let newdata = MfData(size: indices.size, mftype: mfarray.mftype, complex: true)
+        newdata.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+            dstptrT in
+            let _ = mfarray.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+                srcptr in
+                let srcptrr = srcptr.pointee.realp as! UnsafeMutablePointer<T>
+                let srcptri = srcptr.pointee.imagp as! UnsafeMutablePointer<T>
+                let dstptrTr = dstptrT.pointee.realp as! UnsafeMutablePointer<T>
+                let dstptrTi = dstptrT.pointee.imagp as! UnsafeMutablePointer<T>
+                
+                var offsets = (indices.data as! [Int]).map{ UInt(get_positive_index($0, axissize: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
+                wrap_vDSP_gathr(indices.size, srcptrr, &offsets, 1, dstptrTr, 1, vDSP_func)
+                wrap_vDSP_gathr(indices.size, srcptri, &offsets, 1, dstptrTi, 1, vDSP_func)
+            }
+        }
+        
+        let newstructure = MfStructure(shape: indices.shape, strides: indices.strides)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
+    }
 }
 
 /*
