@@ -9,7 +9,7 @@
 import Foundation
 
 
-internal protocol MfStructuredProtocol{
+public protocol MfStructuredProtocol{
     associatedtype MFDATA: MfDataProtocol
     var mfdata: MFDATA { get set }
     var mfstructure: MfStructure { get set }
