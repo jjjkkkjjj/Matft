@@ -16,7 +16,12 @@ open class MfArray: MfStructuredProtocol{
 
     public internal(set) var base: MfArray?
     
-
+    /// Create a mfarray from Swift Array
+    /// - Parameters:
+    ///    - array: A Swift Array
+    ///    - mftype: The Type
+    ///    - shape: The shape
+    ///    - mforder: The order
     public init (_ array: [Any], mftype: MfType? = nil, shape: [Int]? = nil, mforder: MfOrder = .Row) {
         
         var (flattenArray, shape_from_array) = array.withUnsafeBufferPointer{
@@ -38,17 +43,66 @@ open class MfArray: MfStructuredProtocol{
         self.mfstructure = MfStructure(shape: shape, mforder: mforder)
         
     }
-    public init(real: MfArray, imag: MfArray, mftype: MfType? = nil,  mforder: MfOrder = .Row){
-
-        let (real, imag) = _check_same_structure(real, imag, mftype: mftype)
-        self.mfdata = MFDATA(ref_realdata: real.mfdata, ref_imagdata: imag.mfdata, offset: real.offsetIndex)
-        self.mfstructure = MfStructure(shape: real.shape, strides: real.strides)
+    
+    /// Create complex mfarray from MfArray. Either real or imag must be given.
+    /// - Parameters:
+    ///    - real: A real MfArray
+    ///    - imag: A imag MfArray
+    ///    - mftype: The Type
+    ///    - mforder: The order
+    public init(real: MfArray?, imag: MfArray?, mftype: MfType? = nil,  mforder: MfOrder = .Row){
+        let realmfdata: MFDATA
+        let imagmfdata: MFDATA
+        let shape: [Int]
+        let strides: [Int]
+        if let real = real, let imag = imag{// complex
+            precondition(real.isReal, "Argument: real must be real")
+            precondition(imag.isReal, "Argument: imag must be real")
+            
+            let (real, imag) = _check_same_structure(real, imag, mftype: mftype)
+            realmfdata = real.mfdata
+            imagmfdata = imag.mfdata
+            shape = real.shape
+            strides = real.strides
+        }
+        else if let real = real {
+            precondition(real.isReal, "Argument: real must be real")
+            
+            realmfdata = real.mfdata
+            imagmfdata = MFDATA(size: real.storedSize, mftype: real.mftype)
+            shape = real.shape
+            strides = real.strides
+        }
+        else if let imag = imag {
+            precondition(imag.isReal, "Argument: imag must be real")
+            
+            imagmfdata = imag.mfdata
+            realmfdata = MFDATA(size: imag.storedSize, mftype: imag.mftype)
+            shape = imag.shape
+            strides = imag.strides
+        }
+        else{
+            preconditionFailure("Either real or imag must be given.")
+        }
+        
+        self.mfdata = MFDATA(ref_realdata: realmfdata, ref_imagdata: imagmfdata, offset: realmfdata.offset)
+        self.mfstructure = MfStructure(shape: shape, strides: strides)
     }
+    
+    /// Create mfarray from MfData and MfStructure
+    /// - Parameters:
+    ///    - mfdata: MfData
+    ///    - mfstructure: MfStructure
     public init (mfdata: MfData, mfstructure: MfStructure){
         self.mfdata = mfdata
         self.mfstructure = mfstructure
     }
-    //create view
+    
+    /// Create a VIEW mfarray from MfArray
+    /// - Parameters:
+    ///    - base: A base MfArray
+    ///    - mfstructure: MfStructure
+    ///    - offset: The offset index
     public init (base: MfArray, mfstructure: MfStructure, offset: Int){
         self.base = base
         self.mfdata = MfData(refdata: base.mfdata, offset: offset)

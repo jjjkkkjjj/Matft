@@ -153,7 +153,7 @@ final class ComplexTests: XCTestCase {
         }
     }
     
-    func testMath(){
+    func testsin(){
         do{
             let real = Matft.arange(start: 0, to: 16, by: 1).reshape([2,2,4])
             let imag = Matft.arange(start: 0, to: -16, by: -1).reshape([2,2,4])
@@ -179,7 +179,8 @@ final class ComplexTests: XCTestCase {
                                                 [-6.86706375e+04, -2.00733304e+05, -8.22203822e+04,
                                                   1.24171649e+06]]] as [[[Float]]]).round(decimals: 1))
         }
-        
+    }
+    func testlog(){
         do{
             let real = Matft.arange(start: 1, to: 17, by: 1).reshape([2,2,4])
             let imag = Matft.arange(start: 1, to: -15, by: -1).reshape([2,2,4])
@@ -195,6 +196,85 @@ final class ComplexTests: XCTestCase {
 
                                                [[-0.66104317, -0.67474094, -0.68572951, -0.69473828],
                                                 [-0.70225693, -0.70862627, -0.7140907 , -0.71883   ]]] as [[[Float]]]))
+        }
+    }
+    func testexp(){
+        do{
+            let real = Matft.arange(start: 1, to: 17, by: 1, mftype: .Double).reshape([2,2,4])
+            let imag = Matft.arange(start: 1, to: -15, by: -1, mftype: .Double).reshape([2,2,4])
+            let a = MfArray(real: real, imag: imag)
+            let ret = Matft.math.exp(a)
+            XCTAssertEqual(ret.real.round(decimals: 1), MfArray([[[ 1.46869394e+00,  7.38905610e+00,  1.08522619e+01,
+                                                 -2.27208474e+01],
+                                                [-1.46927914e+02, -2.63698657e+02,  3.11073358e+02,
+                                                  2.86222728e+03]],
+
+                                               [[ 6.10893324e+03, -3.20485152e+03, -5.45531424e+04,
+                                                 -1.36562912e+05],
+                                                [ 1.95798806e+03,  1.01482239e+06,  2.96645929e+06,
+                                                  1.21506203e+06]]] as [[[Double]]]).round(decimals: 1))
+            XCTAssertEqual(ret.imag!.round(decimals: 1), MfArray([[[ 2.28735529e+00,  0.00000000e+00, -1.69013965e+01,
+                                                  -4.96459573e+01],
+                                                 [-2.09440662e+01,  3.05315918e+02,  1.05158816e+03,
+                                                   8.32925861e+02]],
+
+                                                [[-5.32361755e+03, -2.17920656e+04, -2.46752406e+04,
+                                                   8.85420424e+04],
+                                                 [ 4.42409059e+05,  6.45284890e+05, -1.37353334e+06,
+                                                  -8.80264645e+06]]] as [[[Double]]]).round(decimals: 1))
+        }
+    }
+    
+    func testpower(){
+        do{
+            let real = Matft.arange(start: 1, to: 17, by: 1).reshape([2,2,4])
+            let imag = Matft.arange(start: 1, to: -15, by: -1).reshape([2,2,4])
+            let a = MfArray(real: real, imag: imag)
+            let ret = Matft.math.power(bases: a, exponents: 2)
+            XCTAssertEqual(ret.real.nearest(), MfArray([[[ 0.0,  4.0,  8.0, 12.0],
+                                               [16.0, 20.0, 24.0, 28.0]],
+
+                                              [[32.0, 36.0, 40.0, 44.0],
+                                               [48.0, 52.0, 56.0, 60.0]]] as [[[Float]]]).nearest())
+            XCTAssertEqual(ret.imag!.nearest(), MfArray([[[   2.0,    0.0,   -6.0,  -16.0],
+                                                [ -30.0,  -48.0,  -70.0,  -96.0]],
+
+                                               [[-126.0, -160.0, -198.0, -240.0],
+                                                [-286.0, -336.0, -390.0, -448.0]]] as [[[Float]]]).nearest())
+        }
+        
+        do{
+            let real = Matft.arange(start: 1, to: 5, by: 1).reshape([4])
+            let imag = Matft.arange(start: 1, to: -3, by: -1).reshape([4])
+            let a = MfArray(real: real, imag: imag)
+            let ret = Matft.math.power(bases: a, exponents: a)
+            XCTAssertEqual(ret.real.round(decimals: 4), MfArray([  0.27395725,   4.0        , -11.89819176,  21.75871639] as [Float]).round(decimals: 4))
+            XCTAssertEqual(ret.imag!.round(decimals: 4), MfArray([  0.58370076,   0.0        , -19.5929216 , 156.74592048] as [Float]).round(decimals: 4))
+        }
+        
+        do{
+            let real = Matft.arange(start: 1, to: 17, by: 1).reshape([2,2,4])
+            let imag = Matft.arange(start: 1, to: -15, by: -1).reshape([2,2,4])
+            let a = MfArray(real: real, imag: imag)
+            let ret = Matft.math.power(bases: 2, exponents: a)
+            XCTAssertEqual(ret.real.round(decimals: 1), MfArray([[[ 1.53847780e+00,  4.00000000e+00,  6.15391121e+00,
+                                                 2.93531160e+00],
+                                               [-1.55838214e+01, -5.96919729e+01, -1.21334265e+02,
+                                                -1.34572256e+02]],
+
+                                              [[ 7.12642042e+01,  7.57565815e+02,  2.04593957e+03,
+                                                 3.26500195e+03],
+                                               [ 1.86250780e+03, -7.32915400e+03, -3.00015127e+04,
+                                                -6.29967066e+04]]] as [[[Float]]]).round(decimals: 1))
+            XCTAssertEqual(ret.imag!.round(decimals: 1), MfArray([[[ 1.27792255e+00,  0.00000000e+00, -5.11169021e+00,
+                                                  -1.57284438e+01],
+                                                 [-2.79489626e+01, -2.30839418e+01,  4.07675863e+01,
+                                                   2.17775821e+02]],
+
+                                                [[ 5.07016186e+02,  6.88963015e+02,  9.18438641e+01,
+                                                  -2.47325257e+03],
+                                                 [-7.97746380e+03, -1.46532917e+04, -1.31776728e+04,
+                                                   1.80660525e+04]]] as [[[Float]]]).round(decimals: 1))
         }
     }
 }

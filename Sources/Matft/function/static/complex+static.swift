@@ -75,6 +75,24 @@ extension Matft.complex{
             return ret
         }
     }
+    
+    /**
+       Complex absolute and argument
+       - parameters:
+           - mfarray:  mfarray
+    */
+    public static func absarg(_ mfarray: MfArray) -> (abs: MfArray, arg: MfArray){
+        if mfarray.isReal{
+            switch mfarray.storedType{
+            case .Float:
+                return (Matft.math.abs(mfarray), Matft.nums_like(Float.zero, mfarray: mfarray))
+            case .Double:
+                return (Matft.math.abs(mfarray), Matft.nums_like(Double.zero, mfarray: mfarray))
+            }
+        }
+        
+        return (Matft.complex.abs(mfarray), Matft.complex.angle(mfarray))
+    }
 }
 
 /// Check it is real or not. if the mfarray is complex, raise precondition failure.

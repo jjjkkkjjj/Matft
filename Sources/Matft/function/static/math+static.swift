@@ -310,17 +310,24 @@ extension Matft.math{//use math_vv_by_vecLib
             - mfarray: mfarray
     */
     public static func exp(_ mfarray: MfArray) -> MfArray{
-        unsupport_complex(mfarray)
-        
-        switch mfarray.storedType {
-        case .Float:
-            let ret = mathf_by_vForce(mfarray, vvexpf)
-            ret.mfdata.mftype = .Float
-            return ret
-        case .Double:
-            let ret = mathf_by_vForce(mfarray, vvexp)
-            ret.mfdata.mftype = .Double
-            return ret
+        if mfarray.isReal{
+            switch mfarray.storedType {
+            case .Float:
+                let ret = mathf_by_vForce(mfarray, vvexpf)
+                ret.mfdata.mftype = .Float
+                return ret
+            case .Double:
+                let ret = mathf_by_vForce(mfarray, vvexp)
+                ret.mfdata.mftype = .Double
+                return ret
+            }
+        }
+        else{
+            let x = mfarray.real
+            let y = mfarray.imag!
+            let expx = Matft.math.exp(x)
+            
+            return MfArray(real: expx*Matft.math.cos(y), imag: expx*Matft.math.sin(y))
         }
     }
     /**
@@ -531,9 +538,13 @@ extension Matft.math{//use math_vv_by_vecLib
             - exponents: mfarray
     */
     public static func power(bases: Float, exponents: MfArray) -> MfArray{
-        unsupport_complex(exponents)
-        
-        return Matft.math.power(bases: Matft.nums(bases, shape: [1]), exponents: exponents)
+        if exponents.isReal{
+            return Matft.math.power(bases: Matft.nums(bases, shape: [1]), exponents: exponents)
+        }
+        else{
+            // a^b = exp(b*log(a)) = exp{blog|a|+j*b*arg(a)}
+            return Matft.math.exp(exponents*logf(fabsf(bases)))
+        }
     }
     /**
        Calculate power of each element
@@ -542,9 +553,15 @@ extension Matft.math{//use math_vv_by_vecLib
             - exponents: Float
     */
     public static func power(bases: MfArray, exponents: Float) -> MfArray{
-        unsupport_complex(bases)
-        
-        return Matft.math.power(bases: bases, exponents: Matft.nums(exponents, shape: [1]))
+        if bases.isReal{
+            return Matft.math.power(bases: bases, exponents: Matft.nums(exponents, shape: [1]))
+        }
+        else{
+            let b = Matft.complex.absarg(bases)
+            assert(b.abs.isReal)
+            let argj = MfArray(real: nil, imag: b.arg)
+            return Matft.math.power(bases: b.abs, exponents: exponents)*Matft.math.exp(argj*exponents)
+        }
     }
     /**
        Calculate power of each element
@@ -555,17 +572,22 @@ extension Matft.math{//use math_vv_by_vecLib
     public static func power(bases: MfArray, exponents: MfArray) -> MfArray{
         let (bases, exponents, rettype, isReal) = biop_broadcast_to(bases, exponents)
         
-        precondition(isReal, "Complex is not supported")
-        
-        switch MfType.storedType(rettype) {
-        case .Float:
-            let ret = math_biop_by_vForce(exponents, bases, vvpowf)
-            ret.mfdata.mftype = .Float
-            return ret
-        case .Double:
-            let ret = math_biop_by_vForce(exponents, bases, vvpow)
-            ret.mfdata.mftype = .Double
-            return ret
+        if isReal{
+            switch MfType.storedType(rettype) {
+            case .Float:
+                let ret = math_biop_by_vForce(exponents, bases, vvpowf)
+                ret.mfdata.mftype = .Float
+                return ret
+            case .Double:
+                let ret = math_biop_by_vForce(exponents, bases, vvpow)
+                ret.mfdata.mftype = .Double
+                return ret
+            }
+        }
+        else{
+            // a^b = exp(b*log(a)) = exp{blog|a|+j*b*arg(a)}
+            let a = Matft.complex.absarg(bases)
+            return Matft.math.exp(exponents*MfArray(real: Matft.math.log(a.abs), imag: a.arg))
         }
     }
     

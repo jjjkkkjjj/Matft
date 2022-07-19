@@ -578,7 +578,7 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.math.atanh | numpy.atanh |
 | Matft.math.sqrt | numpy.sqrt |
 | Matft.math.rsqrt | numpy.rsqrt |
-| Matft.math.exp | numpy.exp |
+| #Matft.math.exp | numpy.exp |
 | #Matft.math.log | numpy.log |
 | Matft.math.log2 | numpy.log2 |
 | Matft.math.log10 | numpy.log10 |
@@ -589,7 +589,7 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.math.round | numpy.round |
 | #Matft.math.abs | numpy.abs |
 | Matft.math.reciprocal | numpy.reciprocal |
-| Matft.math.power | numpy.power |
+| #Matft.math.power | numpy.power |
 | Matft.math.arctan2 | numpy.arctan2 |
 | Matft.math.square | numpy.square |
 | Matft.math.sign | numpy.sign |
