@@ -155,8 +155,8 @@ final class ComplexTests: XCTestCase {
     
     func testsin(){
         do{
-            let real = Matft.arange(start: 0, to: 16, by: 1).reshape([2,2,4])
-            let imag = Matft.arange(start: 0, to: -16, by: -1).reshape([2,2,4])
+            let real = Matft.arange(start: 0, to: 16, by: 1, mftype: .Double).reshape([2,2,4])
+            let imag = Matft.arange(start: 0, to: -16, by: -1, mftype: .Double).reshape([2,2,4])
             let a = MfArray(real: real, imag: imag)
             let ret = Matft.math.sin(a)
             
@@ -168,7 +168,7 @@ final class ComplexTests: XCTestCase {
                                                     [[ 1.47461785e+03,  1.66971536e+03, -5.99143121e+03,
                                                       -2.99367777e+04],
                                                      [-4.36649067e+04,  9.29437620e+04,  5.95654325e+05,
-                                                       1.06290112e+06]]] as [[[Float]]]).round(decimals: 1))
+                                                       1.06290112e+06]]] as [[[Double]]]).round(decimals: 1))
             XCTAssertEqual(ret.imag!.round(decimals: 1), MfArray([[[ 0.00000000e+00, -6.34963915e-01,  1.50930649e+00,
                                                   9.91762101e+00],
                                                 [ 1.78378803e+01, -2.10486449e+01, -1.93678980e+02,
@@ -177,7 +177,7 @@ final class ComplexTests: XCTestCase {
                                                [[ 2.16864720e+02,  3.69148243e+03,  9.24089015e+03,
                                                  -1.32492434e+02],
                                                 [-6.86706375e+04, -2.00733304e+05, -8.22203822e+04,
-                                                  1.24171649e+06]]] as [[[Float]]]).round(decimals: 1))
+                                                  1.24171649e+06]]] as [[[Double]]]).round(decimals: 1))
         }
     }
     func testlog(){
