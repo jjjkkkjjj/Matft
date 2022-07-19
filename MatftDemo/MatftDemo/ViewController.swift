@@ -50,11 +50,13 @@ class ViewController: UIViewController {
     }
     
     func grayreverse(){
-        var image = self.toMfArray(image: self.grayreverseImageView.image!)
-
+        //var image = self.toMfArray(image: self.grayreverseImageView.image!)
+        var image = Matft.image.cgimage2mfarray(self.grayreverseImageView.image!.cgImage!)
+        
         // reverse
         image = image[Matft.reverse] // same as image[~<<-1]
-        self.grayreverseImageView.image = self.toUIImage(mfarray: image)
+        //self.grayreverseImageView.image = self.toUIImage(mfarray: image)
+        self.grayreverseImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
     }
     
     func convertToGrayScale(image: UIImage) -> UIImage{
