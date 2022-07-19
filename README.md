@@ -20,8 +20,8 @@ INFO: Support Complex!!
       - [Fancy Indexing](#boolean-indexing)
       - [View](#view)
     + [Complex](#complex)
+    + [Image](#image)
   * [Function List](#function-list)
-  * [Example](#example)
   * [Performance](#performance)
   * [Installation](#installation)
     + [SwiftPM](#swiftpm)
@@ -68,6 +68,7 @@ Note: You can use [Protocol version(beta version)](https://github.com/jjjkkkjjj/
   - Arithmetic
   - Statistic
   - Linear Algebra
+- Complex
 - Image Conversion
 
 ...etc.
@@ -484,6 +485,38 @@ mfarray =
 */
 ```
 
+### Image
+
+You can acheive an image processing by Matft! (Beta version)
+Please refer to the example [here](./MatftDemo/MatftDemo/ViewController.swift).
+
+```swift
+@IBOutlet weak var originalImageView: UIImageView!
+@IBOutlet weak var reverseImageView: UIImageView!
+@IBOutlet weak var swapImageView: UIImageView!
+
+func reverse(){
+    var image = Matft.image.cgimage2mfarray(self.reverseImageView.image!.cgImage!)
+
+    // reverse
+    image = image[Matft.reverse] // same as image[~<<-1]
+    self.reverseImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
+}
+
+
+func swapchannel(){
+    var image = Matft.image.cgimage2mfarray(self.swapImageView.image!.cgImage!)
+
+    // swap channel
+    image = image[Matft.all, Matft.all, MfArray([1,0,2,3])] // same as image[0~<, 0~<, MfArray([1,0,2,3])]
+    self.swapImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
+}
+```
+
+For more complex conversion, see OpenCV [code](https://github.com/opencv/opencv/blob/4.x/modules/imgcodecs/src/apple_conversions.mm).
+
+<img width="513" alt="Screen Shot 2022-07-19 at 21 09 02" src="https://user-images.githubusercontent.com/16914891/179746856-c4e8048d-3e7c-4835-b39c-ddf6af5b5fd7.png">
+
 ## Function List
 
 Below is Matft's function list. As I mentioned above, almost functions are similar to Numpy. Also, these function use Accelerate framework inside, the perfomance may keep high.
@@ -669,37 +702,6 @@ Matft supports only natural cubic spline. I'll implement other boundary conditio
 | Matft.image.cgimage2mfarray      | N/A |
 | Matft.image.mfarray2cgimage      | N/A |
 
-## Example
-
-You can acheive an image processing by Matft! (Beta version)
-Please refer to the example [here](./MatftDemo/MatftDemo/ViewController.swift).
-
-```swift
-@IBOutlet weak var originalImageView: UIImageView!
-@IBOutlet weak var reverseImageView: UIImageView!
-@IBOutlet weak var swapImageView: UIImageView!
-
-func reverse(){
-    var image = Matft.image.cgimage2mfarray(self.reverseImageView.image!.cgImage!)
-
-    // reverse
-    image = image[Matft.reverse] // same as image[~<<-1]
-    self.reverseImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
-}
-
-
-func swapchannel(){
-    var image = Matft.image.cgimage2mfarray(self.swapImageView.image!.cgImage!)
-
-    // swap channel
-    image = image[Matft.all, Matft.all, MfArray([1,0,2,3])] // same as image[0~<, 0~<, MfArray([1,0,2,3])]
-    self.swapImageView.image = UIImage(cgImage: Matft.image.mfarray2cgimage(image))
-}
-```
-
-For more complex conversion, see OpenCV [code](https://github.com/opencv/opencv/blob/4.x/modules/imgcodecs/src/apple_conversions.mm).
-
-<img width="513" alt="Screen Shot 2022-07-19 at 21 09 02" src="https://user-images.githubusercontent.com/16914891/179746856-c4e8048d-3e7c-4835-b39c-ddf6af5b5fd7.png">
 
 ## Performance
 
