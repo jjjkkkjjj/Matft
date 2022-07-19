@@ -528,6 +528,7 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *#Matft.clip         | *numpy.clip              |
 | *#Matft.swapaxes     | *numpy.swapaxes          |
 | *#Matft.moveaxis     | *numpy.moveaxis          |
+| *Matft.roll          | numpy.roll          |
 | *Matft.sort         | *numpy.sort              |
 | *Matft.argsort      | *numpy.argsort           |
 | ^MfArray.toArray | ^numpy.ndarray.tolist |

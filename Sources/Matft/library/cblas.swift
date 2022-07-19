@@ -200,6 +200,72 @@ internal func samesize_by_cblas<T: MfStorable>(_ src_mfarray: MfArray, cblas_fun
     return dst_mfarray
 }
 
+internal func shift_by_cblas<T: MfStorable>(_ mfarray: MfArray, shift: Int, axis: Int? = nil, _ cblas_func: cblas_copy_func<T>) -> MfArray{
+    
+    var offset: Int
+    var size: Int
+    if let axis = axis, mfarray.ndim > 1 {
+        let pos_axis = get_positive_axis(axis, ndim: mfarray.ndim)
+        
+        offset = shift
+        size = mfarray.shape[pos_axis]
+    }
+    else{
+        offset = shift
+        size = mfarray.size
+    }
+    
+    // compress shift into -size <= shift < size
+    // and then get positive shift value
+    let sign = offset >= 0 ? 1 : -1
+    offset = sign*(abs(offset) % size)
+    offset = offset >= 0 ? offset : offset + size
+    
+    assert(0 <= offset && offset < size)
+    // offset is shifted value to right along axis
+    offset = size - offset
+    
+    let src_mfarray: MfArray
+    if let axis = axis, mfarray.ndim > 1 {
+        src_mfarray = check_contiguous(mfarray.swapaxes(axis1: axis, axis2: 0), .Row)
+        var restShape = Array(mfarray.shape.suffix(mfarray.ndim-1))
+        let restSize = shape2size(&restShape)
+        
+        // update offset along all flatten array
+        size = src_mfarray.size
+        offset *= restSize
+    }
+    else{
+        src_mfarray = check_contiguous(mfarray, .Row)
+    }
+    
+    let newdata = MfData(size: src_mfarray.storedSize, mftype: src_mfarray.mftype)
+    
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        src_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            srcptrT in
+            // copy shift*size~ value first
+            if size-offset > 0{
+                wrap_cblas_copy(size-offset, srcptrT + offset, 1, dstptrT, 1, cblas_func)
+            }
+            // copy remain (0~shift)
+            if offset > 0{
+                wrap_cblas_copy(offset, srcptrT, 1, dstptrT + size - offset, 1, cblas_func)
+            }
+        }
+    }
+    
+    let newstructure = MfStructure(shape: src_mfarray.shape, strides: src_mfarray.strides)
+    
+    if let axis = axis, mfarray.ndim > 1 {
+        return MfArray(mfdata: newdata, mfstructure: newstructure).swapaxes(axis1: 0, axis2: axis)
+    }
+    else{
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
+    }
+    
+}
 
 /// Stack vertically or horizontally
 /// - Parameters:

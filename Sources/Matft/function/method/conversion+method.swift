@@ -233,6 +233,16 @@ extension MfArray{
     }
     
     /**
+       Roll array elements along a given axis.
+       - parameters:
+            - shift: The number of places by which elements are shifted.
+            - axis: (Optional) axis, if not given, get summation for all elements
+    */
+    public func roll(shift: Int, axis: Int? = nil) -> MfArray{
+        return Matft.roll(self, shift: shift, axis: axis)
+    }
+    
+    /**
        Get ordered unique mfarray  along given axis
        - parameters:
             - mfarray: mfarray

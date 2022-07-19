@@ -497,6 +497,24 @@ extension Matft{
     }
     
     /**
+       Roll array elements along a given axis.
+       - parameters:
+            - mfarray: mfarray
+            - shift: The number of places by which elements are shifted.
+            - axis: (Optional) axis, if not given, get summation for all elements
+    */
+    public static func roll(_ mfarray: MfArray, shift: Int, axis: Int? = nil) -> MfArray{
+        unsupport_complex(mfarray)
+        
+        switch mfarray.storedType{
+        case .Float:
+            return shift_by_cblas(mfarray, shift: shift, axis: axis, cblas_scopy)
+        case .Double:
+            return shift_by_cblas(mfarray, shift: shift, axis: axis, cblas_dcopy)
+        }
+    }
+    
+    /**
        Get ordered unique mfarray  along given axis
        - parameters:
             - mfarray: mfarray
