@@ -19,22 +19,17 @@ extension Matft.image{
     */
     public static func mfarray2cgimage(_ mfarray: MfArray) -> CGImage{
         unsupport_complex(mfarray)
-        
-        switch mfarray.storedType{
-        case .Float:
-            return mfarray2cgimage_by_vDSP(mfarray, vDSP_func: vDSP_vfixu8)
-        case .Double:
-            return mfarray2cgimage_by_vDSP(mfarray, vDSP_func: vDSP_vfixu8D)
-        }
+        return mfarray2cgimage_by_vDSP(mfarray, vDSP_func: vDSP_vfixu8)
     }
     
     /**
        Convert CGImage into mfarray.
        - parameters:
             - cgimage: An input cgimage
+            - mftype: (Optional) mftype, by default float. Note, mftype must be UInt8 or Float only.
        - Returns: MfArray
     */
-    public static func cgimage2mfarray(_ cgimage: CGImage) -> MfArray{
-        return cgimage2mfarray_by_vDSP(cgimage, mftype: .UInt8, vDSP_func: vDSP_vfltu8)
+    public static func cgimage2mfarray(_ cgimage: CGImage, mftype: MfType = .Float) -> MfArray{
+        return cgimage2mfarray_by_vDSP(cgimage, mftype: mftype, vDSP_func: vDSP_vfltu8)
     }
 }
