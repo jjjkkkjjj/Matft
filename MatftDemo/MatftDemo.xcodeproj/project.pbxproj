@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0184C1562889A36100E2AB1A /* Matft in Frameworks */ = {isa = PBXBuildFile; productRef = 0184C1552889A36100E2AB1A /* Matft */; };
 		01F0369827EA034E00C91620 /* rena.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 01F0369727EA034E00C91620 /* rena.jpeg */; };
 		D6C2675D24249310005731C6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C2675C24249310005731C6 /* AppDelegate.swift */; };
 		D6C2675F24249310005731C6 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C2675E24249310005731C6 /* SceneDelegate.swift */; };
@@ -14,10 +15,10 @@
 		D6C2676424249310005731C6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D6C2676224249310005731C6 /* Main.storyboard */; };
 		D6C2676624249311005731C6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D6C2676524249311005731C6 /* Assets.xcassets */; };
 		D6C2676924249311005731C6 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D6C2676724249311005731C6 /* LaunchScreen.storyboard */; };
-		D6D08D032424A6E7000F04D6 /* Matft in Frameworks */ = {isa = PBXBuildFile; productRef = D6D08D022424A6E7000F04D6 /* Matft */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0184C15028899FF700E2AB1A /* image.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = image.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		01F0369727EA034E00C91620 /* rena.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = rena.jpeg; sourceTree = "<group>"; };
 		D6C2675924249310005731C6 /* MatftDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MatftDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6C2675C24249310005731C6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -34,7 +35,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D6D08D032424A6E7000F04D6 /* Matft in Frameworks */,
+				0184C1562889A36100E2AB1A /* Matft in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +72,7 @@
 			children = (
 				D6C2675C24249310005731C6 /* AppDelegate.swift */,
 				D6C2675E24249310005731C6 /* SceneDelegate.swift */,
+				0184C15028899FF700E2AB1A /* image.playground */,
 				D6C2676024249310005731C6 /* ViewController.swift */,
 				D6C2676224249310005731C6 /* Main.storyboard */,
 				01F0369727EA034E00C91620 /* rena.jpeg */,
@@ -105,7 +107,7 @@
 			);
 			name = MatftDemo;
 			packageProductDependencies = (
-				D6D08D022424A6E7000F04D6 /* Matft */,
+				0184C1552889A36100E2AB1A /* Matft */,
 			);
 			productName = MatftDemo;
 			productReference = D6C2675924249310005731C6 /* MatftDemo.app */;
@@ -136,7 +138,7 @@
 			);
 			mainGroup = D6C2675024249310005731C6;
 			packageReferences = (
-				D6D08CFE24249B9A000F04D6 /* XCRemoteSwiftPackageReference "Matft" */,
+				0184C1542889A36100E2AB1A /* XCRemoteSwiftPackageReference "Matft" */,
 			);
 			productRefGroup = D6C2675A24249310005731C6 /* Products */;
 			projectDirPath = "";
@@ -370,7 +372,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		D6D08CFE24249B9A000F04D6 /* XCRemoteSwiftPackageReference "Matft" */ = {
+		0184C1542889A36100E2AB1A /* XCRemoteSwiftPackageReference "Matft" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/jjjkkkjjj/Matft";
 			requirement = {
@@ -381,9 +383,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		D6D08D022424A6E7000F04D6 /* Matft */ = {
+		0184C1552889A36100E2AB1A /* Matft */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D6D08CFE24249B9A000F04D6 /* XCRemoteSwiftPackageReference "Matft" */;
+			package = 0184C1542889A36100E2AB1A /* XCRemoteSwiftPackageReference "Matft" */;
 			productName = Matft;
 		};
 /* End XCSwiftPackageProductDependency section */
