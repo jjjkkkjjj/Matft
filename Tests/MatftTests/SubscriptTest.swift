@@ -480,6 +480,33 @@ final class SubscriptTests: XCTestCase {
                                         [   30,    31]]]))
             
         }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 16, by: 1).reshape([2,4,2])
+            a[Matft.all, 2, Matft.all] = MfArray([3])
+            
+            XCTAssertEqual(a, MfArray([[[ 0,  1],
+                                        [ 2,  3],
+                                        [ 3,  3],
+                                        [ 6,  7]],
+
+                                       [[ 8,  9],
+                                        [10, 11],
+                                        [ 3,  3],
+                                        [14, 15]]]))
+            
+            a[Matft.reverse, Matft.all, 1] = Matft.arange(start: 0, to: 8, by: 1, shape: [2,4])
+            
+            XCTAssertEqual(a, MfArray([[[ 0,  4],
+                                        [ 2,  5],
+                                        [ 3,  6],
+                                        [ 6,  7]],
+
+                                       [[ 8,  0],
+                                        [10,  1],
+                                        [ 3,  2],
+                                        [14,  3]]]))
+        }
     }
     
     func testBooleanIndexingGet(){

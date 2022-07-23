@@ -247,11 +247,23 @@ extension MfArray: MfSubscriptable{
         unsupport_complex(self)
         unsupport_complex(newValue)
         
-        for index in indices{
-            if let _ = index as? SubscriptOps{
-                fatalError("SubscriptOps must not be passed to setter")
+        indices = indices.map{
+            ind in
+            if let ind = ind as? SubscriptOps{
+                switch ind {
+                case .newaxis:
+                    fatalError("newaxis must not be passed to setter")
+                    
+                case .all:
+                    return MfSlice(start: 0, to: nil, by: 1)
+                    
+                case .reverse:
+                    return MfSlice(start: nil, to: nil, by: -1)
+                }
             }
+            return ind
         }
+        
         
         //note that this function is alike _binary_operation
         let array = self._get_mfarray(indices: &indices)
