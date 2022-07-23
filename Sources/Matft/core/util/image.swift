@@ -53,3 +53,35 @@ internal func floatXui8_image(_ image: MfArray) -> MfArray{
     return image * Float(255)
 }
 
+
+/// Convert RGBA into RGB
+/// - Parameters:
+///     - image: An image mfarray
+///     - isCopy: Whether to copy or not
+///     - keepAlpha: Whether to keep the alpha channel
+///     - background: The background array
+/// - Returns: Converted mfarray
+internal func rgba2rgb_image(_ image: MfArray, isCopy: Bool, keepAlpha: Bool, background: [Float]) -> MfArray{
+    assert(background.count == 3)
+    let image = isCopy ? image.deepcopy(.Row) : image
+
+    let alpha = image[Matft.all, Matft.all, 3~<4]
+    let new = image[Matft.all, Matft.all, 0~<3]*alpha + (1 - alpha) * MfArray(background, mftype: image.mftype)
+    
+    if keepAlpha{
+        image[Matft.all, Matft.all, 0~<3] = new
+        return image
+    }
+    else{
+        return new
+    }
+}
+
+/// Convert RGB into RGBA
+/// - Parameters:
+///     - image: An image mfarray
+/// - Returns: Converted mfarray
+internal func rgb2rgba_image(_ image: MfArray) -> MfArray{
+    let alpha = Matft.nums(Float(1), shape: [image.shape[0], image.shape[1], 1])
+    return Matft.hstack([image, alpha])
+}

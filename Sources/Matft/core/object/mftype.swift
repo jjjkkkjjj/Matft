@@ -129,3 +129,15 @@ public enum StoredType: Int{
         }
     }
 }
+
+public enum MfColorConversion: Int{
+    case RGBA2GRAY
+    case RGBA2RGB
+    case RGB2RGBA
+}
+
+
+public enum MfAffineMode: Int{
+    case ColorFill
+    case EdgeExtend
+}

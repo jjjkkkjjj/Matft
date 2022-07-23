@@ -60,8 +60,8 @@ class ViewController: UIViewController {
     }
     
     func convertToGrayScale(image: UIImage) -> UIImage{
-        //let gray_mfarray = (Matft.image.toGray(Matft.image.cgimage2mfarray(image.cgImage!)) * Float(255)).astype(.UInt8)
-        let gray_mfarray = Matft.image.toGray(Matft.image.cgimage2mfarray(image.cgImage!))
+        //let gray_mfarray = (Matft.image.color(Matft.image.cgimage2mfarray(image.cgImage!)) * Float(255)).astype(.UInt8)
+        let gray_mfarray = Matft.image.color(Matft.image.cgimage2mfarray(image.cgImage!))
         return UIImage(cgImage: Matft.image.mfarray2cgimage(gray_mfarray))
     }
     

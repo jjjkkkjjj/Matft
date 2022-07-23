@@ -18,6 +18,7 @@ final class MatftTests: XCTestCase {
         //view9()
         //view10()
         //type()
+        image()
         /*
         let a = MfArray([[2, 1, -3, 0],
                          [3, 1, 4, -5]], mftype: .Double, mforder: .Column)
@@ -183,4 +184,10 @@ func type(){
     //let b = a.data as! [Int] //could not cast int32 to int
     let b = a.data as! [Int]
     print(b)
+}
+
+func image(){
+    let a = Matft.nums(Float(0), shape: [150, 150, 4])
+    Matft.image.warpAffine(a, matrix: MfArray([[1, 0, 0],
+                                               [0, 1, 0]] as [[Float]]), width: 150, height: 150)
 }

@@ -267,7 +267,7 @@ print(resize)
 
 
 
-let grayed = Matft.image.toGray(resize, exclude_alpha: false)
+let grayed = Matft.image.color(resize, exclude_alpha: false)
 Matft.image.mfarray2cgimage(grayed)
 
 
