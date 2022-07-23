@@ -1324,33 +1324,17 @@ internal func dotpr_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: Mf
 /// ref: https://stackoverflow.com/questions/34677133/how-to-reconstruct-grayscale-image-from-intensity-values
 /// OpenCV: https://github.com/opencv/opencv/blob/ed69bcae2d171d9426cd3688a8b0ee14b8a140cd/modules/imgcodecs/src/apple_conversions.mm#L47
 internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDSP_func: vDSP_convert_func<T, UInt8>) -> CGImage{
-    precondition(src_mfarray.mftype == .Float || src_mfarray.mftype == .UInt8, "mftype must be Float or UInt8, but got \(src_mfarray.mftype)")
-    
-    // check condition
-    var mfarray: MfArray
-    if src_mfarray.ndim == 2{
-        mfarray = src_mfarray.expand_dims(axis: 2)
-    }
-    else{
-        mfarray = src_mfarray
-    }
-    
-    precondition(mfarray.ndim == 3, "Couldn't convert mfarray's shape = \(src_mfarray.shape) into image. Passed mfarray must be 2d or 3d, but got \(src_mfarray.ndim)d")
-    
-    var shape = mfarray.shape
-    let height = shape[0]
-    let width = shape[1]
-    let channel = shape[2]
-    
+    var (mfarray, height, width, channel) = check_and_convert_image_dim(src_mfarray)
+
     let colorSpace: CGColorSpace
     let bitmapInfo: CGBitmapInfo
     
     if src_mfarray.mftype == .Float{
-        if shape[2] == 1{// gray
+        if channel == 1{// gray
             colorSpace = CGColorSpaceCreateDeviceGray()
             bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGImageByteOrderInfo.order32Little.rawValue | CGBitmapInfo.floatComponents.rawValue)
         }
-        else if shape[2] == 4{
+        else if channel == 4{
             colorSpace = CGColorSpaceCreateDeviceRGB()
             bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue | CGImageByteOrderInfo.order32Little.rawValue | CGBitmapInfo.floatComponents.rawValue)
         }
@@ -1366,18 +1350,18 @@ internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDS
         }
     }
     else{
-        if shape[2] == 1{// gray
+        if channel == 1{// gray
             colorSpace = CGColorSpaceCreateDeviceGray()
             bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
         }
-        else if shape[2] == 4{
+        else if channel == 4{
             colorSpace = CGColorSpaceCreateDeviceRGB()
             bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
         }
         else{
             preconditionFailure("Unsupported channel number: \(mfarray.shape[2])")
         }
-        
+        var shape = mfarray.shape
         var arr = Array<UInt8>(repeating: UInt8.zero, count: src_mfarray.size)
         let dst_strides = shape2strides(&shape, mforder: .Row)
         
@@ -1472,10 +1456,10 @@ internal func cgimage2mfarray_by_vDSP<T: MfStorable>(_ cgimage: CGImage, mftype:
     var ret = MfArray(mfdata: newdata, mfstructure: newstructure).squeeze()
     if srcmftype != mftype{
         if mftype == .Float{
-            ret /= Float(255)
+            ret = ui8Xfloat_image(ret)
         }
         else{
-            ret *= Float(255)
+            ret = floatXui8_image(ret)
         }
         return ret.astype(mftype)
     }

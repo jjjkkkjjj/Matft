@@ -50,12 +50,22 @@ extension Matft.image{
         
         return c4toc1_by_vImage(image, pre_bias: [0, 0, 0, 0], coef: [0.299, 0.587, 0.114, 0], post_bias: 0, background: background)
     }
+    
+    /**
+       Resize image
+       - parameters:
+            - image: An image mfarray
+            - width: The new width
+            - height: The new height
+       - Returns: MfArray
+    */
+    public static func resize(_ image: MfArray, width: Int, height: Int) -> MfArray{
+        unsupport_complex(image)
+        unsupport_imagetype(image)
+        precondition(0 < width && 0 < height, "New size must be positive")
+        
+        return resize_by_vImage(image, dstWidth: width, dstHeight: height)
+    }
 }
 
-/// Check it is real or not. if the mfarray is complex, raise precondition failure.
-/// - Parameters:
-///     - mfarray: A source mfarray
-@inline(__always)
-fileprivate func unsupport_imagetype(_ image: MfArray){
-    precondition(image.mftype == .UInt8 || image.mftype == .Float, "Supported types are UInt8 or Float only, but got \(image.mftype)")
-}
+
