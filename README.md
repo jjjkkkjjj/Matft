@@ -702,6 +702,11 @@ Matft supports only natural cubic spline. I'll implement other boundary conditio
 | Matft.image.cgimage2mfarray      | N/A |
 | Matft.image.mfarray2cgimage      | N/A |
 
+| Matft                            | OpenCV              |
+| -------------------------------- | ----------------- |
+| Matft.image.toGray               | cv2.cvtColor |
+| Matft.image.resize               | cv2.resize |
+
 
 ## Performance
 

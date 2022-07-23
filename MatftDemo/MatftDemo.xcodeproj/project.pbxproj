@@ -18,7 +18,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		01C63C45288C041000278076 /* image.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = image.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		01C63C45288C041000278076 /* experiment.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = experiment.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		01C63C46288C1B9A00278076 /* matftcheck.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = matftcheck.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		01F0369727EA034E00C91620 /* rena.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = rena.jpeg; sourceTree = "<group>"; };
 		D6C2675924249310005731C6 /* MatftDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MatftDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6C2675C24249310005731C6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -78,7 +79,8 @@
 				D6C2676524249311005731C6 /* Assets.xcassets */,
 				D6C2676724249311005731C6 /* LaunchScreen.storyboard */,
 				D6C2676A24249311005731C6 /* Info.plist */,
-				01C63C45288C041000278076 /* image.playground */,
+				01C63C46288C1B9A00278076 /* matftcheck.playground */,
+				01C63C45288C041000278076 /* experiment.playground */,
 			);
 			path = MatftDemo;
 			sourceTree = "<group>";

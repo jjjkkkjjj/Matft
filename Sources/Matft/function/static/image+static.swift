@@ -66,6 +66,23 @@ extension Matft.image{
         
         return resize_by_vImage(image, dstWidth: width, dstHeight: height)
     }
+    
+    /**
+       Resize image
+       - parameters:
+            - image: An image mfarray
+            - factor_x: The factor of x
+            - factor_y: The factor of y
+       - Returns: MfArray
+    */
+    public static func resize(_ image: MfArray, factor_x: Float, factor_y: Float) -> MfArray{
+        precondition(0 < factor_x && 0 < factor_y, "New size must be positive")
+        
+        let height = Float(image.shape[0])
+        let width = Float(image.shape[1])
+        
+        return resize_by_vImage(image, dstWidth: Int(width*factor_x), dstHeight: Int(height*factor_y))
+    }
 }
 
 
