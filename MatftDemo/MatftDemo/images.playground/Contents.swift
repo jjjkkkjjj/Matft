@@ -89,12 +89,12 @@ Matft.image.mfarray2cgimage(resize)
 resize.swapaxes(axis1: -1, axis2: 0)[3] = MfArray([0.5] as [Float])
 print(resize)
 let alpha = resize[Matft.all, Matft.all, 3~<4]
-resize.swapaxes(axis1: -1, axis2: 0)[0~<3] = (resize[Matft.all, Matft.all, 0~<3]*alpha + (1 - alpha) * MfArray([1, 1, 1], mftype: resize.mftype)).swapaxes(axis1: -1, axis2: 0)
+resize[0~<, 0~<, 0~<3] = (resize[Matft.all, Matft.all, 0~<3]*alpha + (1 - alpha) * MfArray([1, 1, 1], mftype: resize.mftype))
 print(resize)
 
 
 
-let grayed = Matft.image.toGray(resize, exclude_alpha: true)
+let grayed = Matft.image.toGray(resize, exclude_alpha: false)
 Matft.image.mfarray2cgimage(grayed)
 
 
