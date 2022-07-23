@@ -1324,61 +1324,63 @@ internal func dotpr_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: Mf
 /// ref: https://stackoverflow.com/questions/34677133/how-to-reconstruct-grayscale-image-from-intensity-values
 /// OpenCV: https://github.com/opencv/opencv/blob/ed69bcae2d171d9426cd3688a8b0ee14b8a140cd/modules/imgcodecs/src/apple_conversions.mm#L47
 internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDSP_func: vDSP_convert_func<T, UInt8>) -> CGImage{
-    // check condition
-    let mfarray: MfArray
-    if src_mfarray.ndim == 2{
-        mfarray = src_mfarray.expand_dims(axis: 2)
-    }
-    else{
-        mfarray = src_mfarray
-    }
-    
-    precondition(mfarray.ndim == 3, "Couldn't convert mfarray's shape = \(src_mfarray.shape) into image. Passed mfarray must be 2d or 3d, but got \(src_mfarray.ndim)d")
-    
-    var shape = mfarray.shape
+    var (mfarray, height, width, channel) = check_and_convert_image_dim(src_mfarray)
+
     let colorSpace: CGColorSpace
     let bitmapInfo: CGBitmapInfo
-    if shape[2] == 1{// gray
-        colorSpace = CGColorSpaceCreateDeviceGray()
-        bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
-    }
-    else if shape[2] == 4{
-        colorSpace = CGColorSpaceCreateDeviceRGB()
-        bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
-    }
-    else{
-        preconditionFailure("Unsupported channel number: \(mfarray.shape[2])")
-    }
     
-    var dst = Array<UInt8>(repeating: UInt8.zero, count: src_mfarray.size)
-    let dst_strides = shape2strides(&shape, mforder: .Row)
-    
-    // StoredType to UInt8
-    dst.withUnsafeMutableBufferPointer{
-        dstptrU in
-        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            [unowned mfarray] srcptrT in
-            
-            for vDSPPrams in OptOffsetParamsSequence(shape: shape, bigger_strides: dst_strides, smaller_strides: mfarray.strides){
-                
-                wrap_vDSP_convert(vDSPPrams.blocksize, srcptrT + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrU.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
-            }
-            
+    if src_mfarray.mftype == .Float{
+        if channel == 1{// gray
+            colorSpace = CGColorSpaceCreateDeviceGray()
+            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGImageByteOrderInfo.order32Little.rawValue | CGBitmapInfo.floatComponents.rawValue)
+        }
+        else if channel == 4{
+            colorSpace = CGColorSpaceCreateDeviceRGB()
+            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue | CGImageByteOrderInfo.order32Little.rawValue | CGBitmapInfo.floatComponents.rawValue)
+        }
+        else{
+            preconditionFailure("Unsupported channel number: \(mfarray.shape[2])")
+        }
+        
+        mfarray = check_contiguous(mfarray, .Row)
+        return mfarray.withUnsafeMutableStartRawPointer{
+            srcptr in
+            // NOTE: Force cast to UInt8
+            return _rawptr2cgimage(srcptr.assumingMemoryBound(to: UInt8.self), bitmapInfo: bitmapInfo, colorSpace: colorSpace, byteNumber: 4, width: width, height: height, channel: channel)
         }
     }
-    
-    let height = shape[0]
-    let width = shape[1]
-    let channel = shape[2]
-    let cgimage = dst.withUnsafeMutableBufferPointer{
-        (ptr) -> CGImage in
-        let provider = CGDataProvider(data: CFDataCreate(kCFAllocatorDefault, ptr.baseAddress!, src_mfarray.size))
-        let cgimage =  CGImage(width: width, height: height, bitsPerComponent: 8*1, bitsPerPixel: 8*channel, bytesPerRow: dst_strides[0], space: colorSpace, bitmapInfo: bitmapInfo, provider: provider!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)!
+    else{
+        if channel == 1{// gray
+            colorSpace = CGColorSpaceCreateDeviceGray()
+            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
+        }
+        else if channel == 4{
+            colorSpace = CGColorSpaceCreateDeviceRGB()
+            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
+        }
+        else{
+            preconditionFailure("Unsupported channel number: \(mfarray.shape[2])")
+        }
+        var shape = mfarray.shape
+        var arr = Array<UInt8>(repeating: UInt8.zero, count: src_mfarray.size)
+        let dst_strides = shape2strides(&shape, mforder: .Row)
         
-        return cgimage
+        // StoredType to UInt8 (row_contiguous)
+        arr.withUnsafeMutableBufferPointer{
+            dstptrU in
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                [unowned mfarray] srcptrT in
+                
+                for vDSPPrams in OptOffsetParamsSequence(shape: shape, bigger_strides: dst_strides, smaller_strides: mfarray.strides){
+                    
+                    wrap_vDSP_convert(vDSPPrams.blocksize, srcptrT + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrU.baseAddress! + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                }
+                
+            }
+        }
+        
+        return _rawptr2cgimage(&arr, bitmapInfo: bitmapInfo, colorSpace: colorSpace, byteNumber: 1, width: width, height: height, channel: channel)
     }
-    
-    return cgimage
 }
 
 /// Convert mfarray into CGImage
@@ -1388,44 +1390,96 @@ internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDS
 /// - Returns: CGImage
 /// OpenCV: https://github.com/opencv/opencv/blob/ed69bcae2d171d9426cd3688a8b0ee14b8a140cd/modules/imgcodecs/src/apple_conversions.mm#L47
 internal func cgimage2mfarray_by_vDSP<T: MfStorable>(_ cgimage: CGImage, mftype: MfType, vDSP_func: vDSP_convert_func<UInt8, T>) -> MfArray{
+    precondition(mftype == .Float || mftype == .UInt8, "mftype must be Float or UInt8, but got \(mftype)")
+    
     let width = Int(cgimage.width)
     let height = Int(cgimage.height)
-    let channel = Int(cgimage.bitsPerPixel/8)
-
-    //====== cgimage to tmp UInt8 array ======//
+    let byteNumber = Int(cgimage.bitsPerComponent/8)
+    let channel = Int(cgimage.bitsPerPixel/cgimage.bitsPerComponent)
+    let srcmftype: MfType = byteNumber == 1 ? .UInt8 : .Float
+    
     let colorModel: CGColorSpaceModel = cgimage.colorSpace!.model
     let bitmapInfo: CGBitmapInfo
     let colorSpace: CGColorSpace
+    
     let size = width*height*channel
-    if (colorModel == CGColorSpaceModel.monochrome){
-        bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
-        colorSpace = CGColorSpaceCreateDeviceGray()
-    }
-    else if (colorModel == CGColorSpaceModel.indexed){
-        bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
-        colorSpace = CGColorSpaceCreateDeviceRGB()
+    let newdata = MfData(size: size, mftype: srcmftype)
+    let newstructure = MfStructure(shape: [height, width, channel], mforder: .Row)
+    
+    if srcmftype == .Float{
+        
+        //====== cgimage to Float ======//
+        if (colorModel == CGColorSpaceModel.monochrome){
+            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGImageByteOrderInfo.order32Little.rawValue | CGBitmapInfo.floatComponents.rawValue)
+            colorSpace = CGColorSpaceCreateDeviceGray()
+        }
+        else if (colorModel == CGColorSpaceModel.indexed){
+            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue | CGImageByteOrderInfo.order32Little.rawValue | CGBitmapInfo.floatComponents.rawValue)
+            colorSpace = CGColorSpaceCreateDeviceRGB()
+        }
+        else{
+            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue | CGImageByteOrderInfo.order32Little.rawValue | CGBitmapInfo.floatComponents.rawValue)
+            colorSpace = cgimage.colorSpace!
+        }
+        
+        // NOTE: Force cast to UInt8 = raw pointer
+        newdata.withUnsafeMutableStartPointer(datatype: UInt8.self){
+            _cgimage2rawptr($0, cgimage, bitmapInfo: bitmapInfo, colorSpace: colorSpace, byteNumber: byteNumber, width: width, height: height, channel: channel)
+        }
     }
     else{
-        bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
-        colorSpace = cgimage.colorSpace!
-    }
-    
-    var arr = Array<UInt8>(repeating: UInt8.zero, count: size)
-    arr.withUnsafeMutableBytes{
-        let contextRef = CGContext(data: $0.baseAddress!, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width*channel, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
-        contextRef?.draw(cgimage, in: CGRect(x: 0, y: 0, width: width, height: height))
-    }
-    
-    //====== tmp UInt8 array to newdata ======//
-    let newdata = MfData(size: size, mftype: mftype)
-    newdata.withUnsafeMutableStartPointer(datatype: T.self){
-        dstptr in
-        arr.withUnsafeBufferPointer{
-            srcptr in
-            wrap_vDSP_convert(size, srcptr.baseAddress!, 1, dstptr, 1, vDSP_func)
+        
+        //====== cgimage to UInt8 ======//
+        if (colorModel == CGColorSpaceModel.monochrome){
+            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
+            colorSpace = CGColorSpaceCreateDeviceGray()
+        }
+        else if (colorModel == CGColorSpaceModel.indexed){
+            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
+            colorSpace = CGColorSpaceCreateDeviceRGB()
+        }
+        else{
+            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
+            colorSpace = cgimage.colorSpace!
+        }
+        
+        // tmp UInt8 array
+        var arr = Array<UInt8>(repeating: UInt8.zero, count: size)
+
+        _cgimage2rawptr(&arr, cgimage, bitmapInfo: bitmapInfo, colorSpace: colorSpace, byteNumber: byteNumber, width: width, height: height, channel: channel)
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptr in
+            wrap_vDSP_convert(size, &arr, 1, dstptr, 1, vDSP_func)
         }
     }
     
-    let newstructure = MfStructure(shape: [height, width, channel], mforder: .Row)
-    return MfArray(mfdata: newdata, mfstructure: newstructure).squeeze()
+    var ret = MfArray(mfdata: newdata, mfstructure: newstructure).squeeze()
+    if srcmftype != mftype{
+        if mftype == .Float{
+            ret = ui8Xfloat_image(ret)
+        }
+        else{
+            ret = floatXui8_image(ret)
+        }
+        return ret.astype(mftype)
+    }
+    else{
+        return ret
+    }
+}
+
+
+fileprivate func _rawptr2cgimage(_ srcrawptr: UnsafeMutablePointer<UInt8>, bitmapInfo: CGBitmapInfo, colorSpace: CGColorSpace, byteNumber: Int, width: Int, height: Int, channel: Int) -> CGImage{
+    let provider = CGDataProvider(data: CFDataCreate(kCFAllocatorDefault, srcrawptr, width*height*channel*byteNumber))
+    let cgimage =  CGImage(width: width, height: height, bitsPerComponent: 8*byteNumber, bitsPerPixel: 8*channel*byteNumber, bytesPerRow: width*channel*byteNumber, space: colorSpace, bitmapInfo: bitmapInfo, provider: provider!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)!
+    
+    return cgimage
+}
+
+///
+//@inline(__always)
+fileprivate func _cgimage2rawptr(_ dstrawptr: UnsafeMutablePointer<UInt8>, _ cgimage: CGImage, bitmapInfo: CGBitmapInfo, colorSpace: CGColorSpace, byteNumber: Int, width: Int, height: Int, channel: Int){
+    
+    let contextRef = CGContext(data: dstrawptr, width: width, height: height, bitsPerComponent: 8*byteNumber, bytesPerRow: width*channel*byteNumber, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
+    contextRef?.draw(cgimage, in: CGRect(x: 0, y: 0, width: width, height: height))
 }
