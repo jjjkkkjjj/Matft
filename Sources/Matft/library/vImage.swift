@@ -56,9 +56,8 @@ internal func c4toc1_by_vImage(_ image: MfArray, pre_bias: [Float], coef: [Float
     if let background = background {
         assert(background.count == 3)
         let alpha = image[Matft.all, Matft.all, 3~<4]
-        // TODO: Support the below subscription
-        //image[Matft.all, Matft.all, 0~<3] = image[Matft.all, Matft.all, 0~<3]*alpha + (1 - alpha) * MfArray(background, mftype: image.mftype)
-        image.swapaxes(axis1: -1, axis2: 0)[0~<3] = (image[Matft.all, Matft.all, 0~<3]*alpha + (1 - alpha) * MfArray([1, 1, 1], mftype: image.mftype)).swapaxes(axis1: -1, axis2: 0)
+        image[Matft.all, Matft.all, 0~<3] = image[Matft.all, Matft.all, 0~<3]*alpha + (1 - alpha) * MfArray(background, mftype: image.mftype)
+        //image.swapaxes(axis1: -1, axis2: 0)[0~<3] = (image[Matft.all, Matft.all, 0~<3]*alpha + (1 - alpha) * MfArray([1, 1, 1], mftype: image.mftype)).swapaxes(axis1: -1, axis2: 0)
     }
     
     image = check_contiguous(image, .Row)
