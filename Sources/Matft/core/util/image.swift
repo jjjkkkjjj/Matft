@@ -27,7 +27,7 @@ internal func check_and_convert_image_dim(_ image: MfArray) -> (image: MfArray, 
     let ret = image.ndim == 2 ? image.expand_dims(axis: 2) : image
     
     precondition(ret.ndim == 3, "Couldn't convert mfarray's shape = \(image.shape) into image. Passed mfarray must be 2d or 3d, but got \(image.ndim)d")
-    let shape = image.shape
+    let shape = ret.shape
     return (ret, shape[0], shape[1], shape[2])
 }
 
