@@ -1,7 +1,7 @@
 import UIKit
 import Matft
 import Accelerate
-
+/*
 let rgb = UIImage(named: "rena.jpeg")!
 
 func convertToGrayScale(image: UIImage) -> UIImage{
@@ -114,3 +114,4 @@ resize.withUnsafeMutableStartRawPointer{
 */
 
 
+*/

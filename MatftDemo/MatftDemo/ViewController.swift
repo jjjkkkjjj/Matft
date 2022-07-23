@@ -52,7 +52,7 @@ class ViewController: UIViewController {
     
     func grayreverse(){
         //var image = self.toFMfArray(image: self.grayreverseImageView.image!)
-        var image = Matft.image.cgimage2mfarray(self.grayreverseImageView.image!.cgImage!)
+        var image = Matft.image.cgimage2mfarray(self.grayreverseImageView.image!.cgImage!, mftype: .UInt8)
         
         // reverse
         image = image[Matft.reverse] // same as image[~<<-1]
@@ -62,6 +62,11 @@ class ViewController: UIViewController {
     }
     
     func convertToGrayScale(image: UIImage) -> UIImage{
+        //let gray_mfarray = (Matft.image.toGray(Matft.image.cgimage2mfarray(image.cgImage!)) * Float(255)).astype(.UInt8)
+        let gray_mfarray = Matft.image.toGray(Matft.image.cgimage2mfarray(image.cgImage!))
+        return UIImage(cgImage: Matft.image.mfarray2cgimage(gray_mfarray))
+        
+        /*
         let width = Int(image.size.width)
         let height = Int(image.size.height)
         let channel = Int(image.cgImage!.bitsPerPixel/8)
@@ -76,6 +81,7 @@ class ViewController: UIViewController {
         let imageRef = context!.makeImage()
         let newImage = UIImage(cgImage: imageRef!)
         return newImage
+         */
     }
     
     // ref: https://stackoverflow.com/questions/43040333/convert-uiimage-colored-to-grayscale-using-cgcolorspacecreatedevicegray
