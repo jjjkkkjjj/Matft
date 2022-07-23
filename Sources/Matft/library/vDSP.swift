@@ -1395,7 +1395,7 @@ internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDS
             }
         }
         
-        return _rawptr2cgimage(&arr, bitmapInfo: bitmapInfo, colorSpace: colorSpace, byteNumber: 4, width: width, height: height, channel: channel)
+        return _rawptr2cgimage(&arr, bitmapInfo: bitmapInfo, colorSpace: colorSpace, byteNumber: 1, width: width, height: height, channel: channel)
     }
 }
 
@@ -1410,18 +1410,19 @@ internal func cgimage2mfarray_by_vDSP<T: MfStorable>(_ cgimage: CGImage, mftype:
     
     let width = Int(cgimage.width)
     let height = Int(cgimage.height)
-    let channel = Int(cgimage.bitsPerPixel/8)
-
+    let byteNumber = Int(cgimage.bitsPerComponent/8)
+    let channel = Int(cgimage.bitsPerPixel/cgimage.bitsPerComponent)
+    let srcmftype: MfType = byteNumber == 1 ? .UInt8 : .Float
     
     let colorModel: CGColorSpaceModel = cgimage.colorSpace!.model
     let bitmapInfo: CGBitmapInfo
     let colorSpace: CGColorSpace
     
     let size = width*height*channel
-    let newdata = MfData(size: size, mftype: mftype)
+    let newdata = MfData(size: size, mftype: srcmftype)
     let newstructure = MfStructure(shape: [height, width, channel], mforder: .Row)
     
-    if mftype == .Float{
+    if srcmftype == .Float{
         
         //====== cgimage to Float ======//
         if (colorModel == CGColorSpaceModel.monochrome){
@@ -1439,7 +1440,7 @@ internal func cgimage2mfarray_by_vDSP<T: MfStorable>(_ cgimage: CGImage, mftype:
         
         // NOTE: Force cast to UInt8 = raw pointer
         newdata.withUnsafeMutableStartPointer(datatype: UInt8.self){
-            _cgimage2rawptr($0, cgimage, bitmapInfo: bitmapInfo, colorSpace: colorSpace, byteNumber: 4, width: width, height: height, channel: channel)
+            _cgimage2rawptr($0, cgimage, bitmapInfo: bitmapInfo, colorSpace: colorSpace, byteNumber: byteNumber, width: width, height: height, channel: channel)
         }
     }
     else{
@@ -1461,14 +1462,26 @@ internal func cgimage2mfarray_by_vDSP<T: MfStorable>(_ cgimage: CGImage, mftype:
         // tmp UInt8 array
         var arr = Array<UInt8>(repeating: UInt8.zero, count: size)
 
-        _cgimage2rawptr(&arr, cgimage, bitmapInfo: bitmapInfo, colorSpace: colorSpace, byteNumber: 1, width: width, height: height, channel: channel)
+        _cgimage2rawptr(&arr, cgimage, bitmapInfo: bitmapInfo, colorSpace: colorSpace, byteNumber: byteNumber, width: width, height: height, channel: channel)
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptr in
             wrap_vDSP_convert(size, &arr, 1, dstptr, 1, vDSP_func)
         }
     }
     
-    return MfArray(mfdata: newdata, mfstructure: newstructure).squeeze()
+    var ret = MfArray(mfdata: newdata, mfstructure: newstructure).squeeze()
+    if srcmftype != mftype{
+        if mftype == .Float{
+            ret /= Float(255)
+        }
+        else{
+            ret *= Float(255)
+        }
+        return ret.astype(mftype)
+    }
+    else{
+        return ret
+    }
 }
 
 
