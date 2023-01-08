@@ -21,6 +21,7 @@
 		01C63C45288C041000278076 /* experiment.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = experiment.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		01C63C46288C1B9A00278076 /* matftcheck.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = matftcheck.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		01F0369727EA034E00C91620 /* rena.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = rena.jpeg; sourceTree = "<group>"; };
+		01FB1C7928A0C7BE00C044F7 /* explanation.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = explanation.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		D6C2675924249310005731C6 /* MatftDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MatftDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6C2675C24249310005731C6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D6C2675E24249310005731C6 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -71,6 +72,7 @@
 		D6C2675B24249310005731C6 /* MatftDemo */ = {
 			isa = PBXGroup;
 			children = (
+				01FB1C7928A0C7BE00C044F7 /* explanation.playground */,
 				D6C2675C24249310005731C6 /* AppDelegate.swift */,
 				D6C2675E24249310005731C6 /* SceneDelegate.swift */,
 				D6C2676024249310005731C6 /* ViewController.swift */,
