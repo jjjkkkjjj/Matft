@@ -935,4 +935,72 @@ final class SubscriptTests: XCTestCase {
                                        [ 777,    6]]))
         }
     }
+    
+    func testFancyIndexingSet2(){
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
+            let b = Matft.arange(start: -27, to: 0, by: 1, shape: [3,3,3])
+            a[Matft.all, Matft.all, 0] = b[Matft.all, Matft.all, 0]
+
+            XCTAssertEqual(a, MfArray([[[-27,   1,   2],
+                                       [-24,   4,   5],
+                                       [-21,   7,   8]],
+
+                                      [[-18,  10,  11],
+                                       [-15,  13,  14],
+                                       [-12,  16,  17]],
+
+                                      [[ -9,  19,  20],
+                                       [ -6,  22,  23],
+                                       [ -3,  25,  26]]]))
+            
+            a[Matft.all, 1, Matft.all] = b[Matft.all, 1, Matft.all]
+            XCTAssertEqual(a, MfArray([[[-27,   1,   2],
+                                        [-24, -23, -22],
+                                        [-21,   7,   8]],
+
+                                       [[-18,  10,  11],
+                                        [-15, -14, -13],
+                                        [-12,  16,  17]],
+
+                                       [[ -9,  19,  20],
+                                        [ -6,  -5,  -4],
+                                        [ -3,  25,  26]]]))
+            
+            a[Matft.all, 1, Matft.all] = b.T[Matft.all, 1, Matft.all]
+            XCTAssertEqual(a, MfArray([[[-27,   1,   2],
+                                        [-24, -15,  -6],
+                                        [-21,   7,   8]],
+
+                                       [[-18,  10,  11],
+                                        [-23, -14,  -5],
+                                        [-12,  16,  17]],
+
+                                       [[ -9,  19,  20],
+                                        [-22, -13,  -4],
+                                        [ -3,  25,  26]]]))
+
+        }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 16, by: 1, shape: [2,2,2,2])
+            let b = a[Matft.reverse, Matft.all, Matft.reverse, Matft.all]
+            a[~<1] = b[~<1]
+
+            XCTAssertEqual(a, MfArray([[[[10, 11],
+                                         [ 8,  9]],
+
+                                        [[14, 15],
+                                         [12, 13]]],
+
+
+                                       [[[ 8,  9],
+                                         [10, 11]],
+
+                                        [[12, 13],
+                                         [14, 15]]]]))
+            
+            
+        }
+    }
 }
