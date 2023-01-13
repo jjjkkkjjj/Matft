@@ -752,6 +752,12 @@ final class SubscriptTests: XCTestCase {
             XCTAssertEqual(a.T[MfArray([0, 1, -1]), MfArray([0, 1, 0])], MfArray([1, 4, 2]))
         }
         
+        do{
+            let a = Matft.arange(start: 0, to: 16, by: 1, shape: [4,2,2])
+            let b = Matft.nums(0, shape: [6,4,2])
+            XCTAssertEqual(a[Matft.arange(start: 0, to: 4, by: 1), b[0, Matft.all, 0], 0], MfArray([ 0,  4,  8, 12]) )
+        }
+        
     }
     
     func testFancyIndexGet2(){
