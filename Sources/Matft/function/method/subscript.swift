@@ -232,15 +232,53 @@ extension MfArray: MfSubscriptable{
         let newstructure = MfStructure(shape: newshape, strides: newstrides)
         //print(newarray.shape, newarray.mfdata._size, newarray.mfdata._storedSize)
         var ret = MfArray(base: self, mfstructure: newstructure, offset: offset)
-        if fancy_axes.count == 0{
+        let fancy_dim = fancy_axes.count
+        if fancy_dim == 0{// don't exist any fancy indexings
             return ret
+        }
+        
+        /* Example
+         a: shape = (2,2,2,2,2)
+         a[Matft.all, MfArray([[0, 1, 0], [1, 0, 1]]), MfArray([[0, 1, 0], [1, 0, 1]]), Matft.all, MfArray([[0, 1, 0]])]
+         fancy_shape = (3,3)
+         backed_dim = 1: first 1 axes (0) to first fancy_indexing axis
+         
+         - first move
+         abcde: axis. note b,c,e is fancy_axes
+         [a,b,c,d,e] -> [b,c,e,a,d]
+         - fancy indexing
+         [b,c,e] -> [3,3]
+         So,
+         [3,3,a,d]
+         - backed_dim(1) = a from fancy_dim(2) is backed
+         [3,3,a,d] -> [a,3,3,d]
+         */
+        let backed_dim: Int, fancy_shape: [Int]
+        if fancy_dim == 1 {// only 1 fancy indexing
+            fancy_shape = fancy_ops[0].shape
+            backed_dim = fancy_axes[0]
+            
+            ret = ret.moveaxis(src: fancy_axes[0], dst: 0)._get_mfarray(indices: fancy_ops[0])
         }
         else{
-            for (fancy_axis, subop) in zip(fancy_axes, fancy_ops){
-                ret = ret.swapaxes(axis1: 0, axis2: fancy_axis)[subop].swapaxes(axis1: fancy_axis, axis2: 0)
-            }
+            // fancy_ops are MfArray array
+            // These elements will be broadcasted
+            fancy_shape = fancy_ops.reduce(fancy_ops[0]){ biop_broadcast_to($0, $1).r }.shape
+            fancy_ops = fancy_ops.map{ $0.broadcast_to(shape: fancy_shape) }
+            backed_dim = fancy_axes.min() ?? 0
+            
+            ret = ret.moveaxis(src: fancy_axes, dst: Array(0..<fancy_dim))._fancygetall_mfarray(indices: &fancy_ops)
+        }
+        
+        if backed_dim == 0{// all of axes are fancy indexed
             return ret
         }
+        
+        // back to backed_dim
+        ret = ret.moveaxis(src: Array(fancy_dim..<fancy_dim+backed_dim), dst: Array(0..<backed_dim))
+            
+        return ret
+        
     }
     
     private func _set_mfarray(indices: inout [Any], newValue: MfArray){

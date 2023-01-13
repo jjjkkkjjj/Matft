@@ -8,13 +8,13 @@
 
 import Foundation
 
-public protocol MfSlicable {
-    
-}
+public protocol MfSubscriptable{}
 
-public protocol MfSubscriptable{
-    
-}
-
-extension MfSlice: MfSubscriptable{}
 extension Int: MfSubscriptable{}
+extension MfSlice: MfSubscriptable{}
+
+public enum SubscriptOps: MfSubscriptable{
+    case newaxis
+    case all
+    case reverse
+}

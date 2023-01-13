@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct MfSlice: MfSlicable {
+public struct MfSlice {
     public let to: Int? // nil means all value
     public let start: Int?
     public let by: Int
@@ -20,13 +20,4 @@ public struct MfSlice: MfSlicable {
         self.by = by
     }
     
-}
-
-extension Int: MfSlicable{
-}
-
-public enum SubscriptOps: MfSlicable{
-    case newaxis
-    case all
-    case reverse
 }
