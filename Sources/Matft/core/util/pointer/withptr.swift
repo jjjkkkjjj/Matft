@@ -36,7 +36,7 @@ extension MfArray{
         return ret
     }
     
-    public func withUnsafeMutablevDSPPointer<T: vDSP_ComplexTypable, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+    public func withUnsafeMutablevDSPComplexPointer<T: vDSP_ComplexTypable, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
         
         let ret = try self.withUnsafeMutableStartPointer(datatype: T.T.self){ ptrrT in
             return try self.withUnsafeMutableStartImagPointer(datatype: T.T.self){
@@ -48,9 +48,9 @@ extension MfArray{
         
         return ret
     }
-    internal func withUnsafeMutableblasPointer<T: blas_ComplexTypable, R>(datatype: T.Type, vDSP_func: vDSP_convert_func<T.vDSPType, T>, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+    internal func withUnsafeMutableBlasComplexPointer<T: blas_ComplexTypable, R>(datatype: T.Type, vDSP_func: vDSP_convert_func<T.vDSPType, T>, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
         
-        let ret = try self.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){ [unowned self](ptr) -> R in
+        let ret = try self.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPType.self){ [unowned self](ptr) -> R in
             var arr = Array(repeating: T(real: T.T.zero, imag: T.T.zero), count: self.storedSize)
             wrap_vDSP_convert(arr.count, ptr, 1, &arr, 1, vDSP_func)
             return try body(&arr)
@@ -119,7 +119,7 @@ extension MfData{
         return ret
     }
     
-    public func withUnsafeMutablevDSPPointer<T: vDSP_ComplexTypable, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+    public func withUnsafeMutablevDSPComplexPointer<T: vDSP_ComplexTypable, R>(datatype: T.Type, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
         
         let ret = try self.withUnsafeMutableStartPointer(datatype: T.T.self){ ptrrT in
             return try self.withUnsafeMutableStartImagPointer(datatype: T.T.self){
@@ -131,9 +131,9 @@ extension MfData{
         
         return ret
     }
-    internal func withUnsafeMutableblasPointer<T: blas_ComplexTypable, R>(datatype: T.Type, vDSP_func: vDSP_convert_func<T.vDSPType, T>, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+    internal func withUnsafeMutableBlasComplexPointer<T: blas_ComplexTypable, R>(datatype: T.Type, vDSP_func: vDSP_convert_func<T.vDSPType, T>, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
         
-        let ret = try self.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){ [unowned self](ptr) -> R in
+        let ret = try self.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPType.self){ [unowned self](ptr) -> R in
             var arr = Array(repeating: T(real: T.T.zero, imag: T.T.zero), count: self.storedSize)
             wrap_vDSP_convert(arr.count, ptr, 1, &arr, 1, vDSP_func)
             return try body(&arr)

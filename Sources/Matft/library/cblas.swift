@@ -469,11 +469,11 @@ internal func fancyndget_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: 
     else{
         let newdata = MfData(size: retSize, mftype: mfarray.mftype, complex: true)
 
-        newdata.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+        newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPComplexType.self){
             dstptrT in
             var dstptrTr = dstptrT.pointee.realp as! UnsafeMutablePointer<T>
             var dstptrTi = dstptrT.pointee.imagp as! UnsafeMutablePointer<T>
-            let _ = mfarray.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+            let _ = mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPComplexType.self){
                 [unowned mfarray](srcptr) in
                 let srcptrr = srcptr.pointee.realp as! UnsafeMutablePointer<T>
                 let srcptri = srcptr.pointee.imagp as! UnsafeMutablePointer<T>
@@ -552,11 +552,11 @@ internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
     else{
         let newdata = MfData(size: retSize, mftype: mfarray.mftype, complex: true)
 
-        newdata.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+        newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPComplexType.self){
             dstptrT in
             var dstptrTr = dstptrT.pointee.realp as! UnsafeMutablePointer<T>
             var dstptrTi = dstptrT.pointee.imagp as! UnsafeMutablePointer<T>
-            let _ = mfarray.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+            let _ = mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPComplexType.self){
                 srcptr in
                 let srcptrr = srcptr.pointee.realp as! UnsafeMutablePointer<T>
                 let srcptri = srcptr.pointee.imagp as! UnsafeMutablePointer<T>
