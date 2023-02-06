@@ -1,8 +1,16 @@
 import XCTest
 //@testable import Matft
 import Matft
+import CoreML
 
 final class CreationTests: XCTestCase {
+    @available(macOS 12.0, *)
+    func testFromMLShapedArray() {
+        do {
+            var source = MLShapedArray(scalars: Array<Float>(stride(from: 0, to: 28, by: 2)), shape: [2,7])
+            XCTAssertEqual(MfArray(base: &source), Matft.arange(start: 0, to: 28, by: 2, shape: [2, 7], mftype: .Float, mforder: .Row))
+        }
+    }
     
     func testAppend() {
         do {

@@ -9,9 +9,14 @@
 import Foundation
 import Accelerate
 
+internal enum MfDataSource{
+    case mfdata
+    case mlshapedarray
+}
+
 public class MfData: MfDataProtocol{
-    private var _base: MfData? // must be referenced because refdata could be freed automatically?
-    private var _isOwner: Bool = true
+    internal var _base: MfDataBasable? // must be referenced because refdata could be freed automatically?
+    private var _fromOtherDataSource: Bool = false
     internal var data_real: UnsafeMutableRawPointer
     internal var data_imag: UnsafeMutableRawPointer?
     
@@ -22,7 +27,7 @@ public class MfData: MfDataProtocol{
     
     /// Whether to be VIEW or not
     internal var _isView: Bool{
-        return !(self._base == nil && self._isOwner)
+        return (self._base != nil || self._fromOtherDataSource)
     }
     
     /// Whether to be real or not
@@ -81,8 +86,9 @@ public class MfData: MfDataProtocol{
     ///    - storedSize: A size
     ///    - mftype: Type
     /// - Important: The given dataptr will NOT be freed. So don't forget to free manually.
-    internal init(data_real_ptr: UnsafeMutableRawPointer, data_imag_ptr: UnsafeMutableRawPointer? = nil, storedSize: Int, mftype: MfType, offset: Int){
-        self._isOwner = false
+    internal init(source: MfDataBasable, data_real_ptr: UnsafeMutableRawPointer, data_imag_ptr: UnsafeMutableRawPointer? = nil, storedSize: Int, mftype: MfType, offset: Int){
+        self._base = source
+        self._fromOtherDataSource = true
         self.data_real = data_real_ptr
         self.data_imag = data_imag_ptr
         self.storedSize = storedSize

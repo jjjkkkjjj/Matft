@@ -172,7 +172,11 @@ extension MfData: CustomStringConvertible{
         
         ret += "\n"
         
-        ret += "isView\t: \(self._isView)\n"
+        ret += "isView\t: \(self._isView)"
+        if self._isView{
+            ret += ", source\t: \(String(describing: self._base))"
+        }
+        ret += "\n"
         ret += "offset\t: \(self.offset)\n"
         
         return ret

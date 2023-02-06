@@ -17,6 +17,7 @@ open class MfArray: MfArrayProtocol{
 
     public internal(set) var base: MfArray?
     
+    
     /// Create a mfarray from Swift Array
     /// - Parameters:
     ///    - array: A Swift Array
@@ -112,21 +113,17 @@ open class MfArray: MfArrayProtocol{
     
     /// Create a VIEW or Copy mfarray from MLShapedArray
     /// - Parameters:
-    ///    - base: A base MfArray
-    ///    - mfstructure: MfStructure
-    ///    - offset: The offset index
-    public init (base: MLShapedArray){
-        MfData(data_real_ptr: <#T##UnsafeMutableRawPointer#>, storedSize: <#T##Int#>, mftype: <#T##MfType#>, offset: <#T##Int#>)
-        base.
-        base.withUnsafeMutableShapedBufferPointer{
-            ptr, shape, strides in
-            ptr.baseAddress!
-            MfData(data_real_ptr: <#T##UnsafeMutableRawPointer#>, storedSize: <#T##Int#>, mftype: <#T##MfType#>, offset: <#T##Int#>)
+    ///    - base: A base MLShapedArray
+    @available(macOS 12.0, *)
+    public init<T: MLShapedArrayScalar & MfStorable> (base: inout MLShapedArray<T>){
+
+        let ptr = base.withUnsafeMutableShapedBufferPointer{ptr,shape,strides in
+            return ptr
         }
         
-        self.base = base
-        self.mfdata = MfData(refdata: base.mfdata, offset: offset)
-        self.mfstructure = mfstructure//mfstructure will be copied because mfstructure is struct
+        let mfdata = MfData(source: base, data_real_ptr: ptr.baseAddress!, storedSize: base.scalarCount, mftype: MfType.mftype(value: T.self), offset: base.startIndex)
+        self.mfdata = mfdata
+        self.mfstructure = MfStructure(shape: base.shape, strides: base.strides)
     }
 
     deinit {
@@ -172,7 +169,7 @@ extension MfArray{
         }
     }
     
-    internal var storedData: [Any]{
+    public var storedData: [Any]{
         if let base = self.base{
             return base.storedData
         }
@@ -195,7 +192,7 @@ extension MfArray{
             return self
         }
         else{
-            let mfdata = MfData(data_real_ptr: self.mfdata.data_real, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
+            let mfdata = MfData(source: self.mfdata, data_real_ptr: self.mfdata.data_real, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
             return MfArray(mfdata: mfdata, mfstructure: self.mfstructure)
         }
     }
@@ -204,7 +201,7 @@ extension MfArray{
             return nil
         }
         else{
-            let mfdata = MfData(data_real_ptr: self.mfdata.data_imag!, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
+            let mfdata = MfData(source: self.mfdata, data_real_ptr: self.mfdata.data_imag!, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
             return MfArray(mfdata: mfdata, mfstructure: self.mfstructure)
         }
     }
