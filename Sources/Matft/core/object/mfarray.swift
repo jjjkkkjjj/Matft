@@ -8,6 +8,7 @@
 
 import Foundation
 import Accelerate
+import CoreML
 
 open class MfArray: MfArrayProtocol{
     public typealias MFDATA = MfData
@@ -104,6 +105,25 @@ open class MfArray: MfArrayProtocol{
     ///    - mfstructure: MfStructure
     ///    - offset: The offset index
     public init (base: MfArray, mfstructure: MfStructure, offset: Int){
+        self.base = base
+        self.mfdata = MfData(refdata: base.mfdata, offset: offset)
+        self.mfstructure = mfstructure//mfstructure will be copied because mfstructure is struct
+    }
+    
+    /// Create a VIEW or Copy mfarray from MLShapedArray
+    /// - Parameters:
+    ///    - base: A base MfArray
+    ///    - mfstructure: MfStructure
+    ///    - offset: The offset index
+    public init (base: MLShapedArray){
+        MfData(data_real_ptr: <#T##UnsafeMutableRawPointer#>, storedSize: <#T##Int#>, mftype: <#T##MfType#>, offset: <#T##Int#>)
+        base.
+        base.withUnsafeMutableShapedBufferPointer{
+            ptr, shape, strides in
+            ptr.baseAddress!
+            MfData(data_real_ptr: <#T##UnsafeMutableRawPointer#>, storedSize: <#T##Int#>, mftype: <#T##MfType#>, offset: <#T##Int#>)
+        }
+        
         self.base = base
         self.mfdata = MfData(refdata: base.mfdata, offset: offset)
         self.mfstructure = mfstructure//mfstructure will be copied because mfstructure is struct
