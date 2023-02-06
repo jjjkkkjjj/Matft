@@ -8,6 +8,7 @@
 
 import Foundation
 import Accelerate
+import CoreML
 
 public enum MfType: Int{
     case None
@@ -62,6 +63,18 @@ public enum MfType: Int{
     }
     static internal func mftype<T: MfStorable>(value: T) -> MfType{
         return MfType.mftype(value: value as Any)
+    }
+    
+    @available(macOS 10.13, *)
+    static internal func mftype(value: MLMultiArrayDataType) -> MfType{
+        switch value {
+        case .double:
+            return .Double
+        case .float:
+            return .Float
+        default:
+            return .Object // Not supported
+        }
     }
     
     static public func priority(_ a: MfType, _ b: MfType) -> MfType{

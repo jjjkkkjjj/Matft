@@ -114,16 +114,16 @@ open class MfArray: MfArrayProtocol{
     /// Create a VIEW or Copy mfarray from MLShapedArray
     /// - Parameters:
     ///    - base: A base MLShapedArray
+    ///    - share: Whether to share memories or not, by default to true
     @available(macOS 12.0, *)
-    public init<T: MLShapedArrayScalar & MfStorable> (base: inout MLShapedArray<T>){
+    public init (base: inout MLMultiArray, share: Bool = true){
+        precondition([MLMultiArrayDataType.float, MLMultiArrayDataType.double].contains(base.dataType), "Must be float or double in share mode")
+        // note that base is not assigned here!
+        let mftype = MfType.mftype(value: base.dataType)
+        let mfdata = MfData(source: share ? base : nil, data_real_ptr: base.dataPointer, storedSize: base.count, mftype: mftype, offset: 0)
 
-        let ptr = base.withUnsafeMutableShapedBufferPointer{ptr,shape,strides in
-            return ptr
-        }
-        
-        let mfdata = MfData(source: base, data_real_ptr: ptr.baseAddress!, storedSize: base.scalarCount, mftype: MfType.mftype(value: T.self), offset: base.startIndex)
         self.mfdata = mfdata
-        self.mfstructure = MfStructure(shape: base.shape, strides: base.strides)
+        self.mfstructure = MfStructure(shape: base.shape.map{ Int(truncating: $0) }, strides: base.strides.map{ Int(truncating: $0) })
     }
 
     deinit {

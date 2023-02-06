@@ -81,21 +81,52 @@ public class MfData: MfDataProtocol{
     
     /// Pass a pointer directly.
     /// - Parameters:
+    ///    - source: A source data. If the source is nil, COPY it, otherwise, SHARE it.
     ///    - data_real_ptr: A real data pointer
     ///    - data_imag_ptr: A imag data pointer
     ///    - storedSize: A size
     ///    - mftype: Type
-    /// - Important: The given dataptr will NOT be freed. So don't forget to free manually.
-    internal init(source: MfDataBasable, data_real_ptr: UnsafeMutableRawPointer, data_imag_ptr: UnsafeMutableRawPointer? = nil, storedSize: Int, mftype: MfType, offset: Int){
+    /// - Important: The given dataptr will NOT be freed in SHARE mode. So don't forget to free manually.
+    internal init(source: MfDataBasable?, data_real_ptr: UnsafeMutableRawPointer, data_imag_ptr: UnsafeMutableRawPointer? = nil, storedSize: Int, mftype: MfType, offset: Int){
         self._base = source
-        self._fromOtherDataSource = true
-        self.data_real = data_real_ptr
-        self.data_imag = data_imag_ptr
+        self._fromOtherDataSource = source != nil
         self.storedSize = storedSize
         self.mftype = mftype
         self.offset = offset
+        
+        if self._fromOtherDataSource{
+            self.data_real = data_real_ptr
+            self.data_imag = data_imag_ptr
+        }
+        else{
+            switch MfType.storedType(mftype) {
+            case .Float:
+                self.data_real = allocate_unsafeMRPtr(type: Float.self, count: storedSize)
+                memcpy(self.data_real, data_real_ptr, self.storedByteSize)
+                
+                if let data_imag_ptr = data_imag_ptr{
+                    self.data_imag = allocate_unsafeMRPtr(type: Float.self, count: storedSize)
+                    memcpy(self.data_imag, data_imag_ptr, self.storedByteSize)
+                }
+                else{
+                    self.data_imag = nil
+                }
+            case .Double:
+                self.data_real = allocate_unsafeMRPtr(type: Double.self, count: storedSize)
+                memcpy(self.data_real, data_real_ptr, self.storedByteSize)
+                
+                if let data_imag_ptr = data_imag_ptr{
+                    self.data_imag = allocate_unsafeMRPtr(type: Double.self, count: storedSize)
+                    memcpy(self.data_imag, data_imag_ptr, self.storedByteSize)
+                }
+                else{
+                    self.data_imag = nil
+                }
+            }
+            
+        }
+        
     }
-    
 
     /// Create a zero padded MfData
     /// - Parameters:

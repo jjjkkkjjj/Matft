@@ -12,5 +12,5 @@ public protocol MfDataBasable {}
 
 extension MfData: MfDataBasable{}
 
-@available(macOS 12.0, *)
-extension MLShapedArray: MfDataBasable{}
+@available(macOS 10.13, *)
+extension MLMultiArray: MfDataBasable{}

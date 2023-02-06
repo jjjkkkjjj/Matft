@@ -9,6 +9,7 @@
 import Foundation
 
 public protocol HasMfDataProtocol{
+    /// The data object
     var mfdata: MfData { get }
     
     /// The offset index
@@ -21,6 +22,8 @@ public protocol HasMfDataProtocol{
     var storedSize: Int { get }
     /// The size of the stored data (byte)
     var storedByteSize: Int { get }
+    /// Whether to share the memory or not
+    var isView: Bool { get }
 }
 
 extension HasMfDataProtocol{
@@ -39,9 +42,13 @@ extension HasMfDataProtocol{
     public var storedByteSize: Int{
         return self.mfdata.storedByteSize
     }
+    public var isView: Bool{
+        return self.mfdata._isView
+    }
 }
 
 public protocol HasMfStructurProtocol{
+    /// The structure object
     var mfstructure: MfStructure { get }
     
     /// The shape of ndarray
