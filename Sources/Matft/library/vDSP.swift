@@ -1342,26 +1342,40 @@ internal func dotpr_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: Mf
 ///   - isForward: Whether to be forward or not.
 ///   - vDSP_func: vDSP_fft_zrop_func
 /// - Returns: FFT array
-internal func fft_zr_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, isForward: Bool, vDSP_func: vDSP_fft_zrop_func<T>) -> MfArray{
-    // complex
-    let mfarray = check_contiguous(mfarray, .Row).to_complex()
+internal func fft_zr_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ number: Int?, _ axis: Int, _ isForward: Bool, vDSP_func: vDSP_fft_zrop_func<T>) -> MfArray{
     let mftype = MfType.storedType(mfarray.mftype).to_mftype()
-    let newdata = MfData(size: mfarray.size, mftype: mftype, complex: true)
+    let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+    
+    // to complex
+    let mfarray = check_contiguous(mfarray.moveaxis(src: axis, dst: -1), .Row).to_complex()
+    
+    let blocksize_src = mfarray.shape[axis]
+    let number = number ?? blocksize_src
+    let blocksize_dst = ((number % 2) == 0) ? number/2+1 : (number+1)/2
+    var retShape = mfarray.shape
+    retShape[retShape.count - 1] = blocksize_dst
+    
+    let newdata = MfData(size: shape2size(&retShape), mftype: mftype, complex: true)
+    let blocklog2N = Int(log2(Float(number)))
+    
+    var restShape = Array(retShape.prefix(retShape.count-1))
+    let loopnum = shape2size(&restShape)
     
     newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){dstptr in
         mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
             srcptr in
-            wrap_vDSP_fft_zr(5, srcptr, 1, dstptr, 1, isForward, vDSP_func)
+            for i in 0..<loopnum{
+                wrap_vDSP_fft_zr(blocklog2N, srcptr + i*blocksize_src, 1, dstptr + i*blocksize_dst, 1, isForward, vDSP_func)
+            }
+            
         }
     }
     
-    let newstructure = MfStructure(shape: <#T##[Int]#>, mforder: .Row)
-    ここからああ
-    Nの意味とLog2Nの対応をどうするかとか
-https://numpy.org/doc/stable/reference/generated/numpy.fft.rfft.html
-https://developer.apple.com/documentation/accelerate/fast_fourier_transforms/in-place_functions_for_1d_real_fft
-    pocketFFTでやった方が良いかも
-    return MfArray(mfdata: newdata, mfstructure: newstructure)
+    let newstructure = MfStructure(shape: retShape, mforder: .Row)
+
+    let ret = MfArray(mfdata: newdata, mfstructure: newstructure).moveaxis(src: -1, dst: axis)
+    // rescale because zrop was 2x. 
+    return ret / 2
 }
 
 /// Convert mfarray into CGImage. Supported color space is Gray (h, w), (h, w, 1)  or RGB (h, w, 4)
