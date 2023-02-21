@@ -11,22 +11,53 @@ internal typealias rfft_func = (rfft_plan, UnsafeMutablePointer<Double>, Double)
 
 internal typealias cfft_func = (cfft_plan, UnsafeMutablePointer<Double>, Double) -> Int32
 
-public func pocketFFT_execute(_ mfarray: MfArray, number: Int?, axis: Int, isForward: Bool, norm: FFTNorm) -> MfArray {
+
+/// Run FFT by pocket FFT. Call c language codes.
+/// - Parameters:
+///   - mfarray: The source mfarray
+///   - number: The number to be processed
+///   - axis: The axis
+///   - isForward: Whether to be forward or backward
+///   - norm: The nomalization mode
+/// - Returns: The FFT mfarray
+public func fft_by_pocketFFT(_ mfarray: MfArray, number: Int?, axis: Int, isReal: Bool, isForward: Bool, norm: FFTNorm) -> MfArray {
     precondition(number ?? 1 > 0, "Must pass number greater than 0")
+    let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+    let axisdim = mfarray.shape[axis]
+    let number = number ?? axisdim
+    
     var src_mfarray: MfArray
-    if let number = number {
+    if number < axisdim {
         // extract
         src_mfarray = mfarray.moveaxis(src: axis, dst: 0)[0~<number].moveaxis(src: 0, dst: axis)
     }
-    else{
+    else if number == axisdim{
         src_mfarray = mfarray
+    }
+    else{
+        // zero padding
+        var srcShape = mfarray.shape
+        srcShape[axis] = number
+        src_mfarray = Matft.nums(Double.zero, shape: srcShape)
+        /*TODO: Use slice version
+        let slices = srcShape.map{MfSlice(start: 0, to: $0, by: 1)}
+        src_mfarray[slices] = mfarray*/
+        src_mfarray.moveaxis(src: 0, dst: axis)[~<axisdim] = mfarray.moveaxis(src: 0, dst: axis)
+        src_mfarray = src_mfarray.moveaxis(src: axis, dst: 0)
+        
     }
     // convert double to use pocketFFT
     src_mfarray = src_mfarray.storedType == .Float ? src_mfarray.astype(.Double) : src_mfarray
     
-    if src_mfarray.isReal {
-        let norm = _get_forward_norm(number: src_mfarray.shape[src_mfarray.ndim-1], norm: norm)
-        return execute_real_forward(src_mfarray, axis: axis, norm: norm)
+    if isReal {
+        if isForward{
+            let norm = _get_forward_norm(number: src_mfarray.shape[src_mfarray.ndim-1], norm: norm)
+            return execute_real_forward(src_mfarray, axis: axis, norm: 1/norm)
+        }
+        else{
+            let norm = _get_forward_norm(number: src_mfarray.shape[src_mfarray.ndim-1], norm: norm)
+            return execute_real_backward(src_mfarray, axis: axis, norm: 1/norm)
+        }
     }
     else{
         fatalError("")
@@ -35,7 +66,85 @@ public func pocketFFT_execute(_ mfarray: MfArray, number: Int?, axis: Int, isFor
 }
 
 
+/// Execute real forward FFT by pocketFFT
+/// - Parameters:
+///   - mfarray: The source mfarray
+///   - axis: The axis
+///   - norm: The normalization value
+/// - Returns: FFT mfarray
 internal func execute_real_forward(_ mfarray: MfArray, axis: Int, norm: Double) -> MfArray{
+    assert(mfarray.storedType == .Double, "must be stored as Double!")
+
+    let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+    let mfarray = check_contiguous(mfarray.swapaxes(axis1: axis, axis2: -1), .Row)
+    
+    // src
+    var retShape = mfarray.shape
+    let src_offset = retShape[retShape.count-1]
+    
+    // dst
+    let retSize = shape2size(&retShape)
+    let dst_offset = src_offset*2 // for complex
+    
+    var restShape = Array(retShape.prefix(retShape.count-1))
+    let loopnum = shape2size(&restShape)
+    
+    var dstarr = Array(repeating: Double.zero, count: retSize*2)
+    mfarray.withUnsafeMutableStartPointer(datatype: Double.self){
+        _srcptr in
+        var srcptr = _srcptr
+        dstarr.withUnsafeMutableBufferPointer{
+            _dstptr in
+            var dstptr = _dstptr.baseAddress!
+            
+            let plan = make_rfft_plan(src_offset)
+            
+            if (plan == nil) {
+                fatalError("Coudn't be ready for FFT")
+            }
+            
+            for _ in 0..<loopnum{
+                memcpy(dstptr+1, srcptr+2, (src_offset-1)*MemoryLayout<Double>.size)
+                dstptr.pointee = srcptr.pointee
+
+                if (rfft_backward(plan, dstptr, norm) != 0){
+                    fatalError("Failed to process FFT")
+                }
+                srcptr += src_offset
+                dstptr += dst_offset
+            }
+        }
+    }
+    
+    let newdata = MfData(size: retSize, mftype: .Double, complex: true)
+    newdata.withUnsafeMutableStartPointer(datatype: Double.self){
+        dstptr in
+        dstarr.withUnsafeMutableBufferPointer{
+            srcptr in
+            wrap_cblas_copy(retSize, srcptr.baseAddress!, 2, dstptr, 1, cblas_dcopy)
+        }
+    }
+    newdata.withUnsafeMutableStartImagPointer(datatype: Double.self){
+        dstptr in
+        dstarr.withUnsafeMutableBufferPointer{
+            srcptr in
+            
+            wrap_cblas_copy(retSize, srcptr.baseAddress! + 1, 2, dstptr!, 1, cblas_dcopy)
+        }
+    }
+    
+    let newstructure = MfStructure(shape: retShape, mforder: .Row)
+    
+    return MfArray(mfdata: newdata, mfstructure: newstructure).swapaxes(axis1: -1, axis2: axis)
+}
+
+/// Execute real backward FFT by pocketFFT
+/// - Parameters:
+///   - mfarray: The source mfarray
+///   - axis: The axis
+///   - norm: The normalization value
+/// - Returns: FFT mfarray
+internal func execute_real_backward(_ mfarray: MfArray, axis: Int, norm: Double) -> MfArray{
     assert(mfarray.storedType == .Double, "must be stored as Double!")
 
     let axis = get_positive_axis(axis, ndim: mfarray.ndim)
@@ -104,6 +213,7 @@ internal func execute_real_forward(_ mfarray: MfArray, axis: Int, norm: Double) 
     return MfArray(mfdata: newdata, mfstructure: newstructure).swapaxes(axis1: -1, axis2: axis)
 }
 
+
 internal func execute_complex(_ mfarray: MfArray, pocketFFT_func: cfft_func) -> MfArray{
     assert(mfarray.storedType == .Double, "must be stored as Double!")
     let mfarray = mfarray.to_complex()
@@ -124,5 +234,21 @@ fileprivate func _get_forward_norm(number: Int, norm: FFTNorm) -> Double{
         return sqrt(Double(number))
     case .backward:
         return Double(number)
+    }
+}
+
+/// Get normalize value for backward process
+/// - Parameters:
+///   - number: The number of process
+///   - norm: The normalize mode
+/// - Returns: The value to be normalized
+fileprivate func _get_backward_norm(number: Int, norm: FFTNorm) -> Double{
+    switch norm{
+    case .backward:
+        return Double(number)
+    case .ortho:
+        return sqrt(Double(number))
+    case .forward:
+        return Double(1)
     }
 }

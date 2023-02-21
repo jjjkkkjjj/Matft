@@ -81,19 +81,19 @@ typedef struct rfft_plan_i
   fftblue_plan blueplan;
   } rfft_plan_i;
 
-static cfft_plan make_cfft_plan (size_t length);
+cfft_plan make_cfft_plan (size_t length);
 
 rfft_plan make_rfft_plan (size_t length);
 
-static void destroy_cfft_plan (cfft_plan plan);
+void destroy_cfft_plan (cfft_plan plan);
 
 void destroy_rfft_plan (rfft_plan plan);
 
-WARN_UNUSED_RESULT static int cfft_backward(cfft_plan plan, double c[], double fct);
+WARN_UNUSED_RESULT int cfft_backward(cfft_plan plan, double c[], double fct);
 
-WARN_UNUSED_RESULT static int cfft_forward(cfft_plan plan, double c[], double fct);
+WARN_UNUSED_RESULT int cfft_forward(cfft_plan plan, double c[], double fct);
 
-WARN_UNUSED_RESULT static int rfft_backward(rfft_plan plan, double c[], double fct);
+WARN_UNUSED_RESULT int rfft_backward(rfft_plan plan, double c[], double fct);
 
 WARN_UNUSED_RESULT int rfft_forward(rfft_plan plan, double c[], double fct);
 

@@ -1997,7 +1997,7 @@ static int rfftblue_forward(fftblue_plan plan, double c[], double fct)
   return 0;
   }
 
-static cfft_plan make_cfft_plan (size_t length)
+cfft_plan make_cfft_plan (size_t length)
   {
   if (length==0) return NULL;
   cfft_plan plan = RALLOC(cfft_plan_i,1);
@@ -2026,7 +2026,7 @@ static cfft_plan make_cfft_plan (size_t length)
   return plan;
   }
 
-static void destroy_cfft_plan (cfft_plan plan)
+void destroy_cfft_plan (cfft_plan plan)
   {
   if (plan->blueplan)
     destroy_fftblue_plan(plan->blueplan);
@@ -2035,7 +2035,7 @@ static void destroy_cfft_plan (cfft_plan plan)
   DEALLOC(plan);
   }
 
-WARN_UNUSED_RESULT static int cfft_backward(cfft_plan plan, double c[], double fct)
+WARN_UNUSED_RESULT int cfft_backward(cfft_plan plan, double c[], double fct)
   {
   if (plan->packplan)
     return cfftp_backward(plan->packplan,c,fct);
@@ -2043,7 +2043,7 @@ WARN_UNUSED_RESULT static int cfft_backward(cfft_plan plan, double c[], double f
   return cfftblue_backward(plan->blueplan,c,fct);
   }
 
-WARN_UNUSED_RESULT static int cfft_forward(cfft_plan plan, double c[], double fct)
+WARN_UNUSED_RESULT int cfft_forward(cfft_plan plan, double c[], double fct)
   {
   if (plan->packplan)
     return cfftp_forward(plan->packplan,c,fct);
@@ -2089,7 +2089,7 @@ void destroy_rfft_plan (rfft_plan plan)
   DEALLOC(plan);
   }
 
-WARN_UNUSED_RESULT static int rfft_backward(rfft_plan plan, double c[], double fct)
+WARN_UNUSED_RESULT int rfft_backward(rfft_plan plan, double c[], double fct)
   {
   if (plan->packplan)
     return rfftp_backward(plan->packplan,c,fct);
