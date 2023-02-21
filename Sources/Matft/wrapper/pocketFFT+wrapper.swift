@@ -39,7 +39,7 @@ internal func execute_real_forward(_ mfarray: MfArray, axis: Int, norm: Double) 
     assert(mfarray.storedType == .Double, "must be stored as Double!")
 
     let axis = get_positive_axis(axis, ndim: mfarray.ndim)
-    let mfarray = check_contiguous(mfarray.moveaxis(src: axis, dst: -1), .Row)
+    let mfarray = check_contiguous(mfarray.swapaxes(axis1: axis, axis2: -1), .Row)
     
     // src
     var retShape = mfarray.shape
@@ -54,7 +54,7 @@ internal func execute_real_forward(_ mfarray: MfArray, axis: Int, norm: Double) 
     let loopnum = shape2size(&restShape)
     
     var dstarr = Array(repeating: Double.zero, count: retSize*2)
-    mfarray.withUnsafeMutableStartRawPointer{
+    mfarray.withUnsafeMutableStartPointer(datatype: Double.self){
         _srcptr in
         var srcptr = _srcptr
         dstarr.withUnsafeMutableBufferPointer{
@@ -63,15 +63,16 @@ internal func execute_real_forward(_ mfarray: MfArray, axis: Int, norm: Double) 
             
             let plan = make_rfft_plan(src_offset)
             
-            /*if (Int(bitPattern: plan) != 1) {
+            if (plan == nil) {
                 fatalError("Coudn't be ready for FFT")
-            }*/
+            }
             
             for _ in 0..<loopnum{
+                dstptr.advanced(by: dst_offset - 1).pointee = 0.0
                 memcpy(dstptr+1, srcptr, src_offset*MemoryLayout<Double>.size)
                 if (rfft_forward(plan, dstptr+1, norm) != 0){
                     fatalError("Failed to process FFT")
-                }ここらへんから
+                }
                 dstptr.pointee = (dstptr + 1).pointee
                 (dstptr + 1).pointee = 0.0
                 
@@ -93,13 +94,14 @@ internal func execute_real_forward(_ mfarray: MfArray, axis: Int, norm: Double) 
         dstptr in
         dstarr.withUnsafeMutableBufferPointer{
             srcptr in
-            wrap_cblas_copy(retSize, srcptr.baseAddress!, 2, dstptr!, 1, cblas_dcopy)
+            
+            wrap_cblas_copy(retSize, srcptr.baseAddress! + 1, 2, dstptr!, 1, cblas_dcopy)
         }
     }
     
     let newstructure = MfStructure(shape: retShape, mforder: .Row)
     
-    return MfArray(mfdata: newdata, mfstructure: newstructure)
+    return MfArray(mfdata: newdata, mfstructure: newstructure).swapaxes(axis1: -1, axis2: axis)
 }
 
 internal func execute_complex(_ mfarray: MfArray, pocketFFT_func: cfft_func) -> MfArray{
