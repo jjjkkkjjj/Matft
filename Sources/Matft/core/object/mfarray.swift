@@ -159,7 +159,7 @@ extension MfArray{
         }
         
         if let base = self.base{
-            return base.data
+            return base.data_imag
         }
         else{
             return self.withUnsafeMutableStartRawImagPointer{
