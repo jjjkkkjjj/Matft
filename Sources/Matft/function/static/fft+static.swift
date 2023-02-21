@@ -24,7 +24,7 @@ extension Matft.fft{
     ///     - ortho: multiply 1/sqrt(N) to normalize
     ///   - vDSP: Whether to use vDSP
     /// - Returns: FFT complex mfarray
-    static public func rfft(_ signal: MfArray, number: Int? = nil, axis: Int = -1, norm: FFTNorm = .forward, vDSP: Bool = false) -> MfArray {
+    static public func rfft(_ signal: MfArray, number: Int? = nil, axis: Int = -1, norm: FFTNorm = .backward, vDSP: Bool = false) -> MfArray {
         
         let number = number ?? signal.shape[get_positive_axis(axis, ndim: signal.ndim)]
         if vDSP{
