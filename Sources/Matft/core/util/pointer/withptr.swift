@@ -131,7 +131,7 @@ extension MfData{
         
         return ret
     }
-    internal func withUnsafeMutableBlasComplexPointer<T: blas_ComplexTypable, R>(datatype: T.Type, vDSP_func: vDSP_convert_func<T.vDSPType, T>, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+    internal func withUnsafeBlasComplexPointer<T: blas_ComplexTypable, R>(datatype: T.Type, vDSP_func: vDSP_convert_func<T.vDSPType, T>, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
         
         let ret = try self.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPType.self){ [unowned self](ptr) -> R in
             var arr = Array(repeating: T(real: T.T.zero, imag: T.T.zero), count: self.storedSize)
