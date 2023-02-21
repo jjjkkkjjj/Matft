@@ -212,6 +212,15 @@ extension MfArray{
     public var isComplex: Bool{
         return !self.mfdata._isReal
     }
+    
+    internal var mfdata_base: MfData{
+        if self.isView{
+            return self.base!.mfdata_base
+        }
+        else{
+            return self.mfdata
+        }
+    }
 }
 
 

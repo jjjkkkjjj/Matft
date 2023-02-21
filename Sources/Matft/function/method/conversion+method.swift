@@ -25,6 +25,8 @@ extension MfArray{
             - isplace: Whether to operate in-place
     */
     internal func to_complex(_ inplace: Bool = true) -> MfArray{
+        precondition(!self.mfdata._fromOtherDataSource, "Other data source couldn't be converted into Complex.")
+        
         if self.isComplex{
             return self
         }
@@ -40,9 +42,11 @@ extension MfArray{
         switch mfarray.storedType{
         case .Float:
             let ptri = allocate_unsafeMRPtr(type: Float.self, count: mfarray.storedSize)
+            mfarray.mfdata_base.data_imag = ptri
             mfarray.mfdata.data_imag = ptri
         case .Double:
             let ptri = allocate_unsafeMRPtr(type: Double.self, count: mfarray.storedSize)
+            mfarray.mfdata_base.data_imag = ptri
             mfarray.mfdata.data_imag = ptri
         }
         return mfarray
