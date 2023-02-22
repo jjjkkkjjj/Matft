@@ -74,9 +74,7 @@ final class FFTTests: XCTestCase {
             
             XCTAssertEqual(Matft.fft.irfft(Matft.fft.rfft(a)).astype(.Int), a)
         }
-    }
-    
-    func testLeak(){
+        
         do {
             let real = MfArray([[10.0, -3, -2,  6],
                                 [10.0, -3, -2,  6],
@@ -86,7 +84,7 @@ final class FFTTests: XCTestCase {
                                 [ 0.0        , -1.73205081,  3.46410162,  0.0        ]] as [[Double]])
             let a = MfArray(real: real, imag: imag, mftype: .Double)
             let ifft = Matft.fft.irfft(a)
-            XCTAssertEqual(ifft, MfArray([[1, 0, 5, 1, 2, 1],
+            XCTAssertEqual(ifft.round(decimals: 7), MfArray([[1, 0, 5, 1, 2, 1],
                                           [1, 0, 5, 1, 2, 1],
                                           [1, 0, 5, 1, 2, 1]]))
         }

@@ -42,8 +42,9 @@ public func fft_by_pocketFFT(_ mfarray: MfArray, number: Int?, axis: Int, isReal
         /*TODO: Use slice version
         let slices = srcShape.map{MfSlice(start: 0, to: $0, by: 1)}
         src_mfarray[slices] = mfarray*/
-        src_mfarray.moveaxis(src: 0, dst: axis)[~<axisdim] = mfarray.moveaxis(src: 0, dst: axis)
-        src_mfarray = src_mfarray.moveaxis(src: axis, dst: 0)
+        src_mfarray.moveaxis(src: axis, dst: 0)[~<axisdim] = mfarray.moveaxis(src: axis, dst: 0)
+        // The below code is not needed because the above codes allow to assign the original value using the isView feature in Matft
+        //src_mfarray = src_mfarray.moveaxis(src: 0, dst: axis)
         
     }
     // convert double to use pocketFFT
