@@ -438,7 +438,9 @@ internal func zcontiguous_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ 
         mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
             srcptr in
             for vDSPPrams in OptOffsetParamsSequence(shape: shape, bigger_strides: bigger_strides, smaller_strides: smaller_strides){
-                wrap_vDSP_convertz(vDSPPrams.blocksize, srcptr + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptr + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                var dst = dstptr +++ vDSPPrams.b_offset
+                var src = srcptr +++ vDSPPrams.s_offset
+                wrap_vDSP_convertz(vDSPPrams.blocksize, &src, vDSPPrams.s_stride, &dst, vDSPPrams.b_stride, vDSP_func)
             }
         }
     }
@@ -738,13 +740,18 @@ internal func biopzvv_by_vDSP<T: vDSP_ComplexTypable>(_ l_mfarray: MfArray, _ r_
                 [unowned r_mfarray] (rptr) in
                 if biggerL{// l is bigger
                     for vDSPPrams in OptOffsetParamsSequence(shape: l_mfarray.shape, bigger_strides: l_mfarray.strides, smaller_strides: r_mfarray.strides){
-                        
-                        wrap_vDSP_biopzvv(vDSPPrams.blocksize, lptr + vDSPPrams.b_offset, vDSPPrams.b_stride, rptr + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                        var lhs = lptr +++ vDSPPrams.b_offset
+                        var rhs = rptr +++ vDSPPrams.s_offset
+                        var dst = dstptrT +++ vDSPPrams.b_offset
+                        wrap_vDSP_biopzvv(vDSPPrams.blocksize, &lhs, vDSPPrams.b_stride, &rhs, vDSPPrams.s_stride, &dst, vDSPPrams.b_stride, vDSP_func)
                     }
                 }
                 else{// r is bigger
                     for vDSPPrams in OptOffsetParamsSequence(shape: r_mfarray.shape, bigger_strides: r_mfarray.strides, smaller_strides: l_mfarray.strides){
-                        wrap_vDSP_biopzvv(vDSPPrams.blocksize, lptr + vDSPPrams.s_offset, vDSPPrams.s_stride, rptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                        var lhs = lptr +++ vDSPPrams.s_offset
+                        var rhs = rptr +++ vDSPPrams.b_offset
+                        var dst = dstptrT +++ vDSPPrams.b_offset
+                        wrap_vDSP_biopzvv(vDSPPrams.blocksize, &lhs, vDSPPrams.s_stride, &rhs, vDSPPrams.b_stride, &dst, vDSPPrams.b_stride, vDSP_func)
                     }
                 }
             }

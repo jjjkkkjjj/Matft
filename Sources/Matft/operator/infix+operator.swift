@@ -125,3 +125,8 @@ infix operator *^: MultiplicationPrecedence //cross
 public func *^(l_mfarray: MfArray, r_mfarray: MfArray) -> MfArray{
     return Matft.cross(l_mfarray, r_mfarray)
 }
+
+infix operator +++ : AdditionPrecedence
+internal func +++<T: vDSP_ComplexTypable>(lhs: UnsafeMutablePointer<T>, rhs: Int) -> T {
+    return T(realp: lhs.pointee.realp + rhs, imagp: lhs.pointee.imagp + rhs)
+}
