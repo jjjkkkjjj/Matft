@@ -142,3 +142,11 @@ extension MfData{
         return ret
     }
 }
+
+
+public func withAdvancedUnsafeMutablevDSPComplexPointer<T: vDSP_ComplexTypable, R>(pointer: UnsafePointer<T>, by: Int, _ body: (UnsafeMutablePointer<T>) throws -> R) rethrows -> R{
+    
+    var ptr = T(realp: pointer.pointee.realp + by, imagp: pointer.pointee.imagp + by)
+    return try body(&ptr)
+}
+
