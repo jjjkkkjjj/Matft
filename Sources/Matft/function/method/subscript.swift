@@ -283,7 +283,6 @@ extension MfArray: MfSubscriptable{
     
     private func _set_mfarray(indices: inout [Any], newValue: MfArray){
         unsupport_complex(self)
-        unsupport_complex(newValue)
         
         indices = indices.map{
             ind in
@@ -302,6 +301,12 @@ extension MfArray: MfSubscriptable{
             return ind
         }
         
+        // Convert real to complex
+        if newValue.isComplex && self.isReal{
+            // Note: in-place operation
+            let _ = self.to_complex(true)
+            assert(self.isComplex, "Not converted complex!")
+        }
         
         //note that this function is alike _binary_operation
         let array = self._get_mfarray(indices: &indices)
@@ -317,6 +322,14 @@ extension MfArray: MfSubscriptable{
                     dstptr in
                     newValue.withUnsafeMutableStartPointer(datatype: T.self){
                         dstptr.pointee = $0.pointee
+                    }
+                }
+                if newValue.isComplex{
+                    array.withUnsafeMutableStartImagPointer(datatype: T.self){
+                        dstptr in
+                        newValue.withUnsafeMutableStartImagPointer(datatype: T.self){
+                            dstptr!.pointee = $0!.pointee
+                        }
                     }
                 }
             }
@@ -335,8 +348,14 @@ extension MfArray: MfSubscriptable{
         switch array.storedType {
         case .Float:
             _ = copy_mfarray(newValue, dsttmpMfarray: array, cblas_func: cblas_scopy)
+            if newValue.isComplex{
+                _ = copy_mfarray(newValue.imag!, dsttmpMfarray: array.imag!, cblas_func: cblas_scopy)
+            }
         case .Double:
             _ = copy_mfarray(newValue, dsttmpMfarray: array, cblas_func: cblas_dcopy)
+            if newValue.isComplex{
+                _ = copy_mfarray(newValue.imag!, dsttmpMfarray: array.imag!, cblas_func: cblas_dcopy)
+            }
         }
     }
     

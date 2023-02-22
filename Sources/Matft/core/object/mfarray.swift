@@ -8,6 +8,7 @@
 
 import Foundation
 import Accelerate
+import CoreML
 
 open class MfArray: MfArrayProtocol{
     public typealias MFDATA = MfData
@@ -15,6 +16,7 @@ open class MfArray: MfArrayProtocol{
     public internal(set) var mfstructure: MfStructure
 
     public internal(set) var base: MfArray?
+    
     
     /// Create a mfarray from Swift Array
     /// - Parameters:
@@ -108,6 +110,21 @@ open class MfArray: MfArrayProtocol{
         self.mfdata = MfData(refdata: base.mfdata, offset: offset)
         self.mfstructure = mfstructure//mfstructure will be copied because mfstructure is struct
     }
+    
+    /// Create a VIEW or Copy mfarray from MLShapedArray
+    /// - Parameters:
+    ///    - base: A base MLShapedArray
+    ///    - share: Whether to share memories or not, by default to true
+    @available(macOS 12.0, *)
+    public init (base: inout MLMultiArray, share: Bool = true){
+        precondition([MLMultiArrayDataType.float, MLMultiArrayDataType.double].contains(base.dataType), "Must be float or double in share mode")
+        // note that base is not assigned here!
+        let mftype = MfType.mftype(value: base.dataType)
+        let mfdata = MfData(source: share ? base : nil, data_real_ptr: base.dataPointer, storedSize: base.count, mftype: mftype, offset: 0)
+
+        self.mfdata = mfdata
+        self.mfstructure = MfStructure(shape: base.shape.map{ Int(truncating: $0) }, strides: base.strides.map{ Int(truncating: $0) })
+    }
 
     deinit {
         self.base = nil
@@ -142,7 +159,7 @@ extension MfArray{
         }
         
         if let base = self.base{
-            return base.data
+            return base.data_imag
         }
         else{
             return self.withUnsafeMutableStartRawImagPointer{
@@ -152,7 +169,7 @@ extension MfArray{
         }
     }
     
-    internal var storedData: [Any]{
+    public var storedData: [Any]{
         if let base = self.base{
             return base.storedData
         }
@@ -175,7 +192,7 @@ extension MfArray{
             return self
         }
         else{
-            let mfdata = MfData(data_real_ptr: self.mfdata.data_real, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
+            let mfdata = MfData(source: self.mfdata, data_real_ptr: self.mfdata.data_real, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
             return MfArray(mfdata: mfdata, mfstructure: self.mfstructure)
         }
     }
@@ -184,7 +201,7 @@ extension MfArray{
             return nil
         }
         else{
-            let mfdata = MfData(data_real_ptr: self.mfdata.data_imag!, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
+            let mfdata = MfData(source: self.mfdata, data_real_ptr: self.mfdata.data_imag!, storedSize: self.mfdata.storedSize, mftype: self.mfdata.mftype, offset: self.mfdata.offset)
             return MfArray(mfdata: mfdata, mfstructure: self.mfstructure)
         }
     }

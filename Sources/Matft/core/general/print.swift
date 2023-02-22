@@ -26,6 +26,7 @@ extension MfArray: CustomStringConvertible{
         
         let formatter = NumberFormatter()
         formatter.positivePrefix = formatter.plusSign
+        formatter.maximumFractionDigits = self.storedType == .Float ? 7 : 14
         
         if self.size > 1000{//if size > 1000, some elements left out will be viewed
             let flattenLOIndSeq = FlattenLOIndSequence(storedSize: self.storedSize, shape: &shape, strides: &strides)
@@ -172,7 +173,11 @@ extension MfData: CustomStringConvertible{
         
         ret += "\n"
         
-        ret += "isView\t: \(self._isView)\n"
+        ret += "isView\t: \(self._isView)"
+        if self._isView{
+            ret += ", source\t: \(String(describing: self._base))"
+        }
+        ret += "\n"
         ret += "offset\t: \(self.offset)\n"
         
         return ret
