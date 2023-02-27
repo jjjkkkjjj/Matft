@@ -1372,7 +1372,9 @@ internal func fft_zr_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ numbe
         mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
             srcptr in
             for i in 0..<loopnum{
-                wrap_vDSP_fft_zr(blocklog2N, srcptr + i*blocksize_src, 1, dstptr + i*blocksize_dst, 1, isForward, vDSP_func)
+                var src = srcptr +++ i*blocksize_src
+                var dst = dstptr +++ i*blocksize_dst
+                wrap_vDSP_fft_zr(blocklog2N, &src, 1, &dst, 1, isForward, vDSP_func)
             }
             
         }
