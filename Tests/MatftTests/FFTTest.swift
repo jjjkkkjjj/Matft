@@ -5,15 +5,6 @@ import Accelerate
 
 final class FFTTests: XCTestCase {
     func testrfft() {
-        /*
-        do {
-            let a = MfArray([0, 1, 0, 0])
-            let real = MfArray([ 1,  0, -1])
-            let imag = MfArray([ 0,  -1, 0])
-            
-            XCTAssertEqual(Matft.fft.rfft(a, vDSP: true), MfArray(real: real, imag: imag, mftype: .Float))
-        }*/
-        
         do {
             let a = MfArray([0, 1, 0, 0])
             let real = MfArray([ 1,  0, -1])
@@ -51,6 +42,17 @@ final class FFTTests: XCTestCase {
             XCTAssertEqual(fft.real.round(decimals: 6), answer.real.round(decimals: 6))
             XCTAssertEqual(fft.imag!.round(decimals: 6), answer.imag!.round(decimals: 6))
         }
+    }
+    
+    func testrfft_vDSP() {
+        /*
+        do {
+            let a = MfArray([0, 1, 0, 0])
+            let real = MfArray([ 1,  0, -1])
+            let imag = MfArray([ 0,  -1, 0])
+            
+            XCTAssertEqual(Matft.fft.rfft(a, vDSP: true), MfArray(real: real, imag: imag, mftype: .Float))
+        }*/
     }
     
     func testirfft() {

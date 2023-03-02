@@ -1350,31 +1350,64 @@ internal func dotpr_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: Mf
 ///   - vDSP_func: vDSP_fft_zrop_func
 /// - Returns: FFT array
 internal func fft_zr_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ number: Int?, _ axis: Int, _ isForward: Bool, vDSP_func: vDSP_fft_zrop_func<T>) -> MfArray{
+    precondition(mfarray.isReal, "Must be real in REAL FFT. Use FFT instead")
+    
     let mftype = MfType.storedType(mfarray.mftype).to_mftype()
     let axis = get_positive_axis(axis, ndim: mfarray.ndim)
     
-    // to complex
-    let mfarray = check_contiguous(mfarray.moveaxis(src: axis, dst: -1), .Row).to_complex()
-    
+    // calculate number to process
     let blocksize_src = mfarray.shape[axis]
     let number = number ?? blocksize_src
-    let blocksize_dst = ((number % 2) == 0) ? number/2+1 : (number+1)/2
+    let blocklog2N = Int(log2(Float(number)))
+    let process_number = Int(powf(2.0, Float(blocklog2N)))
+    
+    assert(process_number >= number, "Bug was occurred")
+    var src_mfarray: MfArray
+    if number < blocksize_src {
+        // extract
+        src_mfarray = mfarray.moveaxis(src: axis, dst: 0)[0~<number].moveaxis(src: 0, dst: axis)
+    }
+    else{
+        src_mfarray = mfarray
+    }
+    
+    // Whether to pad zero or not for vDSP
+    if process_number > number {
+        var srcShape = mfarray.shape
+        srcShape[axis] = process_number
+        src_mfarray = Matft.nums(Double.zero, shape: srcShape)
+        /*TODO: Use slice version
+        let slices = srcShape.map{MfSlice(start: 0, to: $0, by: 1)}
+        src_mfarray[slices] = mfarray*/
+        src_mfarray.moveaxis(src: axis, dst: 0)[~<blocksize_src] = mfarray.moveaxis(src: axis, dst: 0)
+        // The below code is not needed because the above codes allow to assign the original value using the isView feature in Matft
+        //src_mfarray = src_mfarray.moveaxis(src: 0, dst: axis)
+    }
+    
+    // to complex and contiguous
+    src_mfarray = check_contiguous(src_mfarray.moveaxis(src: axis, dst: -1), .Row).to_complex()
+    
+    assert(process_number % 2 == 0, "Bug was occurred")
+    let blocksize_dst = process_number/2 + 1
     var retShape = mfarray.shape
     retShape[retShape.count - 1] = blocksize_dst
     
     let newdata = MfData(size: shape2size(&retShape), mftype: mftype, complex: true)
-    let blocklog2N = Int(log2(Float(number)))
     
     var restShape = Array(retShape.prefix(retShape.count-1))
     let loopnum = shape2size(&restShape)
     
     newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){dstptr in
-        mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
+        src_mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
             srcptr in
             for i in 0..<loopnum{
                 var src = srcptr +++ i*blocksize_src
                 var dst = dstptr +++ i*blocksize_dst
                 wrap_vDSP_fft_zr(blocklog2N, &src, 1, &dst, 1, isForward, vDSP_func)
+                // the first element of imaginary part is nyquist component. Therefore, assign it multiplied -1 =(exp(i*pi)) to the last element
+                // ref: https://developer.apple.com/library/mac/documentation/Performance/Conceptual/vDSP_Programming_Guide/UsingFourierTransforms/UsingFourierTransforms.html#//apple_ref/doc/uid/TP40005147-CH3-SW1
+                (dst.realp + blocksize_dst-1).pointee = -1*dst.imagp.pointee
+                dst.imagp.pointee = 0
             }
             
         }
@@ -1383,6 +1416,7 @@ internal func fft_zr_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ numbe
     let newstructure = MfStructure(shape: retShape, mforder: .Row)
 
     let ret = MfArray(mfdata: newdata, mfstructure: newstructure).moveaxis(src: -1, dst: axis)
+    
     // rescale because zrop was 2x. 
     return ret / 2
 }
