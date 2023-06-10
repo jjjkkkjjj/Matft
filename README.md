@@ -687,6 +687,13 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.complex.conjugate         | numpy.conj / numpy.conjugate   |
 | Matft.complex.abs         | numpy.abs / numpy.absolute   |
 
+- FFT
+
+| Matft                            | Numpy              |
+| -------------------------------- | ----------------- |
+| Matft.fft.rfft       | numpy.fft.rfft |
+| Matft.fft.irfft         | numpy.fft.irfft   |
+
 - Interpolation
 
 Matft supports only natural cubic spline. I'll implement other boundary condition later.
