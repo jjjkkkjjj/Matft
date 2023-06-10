@@ -16,7 +16,7 @@ internal enum MfDataSource{
 
 public class MfData: MfDataProtocol{
     internal var _base: MfDataBasable? // must be referenced because refdata could be freed automatically?
-    private var _fromOtherDataSource: Bool = false
+    internal var _fromOtherDataSource: Bool = false
     internal var data_real: UnsafeMutableRawPointer
     internal var data_imag: UnsafeMutableRawPointer?
     

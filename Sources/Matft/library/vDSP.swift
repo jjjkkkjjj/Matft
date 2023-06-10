@@ -49,6 +49,8 @@ internal typealias vDSP_dotpr_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePo
 
 internal typealias vDSP_z2r_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<U>, vDSP_Stride, vDSP_Length) -> Void
 
+internal typealias vDSP_fft_zrop_func<T> = (FFTSetup, UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, vDSP_Length, FFTDirection) -> Void
+
 @inline(__always)
 internal func vDSP_zvmul_(_ __A: UnsafePointer<DSPSplitComplex>, _ __IA: vDSP_Stride, _ __B: UnsafePointer<DSPSplitComplex>, _ __IB: vDSP_Stride, _ __C: UnsafePointer<DSPSplitComplex>, _ __IC: vDSP_Stride, _ __N: vDSP_Length) -> Void{
     vDSP_zvmul(__A, __IA, __B, __IB, __C, __IC, __N, Int32(1))
@@ -352,6 +354,24 @@ internal func wrap_vDSP_dotpr<T>(_ size: Int, _ lsrcptr: UnsafePointer<T>, _ lsr
     vDSP_func(lsrcptr, vDSP_Stride(lsrcStride), rsrcptr, vDSP_Stride(rsrcStride), dstptr, vDSP_Length(size))
 }
 
+/// Wrapper of vDSP fft operation function
+/// - Parameters:
+///   - log2N: The base 2 exponent of the number of elements to process. For example, to process 1024 elements, specify 10 for parameter Log2N.
+///   - srcptr: A source pointer
+///   - srcStride: A left source stride
+///   - dstptr: A destination pointer
+///   - dstStride: A destination stride
+///   - dstptr: A destination pointer
+///   - isForward: Whether to be forward mode or not.
+///   - vDSP_func: The vDSP real fft function
+@inline(__always)
+internal func wrap_vDSP_fft_zr<T>(_ log2N: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafePointer<T>, _ dstStride: Int, _ isForward: Bool, _ vDSP_func: vDSP_fft_zrop_func<T>){
+    let setup = vDSP_create_fftsetup(vDSP_Length(log2N), FFTRadix(kFFTRadix2))!// TODO: raise error
+    let direction = isForward ? kFFTDirection_Forward : kFFTDirection_Inverse
+    vDSP_func(setup, srcptr, vDSP_Stride(srcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(log2N), FFTDirection(direction))
+    vDSP_destroy_fftsetup(setup)
+}
+
 /// Convert type and contiguous mfarray
 /// - Parameters:
 ///   - src_mfarray: An input mfarray
@@ -396,11 +416,11 @@ internal func zcontiguous_and_astype_by_vDSP<T: vDSP_ComplexTypable, U: vDSP_Com
     
     let newdata = MfData(size: src_mfarray.size, mftype: mftype, complex: true)
     
-    newdata.withUnsafeMutablevDSPPointer(datatype: U.self){
+    newdata.withUnsafeMutablevDSPComplexPointer(datatype: U.self){
         dstptrU in
         let dstptrr = dstptrU.pointee.realp
         let dstptri = dstptrU.pointee.imagp
-        src_mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+        src_mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
             [unowned src_mfarray] srcptrT in
             let srcptrr = srcptrT.pointee.realp
             let srcptri = srcptrT.pointee.imagp
@@ -433,9 +453,9 @@ internal func zcontiguous_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ 
     let bigger_strides = newstructure.strides
     let smaller_strides = mfarray.strides
     
-    newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
+    newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
         dstptr in
-        mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+        mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
             srcptr in
             for vDSPPrams in OptOffsetParamsSequence(shape: shape, bigger_strides: bigger_strides, smaller_strides: smaller_strides){
                 var dst = dstptr +++ vDSPPrams.b_offset
@@ -489,9 +509,9 @@ internal func zpreop_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vDSP_
     //print(mfarray.strides)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
-    newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
+    newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
         dstptrT in
-        mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+        mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
             [unowned mfarray] in
             wrap_vDSP_convertz(mfarray.storedSize, $0, 1, dstptrT, 1, vDSP_func)
             //vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
@@ -518,7 +538,7 @@ internal func z2r_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vDSP_fun
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: false)
     newdata.withUnsafeMutableStartPointer(datatype: T.T.self){
         dstptrT in
-        mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+        mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
             [unowned mfarray] in
             wrap_vDSP_convert(mfarray.storedSize, $0, 1, dstptrT, 1, vDSP_func)
             //vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
@@ -543,9 +563,9 @@ internal func conjugate_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vD
     //print(mfarray.strides)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
-    newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
+    newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
         dstptrT in
-        mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+        mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
             [unowned mfarray] in
             wrap_vDSP_convertz(mfarray.storedSize, $0, 1, dstptrT, 1, vDSP_func)
             //vDSP_func($0.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(mfarray.storedSize))
@@ -603,9 +623,9 @@ internal func biopzvs_by_vDSP<T: vDSP_ComplexTypable>(_ l_mfarray: MfArray, _ r_
     mfarray = check_contiguous(mfarray)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
-    newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
+    newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
         dstptrT in
-        mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+        mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
             [unowned mfarray] in
             wrap_vDSP_biopzvs(mfarray.storedSize, $0, 1, &r_scalar, 0, dstptrT, 1, vDSP_func)
         }
@@ -654,9 +674,9 @@ internal func biopzsv_by_vDSP<T: vDSP_ComplexTypable>(_ l_scalar: T.T, _ r_mfarr
     mfarray = check_contiguous(mfarray)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
-    newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
+    newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
         dstptrT in
-        mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+        mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
             [unowned mfarray] in
             wrap_vDSP_biopzsv(mfarray.storedSize, &l_scalar, $0, dstptrT, vDSP_func)
         }
@@ -732,11 +752,11 @@ internal func biopzvv_by_vDSP<T: vDSP_ComplexTypable>(_ l_mfarray: MfArray, _ r_
     let (l_mfarray, r_mfarray, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
 
     let newdata = MfData(size: retsize, mftype: l_mfarray.mftype, complex: true)
-    newdata.withUnsafeMutablevDSPPointer(datatype: T.self){
+    newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
         dstptrT in
-        l_mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+        l_mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
             [unowned l_mfarray] (lptr) in
-            r_mfarray.withUnsafeMutablevDSPPointer(datatype: T.self){
+            r_mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
                 [unowned r_mfarray] (rptr) in
                 if biggerL{// l is bigger
                     for vDSPPrams in OptOffsetParamsSequence(shape: l_mfarray.shape, bigger_strides: l_mfarray.strides, smaller_strides: r_mfarray.strides){
@@ -1155,13 +1175,13 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
     }
     else{
         let newdata = MfData(size: retSize, mftype: mfarray.mftype, complex: true)
-        newdata.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+        newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPComplexType.self){
             dstptrT in
             indicesT.withUnsafeMutableStartPointer(datatype: T.self){
                 //[unowned indicesT](indptr) in
                 indptr in
                 // note that indices and mfarray is row contiguous
-                mfarray.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+                mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPComplexType.self){
                     srcptr in
                     let srcptrr = srcptr.pointee.realp as! UnsafeMutablePointer<T>
                     let srcptri = srcptr.pointee.imagp as! UnsafeMutablePointer<T>
@@ -1238,9 +1258,9 @@ internal func fancy1dgetcol_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices
     }
     else{
         let newdata = MfData(size: indices.size, mftype: mfarray.mftype, complex: true)
-        newdata.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+        newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPComplexType.self){
             dstptrT in
-            let _ = mfarray.withUnsafeMutablevDSPPointer(datatype: T.vDSPType.self){
+            let _ = mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPComplexType.self){
                 srcptr in
                 let srcptrr = srcptr.pointee.realp as! UnsafeMutablePointer<T>
                 let srcptri = srcptr.pointee.imagp as! UnsafeMutablePointer<T>
@@ -1321,6 +1341,84 @@ internal func dotpr_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: Mf
     let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
     
     return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// Real FFT.
+/// - Parameters:
+///   - mfarray: A left mfarray
+///   - isForward: Whether to be forward or not.
+///   - vDSP_func: vDSP_fft_zrop_func
+/// - Returns: FFT array
+internal func fft_zr_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ number: Int?, _ axis: Int, _ isForward: Bool, vDSP_func: vDSP_fft_zrop_func<T>) -> MfArray{
+    precondition(mfarray.isReal, "Must be real in REAL FFT. Use FFT instead")
+    
+    let mftype = MfType.storedType(mfarray.mftype).to_mftype()
+    let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+    
+    // calculate number to process
+    let blocksize_src = mfarray.shape[axis]
+    let number = number ?? blocksize_src
+    let blocklog2N = Int(log2(Float(number)))
+    let process_number = Int(powf(2.0, Float(blocklog2N)))
+    
+    assert(process_number >= number, "Bug was occurred")
+    var src_mfarray: MfArray
+    if number < blocksize_src {
+        // extract
+        src_mfarray = mfarray.moveaxis(src: axis, dst: 0)[0~<number].moveaxis(src: 0, dst: axis)
+    }
+    else{
+        src_mfarray = mfarray
+    }
+    
+    // Whether to pad zero or not for vDSP
+    if process_number > number {
+        var srcShape = mfarray.shape
+        srcShape[axis] = process_number
+        src_mfarray = Matft.nums(Double.zero, shape: srcShape)
+        /*TODO: Use slice version
+        let slices = srcShape.map{MfSlice(start: 0, to: $0, by: 1)}
+        src_mfarray[slices] = mfarray*/
+        src_mfarray.moveaxis(src: axis, dst: 0)[~<blocksize_src] = mfarray.moveaxis(src: axis, dst: 0)
+        // The below code is not needed because the above codes allow to assign the original value using the isView feature in Matft
+        //src_mfarray = src_mfarray.moveaxis(src: 0, dst: axis)
+    }
+    
+    // to complex and contiguous
+    src_mfarray = check_contiguous(src_mfarray.moveaxis(src: axis, dst: -1), .Row).to_complex()
+    
+    assert(process_number % 2 == 0, "Bug was occurred")
+    let blocksize_dst = process_number/2 + 1
+    var retShape = mfarray.shape
+    retShape[retShape.count - 1] = blocksize_dst
+    
+    let newdata = MfData(size: shape2size(&retShape), mftype: mftype, complex: true)
+    
+    var restShape = Array(retShape.prefix(retShape.count-1))
+    let loopnum = shape2size(&restShape)
+    
+    newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){dstptr in
+        src_mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
+            srcptr in
+            for i in 0..<loopnum{
+                var src = srcptr +++ i*blocksize_src
+                var dst = dstptr +++ i*blocksize_dst
+                wrap_vDSP_fft_zr(blocklog2N, &src, 1, &dst, 1, isForward, vDSP_func)
+                // the first element of imaginary part is nyquist component. Therefore, assign it multiplied -1 =(exp(i*pi)) to the last element
+                // ref: https://developer.apple.com/library/mac/documentation/Performance/Conceptual/vDSP_Programming_Guide/UsingFourierTransforms/UsingFourierTransforms.html#//apple_ref/doc/uid/TP40005147-CH3-SW1
+                (dst.realp + blocksize_dst-1).pointee = -1*dst.imagp.pointee
+                dst.imagp.pointee = 0
+            }
+            
+        }
+    }
+    
+    let newstructure = MfStructure(shape: retShape, mforder: .Row)
+
+    let ret = MfArray(mfdata: newdata, mfstructure: newstructure).moveaxis(src: -1, dst: axis)
+    
+    // rescale because zrop was 2x. 
+    return ret / 2
 }
 
 /// Convert mfarray into CGImage. Supported color space is Gray (h, w), (h, w, 1)  or RGB (h, w, 4)

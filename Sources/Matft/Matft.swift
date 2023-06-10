@@ -46,6 +46,11 @@ public class Matft{
     public class image{}
     
     /**
+       FFT
+     */
+    public class fft{}
+    
+    /**
        Complex
      */
     public class complex{}
