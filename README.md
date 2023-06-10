@@ -425,7 +425,7 @@ Matft supports Complex!!
 
 But this is beta version. so, any bug may be ocurred.
 
-Please report me by issue!
+Please report me by issue! ([Progres](https://github.com/jjjkkkjjj/Matft/issues/24)
 
 **TODO**
 
@@ -433,7 +433,7 @@ Please report me by issue!
 - [x] Angle, Conjugate and Absolute
 - [x] Math (partial: `sin,cos,tan,exp,log`)
 - [x] Basic Subscription Getter
-- [ ] Basic Subscription Setter
+- [x] Basic Subscription Setter
 - [x] Boolean Indexing Getter
 - [ ] Boolean Indexing Setter
 - [x] Fancy Indexing Getter
