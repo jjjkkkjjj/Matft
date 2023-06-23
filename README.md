@@ -572,6 +572,7 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.append  | numpy.append |
 | *Matft.insert  | numpy.insert |
 | *Matft.take  | numpy.take |
+| ^MfArray.item  | ^numpy.ndarray.item |
 
 
 - Conversion
@@ -726,7 +727,7 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 
 Matft supports only natural cubic spline. I'll implement other boundary condition later.
 
-| Matft                            | Numpy              |
+| Matft                            | Scipy              |
 | -------------------------------- | ----------------- |
 | Matft.interp1d.cubicSpline       | scipy.interpolation.CubicSpline |
 
