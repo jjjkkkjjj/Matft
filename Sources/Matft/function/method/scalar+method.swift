@@ -71,6 +71,46 @@ extension MfArray{
         return self.size == 1 ? self.scalarFirst! as? T : nil
     }
     
+    
+    /// Get an element of MfArray to a standard Swift scalar
+    /// - Parameters:
+    ///   - index: The index of MfArray
+    ///   - type: The type
+    /// - Returns: Standard Swift scalar object
+    public func item<T: MfTypable>(index: Int, type: T.Type) -> T{
+        precondition(MfType.mftype(value: T.zero) == self.mftype, "could not cast \(T.self) from \(self.mftype)")
+
+        let index = get_flatten_index(index, shape: self.shape, strides: self.strides)
+        
+        switch (self.storedType) {
+        case .Float:
+            let ret = self.withUnsafeMutableStartPointer(datatype: Float.self){
+                dataptr in
+                dataptr[index]
+            }
+            return T.from(ret)
+        case .Double:
+            let ret = self.withUnsafeMutableStartPointer(datatype: Double.self){
+                dataptr in
+                dataptr[index]
+            }
+            return T.from(ret)
+        }
+    }
+    
+    /// Get an element of MfArray to a standard Swift scalar
+    /// - Parameters:
+    ///   - indices: The index array  of MfArray
+    ///   - type: The type
+    /// - Returns: Standard Swift scalar object
+    public func item<T: MfTypable>(indices: [Int], type: T.Type) -> T{
+        precondition(MfType.mftype(value: T.zero) == self.mftype, "could not cast \(T.self) from \(self.mftype)")
+        precondition(indices.count == self.ndim, "incorrect number of indices for array")
+        var indices: [Any] = indices
+        let ret = self._get_mfarray(indices: &indices)
+        return ret.scalar! as! T
+    }
+    
     /**
        Map function for contiguous array.
         - Parameters:

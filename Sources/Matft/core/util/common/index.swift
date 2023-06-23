@@ -81,6 +81,32 @@ internal func get_positive_axis_for_expand_dims(_ axis: Int, ndim: Int) -> Int{
     return ret_axis
 }
 
+
+/// Get a flatten index for row major order
+/// - Parameters:
+///   - index: The index
+///   - shape: A shape array
+///   - strides: A stride array
+/// - Returns: A flatten index for row major order
+internal func get_flatten_index(_ index: Int, shape: [Int], strides: [Int]) -> Int{
+    var shape = shape
+    var size = shape2size(&shape)
+    var index = get_positive_index(index, axissize: size, axis: 0)
+    var indices = Array(repeating: 0, count: shape.count)
+
+    for axis in (0..<shape.count) {
+        size /= shape[axis]
+        indices[axis] = index / size
+        index = index % size
+    }
+    
+    var flattenIndex = 0
+    for (li, st) in zip(indices, strides) {
+        flattenIndex += li*st
+    }
+    return flattenIndex
+}
+
 /// Get a positive shape from a given size
 /// - Parameters:
 ///   - shape: A shape array. Negative axis will be converted into positive one as return value

@@ -34,6 +34,37 @@ final class SubscriptTests: XCTestCase {
         }
     }
     
+    func testScalar2(){
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [27])
+            // Caution!: a[Int] returns MfArray to conform to Collection protocol
+            XCTAssertEqual(a[0], MfArray([0]))
+            XCTAssertEqual(a[-1], MfArray([26]))
+        }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 5*2*3, by: 1, shape: [5,2,3]).transpose(axes: [1,0,2])
+            // Caution!: a[Int] returns MfArray to conform to Collection protocol
+            XCTAssertEqual(a.item(index: 0, type: Int.self), 0)
+            XCTAssertEqual(a.item(index: 9, type: Int.self), 18)
+            XCTAssertEqual(a.item(index: 17, type: Int.self), 5)
+        }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [27])
+            // Caution!: a[Int] returns MfArray to conform to Collection protocol
+            XCTAssertEqual(a.item(index: 0, type: Int.self), 0)
+            XCTAssertEqual(a.item(index: -1, type: Int.self), 26)
+        }
+        
+        do{
+            let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3, 3, 3])
+            // Caution!: a[Int] returns MfArray to conform to Collection protocol
+            XCTAssertEqual(a.item(indices: [2,1,0], type: Int.self), 21)
+            XCTAssertEqual(a.item(indices: [0,0,0], type: Int.self), 0)
+        }
+        
+    }
 
     func testSlicing(){
         

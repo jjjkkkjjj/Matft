@@ -246,6 +246,34 @@ You can set **MfSlice** (see below's list) to subscript.
   print(a[2,1,0])
   // 21
   ```
+  
+  **Caution**
+  
+  MfArray conforms to Collection protocol, so 1D MfArray returns MfArray!
+  Use `item` as workaround instead of subscription such like
+  
+  ```swift
+  let a = Matft.arange(start: 0, to: 27, by: 1, shape: [27])
+  print(a[0])
+  /*
+  0 // a[0] is MfArray!! Nevertheless, The scalar is printed (I don't know why...)
+  */
+  print(a[0] + 4)
+  /*
+  mfarray = 
+  [    4], type=Int, shape=[1]
+  */
+  
+  // Workaround
+  print(a.item(index: 0, type: Int.self))
+  /*
+  0
+  */
+  print(a.item(index: 0, type: Int.self) + 4)
+  /*
+  4
+  */
+  ```
 
   #### Slicing
 
