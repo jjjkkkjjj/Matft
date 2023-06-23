@@ -116,6 +116,7 @@ open class MfArray: MfArrayProtocol{
     ///    - base: A base MLShapedArray
     ///    - share: Whether to share memories or not, by default to true
     @available(macOS 12.0, *)
+    @available(iOS 14.0, *)
     public init (base: inout MLMultiArray, share: Bool = true){
         precondition([MLMultiArrayDataType.float, MLMultiArrayDataType.double].contains(base.dataType), "Must be float or double in share mode")
         // note that base is not assigned here!
