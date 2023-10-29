@@ -1,6 +1,7 @@
 import XCTest
 //@testable import Matft
 import Matft
+import CoreML
 
 final class ConversionTests: XCTestCase {
     
@@ -575,6 +576,31 @@ final class ConversionTests: XCTestCase {
                                                                   [[21, 22, 23],
                                                                    [24, 25, 26],
                                                                    [18, 19, 20]]]))
+        }
+    }
+    
+    @available(macOS 12.0, *)
+    @available(iOS 14.0, *)
+    func testToMlMultiArray() throws{
+        do {
+            let arr = [1.0, 2, 3, 4.0, 5, 6]
+            let mlmularr = try MLMultiArray(shape: [2, 3], dataType: .double)
+            for i in 0..<arr.count {
+                mlmularr[i] = NSNumber(value: arr[i])
+            }
+            let a = MfArray(arr, shape: [2, 3])
+            XCTAssertEqual(try a.toMLMultiArray(), mlmularr)
+        }
+        
+        do {
+            let arr = [1.0, 2, 3, 4.0, 5, 6]
+            let arrT = [1.0, 4, 2, 5, 3, 6]
+            let mlmularr = try MLMultiArray(shape: [3, 2], dataType: .double)
+            for i in 0..<arr.count {
+                mlmularr[i] = NSNumber(value: arrT[i])
+            }
+            let a = MfArray(arr, shape: [2, 3])
+            XCTAssertEqual(try a.T.toMLMultiArray(), mlmularr)
         }
     }
 }

@@ -595,6 +595,7 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.argsort      | *numpy.argsort           |
 | ^MfArray.toArray | ^numpy.ndarray.tolist |
 | ^MfArray.toFlattenArray | n/a |
+| ^MfArray.toMLMultiArray | n/a |
 | *Matft.orderedUnique | numpy.unique |
 
 - File

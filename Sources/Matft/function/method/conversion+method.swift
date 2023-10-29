@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CoreML
 
 extension MfArray{
     /**
@@ -108,6 +109,24 @@ extension MfArray{
         }
         
         return ret
+    }
+    
+    
+    /// Convert MfArray to MLMultiArray
+    /// - Returns: Converted MLMultiArray
+    @available(macOS 12.0, *)
+    @available(iOS 14.0, *)
+    public func toMLMultiArray() throws -> MLMultiArray {
+        switch self.storedType {
+        case .Float:
+            let ptrF = allocate_unsafeMRPtr(type: Float.self, count: self.storedSize)
+            memcpy(ptrF, self.mfdata.data_real, self.storedByteSize)
+            return try MLMultiArray(dataPointer: ptrF, shape: self.shape.map{ NSNumber(value: $0) } , dataType: MLMultiArrayDataType.float32, strides: self.strides.map{ NSNumber(value: $0) }, deallocator: _deallocator_MLMultiArray_pointer)
+        case .Double:
+            let ptrD = allocate_unsafeMRPtr(type: Double.self, count: self.storedSize)
+            memcpy(ptrD, self.mfdata.data_real, self.storedByteSize)
+            return try MLMultiArray(dataPointer: ptrD, shape: self.shape.map{ NSNumber(value: $0) } , dataType: MLMultiArrayDataType.double, strides: self.strides.map{ NSNumber(value: $0) }, deallocator: _deallocator_MLMultiArray_pointer)
+        }
     }
     
     /**
@@ -255,4 +274,8 @@ extension MfArray{
     public func orderedUnique(axis: Int? = nil) -> MfArray{
         return Matft.orderedUnique(self, axis: axis)
     }
+}
+
+fileprivate func _deallocator_MLMultiArray_pointer(_ ptr: UnsafeMutableRawPointer) -> Void {
+    ptr.deallocate()
 }
