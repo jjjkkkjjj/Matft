@@ -181,7 +181,8 @@ internal func isReverse(_ strides: inout [Int]) -> Bool{
 /// - Returns: A swift array
 @usableFromInline
 internal func toSwiftArray(_ mfarray: MfArray) -> [Any]{
-    let mfarray = !mfarray.mfstructure.row_contiguous ? mfarray.to_contiguous(mforder: .Row) : mfarray
+    // mfarray has no base
+    let mfarray = mfarray.deepcopy(.Row)
     
     var shape = mfarray.shape
     var data = mfarray.data

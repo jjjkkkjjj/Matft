@@ -434,6 +434,15 @@ final class ConversionTests: XCTestCase {
             XCTAssertEqual(a.astype(.Int).toArray() as! [[Int]], [[1, 3, 5],
                                                                   [2, -4, -1]])
         }
+        
+        do {
+            let a = MfArray([
+               [1,2,3],
+               [4,5,6]
+           ], mftype: .Float)
+           XCTAssertEqual(a[1], MfArray([4,5,6], mftype: .Float))
+           XCTAssertEqual(a[1].toArray() as! [Float], [4.0,5,6])
+        }
     }
     
     func testOrderedUnique(){
