@@ -602,7 +602,7 @@ internal func fancyset_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: Mf
             let _ = assignedMfarray.withUnsafeMutableStartPointer(datatype: T.self){
                 srcptr in
                 for (i, offset) in offsets.enumerated(){
-                    (dstptr + offset).assign(from: srcptr + i, count: 1)
+                    (dstptr + offset).update(from: srcptr + i, count: 1)
                 }
             }
         }
@@ -671,7 +671,7 @@ internal func fancysetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
             [unowned assignedMfarray](srcptr) in
             if workShape.count == 0{// indices.count == mfarray.ndim
                 for (i, offset) in offsets.enumerated(){
-                    (dstptr + offset).assign(from: srcptr + i, count: 1)
+                    (dstptr + offset).update(from: srcptr + i, count: 1)
                 }
             }
             else{

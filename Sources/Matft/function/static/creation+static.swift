@@ -74,7 +74,7 @@ extension Matft{
             newdata.withUnsafeMutableStartPointer(datatype: U.self){
                 ptrU in
                 arr.withUnsafeMutableBufferPointer{
-                    ptrU.moveAssign(from: $0.baseAddress!, count: size)
+                    ptrU.moveUpdate(from: $0.baseAddress!, count: size)
                 }
             }
         }
@@ -182,7 +182,7 @@ extension Matft{
             newdata.withUnsafeMutableStartPointer(datatype: T.self){
                 ptrT in
                 d.withUnsafeMutableBufferPointer{
-                    ptrT.moveAssign(from: $0.baseAddress!, count: size)
+                    ptrT.moveUpdate(from: $0.baseAddress!, count: size)
                 }
             }
         }
@@ -439,21 +439,21 @@ extension Matft.mfdata{
 
         //copy shape
         let shapeptr = create_unsafeMPtrT(type: Int.self, count: mfdata._ndim)
-        shapeptr.assign(from: mfdata._shape, count: mfdata._ndim)
+        shapeptr.update(from: mfdata._shape, count: mfdata._ndim)
         
         //copy strides
         let stridesptr = create_unsafeMPtrT(type: Int.self, count: mfdata._ndim)
-        stridesptr.assign(from: mfdata._strides, count: mfdata._ndim)
+        stridesptr.update(from: mfdata._strides, count: mfdata._ndim)
         
         //copy data
         switch mfdata._storedType {
         case .Float:
             let dataptr = create_unsafeMRPtr(type: Float.self, count: mfdata._size)
-            dataptr.assumingMemoryBound(to: Float.self).assign(from: mfdata._data.assumingMemoryBound(to: Float.self), count: mfdata._storedSize)
+            dataptr.assumingMemoryBound(to: Float.self).update(from: mfdata._data.assumingMemoryBound(to: Float.self), count: mfdata._storedSize)
             return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mfdata._mftype, ndim: mfdata._ndim, stridesptr: stridesptr)
         case .Double:
             let dataptr = create_unsafeMRPtr(type: Double.self, count: mfdata._size)
-            dataptr.assumingMemoryBound(to: Double.self).assign(from: mfdata._data.assumingMemoryBound(to: Double.self), count: mfdata._storedSize)
+            dataptr.assumingMemoryBound(to: Double.self).update(from: mfdata._data.assumingMemoryBound(to: Double.self), count: mfdata._storedSize)
             return MfData(dataptr: dataptr, storedSize: mfdata._storedSize, shapeptr: shapeptr, mftype: mfdata._mftype, ndim: mfdata._ndim, stridesptr: stridesptr)
         }
     }
@@ -465,11 +465,11 @@ extension Matft.mfdata{
     static public func shallowcopy(_ mfdata: MfData) -> MfData{
         //copy shape
         let shapeptr = create_unsafeMPtrT(type: Int.self, count: mfdata._ndim)
-        shapeptr.assign(from: mfdata._shape, count: mfdata._ndim)
+        shapeptr.update(from: mfdata._shape, count: mfdata._ndim)
         
         //copy strides
         let stridesptr = create_unsafeMPtrT(type: Int.self, count: mfdata._ndim)
-        stridesptr.assign(from: mfdata._strides, count: mfdata._ndim)
+        stridesptr.update(from: mfdata._strides, count: mfdata._ndim)
         
         let newdata = MfData(refdata: mfdata, offset: 0, shapeptr: shapeptr, ndim: mfdata._ndim, mforder: mfdata._order, stridesptr: stridesptr)
         

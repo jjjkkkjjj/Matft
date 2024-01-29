@@ -477,7 +477,7 @@ fileprivate func _setter<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, 
             let srcptr = assptr
             mfarray.withContiguousDataUnsafeMPtrT(datatype: T.self){
                 if (indptr + indoffset).pointee != T.zero{
-                    $0.assign(from: srcptr + srcoffset, count: 1)
+                    $0.update(from: srcptr + srcoffset, count: 1)
                     srcoffset += 1
                     //print(srcptr.pointee)
                 }

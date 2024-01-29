@@ -57,7 +57,7 @@ func evDSP_sign(_ __A: UnsafePointer<Float>, _ __IA: vDSP_Stride, _ __B: UnsafeP
        else{
            tmp = .zero
        }
-       dptr.assign(from: &tmp, count: 1)
+       dptr.update(from: &tmp, count: 1)
         aptr += strideA
        dptr += strideD
    }
@@ -98,7 +98,7 @@ func evDSP_signD(_ __A: UnsafePointer<Double>, _ __IA: vDSP_Stride, _ __B: Unsaf
        else{
            tmp = .zero
        }
-       __D.assign(from: &tmp, count: 1)
+       __D.update(from: &tmp, count: 1)
        __A += strideA
        __D += strideD
    }
