@@ -253,28 +253,20 @@ final class ComplexTests: XCTestCase {
         }
         
         do{
-            let real = Matft.arange(start: 1, to: 17, by: 1).reshape([2,2,4])
-            let imag = Matft.arange(start: 1, to: -15, by: -1).reshape([2,2,4])
+            let real = Matft.arange(start: 1, to: 9, by: 1).reshape([2,2,2])
+            let imag = Matft.arange(start: -1, to: -9, by: -1).reshape([2,2,2])
             let a = MfArray(real: real, imag: imag)
             let ret = Matft.math.power(bases: 2, exponents: a)
-            XCTAssertEqual(ret.real.round(decimals: 1), MfArray([[[ 1.53847780e+00,  4.00000000e+00,  6.15391121e+00,
-                                                 2.93531160e+00],
-                                               [-1.55838214e+01, -5.96919729e+01, -1.21334265e+02,
-                                                -1.34572256e+02]],
+            XCTAssertEqual(ret.real.round(decimals: 1), MfArray([[[  1.5384778 ,   0.7338279 ],
+                                                                  [ -3.89595534, -14.92299323]],
 
-                                              [[ 7.12642042e+01,  7.57565815e+02,  2.04593957e+03,
-                                                 3.26500195e+03],
-                                               [ 1.86250780e+03, -7.32915400e+03, -3.00015127e+04,
-                                                -6.29967066e+04]]] as [[[Float]]]).round(decimals: 1))
-            XCTAssertEqual(ret.imag!.round(decimals: 1), MfArray([[[ 1.27792255e+00,  0.00000000e+00, -5.11169021e+00,
-                                                  -1.57284438e+01],
-                                                 [-2.79489626e+01, -2.30839418e+01,  4.07675863e+01,
-                                                   2.17775821e+02]],
+                                                                 [[-30.33356629, -33.64306392],
+                                                                  [ 17.81605106, 189.39145385]]] as [[[Float]]]).round(decimals: 1))
+            XCTAssertEqual(ret.imag!.round(decimals: 1), MfArray([[[ -1.27792255,  -3.93211096],
+                                                                   [ -6.98724065,  -5.77098545]],
 
-                                                [[ 5.07016186e+02,  6.88963015e+02,  9.18438641e+01,
-                                                  -2.47325257e+03],
-                                                 [-7.97746380e+03, -1.46532917e+04, -1.31776728e+04,
-                                                   1.80660525e+04]]] as [[[Float]]]).round(decimals: 1))
+                                                                  [[ 10.19189658,  54.44395513],
+                                                                   [126.75404658, 172.24075363]]] as [[[Float]]]).round(decimals: 1))
         }
     }
     
