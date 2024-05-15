@@ -79,7 +79,7 @@ internal func shape2strides(_ shape: inout [Int], mforder: MfOrder) -> [Int]{
     case .Row://, .None:
         var prevAxisNum = shape2size(&shape)
         for index in 0..<shape.count{
-            ret[index] = prevAxisNum / shape[index]
+            ret[index] = prevAxisNum / max(shape[index],1)
             prevAxisNum = ret[index]
         }
     case .Column:
