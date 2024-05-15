@@ -87,7 +87,7 @@ public class MfData: MfDataProtocol{
     ///    - storedSize: A size
     ///    - mftype: Type
     /// - Important: The given dataptr will NOT be freed in SHARE mode. So don't forget to free manually.
-    internal init(source: MfDataBasable?, data_real_ptr: UnsafeMutableRawPointer, data_imag_ptr: UnsafeMutableRawPointer? = nil, storedSize: Int, mftype: MfType, offset: Int){
+    public init(source: MfDataBasable?, data_real_ptr: UnsafeMutableRawPointer, data_imag_ptr: UnsafeMutableRawPointer? = nil, storedSize: Int, mftype: MfType, offset: Int){
         self._base = source
         self._fromOtherDataSource = source != nil
         self.storedSize = storedSize
