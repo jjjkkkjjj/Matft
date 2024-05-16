@@ -284,24 +284,24 @@ internal func wrap_lapack_eigen<T: MfStorable>(_ rowcolnum: Int, _ srcptr: Unsaf
             }
             
         }
-        //moveUpdate
+        //moveAssign
         WR.withUnsafeMutableBufferPointer{
-            dstValRePtr.moveUpdate(from: $0.baseAddress!, count: rowcolnum)
+            dstValRePtr.moveAssign(from: $0.baseAddress!, count: rowcolnum)
         }
         WI.withUnsafeMutableBufferPointer{
-            dstValImPtr.moveUpdate(from: $0.baseAddress!, count: rowcolnum)
+            dstValImPtr.moveAssign(from: $0.baseAddress!, count: rowcolnum)
         }
         VLRe.withUnsafeMutableBufferPointer{
-            dstLVecRePtr.moveUpdate(from: $0.baseAddress!, count: rowcolnum*rowcolnum)
+            dstLVecRePtr.moveAssign(from: $0.baseAddress!, count: rowcolnum*rowcolnum)
         }
         VLIm.withUnsafeMutableBufferPointer{
-            dstLVecImPtr.moveUpdate(from: $0.baseAddress!, count: rowcolnum*rowcolnum)
+            dstLVecImPtr.moveAssign(from: $0.baseAddress!, count: rowcolnum*rowcolnum)
         }
         VRRe.withUnsafeMutableBufferPointer{
-            dstRVecRePtr.moveUpdate(from: $0.baseAddress!, count: rowcolnum*rowcolnum)
+            dstRVecRePtr.moveAssign(from: $0.baseAddress!, count: rowcolnum*rowcolnum)
         }
         VRIm.withUnsafeMutableBufferPointer{
-            dstRVecImPtr.moveUpdate(from: $0.baseAddress!, count: rowcolnum*rowcolnum)
+            dstRVecImPtr.moveAssign(from: $0.baseAddress!, count: rowcolnum*rowcolnum)
         }
     }
 }
@@ -382,13 +382,13 @@ internal func wrap_lapack_svd<T: MfStorable>(_ rownum: Int, _ colnum: Int, _ src
     }
     else{
         U.withUnsafeMutableBufferPointer{
-            vptr.moveUpdate(from: $0.baseAddress!, count: rownum*ucol)
+            vptr.moveAssign(from: $0.baseAddress!, count: rownum*ucol)
         }
         S.withUnsafeMutableBufferPointer{
-            sptr.moveUpdate(from: $0.baseAddress!, count: snum)
+            sptr.moveAssign(from: $0.baseAddress!, count: snum)
         }
         VT.withUnsafeMutableBufferPointer{
-            rtptr.moveUpdate(from: $0.baseAddress!, count: colnum*vtrow)
+            rtptr.moveAssign(from: $0.baseAddress!, count: colnum*vtrow)
         }
     }
 }
@@ -520,7 +520,7 @@ internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func_lu:
             try wrap_lapack_inv(row, srcptr, &IPIV, lapack_func: lapack_func_inv)
             
             //move
-            (dstptrT + offset).moveUpdate(from: srcptr, count: row*col)
+            (dstptrT + offset).moveAssign(from: srcptr, count: row*col)
         }
     }
     
@@ -566,7 +566,7 @@ internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func: la
             }
             
             //assign
-            (dstptrT + dst_offset).update(from: &det, count: 1)
+            (dstptrT + dst_offset).assign(from: &det, count: 1)
             dst_offset += 1
         }
     }

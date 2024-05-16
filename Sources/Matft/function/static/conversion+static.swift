@@ -119,7 +119,7 @@ extension Matft{
         let newstructure = withDummyShapeStridesMBPtr(new_ndim){
             shapeptr, stridesptr in
             //move from newshape
-            shapeptr.baseAddress!.moveUpdate(from: &newshape, count: new_ndim)
+            shapeptr.baseAddress!.moveAssign(from: &newshape, count: new_ndim)
             
             for axis in 0..<new_ndim{
                 
@@ -362,9 +362,9 @@ extension Matft{
             - max: (optional) Maximum value. If nil is passed, handled as inf
     */
     public static func clip<T: MfTypable>(_ mfarray: MfArray, min: T? = nil, max: T? = nil) -> MfArray{
-        func _clip<U: MfStorable>(_ vDSP_func: vDSP_clip_func<U>) -> MfArray{
-            let min = min == nil ? -U.infinity : U.from(min!)
-            let max = max == nil ? U.infinity : U.from(max!)
+        func _clip<T: MfStorable>(_ vDSP_func: vDSP_clip_func<T>) -> MfArray{
+            let min = min == nil ? -T.infinity : T.from(min!)
+            let max = max == nil ? T.infinity : T.from(max!)
             return clip_by_vDSP(mfarray, min, max, vDSP_func)
         }
         
@@ -585,7 +585,7 @@ fileprivate func _unique<T: MfStorable>(_ flattendata: inout [T], restShape: ino
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         uniquearray.withUnsafeMutableBufferPointer{
-            dstptrT.moveUpdate(from: $0.baseAddress!, count: newsize)
+            dstptrT.moveAssign(from: $0.baseAddress!, count: newsize)
         }
     }
     
@@ -626,11 +626,11 @@ extension Matft.mfdata{
         
         //copy shape
         let shapeptr = create_unsafeMPtrT(type: Int.self, count: mfdata._ndim)
-        shapeptr.update(from: mfdata._shape, count: mfdata._ndim)
+        shapeptr.assign(from: mfdata._shape, count: mfdata._ndim)
         
         //copy strides
         let stridesptr = create_unsafeMPtrT(type: Int.self, count: mfdata._ndim)
-        stridesptr.update(from: mfdata._strides, count: mfdata._ndim)
+        stridesptr.assign(from: mfdata._strides, count: mfdata._ndim)
         
         switch newStoredType{
         case .Float://double to float

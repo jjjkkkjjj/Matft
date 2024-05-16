@@ -970,7 +970,7 @@ internal func argsort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ 
                 //convert dataptr(int) to float
                 var flarray = uiarray.map{ Float($0) }
                 flarray.withUnsafeMutableBufferPointer{
-                    (dstptrF + offset).moveUpdate(from: $0.baseAddress!, count: count)
+                    (dstptrF + offset).moveAssign(from: $0.baseAddress!, count: count)
                 }
                 
                 offset += count
@@ -1102,11 +1102,11 @@ internal func arange_by_vDSP<T: MfStorable>(_ start: T, _ by: T, _ count: Int, _
     let newstructure = withDummyShapeStridesMBPtr(retShape.count){
         shapeptr, stridesptr in
         retShape.withUnsafeMutableBufferPointer{
-            shapeptr.baseAddress!.moveUpdate(from: $0.baseAddress!, count: shapeptr.count)
+            shapeptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: shapeptr.count)
         }
         
         let newstrides = shape2strides(shapeptr, mforder: .Row)
-        stridesptr.baseAddress!.moveUpdate(from: newstrides.baseAddress!, count: shapeptr.count)
+        stridesptr.baseAddress!.moveAssign(from: newstrides.baseAddress!, count: shapeptr.count)
         
         newstrides.deallocate()
     }

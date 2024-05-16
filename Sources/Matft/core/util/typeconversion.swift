@@ -70,7 +70,7 @@ internal func get_mftype(_ flattenArray: inout [Any]) -> MfType{
 internal func array2UnsafeMPtrT<T: MfTypable>(_ array: inout [T]) -> UnsafeMutablePointer<T>{
     let ptr = allocate_unsafeMPtrT(type: T.self, count: array.count)
     array.withUnsafeBufferPointer{
-        ptr.update(from: $0.baseAddress!, count: $0.count)
+        ptr.assign(from: $0.baseAddress!, count: $0.count)
     }
     return ptr
 }
@@ -131,7 +131,7 @@ internal func allocate_floatdata_from_flattenArray(_ flattenArray: inout [Any], 
     else if var flattenArray = flattenArray as? [Float]{
         let ptrF = allocate_unsafeMPtrT(type: Float.self, count: flattenArray.count)
         let _ = flattenArray.withUnsafeMutableBufferPointer{
-            ptrF.update(from: $0.baseAddress!, count: $0.count)
+            ptrF.assign(from: $0.baseAddress!, count: $0.count)
         }
         return UnsafeMutableRawPointer(ptrF)
     }
@@ -141,7 +141,7 @@ internal func allocate_floatdata_from_flattenArray(_ flattenArray: inout [Any], 
         // true = 1, false = 0
         var flattenBoolarray = flattenArray.map{ $0 ? Float.num(1) : Float.zero }
         let _ = flattenBoolarray.withUnsafeMutableBufferPointer{
-            ptrF.moveUpdate(from: $0.baseAddress!, count: $0.count)
+            ptrF.moveAssign(from: $0.baseAddress!, count: $0.count)
         }
         return UnsafeMutableRawPointer(ptrF)
     }
@@ -151,7 +151,7 @@ internal func allocate_floatdata_from_flattenArray(_ flattenArray: inout [Any], 
     else if let flattenArray = flattenArray as? [DSPComplex]{
         let ptrF = allocate_unsafeMPtrT(type: Float.self, count: flattenArray.count*2)
         let _ = flattenArray.withUnsafeBytes{
-            ptrF.update(from: $0.bindMemory(to: Float.self).baseAddress!, count: flattenArray.count*2)
+            ptrF.assign(from: $0.bindMemory(to: Float.self).baseAddress!, count: flattenArray.count*2)
         }
         return UnsafeMutableRawPointer(ptrF)
     }
@@ -231,14 +231,14 @@ internal func allocate_doubledata_from_flattenArray(_ flattenArray: inout [Any],
         // true = 1, false = 0
         var flattenBoolarray = flattenArray.map{ $0 ? Double.num(1) : Double.zero }
         let _ = flattenBoolarray.withUnsafeMutableBufferPointer{
-            ptrD.moveUpdate(from: $0.baseAddress!, count: $0.count)
+            ptrD.moveAssign(from: $0.baseAddress!, count: $0.count)
         }
         return UnsafeMutableRawPointer(ptrD)
     }
     else if var flattenArray = flattenArray as? [Double]{
         let ptrD = allocate_unsafeMPtrT(type: Double.self, count: flattenArray.count)
         let _ = flattenArray.withUnsafeMutableBufferPointer{
-            ptrD.update(from: $0.baseAddress!, count: $0.count)
+            ptrD.assign(from: $0.baseAddress!, count: $0.count)
         }
         return UnsafeMutableRawPointer(ptrD)
     }
@@ -253,7 +253,7 @@ internal func allocate_doubledata_from_flattenArray(_ flattenArray: inout [Any],
     else if let flattenArray = flattenArray as? [DSPDoubleComplex]{
         let ptrD = allocate_unsafeMPtrT(type: Double.self, count: flattenArray.count*2)
         let _ = flattenArray.withUnsafeBytes{
-            ptrD.update(from: $0.bindMemory(to: Double.self).baseAddress!, count: flattenArray.count*2)
+            ptrD.assign(from: $0.bindMemory(to: Double.self).baseAddress!, count: flattenArray.count*2)
         }
         return UnsafeMutableRawPointer(ptrD)
     }
@@ -266,7 +266,7 @@ fileprivate func _U2Binary<U: MfStorable>(_ ptrU: UnsafeMutableBufferPointer<U>)
     let size = ptrU.count
     var arrBinary = ptrU.map{ $0 == U.zero ? U.zero : U.num(1) }
     arrBinary.withUnsafeMutableBufferPointer{
-        ptrU.baseAddress!.moveUpdate(from: $0.baseAddress!, count: size)
+        ptrU.baseAddress!.moveAssign(from: $0.baseAddress!, count: size)
     }
 }
 

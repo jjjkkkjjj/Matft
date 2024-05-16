@@ -45,7 +45,7 @@ internal func to_Bool_mm_op<U: MfStorable>(l_mfarray: MfArray, r_mfarray: MfArra
         withDataMBPtr_multi(datatype: U.self, l_mfarray, r_mfarray){
             lptr, rptr in
             var val = op(lptr.baseAddress!.pointee, rptr.baseAddress!.pointee) ? Float(1) : Float.zero
-            (dstptrT + i).update(from: &val, count: 1)
+            (dstptrT + i).assign(from: &val, count: 1)
             i += 1
         }
     }
@@ -60,7 +60,7 @@ internal func to_Bool_ms_op<U: MfStorable>(l_mfarray: MfArray, r_scalar: U, op: 
         [unowned ret] (dataptr) in
         var newptr = dataptr.map{ $0 > r_scalar ? Float.zero : Float(1) }
         newptr.withUnsafeMutableBufferPointer{
-            dataptr.baseAddress!.moveUpdate(from: $0.baseAddress!, count: ret.storedSize)
+            dataptr.baseAddress!.moveAssign(from: $0.baseAddress!, count: ret.storedSize)
         }
     }
     ret.mfdata._mftype = .Bool
@@ -75,7 +75,7 @@ internal func to_Bool_sm_op<U: MfStorable>(l_scalar: U, r_mfarray: MfArray, op: 
         r_mfarray.withContiguousDataUnsafeMPtrT(datatype: U.self){
             rptr in
             var val = op(l_scalar, rptr.pointee) ? Float(1) : Float.zero
-            (dstptrT + i).update(from: &val, count: 1)
+            (dstptrT + i).assign(from: &val, count: 1)
             i += 1
         }
     }
@@ -123,7 +123,7 @@ internal func bool_broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
         rowc_mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
             srcptr in
             for i in 0..<origSize{
-                dstptrF.update(repeating: (srcptr + i).pointee, count: offset)
+                dstptrF.assign(repeating: (srcptr + i).pointee, count: offset)
                 dstptrF += offset
             }
         }
