@@ -15,3 +15,5 @@ jobs:
       - run: swift sdk install https://github.com/swiftwasm/swift/releases/download/swift-wasm-6.0.2-RELEASE/swift-wasm-6.0.2-RELEASE-wasm32-unknown-wasi.artifactbundle.zip --checksum 6ffedb055cb9956395d9f435d03d53ebe9f6a8d45106b979d1b7f53358e1dcb4
       - name: Build
         run: swift build --swift-sdk wasm32-unknown-wasi
+      - name: Test
+        run: swift test --swift-sdk wasm32-unknown-wasi
