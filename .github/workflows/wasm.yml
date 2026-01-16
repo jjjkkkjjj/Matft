@@ -1,0 +1,17 @@
+name: wasm
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: Build on WebAssembly
+    runs-on: ubuntu-latest
+    container:
+      image: swift:6.0.2-focal
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift sdk install https://github.com/swiftwasm/swift/releases/download/swift-wasm-DEVELOPMENT-SNAPSHOT-2026-01-09-a/swift-wasm-DEVELOPMENT-SNAPSHOT-2026-01-09-a-wasm32-unknown-wasip1.artifactbundle.zip --checksum 13727ef5ac47280e08aa7235ae0da7125490c396cf572c18286c579c5b0dc2f8
+      - name: Build
+        run: swift build --swift-sdk wasm32-unknown-wasip1
