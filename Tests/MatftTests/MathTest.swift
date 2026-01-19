@@ -267,7 +267,7 @@ final class MathTests: XCTestCase {
                                       [196, 225]]]], mftype: .Float))
         }
     }
-    
+
     func testArctan2(){
         do {
             let x = MfArray([-1, +1, +1, -1])

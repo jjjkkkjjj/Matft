@@ -1,6 +1,6 @@
 import XCTest
-//@testable import Matft
-import Matft
+
+@testable import Matft
 
 final class SubscriptTests: XCTestCase {
     
@@ -538,6 +538,8 @@ final class SubscriptTests: XCTestCase {
                                         [ 3,  2],
                                         [14,  3]]]))
         }
+        // Disabled temporally until we support complex operations in WASM
+        #if canImport(Accelerate)
         do{
             let a = Matft.arange(start: 0, to: 16, by: 1).reshape([2,4,2])
             a[Matft.all, 2, Matft.all] = MfArray(real: MfArray([3]), imag: MfArray([-1]))
@@ -564,6 +566,7 @@ final class SubscriptTests: XCTestCase {
             XCTAssertEqual(a, MfArray(real: ans_real, imag: ans_imag))
             
         }
+        #endif
     }
     
     func testBooleanIndexingGet(){
@@ -649,8 +652,14 @@ final class SubscriptTests: XCTestCase {
         }
         
         do{
-            let a = Matft.arange(start: 0, to: 160000, by: 1, shape: [400, 400])
-            let c = MfArray([true]).broadcast_to(shape: [400, 400])
+            // Use smaller array size on WASM to avoid memory pressure
+            #if os(WASI)
+            let size = 10
+            #else
+            let size = 400
+            #endif
+            let a = Matft.arange(start: 0, to: size * size, by: 1, shape: [size, size])
+            let c = MfArray([true]).broadcast_to(shape: [size, size])
             /*
             self.measure {
                 a[c] = MfArray([555])
@@ -658,7 +667,7 @@ final class SubscriptTests: XCTestCase {
                 // average: 0.005, relative standard deviation: 8.334%, values: [0.006032, 0.004685, 0.004630, 0.005293, 0.004738, 0.004789, 0.004905, 0.005056, 0.004624, 0.004729],
             }*/
             a[c] = MfArray([555])
-            XCTAssertEqual(a, MfArray([555]).broadcast_to(shape: [400, 400]))
+            XCTAssertEqual(a, MfArray([555]).broadcast_to(shape: [size, size]))
         }
         
         
@@ -816,9 +825,9 @@ final class SubscriptTests: XCTestCase {
         }
         
     }
-    
+
     func testFancyIndexGet2(){
-        
+
         do{
             let a = Matft.arange(start: 0, to: 16, by: 1).reshape([2,2,2,2])
             
@@ -887,7 +896,7 @@ final class SubscriptTests: XCTestCase {
                                       [ 6,  7]]]]))
         }
     }
-    
+
     func testFancyIndexingSet(){
         
         do{

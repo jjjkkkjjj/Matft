@@ -1,10 +1,13 @@
 import XCTest
 //@testable import Matft
 import Matft
+#if canImport(CoreML)
 import CoreML
+#endif
 
 final class CreationTests: XCTestCase {
     
+    #if canImport(CoreML)
     @available(macOS 12.0, *)
     @available(iOS 14.0, *)
     func testFromMLMultiArray() {
@@ -52,6 +55,7 @@ final class CreationTests: XCTestCase {
         }
     }
     
+    #endif
     func testAppend() {
         do {
             let x = MfArray([1,2,3])

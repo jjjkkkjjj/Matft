@@ -1,6 +1,8 @@
+// Disabled temporally until we provide better WASM support
+#if !os(WASI)
 import XCTest
-//@testable import Matft
-import Matft
+
+@testable import Matft
 
 final class LinAlgTests: XCTestCase {
     
@@ -348,3 +350,4 @@ final class LinAlgTests: XCTestCase {
         }
     }
 }
+#endif
