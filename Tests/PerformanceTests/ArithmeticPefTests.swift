@@ -1,3 +1,4 @@
+#if !OS(wasi)
 import XCTest
 
 @testable import Matft
