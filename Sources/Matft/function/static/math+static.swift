@@ -1002,7 +1002,7 @@ extension Matft.math {
         }
     }
 
-    public static func arctan2(_ mfarrayY: MfArray, _ mfarrayX: MfArray) -> MfArray {
+    public static func arctan2(x1 mfarrayY: MfArray, x2 mfarrayX: MfArray) -> MfArray {
         // arctan2 not in our vForce fallback, use element-wise atan2
         unsupport_complex(mfarrayY)
         unsupport_complex(mfarrayX)
