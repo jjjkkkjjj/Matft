@@ -6,11 +6,13 @@ on:
 
 jobs:
   build:
-    name: Build and Test on WebAssembly
-    runs-on: ubuntu-24.04
+    runs-on: macos-latest
+
     steps:
       - uses: actions/checkout@v4
 
+      # Use Swift 6.0.3 to match the pinned SDK version in build-and-test-wasm.sh
+      # The script will automatically install the 6.0.3-RELEASE WASM SDK
       - name: Install Swift
         uses: swift-actions/setup-swift@v2
         with:
@@ -22,7 +24,7 @@ jobs:
       - name: Install Wasmtime
         uses: bytecodealliance/actions/wasmtime/setup@v1
         with:
-          version: "29.0.1"
+          version: "40.0.2"
           github_token: ${{ github.token }}
 
       - name: Build and Test

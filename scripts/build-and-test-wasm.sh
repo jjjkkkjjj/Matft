@@ -6,91 +6,133 @@ echo "🌐  Building and Testing Matft for WebAssembly"
 echo "🌐 =========================================="
 echo ""
 
-# Configuration for CI (GitHub Actions)
-SWIFT_WASM_SDK_URL="https://github.com/swiftwasm/swift/releases/download/swift-wasm-6.1-RELEASE/swift-wasm-6.1-RELEASE-wasm32-unknown-wasi.artifactbundle.zip"
-SWIFT_WASM_SDK_CHECKSUM="7550b4c77a55f4b637c376f5d192f297fe185607003a6212ad608276928db992"
-CI_SDK_NAME="wasm32-unknown-wasi"
-
-# Swift command to use (may be overridden if toolchain detected)
-SWIFT_CMD="swift"
-
-# Detect development snapshot toolchain with WASM support
-detect_toolchain() {
-    echo "🔍 Detecting Swift toolchain..."
-
-    # Check for development snapshot toolchains in the standard location
-    TOOLCHAIN_DIR="$HOME/Library/Developer/Toolchains"
-
-    if [ -d "$TOOLCHAIN_DIR" ]; then
-        # Find the most recent development snapshot toolchain
-        TOOLCHAIN=$(ls -1 "$TOOLCHAIN_DIR" 2>/dev/null | grep -E "swift-DEVELOPMENT-SNAPSHOT.*\.xctoolchain" | sort -r | head -1)
-
-        if [ -n "$TOOLCHAIN" ]; then
-            TOOLCHAIN_SWIFT="$TOOLCHAIN_DIR/$TOOLCHAIN/usr/bin/swift"
-            if [ -x "$TOOLCHAIN_SWIFT" ]; then
-                SWIFT_CMD="$TOOLCHAIN_SWIFT"
-                echo "✅ Found development toolchain: $TOOLCHAIN"
-                return 0
-            fi
-        fi
-    fi
-
-    echo "ℹ️  Using system Swift"
+# SDK info for different Swift versions (SDK must match Swift compiler version)
+get_sdk_info() {
+    local SWIFT_VER="$1"
+    case "$SWIFT_VER" in
+        6.0.3*)
+            SDK_VERSION="6.0.3-RELEASE"
+            SDK_CHECKSUM="31d3585b06dd92de390bacc18527801480163188cd7473f492956b5e213a8618"
+            ;;
+        6.1*)
+            SDK_VERSION="6.1-RELEASE"
+            SDK_CHECKSUM="7550b4c77a55f4b637c376f5d192f297fe185607003a6212ad608276928db992"
+            ;;
+        *)
+            echo "❌ No WASM SDK available for Swift $SWIFT_VER"
+            echo "   Supported versions: 6.0.3, 6.1"
+            return 1
+            ;;
+    esac
+    SDK_URL="https://github.com/swiftwasm/swift/releases/download/swift-wasm-${SDK_VERSION}/swift-wasm-${SDK_VERSION}-wasm32-unknown-wasi.artifactbundle.zip"
     return 0
 }
 
-# Detect available WASM SDK
-detect_wasm_sdk() {
-    echo "📦 Detecting WASM SDK..."
+SWIFT_CMD=""
+SWIFT_SDK_NAME=""
+SWIFT_VERSION=""
 
-    # Get list of installed SDKs
-    INSTALLED_SDKS=$($SWIFT_CMD sdk list 2>/dev/null || echo "")
+# Setup Swift command and detect version
+setup_swift() {
+    echo "📦 Setting up Swift..."
 
-    # First, check if the CI SDK is available (for GitHub Actions)
-    if echo "$INSTALLED_SDKS" | grep -q "^${CI_SDK_NAME}$"; then
-        SWIFT_SDK_NAME="$CI_SDK_NAME"
-        echo "✅ Found SDK: $SWIFT_SDK_NAME"
-        return 0
-    fi
+    # Check for local SwiftWasm toolchain first (macOS development with newer SDK)
+    TOOLCHAIN_DIR="$HOME/Library/Developer/Toolchains"
+    if [ -d "$TOOLCHAIN_DIR" ]; then
+        # Look for development snapshot toolchain (needed for newer macOS SDKs)
+        local WASM_TOOLCHAIN=$(ls -1 "$TOOLCHAIN_DIR" 2>/dev/null | grep -E "swift-DEVELOPMENT-SNAPSHOT.*\.xctoolchain" | sort -r | head -1)
 
-    # For local development with development toolchains, prefer matching SDKs
-    # Extract toolchain version if using a development toolchain
-    if echo "$SWIFT_CMD" | grep -q "DEVELOPMENT-SNAPSHOT"; then
-        TOOLCHAIN_VERSION=$(echo "$SWIFT_CMD" | grep -oE "DEVELOPMENT-SNAPSHOT-[0-9]{4}-[0-9]{2}-[0-9]{2}-a")
-        if [ -n "$TOOLCHAIN_VERSION" ]; then
-            SDK_MATCH=$(echo "$INSTALLED_SDKS" | grep "$TOOLCHAIN_VERSION" | grep -v "embedded" | head -1)
-            if [ -n "$SDK_MATCH" ]; then
-                SWIFT_SDK_NAME="$SDK_MATCH"
-                echo "✅ Found matching SDK: $SWIFT_SDK_NAME"
+        if [ -n "$WASM_TOOLCHAIN" ]; then
+            local TOOLCHAIN_SWIFT="$TOOLCHAIN_DIR/$WASM_TOOLCHAIN/usr/bin/swift"
+            if [ -x "$TOOLCHAIN_SWIFT" ]; then
+                SWIFT_CMD="$TOOLCHAIN_SWIFT"
+                echo "✅ Using local development toolchain: $WASM_TOOLCHAIN"
+                local VERSION_OUTPUT=$($SWIFT_CMD --version 2>/dev/null | head -1)
+                echo "   Version: $VERSION_OUTPUT"
+                # Dev toolchain - will use dev SDK
+                SWIFT_VERSION="dev"
+                echo ""
                 return 0
             fi
         fi
     fi
 
-    # Try to find any WASM SDK (prefer development snapshots with threads for local dev)
-    for pattern in "DEVELOPMENT-SNAPSHOT.*wasm32-unknown-wasip1-threads$" "swift-.*-RELEASE_wasm$" "wasm32-unknown-wasi" "wasm"; do
-        SDK_MATCH=$(echo "$INSTALLED_SDKS" | grep -E "$pattern" | grep -v "embedded" | head -1)
-        if [ -n "$SDK_MATCH" ]; then
-            SWIFT_SDK_NAME="$SDK_MATCH"
-            echo "✅ Found SDK: $SWIFT_SDK_NAME"
-            return 0
-        fi
-    done
-
-    return 1
-}
-
-# Install Swift WASM SDK if not found
-install_swift_wasm_sdk() {
-    if detect_wasm_sdk; then
+    # Use system Swift (CI environment)
+    if command -v swift &> /dev/null; then
+        SWIFT_CMD="swift"
+        local VERSION_OUTPUT=$($SWIFT_CMD --version 2>/dev/null)
+        # Extract version number (e.g., "6.1.3" from "Swift version 6.1.3")
+        SWIFT_VERSION=$(echo "$VERSION_OUTPUT" | grep -oE "Swift version [0-9]+\.[0-9]+(\.[0-9]+)?" | head -1 | sed 's/Swift version //')
+        echo "✅ Using system Swift"
+        echo "   Version: $SWIFT_VERSION"
         echo ""
         return 0
     fi
 
-    echo "⬇️  No WASM SDK found. Installing Swift WASM SDK..."
-    $SWIFT_CMD sdk install "$SWIFT_WASM_SDK_URL" --checksum "$SWIFT_WASM_SDK_CHECKSUM"
-    SWIFT_SDK_NAME="$CI_SDK_NAME"
-    echo "✅ Swift WASM SDK installed successfully"
+    echo "❌ No Swift installation found"
+    exit 1
+}
+
+# Find or install the WASM SDK
+setup_wasm_sdk() {
+    echo "📦 Setting up WASM SDK..."
+
+    local INSTALLED_SDKS=$($SWIFT_CMD sdk list 2>/dev/null || echo "")
+
+    # For development toolchain, try to find matching development SDK first
+    if [ "$SWIFT_VERSION" = "dev" ]; then
+        local TOOLCHAIN_DATE=$(echo "$SWIFT_CMD" | grep -oE "[0-9]{4}-[0-9]{2}-[0-9]{2}")
+        if [ -n "$TOOLCHAIN_DATE" ]; then
+            SWIFT_SDK_NAME=$(echo "$INSTALLED_SDKS" | grep "DEVELOPMENT-SNAPSHOT-${TOOLCHAIN_DATE}" | grep -E "wasm32-unknown-wasi" | grep -v "embedded" | head -1)
+            if [ -n "$SWIFT_SDK_NAME" ]; then
+                echo "✅ Found matching development SDK: $SWIFT_SDK_NAME"
+                echo ""
+                return 0
+            fi
+        fi
+
+        # Fallback to any development snapshot SDK
+        SWIFT_SDK_NAME=$(echo "$INSTALLED_SDKS" | grep "DEVELOPMENT-SNAPSHOT" | grep "wasm32-unknown-wasip1-threads$" | grep -v "embedded" | sort -r | head -1)
+        if [ -n "$SWIFT_SDK_NAME" ]; then
+            echo "✅ Found development SDK: $SWIFT_SDK_NAME"
+            echo ""
+            return 0
+        fi
+
+        echo "❌ No development SDK found for development toolchain"
+        exit 1
+    fi
+
+    # Get SDK info for the detected Swift version
+    if ! get_sdk_info "$SWIFT_VERSION"; then
+        exit 1
+    fi
+
+    echo "   Swift version: $SWIFT_VERSION"
+    echo "   Required SDK: $SDK_VERSION"
+
+    # Check if SDK is already installed
+    if echo "$INSTALLED_SDKS" | grep -qE "(^|swift-wasm-)${SDK_VERSION}[_-]wasm32-unknown-wasi"; then
+        SWIFT_SDK_NAME=$(echo "$INSTALLED_SDKS" | grep -E "(^|swift-wasm-)${SDK_VERSION}[_-]wasm32-unknown-wasi" | head -1)
+        echo "✅ Found SDK: $SWIFT_SDK_NAME"
+        echo ""
+        return 0
+    fi
+
+    # Install the SDK
+    echo "⬇️  Installing WASM SDK ${SDK_VERSION}..."
+    $SWIFT_CMD sdk install "$SDK_URL" --checksum "$SDK_CHECKSUM"
+
+    # Verify installation
+    INSTALLED_SDKS=$($SWIFT_CMD sdk list 2>/dev/null || echo "")
+    SWIFT_SDK_NAME=$(echo "$INSTALLED_SDKS" | grep -E "(^|swift-wasm-)${SDK_VERSION}[_-]wasm32-unknown-wasi" | head -1)
+
+    if [ -z "$SWIFT_SDK_NAME" ]; then
+        echo "❌ Failed to install SDK"
+        exit 1
+    fi
+
+    echo "✅ SDK installed: $SWIFT_SDK_NAME"
     echo ""
 }
 
@@ -107,7 +149,7 @@ install_wasmtime() {
     # Pinned version to avoid issues with dynamic version fetching
     # The wasmtime.dev/install.sh script can fail when GitHub API rate limits
     # cause the version to be parsed incorrectly (e.g., returning '{' as version)
-    WASMTIME_VERSION="29.0.1"
+    WASMTIME_VERSION="40.0.2"
 
     # Detect platform
     case "$(uname -s)" in
@@ -195,7 +237,7 @@ run_tests() {
     WASMTIME_FLAGS="$WASMTIME_FLAGS -O memory-reservation-for-growth=268435456"
     WASMTIME_FLAGS="$WASMTIME_FLAGS -O memory-guard-size=65536"
     if echo "$SWIFT_SDK_NAME" | grep -q "threads"; then
-        WASMTIME_FLAGS="$WASMTIME_FLAGS --wasm threads=y --wasi threads=y"
+        WASMTIME_FLAGS="$WASMTIME_FLAGS --wasm threads=y --wasi threads=y -W shared-memory=y"
     fi
 
     echo "🔧 Wasmtime flags: $WASMTIME_FLAGS"
@@ -204,8 +246,8 @@ run_tests() {
 }
 
 # Main execution
-detect_toolchain
-install_swift_wasm_sdk
+setup_swift
+setup_wasm_sdk
 install_wasmtime
 build_project
 run_tests
