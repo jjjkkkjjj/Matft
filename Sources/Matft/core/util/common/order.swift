@@ -7,8 +7,6 @@
 //
 
 import Foundation
-import Accelerate
-
 
 /// Copy mfarray including structure
 /// - Parameter src_mfarray: The source mfarray
@@ -36,7 +34,7 @@ internal func copy_all_mfarray(_ src_mfarray: MfArray) -> MfArray{
                 srcptr in
                 dst_mfarray.withUnsafeMutableStartImagPointer(datatype: Float.self){
                     dstptr in
-                    memcpy(dstptr, srcptr, MemoryLayout<Float>.size*newsize)
+                    memcpy(dstptr!, srcptr, MemoryLayout<Float>.size*newsize)
                 }
             }
         }
@@ -53,7 +51,7 @@ internal func copy_all_mfarray(_ src_mfarray: MfArray) -> MfArray{
                 srcptr in
                 dst_mfarray.withUnsafeMutableStartImagPointer(datatype: Double.self){
                     dstptr in
-                    memcpy(dstptr, srcptr, MemoryLayout<Double>.size*newsize)
+                    memcpy(dstptr!, srcptr, MemoryLayout<Double>.size*newsize)
                 }
             }
         }
