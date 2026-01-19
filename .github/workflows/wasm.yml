@@ -14,15 +14,16 @@ jobs:
       - name: Install Swift
         uses: swift-actions/setup-swift@v2
         with:
-          swift-version: "6.0.3"
+          swift-version: "6.1"
 
       # Wasmtime is required because `swift test` doesn't work for WebAssembly targets.
       # For WASM, we must build tests separately and run them with a WASM runtime.
       # See: https://book.swiftwasm.org/getting-started/testing.html
       - name: Install Wasmtime
-        run: |
-          curl https://wasmtime.dev/install.sh -sSf | bash
-          echo "$HOME/.wasmtime/bin" >> $GITHUB_PATH
+        uses: bytecodealliance/actions/wasmtime/setup@v1
+        with:
+          version: "29.0.1"
+          github_token: ${{ github.token }}
 
       - name: Build and Test
         run: ./scripts/build-and-test-wasm.sh

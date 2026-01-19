@@ -7,8 +7,8 @@ echo "🌐 =========================================="
 echo ""
 
 # Configuration for CI (GitHub Actions)
-SWIFT_WASM_SDK_URL="https://github.com/swiftwasm/swift/releases/download/swift-wasm-6.0.3-RELEASE/swift-wasm-6.0.3-RELEASE-wasm32-unknown-wasi.artifactbundle.zip"
-SWIFT_WASM_SDK_CHECKSUM="31d3585b06dd92de390bacc18527801480163188cd7473f492956b5e213a8618"
+SWIFT_WASM_SDK_URL="https://github.com/swiftwasm/swift/releases/download/swift-wasm-6.1-RELEASE/swift-wasm-6.1-RELEASE-wasm32-unknown-wasi.artifactbundle.zip"
+SWIFT_WASM_SDK_CHECKSUM="7550b4c77a55f4b637c376f5d192f297fe185607003a6212ad608276928db992"
 CI_SDK_NAME="wasm32-unknown-wasi"
 
 # Swift command to use (may be overridden if toolchain detected)
@@ -99,11 +99,47 @@ install_wasmtime() {
     echo "🔧 Checking wasmtime..."
     if command -v wasmtime &> /dev/null; then
         echo "✅ wasmtime already installed: $(wasmtime --version)"
+        return 0
+    fi
+
+    echo "⬇️  Installing wasmtime..."
+
+    # Pinned version to avoid issues with dynamic version fetching
+    # The wasmtime.dev/install.sh script can fail when GitHub API rate limits
+    # cause the version to be parsed incorrectly (e.g., returning '{' as version)
+    WASMTIME_VERSION="29.0.1"
+
+    # Detect platform
+    case "$(uname -s)" in
+        Linux)
+            WASMTIME_ARCH="x86_64-linux"
+            ;;
+        Darwin)
+            if [ "$(uname -m)" = "arm64" ]; then
+                WASMTIME_ARCH="aarch64-macos"
+            else
+                WASMTIME_ARCH="x86_64-macos"
+            fi
+            ;;
+        *)
+            echo "❌ Unsupported platform: $(uname -s)"
+            exit 1
+            ;;
+    esac
+
+    WASMTIME_URL="https://github.com/bytecodealliance/wasmtime/releases/download/v${WASMTIME_VERSION}/wasmtime-v${WASMTIME_VERSION}-${WASMTIME_ARCH}.tar.xz"
+    WASMTIME_DIR="$HOME/.wasmtime"
+
+    echo "   Downloading from: $WASMTIME_URL"
+    mkdir -p "$WASMTIME_DIR/bin"
+    curl -L "$WASMTIME_URL" | tar -xJ --strip-components=1 -C "$WASMTIME_DIR"
+    export PATH="$WASMTIME_DIR/bin:$PATH"
+
+    if command -v wasmtime &> /dev/null; then
+        echo "✅ wasmtime installed successfully: $(wasmtime --version)"
     else
-        echo "⬇️  Installing wasmtime..."
-        curl https://wasmtime.dev/install.sh -sSf | bash
-        export PATH="$HOME/.wasmtime/bin:$PATH"
-        echo "✅ wasmtime installed successfully"
+        echo "❌ Failed to install wasmtime"
+        exit 1
     fi
     echo ""
 }
@@ -143,11 +179,26 @@ run_tests() {
     echo "📍 Test binary: $TEST_BINARY"
 
     # Determine wasmtime flags based on SDK type
+    # Note: We configure stack and memory limits to prevent crashes:
+    # 1. max-wasm-stack (32MB): Maximum stack for wasm execution. Required for
+    #    ICU/Foundation date formatting which uses significant stack space.
+    # 2. async-stack-size (64MB): Stack for async operations. MUST be larger than
+    #    max-wasm-stack. XCTest uses async/await extensively, and swift_task_switch
+    #    operations during test execution and teardown require adequate async stack.
+    # 3. memory-reservation-for-growth (256MB): Reserve space for memory growth
+    #    without committing large amounts upfront. This allows the linear memory
+    #    to grow on demand while having space available.
+    # 4. memory-guard-size (64KB): Guard pages to catch out-of-bounds access.
     WASMTIME_FLAGS="--dir ."
+    WASMTIME_FLAGS="$WASMTIME_FLAGS -W max-wasm-stack=33554432"
+    WASMTIME_FLAGS="$WASMTIME_FLAGS -W async-stack-size=67108864"
+    WASMTIME_FLAGS="$WASMTIME_FLAGS -O memory-reservation-for-growth=268435456"
+    WASMTIME_FLAGS="$WASMTIME_FLAGS -O memory-guard-size=65536"
     if echo "$SWIFT_SDK_NAME" | grep -q "threads"; then
         WASMTIME_FLAGS="$WASMTIME_FLAGS --wasm threads=y --wasi threads=y"
     fi
 
+    echo "🔧 Wasmtime flags: $WASMTIME_FLAGS"
     wasmtime run $WASMTIME_FLAGS "$TEST_BINARY"
     echo ""
 }

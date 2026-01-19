@@ -893,10 +893,10 @@ This script will:
 
 **Note:** The WASM script automatically handles SDK and runtime installation, so you can run it on a fresh machine without any prior setup!
 
-### 📋 Requirements
+### Requirements
 
-- **iOS/macOS:** Swift 6.0.3 or later
-- **WebAssembly:** Swift 6.0.3 or later (SDK will be automatically installed)
+- **iOS/macOS:** Swift 6.1 or later
+- **WebAssembly:** Swift 6.1 or later (SDK will be automatically installed)
 
 ## Contact
 
