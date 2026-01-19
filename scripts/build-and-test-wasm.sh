@@ -231,13 +231,15 @@ run_tests() {
     #    without committing large amounts upfront. This allows the linear memory
     #    to grow on demand while having space available.
     # 4. memory-guard-size (64KB): Guard pages to catch out-of-bounds access.
+    # 5. shared-memory (when threads enabled): Required for threads proposal - enables
+    #    shared linear memory between threads.
     WASMTIME_FLAGS="--dir ."
     WASMTIME_FLAGS="$WASMTIME_FLAGS -W max-wasm-stack=33554432"
     WASMTIME_FLAGS="$WASMTIME_FLAGS -W async-stack-size=67108864"
     WASMTIME_FLAGS="$WASMTIME_FLAGS -O memory-reservation-for-growth=268435456"
     WASMTIME_FLAGS="$WASMTIME_FLAGS -O memory-guard-size=65536"
     if echo "$SWIFT_SDK_NAME" | grep -q "threads"; then
-        WASMTIME_FLAGS="$WASMTIME_FLAGS --wasm threads=y --wasi threads=y -W shared-memory=y"
+        WASMTIME_FLAGS="$WASMTIME_FLAGS --wasm threads=y --wasm shared-memory=y --wasi threads=y"
     fi
 
     echo "🔧 Wasmtime flags: $WASMTIME_FLAGS"
