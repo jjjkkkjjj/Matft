@@ -71,7 +71,7 @@ public class MfData: MfDataProtocol{
         case .Double:
             // dynamic allocation
             self.data_real = allocate_doubledata_from_flattenArray(&flatten_realArray, toBool: mftype == .Bool)
-            self.data_imag = allocate_floatdata_from_flattenArray(&flatten_imagArray, toBool: mftype == .Bool)
+            self.data_imag = allocate_doubledata_from_flattenArray(&flatten_imagArray, toBool: mftype == .Bool)
         }
         self.storedSize = flatten_realArray.count
         self.mftype = mftype
