@@ -7,9 +7,6 @@
 //
 
 import Foundation
-#if canImport(Accelerate)
-import Accelerate
-#endif
 #if canImport(CoreML)
 import CoreML
 #endif

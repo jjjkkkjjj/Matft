@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Accelerate
 
 internal enum MfDataSource{
     case mfdata
@@ -72,7 +71,7 @@ public class MfData: MfDataProtocol{
         case .Double:
             // dynamic allocation
             self.data_real = allocate_doubledata_from_flattenArray(&flatten_realArray, toBool: mftype == .Bool)
-            self.data_imag = allocate_floatdata_from_flattenArray(&flatten_imagArray, toBool: mftype == .Bool)
+            self.data_imag = allocate_doubledata_from_flattenArray(&flatten_imagArray, toBool: mftype == .Bool)
         }
         self.storedSize = flatten_realArray.count
         self.mftype = mftype
@@ -106,7 +105,7 @@ public class MfData: MfDataProtocol{
                 
                 if let data_imag_ptr = data_imag_ptr{
                     self.data_imag = allocate_unsafeMRPtr(type: Float.self, count: storedSize)
-                    memcpy(self.data_imag, data_imag_ptr, self.storedByteSize)
+                    memcpy(self.data_imag!, data_imag_ptr, self.storedByteSize)
                 }
                 else{
                     self.data_imag = nil
@@ -114,10 +113,10 @@ public class MfData: MfDataProtocol{
             case .Double:
                 self.data_real = allocate_unsafeMRPtr(type: Double.self, count: storedSize)
                 memcpy(self.data_real, data_real_ptr, self.storedByteSize)
-                
+
                 if let data_imag_ptr = data_imag_ptr{
                     self.data_imag = allocate_unsafeMRPtr(type: Double.self, count: storedSize)
-                    memcpy(self.data_imag, data_imag_ptr, self.storedByteSize)
+                    memcpy(self.data_imag!, data_imag_ptr, self.storedByteSize)
                 }
                 else{
                     self.data_imag = nil
