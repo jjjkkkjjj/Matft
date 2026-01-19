@@ -1,3 +1,4 @@
+#if !OS(wasi)
 import XCTest
 //@testable import Matft
 import Matft
@@ -51,4 +52,4 @@ final class ArithmeticPefTests: XCTestCase {
         }
     }
 }
-
+#endif
