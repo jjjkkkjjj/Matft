@@ -7,8 +7,12 @@
 //
 
 import Foundation
+#if canImport(Accelerate)
 import Accelerate
+#endif
+#if canImport(CoreML)
 import CoreML
+#endif
 
 open class MfArray: MfArrayProtocol{
     public typealias MFDATA = MfData
@@ -111,6 +115,7 @@ open class MfArray: MfArrayProtocol{
         self.mfstructure = mfstructure//mfstructure will be copied because mfstructure is struct
     }
     
+    #if canImport(CoreML)
     /// Create a VIEW or Copy mfarray from MLShapedArray
     /// - Parameters:
     ///    - base: A base MLShapedArray
@@ -126,6 +131,7 @@ open class MfArray: MfArrayProtocol{
         self.mfdata = mfdata
         self.mfstructure = MfStructure(shape: base.shape.map{ Int(truncating: $0) }, strides: base.strides.map{ Int(truncating: $0) })
     }
+    #endif
 
     deinit {
         self.base = nil
