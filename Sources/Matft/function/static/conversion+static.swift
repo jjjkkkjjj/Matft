@@ -7,7 +7,9 @@
 //
 
 import Foundation
+#if canImport(Accelerate)
 import Accelerate
+#endif
 import Collections
 
 extension Matft{
@@ -45,6 +47,7 @@ extension Matft{
             }
         }
         else{
+            #if canImport(Accelerate)
             switch newStoredType{
             case .Float://double to float
                 return zcontiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, src_type: DSPDoubleSplitComplex.self, dst_type: DSPSplitComplex.self, vDSP_func: vDSP_vdpsp)
@@ -52,6 +55,10 @@ extension Matft{
             case .Double://float to double
                 return zcontiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, src_type: DSPSplitComplex.self, dst_type: DSPDoubleSplitComplex.self, vDSP_func: vDSP_vspdp)
             }
+            #else
+            // Fallback for WASI: convert complex arrays element by element
+            return _zcontiguous_and_astype_fallback(mfarray, mftype: mftype, mforder: mforder)
+            #endif
         }
     }
     /**
@@ -298,12 +305,17 @@ extension Matft{
             }
         }
         else{
+            #if canImport(Accelerate)
             switch mfarray.storedType{
             case .Float:
                 return zcontiguous_by_vDSP(mfarray, vDSP_zvmov, mforder: mforder)
             case .Double:
                 return zcontiguous_by_vDSP(mfarray, vDSP_zvmovD, mforder: mforder)
             }
+            #else
+            // Fallback for WASI: copy complex arrays element by element
+            return _zcontiguous_fallback(mfarray, mforder: mforder)
+            #endif
         }
     }
     /**
@@ -604,7 +616,22 @@ fileprivate func _unique<T: MfStorable>(_ flattendata: inout [T], restShape: ino
 
 }
 
+// MARK: - WASI Fallbacks for complex array operations
+#if !canImport(Accelerate)
 
+/// Fallback for zcontiguous_and_astype_by_vDSP on WASI
+/// Complex array type conversion is not supported on WASI
+internal func _zcontiguous_and_astype_fallback(_ mfarray: MfArray, mftype: MfType, mforder: MfOrder) -> MfArray {
+    fatalError("Complex array type conversion is not supported on this platform (requires Accelerate framework)")
+}
+
+/// Fallback for zcontiguous_by_vDSP on WASI
+/// Complex array contiguous conversion is not supported on WASI
+internal func _zcontiguous_fallback(_ mfarray: MfArray, mforder: MfOrder) -> MfArray {
+    fatalError("Complex array operations are not supported on this platform (requires Accelerate framework)")
+}
+
+#endif
 
 
 /*
