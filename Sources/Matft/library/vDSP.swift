@@ -7,8 +7,14 @@
 //
 
 import Foundation
+#if canImport(Accelerate)
 import Accelerate
+#endif
+#if canImport(CoreGraphics)
 import CoreGraphics
+#endif
+
+#if canImport(Accelerate)
 
 internal typealias vDSP_convert_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<U>, vDSP_Stride, vDSP_Length) -> Void
 
@@ -1584,7 +1590,1368 @@ fileprivate func _rawptr2cgimage(_ srcrawptr: UnsafeMutablePointer<UInt8>, bitma
 ///
 //@inline(__always)
 fileprivate func _cgimage2rawptr(_ dstrawptr: UnsafeMutablePointer<UInt8>, _ cgimage: CGImage, bitmapInfo: CGBitmapInfo, colorSpace: CGColorSpace, byteNumber: Int, width: Int, height: Int, channel: Int){
-    
+
     let contextRef = CGContext(data: dstrawptr, width: width, height: height, bitsPerComponent: 8*byteNumber, bytesPerRow: width*channel*byteNumber, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
     contextRef?.draw(cgimage, in: CGRect(x: 0, y: 0, width: width, height: height))
 }
+#else
+// MARK: - WASI Fallback Implementations
+
+internal typealias vDSP_biopvv_func<T> = (UnsafePointer<T>, Int, UnsafePointer<T>, Int, UnsafeMutablePointer<T>, Int, Int) -> Void
+internal typealias vDSP_biopvs_func<T> = (UnsafePointer<T>, Int, UnsafePointer<T>, UnsafeMutablePointer<T>, Int, Int) -> Void
+internal typealias vDSP_biopsv_func<T> = (UnsafePointer<T>, UnsafePointer<T>, Int, UnsafeMutablePointer<T>, Int, Int) -> Void
+internal typealias vDSP_stats_func<T> = (UnsafePointer<T>, Int, UnsafeMutablePointer<T>, Int) -> Void
+internal typealias vDSP_stats_index_func<T> = (UnsafePointer<T>, Int, UnsafeMutablePointer<T>, UnsafeMutablePointer<UInt>, Int) -> Void
+internal typealias vDSP_convert_func<T, U> = (UnsafePointer<T>, Int, UnsafeMutablePointer<U>, Int, Int) -> Void
+internal typealias vDSP_sort_func<T> = (UnsafeMutablePointer<T>, Int, Int32) -> Void
+internal typealias vDSP_argsort_func<T> = (UnsafePointer<T>, UnsafeMutablePointer<UInt>, UnsafeMutablePointer<UInt>, Int, Int32) -> Void
+internal typealias vDSP_clip_func<T> = (UnsafePointer<T>, Int, UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, Int, Int, UnsafeMutablePointer<UInt>, UnsafeMutablePointer<UInt>) -> Void
+internal typealias vDSP_vminmg_func<T> = (UnsafePointer<T>, Int, UnsafePointer<T>, Int, UnsafeMutablePointer<T>, Int, Int) -> Void
+internal typealias vDSP_viclip_func<T> = (UnsafePointer<T>, Int, UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, Int, Int) -> Void
+internal typealias vDSP_vcmprs_func<T> = (UnsafePointer<T>, Int, UnsafePointer<T>, Int, UnsafeMutablePointer<T>, Int, Int) -> Void
+internal typealias vDSP_vgathr_func<T> = (UnsafePointer<T>, UnsafePointer<UInt>, Int, UnsafeMutablePointer<T>, Int, Int) -> Void
+internal typealias vDSP_dotpr_func<T> = (UnsafePointer<T>, Int, UnsafePointer<T>, Int, UnsafeMutablePointer<T>, Int) -> Void
+
+// MARK: - vDSP Binary Operations (Vector-Vector)
+
+@inline(__always)
+internal func vDSP_vadd(_ srcA: UnsafePointer<Float>, _ strideA: Int, _ srcB: UnsafePointer<Float>, _ strideB: Int, _ dst: UnsafeMutablePointer<Float>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = srcA[i * strideA] + srcB[i * strideB]
+    }
+}
+
+@inline(__always)
+internal func vDSP_vaddD(_ srcA: UnsafePointer<Double>, _ strideA: Int, _ srcB: UnsafePointer<Double>, _ strideB: Int, _ dst: UnsafeMutablePointer<Double>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = srcA[i * strideA] + srcB[i * strideB]
+    }
+}
+
+@inline(__always)
+internal func vDSP_vsub(_ srcA: UnsafePointer<Float>, _ strideA: Int, _ srcB: UnsafePointer<Float>, _ strideB: Int, _ dst: UnsafeMutablePointer<Float>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = srcB[i * strideB] - srcA[i * strideA]
+    }
+}
+
+@inline(__always)
+internal func vDSP_vsubD(_ srcA: UnsafePointer<Double>, _ strideA: Int, _ srcB: UnsafePointer<Double>, _ strideB: Int, _ dst: UnsafeMutablePointer<Double>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = srcB[i * strideB] - srcA[i * strideA]
+    }
+}
+
+@inline(__always)
+internal func vDSP_vmul(_ srcA: UnsafePointer<Float>, _ strideA: Int, _ srcB: UnsafePointer<Float>, _ strideB: Int, _ dst: UnsafeMutablePointer<Float>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = srcA[i * strideA] * srcB[i * strideB]
+    }
+}
+
+@inline(__always)
+internal func vDSP_vmulD(_ srcA: UnsafePointer<Double>, _ strideA: Int, _ srcB: UnsafePointer<Double>, _ strideB: Int, _ dst: UnsafeMutablePointer<Double>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = srcA[i * strideA] * srcB[i * strideB]
+    }
+}
+
+@inline(__always)
+internal func vDSP_vdiv(_ srcA: UnsafePointer<Float>, _ strideA: Int, _ srcB: UnsafePointer<Float>, _ strideB: Int, _ dst: UnsafeMutablePointer<Float>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = srcB[i * strideB] / srcA[i * strideA]
+    }
+}
+
+@inline(__always)
+internal func vDSP_vdivD(_ srcA: UnsafePointer<Double>, _ strideA: Int, _ srcB: UnsafePointer<Double>, _ strideB: Int, _ dst: UnsafeMutablePointer<Double>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = srcB[i * strideB] / srcA[i * strideA]
+    }
+}
+
+@inline(__always)
+internal func vDSP_vmax(_ srcA: UnsafePointer<Float>, _ strideA: Int, _ srcB: UnsafePointer<Float>, _ strideB: Int, _ dst: UnsafeMutablePointer<Float>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = Swift.max(srcA[i * strideA], srcB[i * strideB])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vmaxD(_ srcA: UnsafePointer<Double>, _ strideA: Int, _ srcB: UnsafePointer<Double>, _ strideB: Int, _ dst: UnsafeMutablePointer<Double>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = Swift.max(srcA[i * strideA], srcB[i * strideB])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vmin(_ srcA: UnsafePointer<Float>, _ strideA: Int, _ srcB: UnsafePointer<Float>, _ strideB: Int, _ dst: UnsafeMutablePointer<Float>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = Swift.min(srcA[i * strideA], srcB[i * strideB])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vminD(_ srcA: UnsafePointer<Double>, _ strideA: Int, _ srcB: UnsafePointer<Double>, _ strideB: Int, _ dst: UnsafeMutablePointer<Double>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = Swift.min(srcA[i * strideA], srcB[i * strideB])
+    }
+}
+
+// MARK: - vDSP Binary Operations (Vector-Scalar)
+
+@inline(__always)
+internal func vDSP_vsadd(_ src: UnsafePointer<Float>, _ srcStride: Int, _ scalar: UnsafePointer<Float>, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    let s = scalar.pointee
+    for i in 0..<count {
+        dst[i * dstStride] = src[i * srcStride] + s
+    }
+}
+
+@inline(__always)
+internal func vDSP_vsaddD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ scalar: UnsafePointer<Double>, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    let s = scalar.pointee
+    for i in 0..<count {
+        dst[i * dstStride] = src[i * srcStride] + s
+    }
+}
+
+@inline(__always)
+internal func vDSP_vsmul(_ src: UnsafePointer<Float>, _ srcStride: Int, _ scalar: UnsafePointer<Float>, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    let s = scalar.pointee
+    for i in 0..<count {
+        dst[i * dstStride] = src[i * srcStride] * s
+    }
+}
+
+@inline(__always)
+internal func vDSP_vsmulD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ scalar: UnsafePointer<Double>, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    let s = scalar.pointee
+    for i in 0..<count {
+        dst[i * dstStride] = src[i * srcStride] * s
+    }
+}
+
+@inline(__always)
+internal func vDSP_vsdiv(_ src: UnsafePointer<Float>, _ srcStride: Int, _ scalar: UnsafePointer<Float>, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    let s = scalar.pointee
+    for i in 0..<count {
+        dst[i * dstStride] = src[i * srcStride] / s
+    }
+}
+
+@inline(__always)
+internal func vDSP_vsdivD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ scalar: UnsafePointer<Double>, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    let s = scalar.pointee
+    for i in 0..<count {
+        dst[i * dstStride] = src[i * srcStride] / s
+    }
+}
+
+@inline(__always)
+internal func vDSP_svdiv(_ scalar: UnsafePointer<Float>, _ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    let s = scalar.pointee
+    for i in 0..<count {
+        dst[i * dstStride] = s / src[i * srcStride]
+    }
+}
+
+@inline(__always)
+internal func vDSP_svdivD(_ scalar: UnsafePointer<Double>, _ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    let s = scalar.pointee
+    for i in 0..<count {
+        dst[i * dstStride] = s / src[i * srcStride]
+    }
+}
+
+// MARK: - vDSP Stats Functions
+
+@inline(__always)
+internal func vDSP_meanv(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ count: Int) {
+    var sum: Float = 0
+    for i in 0..<count {
+        sum += src[i * srcStride]
+    }
+    dst.pointee = sum / Float(count)
+}
+
+@inline(__always)
+internal func vDSP_meanvD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ count: Int) {
+    var sum: Double = 0
+    for i in 0..<count {
+        sum += src[i * srcStride]
+    }
+    dst.pointee = sum / Double(count)
+}
+
+@inline(__always)
+internal func vDSP_maxv(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ count: Int) {
+    guard count > 0 else { dst.pointee = 0; return }
+    var maxVal = src[0]
+    for i in 1..<count {
+        let val = src[i * srcStride]
+        if val > maxVal { maxVal = val }
+    }
+    dst.pointee = maxVal
+}
+
+@inline(__always)
+internal func vDSP_maxvD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ count: Int) {
+    guard count > 0 else { dst.pointee = 0; return }
+    var maxVal = src[0]
+    for i in 1..<count {
+        let val = src[i * srcStride]
+        if val > maxVal { maxVal = val }
+    }
+    dst.pointee = maxVal
+}
+
+@inline(__always)
+internal func vDSP_minv(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ count: Int) {
+    guard count > 0 else { dst.pointee = 0; return }
+    var minVal = src[0]
+    for i in 1..<count {
+        let val = src[i * srcStride]
+        if val < minVal { minVal = val }
+    }
+    dst.pointee = minVal
+}
+
+@inline(__always)
+internal func vDSP_minvD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ count: Int) {
+    guard count > 0 else { dst.pointee = 0; return }
+    var minVal = src[0]
+    for i in 1..<count {
+        let val = src[i * srcStride]
+        if val < minVal { minVal = val }
+    }
+    dst.pointee = minVal
+}
+
+@inline(__always)
+internal func vDSP_maxvi(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ idx: UnsafeMutablePointer<UInt>, _ count: Int) {
+    guard count > 0 else { dst.pointee = 0; idx.pointee = 0; return }
+    var maxVal = src[0]
+    var maxIdx: UInt = 0
+    for i in 1..<count {
+        let val = src[i * srcStride]
+        if val > maxVal {
+            maxVal = val
+            maxIdx = UInt(i * srcStride)
+        }
+    }
+    dst.pointee = maxVal
+    idx.pointee = maxIdx
+}
+
+@inline(__always)
+internal func vDSP_maxviD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ idx: UnsafeMutablePointer<UInt>, _ count: Int) {
+    guard count > 0 else { dst.pointee = 0; idx.pointee = 0; return }
+    var maxVal = src[0]
+    var maxIdx: UInt = 0
+    for i in 1..<count {
+        let val = src[i * srcStride]
+        if val > maxVal {
+            maxVal = val
+            maxIdx = UInt(i * srcStride)
+        }
+    }
+    dst.pointee = maxVal
+    idx.pointee = maxIdx
+}
+
+@inline(__always)
+internal func vDSP_minvi(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ idx: UnsafeMutablePointer<UInt>, _ count: Int) {
+    guard count > 0 else { dst.pointee = 0; idx.pointee = 0; return }
+    var minVal = src[0]
+    var minIdx: UInt = 0
+    for i in 1..<count {
+        let val = src[i * srcStride]
+        if val < minVal {
+            minVal = val
+            minIdx = UInt(i * srcStride)
+        }
+    }
+    dst.pointee = minVal
+    idx.pointee = minIdx
+}
+
+@inline(__always)
+internal func vDSP_minviD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ idx: UnsafeMutablePointer<UInt>, _ count: Int) {
+    guard count > 0 else { dst.pointee = 0; idx.pointee = 0; return }
+    var minVal = src[0]
+    var minIdx: UInt = 0
+    for i in 1..<count {
+        let val = src[i * srcStride]
+        if val < minVal {
+            minVal = val
+            minIdx = UInt(i * srcStride)
+        }
+    }
+    dst.pointee = minVal
+    idx.pointee = minIdx
+}
+
+@inline(__always)
+internal func vDSP_sve(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ count: Int) {
+    var sum: Float = 0
+    for i in 0..<count {
+        sum += src[i * srcStride]
+    }
+    dst.pointee = sum
+}
+
+@inline(__always)
+internal func vDSP_sveD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ count: Int) {
+    var sum: Double = 0
+    for i in 0..<count {
+        sum += src[i * srcStride]
+    }
+    dst.pointee = sum
+}
+
+@inline(__always)
+internal func vDSP_svesq(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ count: Int) {
+    var sum: Float = 0
+    for i in 0..<count {
+        let val = src[i * srcStride]
+        sum += val * val
+    }
+    dst.pointee = sum
+}
+
+@inline(__always)
+internal func vDSP_svesqD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ count: Int) {
+    var sum: Double = 0
+    for i in 0..<count {
+        let val = src[i * srcStride]
+        sum += val * val
+    }
+    dst.pointee = sum
+}
+
+// MARK: - vDSP Math Functions
+
+@inline(__always)
+internal func vDSP_vsq(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        let val = src[i * srcStride]
+        dst[i * dstStride] = val * val
+    }
+}
+
+@inline(__always)
+internal func vDSP_vsqD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        let val = src[i * srcStride]
+        dst[i * dstStride] = val * val
+    }
+}
+
+@inline(__always)
+internal func vDSP_vneg(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = -src[i * srcStride]
+    }
+}
+
+@inline(__always)
+internal func vDSP_vnegD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = -src[i * srcStride]
+    }
+}
+
+// MARK: - vDSP Sort Functions
+
+@inline(__always)
+internal func vDSP_vsort(_ src: UnsafeMutablePointer<Float>, _ count: Int, _ order: Int32) {
+    var arr = Array(UnsafeBufferPointer(start: src, count: count))
+    if order == 1 {
+        arr.sort(by: <)
+    } else {
+        arr.sort(by: >)
+    }
+    for i in 0..<count {
+        src[i] = arr[i]
+    }
+}
+
+@inline(__always)
+internal func vDSP_vsortD(_ src: UnsafeMutablePointer<Double>, _ count: Int, _ order: Int32) {
+    var arr = Array(UnsafeBufferPointer(start: src, count: count))
+    if order == 1 {
+        arr.sort(by: <)
+    } else {
+        arr.sort(by: >)
+    }
+    for i in 0..<count {
+        src[i] = arr[i]
+    }
+}
+
+@inline(__always)
+internal func vDSP_vsorti(_ src: UnsafePointer<Float>, _ dst: UnsafeMutablePointer<UInt>, _ tmp: UnsafeMutablePointer<UInt>, _ count: Int, _ order: Int32) {
+    var indices = Array(0..<UInt(count))
+    if order == 1 {
+        indices.sort { src[Int($0)] < src[Int($1)] }
+    } else {
+        indices.sort { src[Int($0)] > src[Int($1)] }
+    }
+    for i in 0..<count {
+        dst[i] = indices[i]
+    }
+}
+
+@inline(__always)
+internal func vDSP_vsortiD(_ src: UnsafePointer<Double>, _ dst: UnsafeMutablePointer<UInt>, _ tmp: UnsafeMutablePointer<UInt>, _ count: Int, _ order: Int32) {
+    var indices = Array(0..<UInt(count))
+    if order == 1 {
+        indices.sort { src[Int($0)] < src[Int($1)] }
+    } else {
+        indices.sort { src[Int($0)] > src[Int($1)] }
+    }
+    for i in 0..<count {
+        dst[i] = indices[i]
+    }
+}
+
+// MARK: - vDSP Clip Functions
+
+@inline(__always)
+internal func vDSP_vclip(_ src: UnsafePointer<Float>, _ srcStride: Int, _ low: UnsafePointer<Float>, _ high: UnsafePointer<Float>, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int, _ lowCount: UnsafeMutablePointer<UInt>, _ highCount: UnsafeMutablePointer<UInt>) {
+    let lo = low.pointee
+    let hi = high.pointee
+    var lc: UInt = 0
+    var hc: UInt = 0
+    for i in 0..<count {
+        let val = src[i * srcStride]
+        if val < lo {
+            dst[i * dstStride] = lo
+            lc += 1
+        } else if val > hi {
+            dst[i * dstStride] = hi
+            hc += 1
+        } else {
+            dst[i * dstStride] = val
+        }
+    }
+    lowCount.pointee = lc
+    highCount.pointee = hc
+}
+
+@inline(__always)
+internal func vDSP_vclipD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ low: UnsafePointer<Double>, _ high: UnsafePointer<Double>, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int, _ lowCount: UnsafeMutablePointer<UInt>, _ highCount: UnsafeMutablePointer<UInt>) {
+    let lo = low.pointee
+    let hi = high.pointee
+    var lc: UInt = 0
+    var hc: UInt = 0
+    for i in 0..<count {
+        let val = src[i * srcStride]
+        if val < lo {
+            dst[i * dstStride] = lo
+            lc += 1
+        } else if val > hi {
+            dst[i * dstStride] = hi
+            hc += 1
+        } else {
+            dst[i * dstStride] = val
+        }
+    }
+    lowCount.pointee = lc
+    highCount.pointee = hc
+}
+
+// MARK: - vDSP Misc Functions
+
+@inline(__always)
+internal func vDSP_vminmg(_ srcA: UnsafePointer<Float>, _ strideA: Int, _ srcB: UnsafePointer<Float>, _ strideB: Int, _ dst: UnsafeMutablePointer<Float>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = Swift.min(abs(srcA[i * strideA]), abs(srcB[i * strideB]))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vminmgD(_ srcA: UnsafePointer<Double>, _ strideA: Int, _ srcB: UnsafePointer<Double>, _ strideB: Int, _ dst: UnsafeMutablePointer<Double>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = Swift.min(abs(srcA[i * strideA]), abs(srcB[i * strideB]))
+    }
+}
+
+@inline(__always)
+internal func vDSP_viclip(_ src: UnsafePointer<Float>, _ srcStride: Int, _ low: UnsafePointer<Float>, _ high: UnsafePointer<Float>, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    let lo = low.pointee
+    let hi = high.pointee
+    for i in 0..<count {
+        let val = src[i * srcStride]
+        if val > lo && val < hi {
+            dst[i * dstStride] = hi
+        } else {
+            dst[i * dstStride] = val
+        }
+    }
+}
+
+@inline(__always)
+internal func vDSP_viclipD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ low: UnsafePointer<Double>, _ high: UnsafePointer<Double>, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    let lo = low.pointee
+    let hi = high.pointee
+    for i in 0..<count {
+        let val = src[i * srcStride]
+        if val > lo && val < hi {
+            dst[i * dstStride] = hi
+        } else {
+            dst[i * dstStride] = val
+        }
+    }
+}
+
+@inline(__always)
+internal func vDSP_vcmprs(_ src: UnsafePointer<Float>, _ srcStride: Int, _ gate: UnsafePointer<Float>, _ gateStride: Int, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    var dstIdx = 0
+    for i in 0..<count {
+        if gate[i * gateStride] != 0 {
+            dst[dstIdx * dstStride] = src[i * srcStride]
+            dstIdx += 1
+        }
+    }
+}
+
+@inline(__always)
+internal func vDSP_vcmprsD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ gate: UnsafePointer<Double>, _ gateStride: Int, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    var dstIdx = 0
+    for i in 0..<count {
+        if gate[i * gateStride] != 0 {
+            dst[dstIdx * dstStride] = src[i * srcStride]
+            dstIdx += 1
+        }
+    }
+}
+
+@inline(__always)
+internal func vDSP_vgathr(_ src: UnsafePointer<Float>, _ indices: UnsafePointer<UInt>, _ indStride: Int, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        let idx = Int(indices[i * indStride]) - 1
+        dst[i * dstStride] = src[idx]
+    }
+}
+
+@inline(__always)
+internal func vDSP_vgathrD(_ src: UnsafePointer<Double>, _ indices: UnsafePointer<UInt>, _ indStride: Int, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        let idx = Int(indices[i * indStride]) - 1
+        dst[i * dstStride] = src[idx]
+    }
+}
+
+@inline(__always)
+internal func vDSP_dotpr(_ srcA: UnsafePointer<Float>, _ strideA: Int, _ srcB: UnsafePointer<Float>, _ strideB: Int, _ dst: UnsafeMutablePointer<Float>, _ count: Int) {
+    var sum: Float = 0
+    for i in 0..<count {
+        sum += srcA[i * strideA] * srcB[i * strideB]
+    }
+    dst.pointee = sum
+}
+
+@inline(__always)
+internal func vDSP_dotprD(_ srcA: UnsafePointer<Double>, _ strideA: Int, _ srcB: UnsafePointer<Double>, _ strideB: Int, _ dst: UnsafeMutablePointer<Double>, _ count: Int) {
+    var sum: Double = 0
+    for i in 0..<count {
+        sum += srcA[i * strideA] * srcB[i * strideB]
+    }
+    dst.pointee = sum
+}
+
+// MARK: - vDSP Conversion Functions
+
+@inline(__always)
+internal func vDSP_vflt8(_ src: UnsafePointer<Int8>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Float(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vflt16(_ src: UnsafePointer<Int16>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Float(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vflt32(_ src: UnsafePointer<Int32>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Float(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfltu8(_ src: UnsafePointer<UInt8>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Float(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfltu16(_ src: UnsafePointer<UInt16>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Float(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfltu32(_ src: UnsafePointer<UInt32>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Float(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfix8(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int8>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Int8(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfix16(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int16>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Int16(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfix32(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int32>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Int32(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixu8(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt8>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = UInt8(Swift.max(0, Swift.min(255, src[i * srcStride])))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixu16(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt16>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = UInt16(Swift.max(0, src[i * srcStride]))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixu32(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt32>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = UInt32(Swift.max(0, src[i * srcStride]))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vspdp(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Double(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vdpsp(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Float(src[i * srcStride])
+    }
+}
+
+// MARK: - vDSP Double Conversion Functions
+
+@inline(__always)
+internal func vDSP_vflt8D(_ src: UnsafePointer<Int8>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Double(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vflt16D(_ src: UnsafePointer<Int16>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Double(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vflt32D(_ src: UnsafePointer<Int32>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Double(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfltu8D(_ src: UnsafePointer<UInt8>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Double(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfltu16D(_ src: UnsafePointer<UInt16>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Double(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfltu32D(_ src: UnsafePointer<UInt32>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Double(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfix8D(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int8>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Int8(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfix16D(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int16>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Int16(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfix32D(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int32>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Int32(src[i * srcStride])
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixu8D(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt8>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = UInt8(Swift.max(0, Swift.min(255, src[i * srcStride])))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixu16D(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt16>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = UInt16(Swift.max(0, src[i * srcStride]))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixu32D(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt32>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = UInt32(Swift.max(0, src[i * srcStride]))
+    }
+}
+
+// MARK: - vDSP Rounded Conversion Functions (Float to Integer with rounding)
+
+@inline(__always)
+internal func vDSP_vfixr8(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int8>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Int8(clamping: Int(src[i * srcStride].rounded()))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixr16(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int16>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Int16(clamping: Int(src[i * srcStride].rounded()))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixr32(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int32>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Int32(clamping: Int64(src[i * srcStride].rounded()))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixru8(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt8>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = UInt8(truncatingIfNeeded: Int(src[i * srcStride].rounded()))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixru16(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt16>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = UInt16(clamping: Int(src[i * srcStride].rounded()))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixru32(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt32>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = UInt32(clamping: Int64(src[i * srcStride].rounded()))
+    }
+}
+
+// MARK: - vDSP Rounded Conversion Functions (Double to Integer with rounding)
+
+@inline(__always)
+internal func vDSP_vfixr8D(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int8>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Int8(clamping: Int(src[i * srcStride].rounded()))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixr16D(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int16>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Int16(clamping: Int(src[i * srcStride].rounded()))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixr32D(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int32>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = Int32(clamping: Int64(src[i * srcStride].rounded()))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixru8D(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt8>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = UInt8(truncatingIfNeeded: Int(src[i * srcStride].rounded()))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixru16D(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt16>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = UInt16(clamping: Int(src[i * srcStride].rounded()))
+    }
+}
+
+@inline(__always)
+internal func vDSP_vfixru32D(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt32>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = UInt32(clamping: Int64(src[i * srcStride].rounded()))
+    }
+}
+
+// MARK: - vDSP Wrapper Functions for WASI
+
+@inline(__always)
+internal func wrap_vDSP_convert<T, U>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafeMutablePointer<U>, _ dstStride: Int, _ vDSP_func: (UnsafePointer<T>, Int, UnsafeMutablePointer<U>, Int, Int) -> Void){
+    vDSP_func(srcptr, srcStride, dstptr, dstStride, size)
+}
+
+@inline(__always)
+internal func wrap_vDSP_biopvv<T>(_ size: Int, _ lsrcptr: UnsafePointer<T>, _ lsrcStride: Int, _ rsrcptr: UnsafePointer<T>, _ rsrcStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_biopvv_func<T>){
+    vDSP_func(rsrcptr, rsrcStride, lsrcptr, lsrcStride, dstptr, dstStride, size)
+}
+
+@inline(__always)
+internal func wrap_vDSP_biopvs<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ scalar: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_biopvs_func<T>){
+    vDSP_func(srcptr, srcStride, scalar, dstptr, dstStride, size)
+}
+
+@inline(__always)
+internal func wrap_vDSP_biopsv<T>(_ size: Int, _ scalar: UnsafePointer<T>, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_biopsv_func<T>){
+    vDSP_func(scalar, srcptr, srcStride, dstptr, dstStride, size)
+}
+
+@inline(__always)
+internal func wrap_vDSP_stats<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ stride: Int, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_func: vDSP_stats_func<T>){
+    vDSP_func(srcptr, stride, dstptr, size)
+}
+
+@inline(__always)
+internal func wrap_vDSP_stats_index<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ stride: Int, _ dstptr: UnsafeMutablePointer<UInt>, _ vDSP_func: vDSP_stats_index_func<T>){
+    var tmp = Array(repeating: T.zero, count: size)
+    vDSP_func(srcptr, stride, &tmp, dstptr, size)
+}
+
+@inline(__always)
+internal func wrap_vDSP_sort<T>(_ size: Int, _ srcdstptr: UnsafeMutablePointer<T>, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_func<T>){
+    vDSP_func(srcdstptr, size, order.rawValue)
+}
+
+@inline(__always)
+internal func wrap_vDSP_argsort<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<UInt>, _ order: MfSortOrder, _ vDSP_func: vDSP_argsort_func<T>){
+    var tmp = Array<UInt>(repeating: 0, count: size)
+    vDSP_func(srcptr, dstptr, &tmp, size, order.rawValue)
+}
+
+@inline(__always)
+internal func wrap_vDSP_clip<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ minptr: UnsafePointer<T>, _ maxptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_clip_func: vDSP_clip_func<T>){
+    var mincount = UInt(0)
+    var maxcount = UInt(0)
+    vDSP_clip_func(srcptr, 1, minptr, maxptr, dstptr, 1, size, &mincount, &maxcount)
+}
+
+@inline(__always)
+internal func wrap_vDSP_cmprs<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ indptr: UnsafePointer<T>, _ indStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_vcmprs_func<T>){
+    vDSP_func(srcptr, srcStride, indptr, indStride, dstptr, dstStride, size)
+}
+
+@inline(__always)
+internal func wrap_vDSP_gathr<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ indptr: UnsafePointer<UInt>, _ indStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ vDSP_func: vDSP_vgathr_func<T>){
+    vDSP_func(srcptr, indptr, indStride, dstptr, dstStride, size)
+}
+
+@inline(__always)
+internal func wrap_vDSP_dotpr<T>(_ size: Int, _ lsrcptr: UnsafePointer<T>, _ lsrcStride: Int, _ rsrcptr: UnsafePointer<T>, _ rsrcStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_func: vDSP_dotpr_func<T>){
+    vDSP_func(lsrcptr, lsrcStride, rsrcptr, rsrcStride, dstptr, size)
+}
+
+// MARK: - vDSP High-Level Functions for WASI
+
+internal func contiguous_and_astype_by_vDSP<T: MfStorable, U: MfStorable>(_ src_mfarray: MfArray, mftype: MfType, mforder: MfOrder, vDSP_func: vDSP_convert_func<T, U>) -> MfArray{
+    var ret_shape = src_mfarray.shape
+    let ret_strides = shape2strides(&ret_shape, mforder: mforder)
+
+    let newdata = MfData(size: src_mfarray.size, mftype: mftype)
+
+    newdata.withUnsafeMutableStartPointer(datatype: U.self){
+        dstptrU in
+        src_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned src_mfarray] srcptrT in
+
+            for vDSPPrams in OptOffsetParamsSequence(shape: ret_shape, bigger_strides: ret_strides, smaller_strides: src_mfarray.strides){
+
+                wrap_vDSP_convert(vDSPPrams.blocksize, srcptrT + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrU + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+            }
+
+        }
+    }
+
+    let newstructure = MfStructure(shape: ret_shape, strides: ret_strides)
+
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP_convert_func<T, T>) -> MfArray{
+    var mfarray = mfarray
+    mfarray = check_contiguous(mfarray)
+
+    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_convert(mfarray.storedSize, $0, 1, dstptrT, 1, vDSP_func)
+        }
+    }
+
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+internal func math_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP_convert_func<T, T>) -> MfArray{
+    return preop_by_vDSP(mfarray, vDSP_func)
+}
+
+internal func biopvs_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T, _ vDSP_func: vDSP_biopvs_func<T>) -> MfArray{
+    var mfarray = l_mfarray
+    var r_scalar = r_scalar
+
+    mfarray = check_contiguous(mfarray)
+
+    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_biopvs(mfarray.storedSize, $0, 1, &r_scalar, dstptrT, 1, vDSP_func)
+        }
+    }
+
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+internal func biopsv_by_vDSP<T: MfStorable>(_ l_scalar: T, _ r_mfarray: MfArray, _ vDSP_func: vDSP_biopsv_func<T>) -> MfArray{
+    var mfarray = r_mfarray
+    var l_scalar = l_scalar
+
+    mfarray = check_contiguous(mfarray)
+
+    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_biopsv(mfarray.storedSize, &l_scalar, $0, 1, dstptrT, 1, vDSP_func)
+        }
+    }
+
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+internal func biopvv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, vDSP_func: vDSP_biopvv_func<T>) -> MfArray{
+    let (l_mfarray, r_mfarray, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
+
+    let newdata = MfData(size: retsize, mftype: l_mfarray.mftype)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned l_mfarray] (lptr) in
+            r_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                [unowned r_mfarray] (rptr) in
+                if biggerL{
+                    for vDSPPrams in OptOffsetParamsSequence(shape: l_mfarray.shape, bigger_strides: l_mfarray.strides, smaller_strides: r_mfarray.strides){
+                        wrap_vDSP_biopvv(vDSPPrams.blocksize, lptr + vDSPPrams.b_offset, vDSPPrams.b_stride, rptr + vDSPPrams.s_offset, vDSPPrams.s_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                    }
+                }
+                else{
+                    for vDSPPrams in OptOffsetParamsSequence(shape: r_mfarray.shape, bigger_strides: r_mfarray.strides, smaller_strides: l_mfarray.strides){
+                        wrap_vDSP_biopvv(vDSPPrams.blocksize, lptr + vDSPPrams.s_offset, vDSPPrams.s_stride, rptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                    }
+                }
+            }
+        }
+    }
+
+    let newstructure: MfStructure
+    if biggerL{
+        newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
+    }
+    else{
+        newstructure = MfStructure(shape: r_mfarray.shape, strides: r_mfarray.strides)
+    }
+
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+internal func stats_by_vDSP<T: MfStorable>(_ typedMfarray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_func<T>) -> MfArray{
+
+    let mfarray = check_contiguous(typedMfarray, .Row)
+
+    if let axis = axis, mfarray.ndim > 1{
+        let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+        var ret_shape = mfarray.shape
+        let count = ret_shape.remove(at: axis)
+        var ret_strides = mfarray.strides
+        let stride = ret_strides.remove(at: axis)
+
+        let ret_size = shape2size(&ret_shape)
+
+        let newdata = MfData(size: ret_size, mftype: mfarray.mftype)
+        var dst_offset = 0
+
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptrT in
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
+                    wrap_vDSP_stats(count, $0 + flat.flattenIndex, stride, dstptrT + dst_offset, vDSP_func)
+                    dst_offset += 1
+                }
+            }
+        }
+
+        let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+
+        let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
+        return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
+    }
+    else{
+        let newdata = MfData(size: 1, mftype: mfarray.mftype)
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptrT in
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                wrap_vDSP_stats(mfarray.size, $0, 1, dstptrT, vDSP_func)
+            }
+        }
+
+        let ret_shape = keepDims ? Array(repeating: 1, count: mfarray.ndim) : [1]
+        let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
+    }
+}
+
+internal func stats_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_index_func<T>) -> MfArray{
+
+    let mfarray = check_contiguous(mfarray, .Row)
+
+    if let axis = axis, mfarray.ndim > 1{
+        let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+        var ret_shape = mfarray.shape
+        let count = ret_shape.remove(at: axis)
+        var ret_strides = mfarray.strides
+        let stride = ret_strides.remove(at: axis)
+        let ui_stride = UInt(stride)
+
+        let ret_size = shape2size(&ret_shape)
+
+        let newdata = MfData(size: ret_size, mftype: mfarray.mftype)
+        var dst_offset = 0
+
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptrT in
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
+                    var uival = UInt.zero
+                    wrap_vDSP_stats_index(count, $0 + flat.flattenIndex, stride, &uival, vDSP_func)
+                    (dstptrT + dst_offset).pointee = T.from(uival / ui_stride)
+
+                    dst_offset += 1
+                }
+            }
+        }
+
+        let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+
+        let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
+        return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
+    }
+    else{
+        let newdata = MfData(size: 1, mftype: mfarray.mftype)
+        var uival = UInt.zero
+
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptrT in
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                wrap_vDSP_stats_index(mfarray.size, $0, 1, &uival, vDSP_func)
+            }
+            dstptrT.pointee = T.from(uival)
+        }
+
+        let ret_shape = keepDims ? Array(repeating: 1, count: mfarray.ndim) : [1]
+        let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
+    }
+}
+
+internal func sort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_func<T>) -> MfArray{
+    let retndim = mfarray.ndim
+    let count = mfarray.shape[axis]
+
+    let lastaxis = retndim - 1
+    let srcdst_mfarray = mfarray.moveaxis(src: axis, dst: lastaxis).to_contiguous(mforder: .Row)
+
+    var offset = 0
+
+    srcdst_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+        srcdstptr in
+        for _ in 0..<mfarray.storedSize / count{
+            wrap_vDSP_sort(count, srcdstptr + offset, order, vDSP_func)
+            offset += count
+        }
+    }
+
+    return srcdst_mfarray.moveaxis(src: lastaxis, dst: axis)
+}
+
+internal func argsort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ order: MfSortOrder, _ vDSP_func: vDSP_argsort_func<T>) -> MfArray{
+
+    let count = mfarray.shape[axis]
+
+    let lastaxis = mfarray.ndim - 1
+    let srcmfarray = mfarray.moveaxis(src: axis, dst: lastaxis).to_contiguous(mforder: .Row)
+    var retShape = srcmfarray.shape
+
+    var offset = 0
+
+    let retSize = shape2size(&retShape)
+    let newdata = MfData(size: retSize, mftype: .Int)
+    newdata.withUnsafeMutableStartPointer(datatype: Float.self){
+        dstptrF in
+        srcmfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            srcptr in
+
+            for _ in 0..<mfarray.storedSize / count{
+                var uiarray = Array<UInt>(stride(from: 0, to: UInt(count), by: 1))
+                wrap_vDSP_argsort(count, srcptr + offset, &uiarray, order, vDSP_func)
+
+                var flarray = uiarray.map{ Float($0) }
+                flarray.withUnsafeMutableBufferPointer{
+                    (dstptrF + offset).moveUpdate(from: $0.baseAddress!, count: count)
+                }
+
+                offset += count
+            }
+
+        }
+    }
+
+    let newstructure = MfStructure(shape: retShape, mforder: .Row)
+
+    let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
+
+    return ret.moveaxis(src: lastaxis, dst: axis)
+
+}
+
+internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ minval: T, _ maxval: T, _ vDSP_func: vDSP_clip_func<T>) -> MfArray{
+    var mfarray = mfarray
+    var minval = minval
+    var maxval = maxval
+
+    mfarray = check_contiguous(mfarray)
+
+    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            [unowned mfarray] in
+            wrap_vDSP_clip(mfarray.storedSize, $0, &minval, &maxval, dstptrT, vDSP_func)
+        }
+    }
+
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, _ vDSP_func: vDSP_vcmprs_func<T>) -> MfArray{
+    assert(indices.mftype == .Bool, "must be bool")
+
+    let true_num = Float.toInt(indices.sum().scalar(Float.self)!)
+    let orig_ind_dim = indices.ndim
+
+    let indices = bool_broadcast_to(indices, shape: mfarray.shape)
+
+    let indicesT: MfArray
+    switch mfarray.storedType {
+    case .Float:
+        indicesT = indices
+    case .Double:
+        indicesT = indices.astype(.Double)
+    }
+
+    let lastShape = Array(mfarray.shape.suffix(mfarray.ndim - orig_ind_dim))
+    var retShape = [true_num] + lastShape
+    let retSize = shape2size(&retShape)
+
+    if mfarray.isReal{
+        let newdata = MfData(size: retSize, mftype: mfarray.mftype)
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptrT in
+            indicesT.withUnsafeMutableStartPointer(datatype: T.self){
+                indptr in
+                mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                    srcptr in
+
+                    for vDSPPrams in OptOffsetParamsSequence(shape: indicesT.shape, bigger_strides: indicesT.strides, smaller_strides: mfarray.strides){
+                        wrap_vDSP_cmprs(vDSPPrams.blocksize, srcptr + vDSPPrams.s_offset, vDSPPrams.s_stride, indptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
+                    }
+                }
+            }
+        }
+
+
+        let newstructure = MfStructure(shape: retShape, mforder: .Row)
+
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
+    }
+    else{
+        fatalError("Complex boolean indexing not supported on WASI")
+    }
+}
+
+internal func fancy1dgetcol_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, _ vDSP_func: vDSP_vgathr_func<T>) -> MfArray{
+    assert(indices.mftype == .Int, "must be int")
+    assert(mfarray.ndim == 1, "must be 1d")
+
+    if mfarray.isReal{
+        let newdata = MfData(size: indices.size, mftype: mfarray.mftype)
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptrT in
+            let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                srcptr in
+                var offsets = (indices.data as! [Int]).map{ UInt(get_positive_index($0, axissize: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
+                wrap_vDSP_gathr(indices.size, srcptr, &offsets, 1, dstptrT, 1, vDSP_func)
+            }
+        }
+
+        let newstructure = MfStructure(shape: indices.shape, strides: indices.strides)
+        return MfArray(mfdata: newdata, mfstructure: newstructure)
+    }
+    else{
+        fatalError("Complex fancy indexing not supported on WASI")
+    }
+}
+
+internal func dotpr_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, vDSP_func: vDSP_dotpr_func<T>) -> MfArray{
+    let l_shape = l_mfarray.shape
+    let r_shape = r_mfarray.shape
+    assert(l_shape[0] == r_shape[1])
+
+    let size = l_shape[0]
+
+    let l_mfarray = check_contiguous(l_mfarray, .Row)
+    let r_mfarray = r_mfarray.swapaxes(axis1: -1, axis2: -2).to_contiguous(mforder: .Row)
+
+    var l_rest_shape = Array(l_shape.prefix(l_shape.count - 1))
+    var r_rest_shape = Array(r_shape.prefix(r_shape.count - 2) + r_shape.suffix(1))
+    var ret_shape = l_rest_shape + r_rest_shape
+
+    let l_rest_size = l_rest_shape.count > 0 ? shape2size(&l_rest_shape) : 1
+    let r_rest_size = shape2size(&r_rest_shape)
+    let ret_size = shape2size(&ret_shape)
+
+    let newdata = MfData(size: ret_size, mftype: l_mfarray.mftype)
+
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptr in
+        l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            lptr in
+            r_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                rptr in
+                for l_ind in 0..<l_rest_size{
+                    for r_ind in 0..<r_rest_size{
+                        wrap_vDSP_dotpr(size, lptr + l_ind*size, 1, rptr + r_ind*size, 1, dstptr + (l_ind*r_rest_size + r_ind), vDSP_func)
+                    }
+                }
+            }
+        }
+    }
+
+    let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+// MARK: - Sign Functions for WASI
+
+@inline(__always)
+internal func wrap_vDSP_sign<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_vminmg_func: vDSP_vminmg_func<T>, _ vDSP_viclip_func: vDSP_viclip_func<T>, _ vForce_copysign_func: vForce_copysign_func<T>){
+    var i32size = Int32(size)
+
+    var one = T.from(1)
+    vDSP_vminmg_func(srcptr, 1, &one, 0, dstptr, 1, size)
+
+    var zero = T.zero
+    one = T.from(1)
+    vDSP_viclip_func(dstptr, 1, &zero, &one, dstptr, 1, size)
+    vForce_copysign_func(dstptr, dstptr, srcptr, &i32size)
+}
+
+internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_vminmg_func: vDSP_vminmg_func<T>, vDSP_viclip_func: vDSP_viclip_func<T>, vForce_copysign_func: vForce_copysign_func<T>) -> MfArray{
+    let mfarray = check_contiguous(mfarray)
+
+    let size = mfarray.storedSize
+    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            wrap_vDSP_sign(size, $0, dstptrT, vDSP_vminmg_func, vDSP_viclip_func,
+                vForce_copysign_func)
+        }
+    }
+
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+// MARK: - Clip Functions with C-style signatures for WASI
+
+@inline(__always)
+internal func vDSP_vclipc(_ src: UnsafePointer<Float>, _ srcStride: Int, _ low: UnsafePointer<Float>, _ high: UnsafePointer<Float>, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int, _ lowCount: UnsafeMutablePointer<UInt>, _ highCount: UnsafeMutablePointer<UInt>) {
+    vDSP_vclip(src, srcStride, low, high, dst, dstStride, count, lowCount, highCount)
+}
+
+@inline(__always)
+internal func vDSP_vclipcD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ low: UnsafePointer<Double>, _ high: UnsafePointer<Double>, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int, _ lowCount: UnsafeMutablePointer<UInt>, _ highCount: UnsafeMutablePointer<UInt>) {
+    vDSP_vclipD(src, srcStride, low, high, dst, dstStride, count, lowCount, highCount)
+}
+
+#endif // canImport(Accelerate)
