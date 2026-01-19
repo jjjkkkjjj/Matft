@@ -6,6 +6,7 @@
 //
 
 import Foundation
+#if canImport(Accelerate)
 import Accelerate
 
 extension Matft.complex{
@@ -94,6 +95,7 @@ extension Matft.complex{
         return (Matft.complex.abs(mfarray), Matft.complex.angle(mfarray))
     }
 }
+#endif
 
 /// Check it is real or not. if the mfarray is complex, raise precondition failure.
 /// - Parameters:
