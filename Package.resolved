@@ -3,7 +3,7 @@
     {
       "identity" : "clapack",
       "kind" : "remoteSourceControl",
-      "location" : "git@github.com:GoodNotes/CLAPACK.git",
+      "location" : "https://github.com/goodnotes/CLAPACK",
       "state" : {
         "branch" : "eigen-support",
         "revision" : "a9c8a67890a31af54ed55536b5dd606d6de609a9"

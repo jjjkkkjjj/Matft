@@ -12,7 +12,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-collections", from: "1.0.0"),
-        .package(url: "git@github.com:GoodNotes/CLAPACK.git", branch: "eigen-support"),
+        .package(url: "https://github.com/goodnotes/CLAPACK", branch: "eigen-support"),
     ],
     targets: [
         .target(
