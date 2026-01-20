@@ -1,3 +1,5 @@
+// Performance tests for boolean operations disabled for WASM temporally
+#if !os(WASI)
 //
 //  MathPefTests.swift
 //  
@@ -6,8 +8,8 @@
 //
 
 import XCTest
-//@testable import Matft
-import Matft
+
+@testable import Matft
 
 final class MathPefTests: XCTestCase {
     
@@ -67,5 +69,5 @@ final class MathPefTests: XCTestCase {
         }
     }
 }
-
+#endif
 
