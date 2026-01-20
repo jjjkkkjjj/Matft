@@ -1,5 +1,4 @@
 // Performance tests for boolean operations disabled for WASM temporally
-#if !os(WASI)
 import XCTest
 
 @testable import Matft
@@ -20,4 +19,3 @@ final class IndexingPefTests: XCTestCase {
         }
     }
 }
-#endif
