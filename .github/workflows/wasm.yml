@@ -2,7 +2,13 @@ name: wasm
 
 on:
   push:
-  pull_request:
+
+env:
+  # Required Swift toolchain version for WASM builds
+  # Must match REQUIRED_TOOLCHAIN_VERSION in scripts/build-and-test-wasm.sh
+  SWIFT_TOOLCHAIN_VERSION: "DEVELOPMENT-SNAPSHOT-2025-11-03-a"
+  # Checksum for the WASM SDK (from SwiftWasm release page)
+  SWIFT_WASM_SDK_CHECKSUM: "879c08f24c36e20e0b3d1fadc37f4c34c089c72caa018aec726d9e0bf84ea6ff"
 
 env:
   # Required Swift toolchain version for WASM builds
