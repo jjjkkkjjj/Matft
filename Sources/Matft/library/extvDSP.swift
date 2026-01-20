@@ -1,3 +1,4 @@
+#if canImport(Accelerate)
 import Accelerate
 import Foundation
 import simd
@@ -127,3 +128,4 @@ internal func sign_by_evDSP<T: MfStorable>(_ mfarray: MfArray, lower: T, upper: 
     
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
+#endif

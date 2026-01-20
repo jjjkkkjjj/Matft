@@ -7,7 +7,9 @@
 //
 
 import Foundation
+#if canImport(Accelerate)
 import Accelerate
+#endif
 
 extension MfArray: MfSubscriptable{
     public subscript(indices: Int...) -> Any{

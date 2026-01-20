@@ -6,8 +6,8 @@
 //
 
 import XCTest
-//@testable import Matft
-import Matft
+
+@testable import Matft
 
 final class MathPefTests: XCTestCase {
     
@@ -67,5 +67,3 @@ final class MathPefTests: XCTestCase {
         }
     }
 }
-
-

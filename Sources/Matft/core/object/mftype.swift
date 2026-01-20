@@ -7,8 +7,9 @@
 //
 
 import Foundation
-import Accelerate
+#if canImport(CoreML)
 import CoreML
+#endif
 
 public enum MfType: Int{
     case None
@@ -65,6 +66,7 @@ public enum MfType: Int{
         return MfType.mftype(value: value as Any)
     }
     
+    #if canImport(CoreML)
     @available(macOS 10.13, *)
     @available(iOS 14.0, *)
     static internal func mftype(value: MLMultiArrayDataType) -> MfType{
@@ -77,6 +79,7 @@ public enum MfType: Int{
             return .Object // Not supported
         }
     }
+    #endif
     
     static public func priority(_ a: MfType, _ b: MfType) -> MfType{
         if a.rawValue < b.rawValue{

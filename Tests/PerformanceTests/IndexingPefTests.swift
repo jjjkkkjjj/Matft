@@ -1,6 +1,7 @@
+// Performance tests for boolean operations disabled for WASM temporally
 import XCTest
-//@testable import Matft
-import Matft
+
+@testable import Matft
 
 final class IndexingPefTests: XCTestCase {
     
@@ -18,4 +19,3 @@ final class IndexingPefTests: XCTestCase {
         }
     }
 }
-

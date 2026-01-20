@@ -7,7 +7,53 @@
 //
 
 import Foundation
+#if canImport(Accelerate)
 import Accelerate
+#else
+/// Fallback complex type for non-Apple platforms (split complex format for Float)
+public struct DSPSplitComplex {
+    public var realp: UnsafeMutablePointer<Float>
+    public var imagp: UnsafeMutablePointer<Float>
+
+    public init(realp: UnsafeMutablePointer<Float>, imagp: UnsafeMutablePointer<Float>) {
+        self.realp = realp
+        self.imagp = imagp
+    }
+}
+
+/// Fallback complex type for non-Apple platforms (split complex format for Double)
+public struct DSPDoubleSplitComplex {
+    public var realp: UnsafeMutablePointer<Double>
+    public var imagp: UnsafeMutablePointer<Double>
+
+    public init(realp: UnsafeMutablePointer<Double>, imagp: UnsafeMutablePointer<Double>) {
+        self.realp = realp
+        self.imagp = imagp
+    }
+}
+
+/// Fallback complex type for non-Apple platforms (interleaved complex format for Float)
+public struct DSPComplex {
+    public var real: Float
+    public var imag: Float
+
+    public init(real: Float, imag: Float) {
+        self.real = real
+        self.imag = imag
+    }
+}
+
+/// Fallback complex type for non-Apple platforms (interleaved complex format for Double)
+public struct DSPDoubleComplex {
+    public var real: Double
+    public var imag: Double
+
+    public init(real: Double, imag: Double) {
+        self.real = real
+        self.imag = imag
+    }
+}
+#endif
 /*
 public protocol MfTypable: Numeric{}
 

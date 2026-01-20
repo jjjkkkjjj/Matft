@@ -1,7 +1,8 @@
+// Execution disabled for WASI until we support complex operations
+#if !os(WASI)
 import XCTest
-//@testable import Matft
-import Matft
-import Accelerate
+
+@testable import Matft
 
 final class FFTTests: XCTestCase {
     func testrfft() {
@@ -92,3 +93,4 @@ final class FFTTests: XCTestCase {
         }
     }
 }
+#endif

@@ -1,3 +1,5 @@
+// Test execution disabled for WASM until we support complex operations
+#if canImport(Accelerate)
 //
 //  ComplexTest.swift
 //  
@@ -311,3 +313,4 @@ final class ComplexTests: XCTestCase {
         }
     }
 }
+#endif

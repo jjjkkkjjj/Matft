@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Accelerate
 
 extension Matft.random{
     /**

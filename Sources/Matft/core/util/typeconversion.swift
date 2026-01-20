@@ -7,7 +7,10 @@
 //
 
 import Foundation
+#if canImport(Accelerate)
 import Accelerate
+#endif
+// Note: WASI fallback implementations for vDSP functions are defined in vDSP.swift
 
 /// Get mftype from a flatten array
 /// - Parameter flattenArray: Flatten array.

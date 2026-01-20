@@ -7,7 +7,9 @@
 //
 
 import Foundation
+#if canImport(Accelerate)
 import Accelerate
+#endif
 
 extension Matft{
     //infix
@@ -29,15 +31,19 @@ extension Matft{
             }
         }
         else{
+            #if canImport(Accelerate)
             switch MfType.storedType(rettype){
             case .Float:
                 return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvadd)
             case .Double:
                 return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvaddD)
             }
+            #else
+            fatalError("Complex array operations are not supported on this platform")
+            #endif
         }
     }
-    
+
     /**
        Element-wise addition of  mfarray and scalar
        - parameters:
@@ -62,12 +68,16 @@ extension Matft{
             }
         }
         else{
+            #if canImport(Accelerate)
             switch MfType.storedType(retmftype) {
             case .Float:
                 return biopzvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_zrvadd)
             case .Double:
                 return biopzvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_zrvaddD)
             }
+            #else
+            fatalError("Complex array operations are not supported on this platform")
+            #endif
         }
     }
     /**
@@ -94,12 +104,16 @@ extension Matft{
             }
         }
         else{
+            #if canImport(Accelerate)
             switch MfType.storedType(retmftype) {
             case .Float:
                 return biopzvs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_zrvadd)
             case .Double:
                 return biopzvs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_zrvaddD)
             }
+            #else
+            fatalError("Complex array operations are not supported on this platform")
+            #endif
         }
     }
     /**
@@ -120,12 +134,16 @@ extension Matft{
             }
         }
         else{
+            #if canImport(Accelerate)
             switch MfType.storedType(rettype){
             case .Float:
                 return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvsub)
             case .Double:
                 return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvsubD)
             }
+            #else
+            fatalError("Complex array operations are not supported on this platform")
+            #endif
         }
     }
     /**
@@ -152,12 +170,16 @@ extension Matft{
             }
         }
         else{
+            #if canImport(Accelerate)
             switch MfType.storedType(retmftype) {
             case .Float:
                 return biopzvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_zrvsub)
             case .Double:
                 return biopzvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_zrvsubD)
             }
+            #else
+            fatalError("Complex array operations are not supported on this platform")
+            #endif
         }
     }
     /**
@@ -184,12 +206,16 @@ extension Matft{
             }
         }
         else{
+            #if canImport(Accelerate)
             switch MfType.storedType(retmftype) {
             case .Float:
                 return biopzvs_by_vDSP(-r_mfarray, Float.from(l_scalar), vDSP_zrvadd)
             case .Double:
                 return biopzvs_by_vDSP(-r_mfarray, Double.from(l_scalar), vDSP_zrvaddD)
             }
+            #else
+            fatalError("Complex array operations are not supported on this platform")
+            #endif
         }
     }
     /**
@@ -210,12 +236,16 @@ extension Matft{
             }
         }
         else{
+            #if canImport(Accelerate)
             switch MfType.storedType(rettype){
             case .Float:
                 return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvmul_)
             case .Double:
                 return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvmulD_)
             }
+            #else
+            fatalError("Complex array operations are not supported on this platform")
+            #endif
         }
     }
     /**
@@ -242,12 +272,16 @@ extension Matft{
             }
         }
         else{
+            #if canImport(Accelerate)
             switch MfType.storedType(retmftype) {
             case .Float:
                 return biopzvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_zrvmul)
             case .Double:
                 return biopzvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_zrvmulD)
             }
+            #else
+            fatalError("Complex array operations are not supported on this platform")
+            #endif
         }
     }
     /**
@@ -274,12 +308,16 @@ extension Matft{
             }
         }
         else{
+            #if canImport(Accelerate)
             switch MfType.storedType(retmftype) {
             case .Float:
                 return biopzvs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_zrvmul)
             case .Double:
                 return biopzvs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_zrvmulD)
             }
+            #else
+            fatalError("Complex array operations are not supported on this platform")
+            #endif
         }
     }
     /**
@@ -302,12 +340,16 @@ extension Matft{
             }
         }
         else{
+            #if canImport(Accelerate)
             switch MfType.storedType(rettype){
             case .Float:
                 return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvdiv)
             case .Double:
                 return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvdivD)
             }
+            #else
+            fatalError("Complex array operations are not supported on this platform")
+            #endif
         }
     }
     /**
@@ -334,12 +376,16 @@ extension Matft{
             }
         }
         else{
+            #if canImport(Accelerate)
             switch MfType.storedType(retmftype) {
             case .Float:
                 return biopzvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_zrvdiv)
             case .Double:
                 return biopzvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_zrvdivD)
             }
+            #else
+            fatalError("Complex array operations are not supported on this platform")
+            #endif
         }
     }
     /**
@@ -366,12 +412,16 @@ extension Matft{
             }
         }
         else{
+            #if canImport(Accelerate)
             switch MfType.storedType(retmftype) {
             case .Float:
                 return biopzsv_by_vDSP(Float.from(l_scalar), r_mfarray, vDSP_ztrans)
             case .Double:
                 return biopzsv_by_vDSP(Double.from(l_scalar), r_mfarray, vDSP_ztransD)
             }
+            #else
+            fatalError("Complex array operations are not supported on this platform")
+            #endif
         }
     }
     
