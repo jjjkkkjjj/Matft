@@ -1,3 +1,5 @@
+// Performance tests for boolean operations disabled for WASM temporally
+#if !os(WASI)
 //
 //  MathPefTests.swift
 //  
