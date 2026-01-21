@@ -5,7 +5,9 @@
 //  Created by AM19A0 on 2023/02/10.
 //
 import pocketFFT
+#if canImport(Accelerate)
 import Accelerate
+#endif
 
 internal typealias rfft_func = (rfft_plan, UnsafeMutablePointer<Double>, Double) -> Int32
 

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+#if canImport(Accelerate)
 import Accelerate
 
 internal typealias vImage_resize_func = (UnsafePointer<vImage_Buffer>, UnsafePointer<vImage_Buffer>, UnsafeMutableRawPointer?, vImage_Flags) -> vImage_Error
@@ -270,3 +271,4 @@ internal func affine_by_vImage(_ image: MfArray, dstHeight: Int, dstWidth: Int, 
     
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
+#endif

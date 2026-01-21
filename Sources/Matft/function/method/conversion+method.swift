@@ -7,7 +7,9 @@
 //
 
 import Foundation
+#if canImport(CoreML)
 import CoreML
+#endif
 
 extension MfArray{
     /**
@@ -112,6 +114,7 @@ extension MfArray{
     }
     
     
+    #if canImport(CoreML)
     /// Convert MfArray to MLMultiArray
     /// - Returns: Converted MLMultiArray
     @available(macOS 12.0, *)
@@ -128,6 +131,7 @@ extension MfArray{
             return try MLMultiArray(dataPointer: ptrD, shape: self.shape.map{ NSNumber(value: $0) } , dataType: MLMultiArrayDataType.double, strides: self.strides.map{ NSNumber(value: $0) }, deallocator: _deallocator_MLMultiArray_pointer)
         }
     }
+    #endif
     
     /**
        Create broadcasted mfarray.
@@ -276,6 +280,8 @@ extension MfArray{
     }
 }
 
+#if canImport(CoreML)
 fileprivate func _deallocator_MLMultiArray_pointer(_ ptr: UnsafeMutableRawPointer) -> Void {
     ptr.deallocate()
 }
+#endif

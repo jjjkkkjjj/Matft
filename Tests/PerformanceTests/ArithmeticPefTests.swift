@@ -1,6 +1,6 @@
 import XCTest
-//@testable import Matft
-import Matft
+
+@testable import Matft
 
 final class ArithmeticPefTests: XCTestCase {
     
@@ -51,4 +51,3 @@ final class ArithmeticPefTests: XCTestCase {
         }
     }
 }
-

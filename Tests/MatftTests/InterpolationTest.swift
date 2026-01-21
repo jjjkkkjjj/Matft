@@ -1,6 +1,8 @@
+// Temporally disabled until we are able to backport this functionality to WASM
+#if !os(WASI)
 import XCTest
-//@testable import Matft
-import Matft
+
+@testable import Matft
 
 final class InterpolationTests: XCTestCase {
     
@@ -28,6 +30,6 @@ final class InterpolationTests: XCTestCase {
         
         
     }
-    
 
 }
+#endif

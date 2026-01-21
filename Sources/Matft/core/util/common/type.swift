@@ -6,7 +6,47 @@
 //
 
 import Foundation
+#if canImport(Accelerate)
 import Accelerate
+#endif
+
+#if !canImport(Accelerate)
+/// Pure Swift fallback for toBool_by_vDSP
+internal func toBool_by_vDSP(_ mfarray: MfArray) -> MfArray {
+    let mfarray = check_contiguous(mfarray)
+    let size = mfarray.storedSize
+    let newdata = MfData(size: size, mftype: .Bool)
+
+    newdata.withUnsafeMutableStartPointer(datatype: Float.self) { dstptr in
+        mfarray.withUnsafeMutableStartPointer(datatype: Float.self) { srcptr in
+            for i in 0..<size {
+                dstptr[i] = srcptr[i] != 0 ? Float(1) : Float(0)
+            }
+        }
+    }
+
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// Pure Swift fallback for toIBool_by_vDSP
+internal func toIBool_by_vDSP(_ mfarray: MfArray) -> MfArray {
+    let mfarray = check_contiguous(mfarray)
+    let size = mfarray.storedSize
+    let newdata = MfData(size: size, mftype: .Bool)
+
+    newdata.withUnsafeMutableStartPointer(datatype: Float.self) { dstptr in
+        mfarray.withUnsafeMutableStartPointer(datatype: Float.self) { srcptr in
+            for i in 0..<size {
+                dstptr[i] = srcptr[i] == 0 ? Float(1) : Float(0)
+            }
+        }
+    }
+
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+#endif
 
 internal func to_Bool(_ mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray{
     //convert float and contiguous

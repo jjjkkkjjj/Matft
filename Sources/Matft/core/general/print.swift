@@ -24,9 +24,22 @@ extension MfArray: CustomStringConvertible{
         var shape = self.shape
         var strides = self.strides
         
+        #if os(WASI)
+        let formatter: NumberFormatter? = nil
+        #else
         let formatter = NumberFormatter()
         formatter.positivePrefix = formatter.plusSign
         formatter.maximumFractionDigits = self.storedType == .Float ? 7 : 14
+        #endif
+
+        func imagString(_ value: Any) -> String{
+            #if os(WASI)
+            // Avoid NumberFormatter on WASI (Foundation formatter crashes in wasm)
+            return "\(value)"
+            #else
+            return formatter.string(for: value) ?? "\(value)"
+            #endif
+        }
         
         if self.size > 1000{//if size > 1000, some elements left out will be viewed
             let flattenLOIndSeq = FlattenLOIndSequence(storedSize: self.storedSize, shape: &shape, strides: &strides)
@@ -39,7 +52,7 @@ extension MfArray: CustomStringConvertible{
                         desc += "\t\(flattenData[flattenIndex + self.offsetIndex]),\t"
                     }
                     else{
-                        desc += "\t\(flattenData[flattenIndex + self.offsetIndex]) \(formatter.string(for: flattenImagData![flattenIndex + self.offsetIndex]) ?? "")j,\t"
+                        desc += "\t\(flattenData[flattenIndex + self.offsetIndex]) \(imagString(flattenImagData![flattenIndex + self.offsetIndex]))j,\t"
                     }
                     
                     if indices.last! == shape.last! - 1{
@@ -81,7 +94,7 @@ extension MfArray: CustomStringConvertible{
                     desc += "\t\(flattenData[ret.flattenIndex + self.offsetIndex]),\t"
                 }
                 else{
-                    desc += "\t\(flattenData[ret.flattenIndex + self.offsetIndex]) \(formatter.string(for: flattenImagData![ret.flattenIndex + self.offsetIndex]) ?? "")j,\t"
+                    desc += "\t\(flattenData[ret.flattenIndex + self.offsetIndex]) \(imagString(flattenImagData![ret.flattenIndex + self.offsetIndex]))j,\t"
                 }
 
                 if ret.indices.last! == shape.last! - 1{

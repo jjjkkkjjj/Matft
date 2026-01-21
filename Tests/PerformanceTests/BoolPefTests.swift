@@ -5,9 +5,10 @@
 //  Created by Junnosuke Kado on 2021/05/05.
 //
 
+// Performance tests for boolean operations disabled for WASM temporally
 import XCTest
-//@testable import Matft
-import Matft
+
+@testable import Matft
 
 final class BoolPefTests: XCTestCase {
     
@@ -67,4 +68,3 @@ final class BoolPefTests: XCTestCase {
         }
     }
 }
-

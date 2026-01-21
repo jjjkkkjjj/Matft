@@ -27,6 +27,9 @@ INFO: Support Complex!!
     + [SwiftPM](#swiftpm)
     + [Carthage](#carthage)
     + [CocoaPods](#cocoapods)
+  * [Build Scripts](#-build-scripts)
+    + [iOS/macOS Build & Test](#-iosmacos-build--test)
+    + [WebAssembly Build & Test](#-webassembly-build--test)
   * [Contact](#contact)
 
 <strike>
@@ -857,6 +860,43 @@ So, a pull request is very welcome!!
   ```bash
   pod install
   ```
+
+## 🛠️ Build Scripts
+
+Matft provides convenient bash scripts for building and testing the project locally.
+
+### 🍎 iOS/macOS Build & Test
+
+To build and test Matft for iOS/macOS platforms:
+
+```bash
+./scripts/build-and-test-ios.sh
+```
+
+This script will:
+- Build the project using `swift build`
+- Run all tests using `swift test`
+
+### 🌐 WebAssembly Build & Test
+
+To build and test Matft for WebAssembly:
+
+```bash
+./scripts/build-and-test-wasm.sh
+```
+
+This script will:
+- 📦 Check and install the Swift WASM SDK if needed
+- 🔧 Check and install wasmtime runtime if needed
+- 🔨 Build the project for WebAssembly
+- 🧪 Build and run tests using wasmtime
+
+**Note:** The WASM script automatically handles SDK and runtime installation, so you can run it on a fresh machine without any prior setup!
+
+### Requirements
+
+- **iOS/macOS:** Swift 6.1 or later
+- **WebAssembly:** Swift 6.1 or later (SDK will be automatically installed)
 
 ## Contact
 

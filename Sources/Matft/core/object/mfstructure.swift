@@ -73,8 +73,12 @@ internal func shape2size(_ shape: inout [Int]) -> Int{
 ///   - mforder: Order
 /// - Returns: A strides array
 internal func shape2strides(_ shape: inout [Int], mforder: MfOrder) -> [Int]{
+    guard !shape.isEmpty else {
+        return []
+    }
+
     var ret = Array<Int>(repeating: 0, count: shape.count)
-    
+
     switch mforder {
     case .Row://, .None:
         var prevAxisNum = shape2size(&shape)

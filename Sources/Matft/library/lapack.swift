@@ -7,6 +7,7 @@
 //
 
 import Foundation
+#if canImport(Accelerate)
 import Accelerate
 
 public typealias lapack_solve_func<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
@@ -707,6 +708,493 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ full_matrices: 
     let v = MfArray(mfdata: v_data, mfstructure: MfStructure(shape: v_shape, mforder: .Row))
     let s = MfArray(mfdata: s_data, mfstructure: MfStructure(shape: s_shape, mforder: .Row))
     let rt = MfArray(mfdata: rt_data, mfstructure: MfStructure(shape: rt_shape, mforder: .Row))
-    
+
     return (v.swapaxes(axis1: -1, axis2: -2), s, rt.swapaxes(axis1: -1, axis2: -2))
 }
+#else
+// MARK: - WASI Implementation using CLAPACK
+// Note: The CLAPACK eigen-support branch only provides dgetrf and dgetri (double-precision).
+// Other LAPACK operations will throw fatalError on WASI.
+import CLAPACK
+
+public typealias __CLPK_integer = Int32
+
+public typealias lapack_solve_func<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
+
+public typealias lapack_LU_func<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
+
+public typealias lapack_inv_func<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
+
+public typealias lapack_eigen_func<T> = (UnsafeMutablePointer<Int8>, UnsafeMutablePointer<Int8>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
+
+public typealias lapack_svd_func<T> = (UnsafeMutablePointer<Int8>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>,UnsafeMutablePointer<__CLPK_integer>) -> Int32
+
+internal typealias lapack_LU<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
+
+internal typealias lapack_inv<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
+
+// MARK: - CLAPACK Wrapper Functions for WASI
+// Only dgetrf_ and dgetri_ are available in the CLAPACK eigen-support branch
+
+@inline(__always)
+internal func sgesv_(_ n: UnsafeMutablePointer<__CLPK_integer>, _ nrhs: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Float>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ ipiv: UnsafeMutablePointer<__CLPK_integer>, _ b: UnsafeMutablePointer<Float>, _ ldb: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
+    fatalError("LAPACK sgesv_ is not available on WASI (single-precision linear solve not supported)")
+}
+
+@inline(__always)
+internal func dgesv_(_ n: UnsafeMutablePointer<__CLPK_integer>, _ nrhs: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Double>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ ipiv: UnsafeMutablePointer<__CLPK_integer>, _ b: UnsafeMutablePointer<Double>, _ ldb: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
+    fatalError("LAPACK dgesv_ is not available on WASI (double-precision linear solve not supported)")
+}
+
+@inline(__always)
+internal func sgetrf_(_ m: UnsafeMutablePointer<__CLPK_integer>, _ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Float>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ ipiv: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
+    fatalError("LAPACK sgetrf_ is not available on WASI (single-precision LU decomposition not supported)")
+}
+
+@inline(__always)
+internal func dgetrf_(_ m: UnsafeMutablePointer<__CLPK_integer>, _ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Double>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ ipiv: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
+    var mLong = CLong(m.pointee)
+    var nLong = CLong(n.pointee)
+    var ldaLong = CLong(lda.pointee)
+    var infoLong: CLong = 0
+    let minMN = min(Int(m.pointee), Int(n.pointee))
+    var ipivLong = Array<CLong>(repeating: 0, count: minMN)
+
+    CLAPACK.dgetrf_(&mLong, &nLong, a, &ldaLong, &ipivLong, &infoLong)
+
+    for i in 0..<minMN {
+        ipiv[i] = __CLPK_integer(ipivLong[i])
+    }
+    info.pointee = __CLPK_integer(infoLong)
+    return Int32(infoLong)
+}
+
+@inline(__always)
+internal func sgetri_(_ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Float>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ ipiv: UnsafeMutablePointer<__CLPK_integer>, _ work: UnsafeMutablePointer<Float>, _ lwork: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
+    fatalError("LAPACK sgetri_ is not available on WASI (single-precision matrix inverse not supported)")
+}
+
+@inline(__always)
+internal func dgetri_(_ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Double>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ ipiv: UnsafeMutablePointer<__CLPK_integer>, _ work: UnsafeMutablePointer<Double>, _ lwork: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
+    var nLong = CLong(n.pointee)
+    var ldaLong = CLong(lda.pointee)
+    var lworkLong = CLong(lwork.pointee)
+    var infoLong: CLong = 0
+    var ipivLong = Array<CLong>(repeating: 0, count: Int(n.pointee))
+    for i in 0..<Int(n.pointee) {
+        ipivLong[i] = CLong(ipiv[i])
+    }
+
+    CLAPACK.dgetri_(&nLong, a, &ldaLong, &ipivLong, work, &lworkLong, &infoLong)
+
+    info.pointee = __CLPK_integer(infoLong)
+    return Int32(infoLong)
+}
+
+@inline(__always)
+internal func sgeev_(_ jobvl: UnsafeMutablePointer<Int8>, _ jobvr: UnsafeMutablePointer<Int8>, _ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Float>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ wr: UnsafeMutablePointer<Float>, _ wi: UnsafeMutablePointer<Float>, _ vl: UnsafeMutablePointer<Float>, _ ldvl: UnsafeMutablePointer<__CLPK_integer>, _ vr: UnsafeMutablePointer<Float>, _ ldvr: UnsafeMutablePointer<__CLPK_integer>, _ work: UnsafeMutablePointer<Float>, _ lwork: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
+    fatalError("LAPACK sgeev_ is not available on WASI (single-precision eigenvalue decomposition not supported)")
+}
+
+@inline(__always)
+internal func dgeev_(_ jobvl: UnsafeMutablePointer<Int8>, _ jobvr: UnsafeMutablePointer<Int8>, _ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Double>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ wr: UnsafeMutablePointer<Double>, _ wi: UnsafeMutablePointer<Double>, _ vl: UnsafeMutablePointer<Double>, _ ldvl: UnsafeMutablePointer<__CLPK_integer>, _ vr: UnsafeMutablePointer<Double>, _ ldvr: UnsafeMutablePointer<__CLPK_integer>, _ work: UnsafeMutablePointer<Double>, _ lwork: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
+    fatalError("LAPACK dgeev_ is not available on WASI (double-precision eigenvalue decomposition not supported)")
+}
+
+@inline(__always)
+internal func sgesdd_(_ jobz: UnsafeMutablePointer<Int8>, _ m: UnsafeMutablePointer<__CLPK_integer>, _ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Float>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ s: UnsafeMutablePointer<Float>, _ u: UnsafeMutablePointer<Float>, _ ldu: UnsafeMutablePointer<__CLPK_integer>, _ vt: UnsafeMutablePointer<Float>, _ ldvt: UnsafeMutablePointer<__CLPK_integer>, _ work: UnsafeMutablePointer<Float>, _ lwork: UnsafeMutablePointer<__CLPK_integer>, _ iwork: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
+    fatalError("LAPACK sgesdd_ is not available on WASI (single-precision SVD not supported)")
+}
+
+@inline(__always)
+internal func dgesdd_(_ jobz: UnsafeMutablePointer<Int8>, _ m: UnsafeMutablePointer<__CLPK_integer>, _ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Double>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ s: UnsafeMutablePointer<Double>, _ u: UnsafeMutablePointer<Double>, _ ldu: UnsafeMutablePointer<__CLPK_integer>, _ vt: UnsafeMutablePointer<Double>, _ ldvt: UnsafeMutablePointer<__CLPK_integer>, _ work: UnsafeMutablePointer<Double>, _ lwork: UnsafeMutablePointer<__CLPK_integer>, _ iwork: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
+    fatalError("LAPACK dgesdd_ is not available on WASI (double-precision SVD not supported)")
+}
+
+// MARK: - LAPACK Wrapper Functions for WASI
+
+@inline(__always)
+internal func wrap_lapack_solve<T: MfStorable>(_ rownum: Int, _ colnum: Int, _ coef_ptr: UnsafeMutablePointer<T>, _ dst_b_ptr: UnsafeMutablePointer<T>, lapack_func: lapack_solve_func<T>) throws {
+    var N = __CLPK_integer(rownum)
+    var LDA = __CLPK_integer(rownum)
+    var NRHS = __CLPK_integer(colnum)
+    var LDB = __CLPK_integer(rownum)
+    var IPIV = Array<__CLPK_integer>(repeating: 0, count: rownum)
+    var INFO: __CLPK_integer = 0
+
+    let _ = lapack_func(&N, &NRHS, coef_ptr, &LDA, &IPIV, dst_b_ptr, &LDB, &INFO)
+
+    if INFO < 0 {
+        throw MfError.LinAlgError.factorizationError("Illegal value found: \(-INFO)th argument")
+    }
+    else if INFO > 0 {
+        throw MfError.LinAlgError.singularMatrix("The factorization has been completed, but the factor U(of A=PLU) is exactly singular, so the solution could not be computed.")
+    }
+}
+
+@inline(__always)
+internal func wrap_lapack_LU<T: MfStorable>(_ rownum: Int, _ colnum: Int, _ srcdstptr: UnsafeMutablePointer<T>, lapack_func: lapack_LU_func<T>) throws -> [__CLPK_integer] {
+    var M = __CLPK_integer(rownum)
+    var N = __CLPK_integer(colnum)
+    var LDA = __CLPK_integer(rownum)
+    var IPIV = Array<__CLPK_integer>(repeating: 0, count: min(rownum, colnum))
+    var INFO: __CLPK_integer = 0
+
+    let _ = lapack_func(&M, &N, srcdstptr, &LDA, &IPIV, &INFO)
+
+    if INFO < 0 {
+        throw MfError.LinAlgError.factorizationError("Illegal value found: \(-INFO)th argument")
+    }
+    else if INFO > 0 {
+        throw MfError.LinAlgError.singularMatrix("The factorization has been completed, but the factor U(of A=PLU) is exactly singular, so the solution could not be computed.")
+    }
+
+    return IPIV
+}
+
+@inline(__always)
+internal func wrap_lapack_inv<T: MfStorable>(_ rowcolnum: Int, _ srcdstptr: UnsafeMutablePointer<T>, _ IPIV: UnsafeMutablePointer<__CLPK_integer>, lapack_func: lapack_inv_func<T>) throws {
+    var N = __CLPK_integer(rowcolnum)
+    var LDA = __CLPK_integer(rowcolnum)
+    var INFO: __CLPK_integer = 0
+    var WORK = Array<T>(repeating: T.zero, count: rowcolnum)
+    var LWORK = __CLPK_integer(rowcolnum)
+
+    let _ = lapack_func(&N, srcdstptr, &LDA, IPIV, &WORK, &LWORK, &INFO)
+
+    if INFO < 0 {
+        throw MfError.LinAlgError.factorizationError("Illegal value found: \(-INFO)th argument")
+    }
+    else if INFO > 0 {
+        throw MfError.LinAlgError.singularMatrix("The factorization has been completed, but the factor U(of A=PLU) is exactly singular, so the solution could not be computed.")
+    }
+}
+
+@inline(__always)
+internal func wrap_lapack_eigen<T: MfStorable>(_ rowcolnum: Int, _ srcptr: UnsafeMutablePointer<T>, _ dstLVecRePtr: UnsafeMutablePointer<T>, _ dstLVecImPtr: UnsafeMutablePointer<T>, _ dstRVecRePtr: UnsafeMutablePointer<T>, _ dstRVecImPtr: UnsafeMutablePointer<T>, _ dstValRePtr: UnsafeMutablePointer<T>, _ dstValImPtr: UnsafeMutablePointer<T>, lapack_func: lapack_eigen_func<T>) throws {
+    let JOBVL = UnsafeMutablePointer(mutating: ("V" as NSString).utf8String)!
+    let JOBVR = UnsafeMutablePointer(mutating: ("V" as NSString).utf8String)!
+
+    var N = __CLPK_integer(rowcolnum)
+    var LDA = __CLPK_integer(rowcolnum)
+    var WR = Array<T>(repeating: T.zero, count: rowcolnum)
+    var WI = Array<T>(repeating: T.zero, count: rowcolnum)
+    var VL = Array<T>(repeating: T.zero, count: rowcolnum*rowcolnum)
+    var LDVL = __CLPK_integer(rowcolnum)
+    var VR = Array<T>(repeating: T.zero, count: rowcolnum*rowcolnum)
+    var LDVR = __CLPK_integer(rowcolnum)
+    var WORKQ = T.zero
+    var LWORK = __CLPK_integer(-1)
+    var INFO: __CLPK_integer = 0
+
+    let _ = lapack_func(JOBVL, JOBVR, &N, srcptr, &LDA, &WR, &WI, &VL, &LDVL, &VR, &LDVR, &WORKQ, &LWORK, &INFO)
+
+    var WORK = Array<T>(repeating: T.zero, count: T.toInt(WORKQ))
+    LWORK = __CLPK_integer(T.toInt(WORKQ))
+    let _ = lapack_func(JOBVL, JOBVR, &N, srcptr, &LDA, &WR, &WI, &VL, &LDVL, &VR, &LDVR, &WORK, &LWORK, &INFO)
+
+    if INFO < 0 {
+        throw MfError.LinAlgError.factorizationError("Illegal value found: \(-INFO)th argument")
+    }
+    else if INFO > 0 {
+        throw MfError.LinAlgError.notConverge("the QR algorithm failed to compute all the eigenvalues, and no eigenvectors have been computed; elements \(INFO)+1:N of WR and WI contain eigenvalues which have converged.")
+    }
+    else {
+        var VLRe = Array<T>(repeating: T.zero, count: rowcolnum*rowcolnum)
+        var VLIm = Array<T>(repeating: T.zero, count: rowcolnum*rowcolnum)
+        var VRRe = Array<T>(repeating: T.zero, count: rowcolnum*rowcolnum)
+        var VRIm = Array<T>(repeating: T.zero, count: rowcolnum*rowcolnum)
+        for k in 0..<rowcolnum {
+            var j = 0
+            while j < rowcolnum {
+                let index = k*rowcolnum + j
+                if WI[k] == 0 {
+                    VLRe[index] = VL[index]
+                    VLIm[index] = T.zero
+                    VRRe[index] = VR[index]
+                    VRIm[index] = T.zero
+                    j += 1
+                }
+                else {
+                    VLRe[index] = VL[index]
+                    VLIm[index] = VL[index + 1]
+                    VLRe[index + 1] = VL[index]
+                    VLIm[index + 1] = -VL[index + 1]
+                    VRRe[index] = VR[index]
+                    VRIm[index] = VR[index + 1]
+                    VRRe[index + 1] = VR[index]
+                    VRIm[index + 1] = -VR[index + 1]
+                    j += 2
+                }
+            }
+        }
+        WR.withUnsafeMutableBufferPointer {
+            dstValRePtr.moveUpdate(from: $0.baseAddress!, count: rowcolnum)
+        }
+        WI.withUnsafeMutableBufferPointer {
+            dstValImPtr.moveUpdate(from: $0.baseAddress!, count: rowcolnum)
+        }
+        VLRe.withUnsafeMutableBufferPointer {
+            dstLVecRePtr.moveUpdate(from: $0.baseAddress!, count: rowcolnum*rowcolnum)
+        }
+        VLIm.withUnsafeMutableBufferPointer {
+            dstLVecImPtr.moveUpdate(from: $0.baseAddress!, count: rowcolnum*rowcolnum)
+        }
+        VRRe.withUnsafeMutableBufferPointer {
+            dstRVecRePtr.moveUpdate(from: $0.baseAddress!, count: rowcolnum*rowcolnum)
+        }
+        VRIm.withUnsafeMutableBufferPointer {
+            dstRVecImPtr.moveUpdate(from: $0.baseAddress!, count: rowcolnum*rowcolnum)
+        }
+    }
+}
+
+@inline(__always)
+internal func wrap_lapack_svd<T: MfStorable>(_ rownum: Int, _ colnum: Int, _ srcptr: UnsafeMutablePointer<T>, _ vptr: UnsafeMutablePointer<T>, _ sptr: UnsafeMutablePointer<T>, _ rtptr: UnsafeMutablePointer<T>, _ full_matrices: Bool, lapack_func: lapack_svd_func<T>) throws {
+    let JOBZ: UnsafeMutablePointer<Int8>
+    var M = __CLPK_integer(rownum)
+    var N = __CLPK_integer(colnum)
+    let ucol: Int, vtrow: Int
+    var LDA = __CLPK_integer(rownum)
+    let snum = min(rownum, colnum)
+    var S = Array<T>(repeating: T.zero, count: snum)
+    var U: Array<T>
+    var LDU = __CLPK_integer(rownum)
+    var VT: Array<T>
+    var LDVT: __CLPK_integer
+
+    if full_matrices {
+        JOBZ = UnsafeMutablePointer(mutating: ("A" as NSString).utf8String)!
+        LDVT = __CLPK_integer(colnum)
+        ucol = rownum
+        vtrow = colnum
+    }
+    else {
+        JOBZ = UnsafeMutablePointer(mutating: ("S" as NSString).utf8String)!
+        LDVT = __CLPK_integer(snum)
+        ucol = snum
+        vtrow = snum
+    }
+    U = Array<T>(repeating: T.zero, count: rownum*ucol)
+    VT = Array<T>(repeating: T.zero, count: colnum*vtrow)
+
+    var WORKQ = T.zero
+    var LWORK = __CLPK_integer(-1)
+    var IWORK = Array<__CLPK_integer>(repeating: 0, count: 8*snum)
+    var INFO: __CLPK_integer = 0
+
+    let _ = lapack_func(JOBZ, &M, &N, srcptr, &LDA, &S, &U, &LDU, &VT, &LDVT, &WORKQ, &LWORK, &IWORK, &INFO)
+
+    var WORK = Array<T>(repeating: T.zero, count: T.toInt(WORKQ))
+    LWORK = __CLPK_integer(T.toInt(WORKQ))
+    let _ = lapack_func(JOBZ, &M, &N, srcptr, &LDA, &S, &U, &LDU, &VT, &LDVT, &WORK, &LWORK, &IWORK, &INFO)
+
+    if INFO < 0 {
+        throw MfError.LinAlgError.factorizationError("Illegal value found: \(-INFO)th argument")
+    }
+    else if INFO > 0 {
+        throw MfError.LinAlgError.notConverge("the QR algorithm failed to compute all the eigenvalues, and no eigenvectors have been computed; elements \(INFO)+1:N of WR and WI contain eigenvalues which have converged.")
+    }
+    else {
+        U.withUnsafeMutableBufferPointer {
+            vptr.moveUpdate(from: $0.baseAddress!, count: rownum*ucol)
+        }
+        S.withUnsafeMutableBufferPointer {
+            sptr.moveUpdate(from: $0.baseAddress!, count: snum)
+        }
+        VT.withUnsafeMutableBufferPointer {
+            rtptr.moveUpdate(from: $0.baseAddress!, count: colnum*vtrow)
+        }
+    }
+}
+
+// MARK: - LAPACK High-Level Functions for WASI
+
+internal func solve_by_lapack<T: MfStorable>(_ coef: MfArray, _ b: MfArray, ret_mftype: MfType, _ lapack_func: lapack_solve_func<T>) throws -> MfArray {
+    precondition((coef.ndim == 2), "cannot solve non linear simultaneous equations")
+    precondition(b.ndim <= 2, "Invalid b. Dimension must be 1 or 2")
+
+    let coef_shape = coef.shape
+    let b_shape = b.shape
+    var dst_colnum = 0
+    let dst_rownum = coef_shape[0]
+
+    if b.ndim == 1 {
+        precondition((coef_shape[0] == coef_shape[1] && b_shape[0] == coef_shape[0]), "cannot solve (\(coef_shape[0]),\(coef_shape[1]))(\(b_shape[0]))=(\(b_shape[0])) problem")
+        dst_colnum = 1
+    }
+    else {
+        precondition((coef_shape[0] == coef_shape[1] && b_shape[0] == coef_shape[0]), "cannot solve (\(coef_shape[0]),\(coef_shape[1]))(\(b_shape[0]),\(b_shape[1]))=(\(b_shape[0]),\(b_shape[1])) problem")
+        dst_colnum = b_shape[1]
+    }
+
+    let coef_column_major = coef.astype(ret_mftype, mforder: .Column)
+    let ret = b.astype(ret_mftype, mforder: .Column)
+
+    try coef_column_major.withUnsafeMutableStartPointer(datatype: T.self) {
+        coef_ptr in
+        try ret.withUnsafeMutableStartPointer(datatype: T.self) {
+            dst_ptr in
+            try wrap_lapack_solve(dst_rownum, dst_colnum, coef_ptr, dst_ptr, lapack_func: lapack_func)
+        }
+    }
+
+    return ret
+}
+
+internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func_lu: lapack_LU<T>, _ lapack_func_inv: lapack_inv<T>, _ retMfType: MfType) throws -> MfArray {
+    let shape = mfarray.shape
+
+    precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+    precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+
+    let newdata = MfData(size: mfarray.size, mftype: mfarray.storedType.to_mftype())
+    try newdata.withUnsafeMutableStartPointer(datatype: T.self) {
+        dstptrT in
+        try mfarray.withMNStackedMajorPointer(datatype: T.self, mforder: .Row) {
+            srcptr, row, col, offset in
+            var IPIV = try wrap_lapack_LU(row, col, srcptr, lapack_func: lapack_func_lu)
+            try wrap_lapack_inv(row, srcptr, &IPIV, lapack_func: lapack_func_inv)
+            (dstptrT + offset).moveUpdate(from: srcptr, count: row*col)
+        }
+    }
+
+    let newstructure = MfStructure(shape: shape, mforder: .Row)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func: lapack_LU_func<T>) throws -> MfArray {
+    let shape = mfarray.shape
+
+    precondition(mfarray.ndim > 1, "cannot get a determinant from 1-d mfarray")
+    precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+
+    let ret_size = mfarray.size / (shape[mfarray.ndim - 1] * shape[mfarray.ndim - 1])
+
+    let newdata = MfData(size: ret_size, mftype: mfarray.mftype)
+    var dst_offset = 0
+
+    try newdata.withUnsafeMutableStartPointer(datatype: T.self) {
+        dstptrT in
+        try mfarray.withMNStackedMajorPointer(datatype: T.self, mforder: .Row) {
+            srcptr, row, col, offset in
+            let square_num = row
+            let IPIV = try wrap_lapack_LU(row, col, srcptr, lapack_func: lapack_func)
+            var det = T.from(1)
+            for i in 0..<square_num {
+                det *= IPIV[i] != __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*square_num).pointee : -(srcptr.advanced(by: i + i*square_num).pointee)
+            }
+            (dstptrT + dst_offset).update(from: &det, count: 1)
+            dst_offset += 1
+        }
+    }
+
+    let ret_shape: [Int]
+    if mfarray.ndim - 2 != 0 {
+        ret_shape = Array(mfarray.shape.prefix(mfarray.ndim - 2))
+    }
+    else {
+        ret_shape = [1]
+    }
+
+    let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func: lapack_eigen_func<T>) throws -> (valRe: MfArray, valIm: MfArray, lvecRe: MfArray, lvecIm: MfArray, rvecRe: MfArray, rvecIm: MfArray) {
+    var shape = mfarray.shape
+    precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
+    precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
+    let retMfType = mfarray.storedType.to_mftype()
+    let eigenvec_size = shape2size(&shape)
+
+    let lvecRe_data = MfData(size: eigenvec_size, mftype: retMfType)
+    let lvecIm_data = MfData(size: eigenvec_size, mftype: retMfType)
+    let rvecRe_data = MfData(size: eigenvec_size, mftype: retMfType)
+    let rvecIm_data = MfData(size: eigenvec_size, mftype: retMfType)
+
+    let eigenval_shape = Array(shape.prefix(mfarray.ndim - 1))
+    let valRe_data = MfData(size: eigenvec_size, mftype: retMfType)
+    let valIm_data = MfData(size: eigenvec_size, mftype: retMfType)
+    var vec_offset = 0
+    var val_offset = 0
+
+    let lvecRe_ptr = lvecRe_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
+    let lvecIm_ptr = lvecIm_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
+    let rvecRe_ptr = rvecRe_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
+    let rvecIm_ptr = rvecIm_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
+    let valRe_ptr = valRe_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
+    let valIm_ptr = valIm_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
+
+    try mfarray.withMNStackedMajorPointer(datatype: T.self, mforder: .Column) {
+        srcptr, row, col, offset in
+        let square_num = row
+        try wrap_lapack_eigen(square_num, srcptr, lvecRe_ptr + vec_offset, lvecIm_ptr + vec_offset, rvecRe_ptr + vec_offset, rvecIm_ptr + vec_offset, valRe_ptr + val_offset, valIm_ptr + val_offset, lapack_func: lapack_func)
+        val_offset += square_num
+        vec_offset += offset
+    }
+
+    return (MfArray(mfdata: valRe_data, mfstructure: MfStructure(shape: eigenval_shape, mforder: .Row)),
+            MfArray(mfdata: valIm_data, mfstructure: MfStructure(shape: eigenval_shape, mforder: .Row)),
+            MfArray(mfdata: lvecRe_data, mfstructure: MfStructure(shape: shape, mforder: .Row)),
+            MfArray(mfdata: lvecIm_data, mfstructure: MfStructure(shape: shape, mforder: .Row)),
+            MfArray(mfdata: rvecRe_data, mfstructure: MfStructure(shape: shape, mforder: .Row)),
+            MfArray(mfdata: rvecIm_data, mfstructure: MfStructure(shape: shape, mforder: .Row)))
+}
+
+internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ full_matrices: Bool, _ lapack_func: lapack_svd_func<T>) throws -> (v: MfArray, s: MfArray, rt: MfArray) {
+    let shape = mfarray.shape
+    let ret_mftype = mfarray.storedType.to_mftype()
+    let M = shape[mfarray.ndim - 2]
+    let N = shape[mfarray.ndim - 1]
+    let ssize = min(M, N)
+    let stacked_shape = Array(shape.prefix(mfarray.ndim - 2))
+
+    let v_data: MfData, s_data: MfData, rt_data: MfData
+    var v_shape: [Int], s_shape: [Int], rt_shape: [Int]
+    let vcol: Int, rtrow: Int
+    if full_matrices {
+        v_shape = stacked_shape + [M, M]
+        s_shape = stacked_shape + [ssize]
+        rt_shape = stacked_shape + [N, N]
+        v_data = MfData(size: shape2size(&v_shape), mftype: ret_mftype)
+        s_data = MfData(size: shape2size(&s_shape), mftype: ret_mftype)
+        rt_data = MfData(size: shape2size(&rt_shape), mftype: ret_mftype)
+        vcol = M
+        rtrow = N
+    }
+    else {
+        v_shape = stacked_shape + [ssize, M]
+        s_shape = stacked_shape + [ssize]
+        rt_shape = stacked_shape + [N, ssize]
+        v_data = MfData(size: shape2size(&v_shape), mftype: ret_mftype)
+        s_data = MfData(size: shape2size(&s_shape), mftype: ret_mftype)
+        rt_data = MfData(size: shape2size(&rt_shape), mftype: ret_mftype)
+        vcol = ssize
+        rtrow = ssize
+    }
+
+    var v_offset = 0
+    var s_offset = 0
+    var rt_offset = 0
+
+    let vptr = v_data.data_real.bindMemory(to: T.self, capacity: shape2size(&v_shape))
+    let sptr = s_data.data_real.bindMemory(to: T.self, capacity: shape2size(&s_shape))
+    let rtptr = rt_data.data_real.bindMemory(to: T.self, capacity: shape2size(&rt_shape))
+
+    try mfarray.withMNStackedMajorPointer(datatype: T.self, mforder: .Column) {
+        srcptr, _, _, _ in
+        try wrap_lapack_svd(M, N, srcptr, vptr + v_offset, sptr + s_offset, rtptr + rt_offset, full_matrices, lapack_func: lapack_func)
+        v_offset += M*vcol
+        s_offset += ssize
+        rt_offset += N*rtrow
+    }
+
+    let v = MfArray(mfdata: v_data, mfstructure: MfStructure(shape: v_shape, mforder: .Row))
+    let s = MfArray(mfdata: s_data, mfstructure: MfStructure(shape: s_shape, mforder: .Row))
+    let rt = MfArray(mfdata: rt_data, mfstructure: MfStructure(shape: rt_shape, mforder: .Row))
+
+    return (v.swapaxes(axis1: -1, axis2: -2), s, rt.swapaxes(axis1: -1, axis2: -2))
+}
+
+#endif // canImport(Accelerate)

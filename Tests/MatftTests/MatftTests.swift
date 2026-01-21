@@ -1,5 +1,6 @@
 import XCTest
-import Matft
+
+@testable import Matft
 
 final class MatftTests: XCTestCase {
     func testExample() {
@@ -18,7 +19,9 @@ final class MatftTests: XCTestCase {
         //view9()
         //view10()
         //type()
+        #if canImport(Accelerate)
         image()
+        #endif
         /*
         let a = MfArray([[2, 1, -3, 0],
                          [3, 1, 4, -5]], mftype: .Double, mforder: .Column)
@@ -141,6 +144,7 @@ func view7(){
     
 }
 
+#if canImport(Accelerate)
 func view8(){
     let coef = MfArray([[3,2],[1,2]])
     let b = MfArray([7,1])
@@ -153,6 +157,7 @@ func view8(){
     print(ainv)
     print(a*&ainv)
 }
+#endif
 
 func view9(){
     
@@ -186,8 +191,10 @@ func type(){
     print(b)
 }
 
+#if canImport(Accelerate)
 func image(){
     let a = Matft.nums(Float(0), shape: [150, 150, 4])
     Matft.image.warpAffine(a, matrix: MfArray([[1, 0, 0],
                                                [0, 1, 0]] as [[Float]]), width: 150, height: 150)
 }
+#endif

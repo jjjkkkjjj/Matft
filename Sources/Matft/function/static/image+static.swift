@@ -5,6 +5,7 @@
 //  Created by Junnosuke Kado on 2022/07/02.
 //
 
+#if canImport(Accelerate)
 import Foundation
 import Accelerate
 import CoreGraphics
@@ -115,3 +116,4 @@ extension Matft.image{
 }
 
 
+#endif

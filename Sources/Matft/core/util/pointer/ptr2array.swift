@@ -7,7 +7,9 @@
 //
 
 import Foundation
+#if canImport(Accelerate)
 import Accelerate
+#endif
 
 //convert rawpointer to flattenarray via float or Double array
 //All kinds of int and uint has been handled as float

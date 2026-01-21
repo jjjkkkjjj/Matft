@@ -7,10 +7,13 @@
 //
 
 import Foundation
+#if canImport(Accelerate)
 import Accelerate
+#endif
 
 //ref https://developer.apple.com/documentation/accelerate/veclib/vforce
 
+#if canImport(Accelerate)
 extension Matft.math{//use math_vv_by_vecLib
     //
     // trigonometric
@@ -667,3 +670,458 @@ extension Matft.math{//use vDSP
         }
     }
 }
+#else
+// WASI fallback: Math operations using pure Swift implementations
+extension Matft.math {
+    public static func sin(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvsinf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvsin)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func asin(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvasinf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvasin)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func sinh(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvsinhf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvsinh)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func asinh(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvasinhf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvasinh)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func cos(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvcosf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvcos)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func acos(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvacosf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvacos)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func cosh(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvcoshf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvcosh)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func acosh(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvacoshf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvacosh)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func tan(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvtanf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvtan)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func atan(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvatanf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvatan)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func tanh(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvtanhf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvtanh)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func atanh(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvatanhf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvatanh)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func sqrt(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvsqrtf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvsqrt)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func rsqrt(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvrsqrtf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvrsqrt)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func exp(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvexpf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvexp)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func exp2(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvexp2f)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvexp2)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func expm1(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvexpm1f)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvexpm1)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func log(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvlogf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvlog)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func log2(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvlog2f)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvlog2)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func log10(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvlog10f)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvlog10)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func log1p(_ mfarray: MfArray) -> MfArray {
+        // log1p is not in vForce, implement using log(1+x)
+        return Matft.math.log(mfarray + 1)
+    }
+
+    public static func abs(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvfabsf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvfabs)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func reciprocal(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            return biopsv_by_vDSP(Float(1), mfarray, vDSP_svdiv)
+        case .Double:
+            return biopsv_by_vDSP(Double(1), mfarray, vDSP_svdivD)
+        }
+    }
+
+    public static func power(bases: Float, exponents: MfArray) -> MfArray {
+        return Matft.math.power(bases: Matft.nums(bases, shape: [1]), exponents: exponents)
+    }
+
+    public static func power(bases: MfArray, exponents: Float) -> MfArray {
+        return Matft.math.power(bases: bases, exponents: Matft.nums(exponents, shape: [1]))
+    }
+
+    public static func power(bases: MfArray, exponents: MfArray) -> MfArray {
+        unsupport_complex(bases)
+        unsupport_complex(exponents)
+        let (baseBc, exponentsBc, _, _) = biop_broadcast_to(bases, exponents)
+        switch baseBc.storedType {
+        case .Float:
+            return math_biop_by_vForce(baseBc, exponentsBc, vvpowf)
+        case .Double:
+            return math_biop_by_vForce(baseBc, exponentsBc, vvpow)
+        }
+    }
+
+    public static func arctan2(x1 mfarrayY: MfArray, x2 mfarrayX: MfArray) -> MfArray {
+        // arctan2 not in our vForce fallback, use element-wise atan2
+        unsupport_complex(mfarrayY)
+        unsupport_complex(mfarrayX)
+        let (y, x, _, _) = biop_broadcast_to(mfarrayY, mfarrayX)
+        let yData = y.to_contiguous(mforder: MfOrder.Row)
+        let xData = x.to_contiguous(mforder: MfOrder.Row)
+
+        switch y.storedType {
+        case .Float:
+            let newdata = MfData(size: y.size, mftype: .Float)
+            newdata.withUnsafeMutableStartPointer(datatype: Float.self) { dstptr in
+                yData.withUnsafeMutableStartPointer(datatype: Float.self) { yptr in
+                    xData.withUnsafeMutableStartPointer(datatype: Float.self) { xptr in
+                        for i in 0..<y.size {
+                            dstptr[i] = atan2f(yptr[i], xptr[i])
+                        }
+                    }
+                }
+            }
+            return MfArray(mfdata: newdata, mfstructure: MfStructure(shape: y.shape, mforder: .Row))
+        case .Double:
+            let newdata = MfData(size: y.size, mftype: .Double)
+            newdata.withUnsafeMutableStartPointer(datatype: Double.self) { dstptr in
+                yData.withUnsafeMutableStartPointer(datatype: Double.self) { yptr in
+                    xData.withUnsafeMutableStartPointer(datatype: Double.self) { xptr in
+                        for i in 0..<y.size {
+                            dstptr[i] = atan2(yptr[i], xptr[i])
+                        }
+                    }
+                }
+            }
+            return MfArray(mfdata: newdata, mfstructure: MfStructure(shape: y.shape, mforder: .Row))
+        }
+    }
+
+    public static func floor(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvfloorf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvfloor)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func ceil(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvceilf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvceil)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func round(_ mfarray: MfArray, decimals: Int = 0) -> MfArray {
+        unsupport_complex(mfarray)
+        if decimals == 0 {
+            switch mfarray.storedType {
+            case .Float:
+                let ret = mathf_by_vForce(mfarray, vvnintf)
+                ret.mfdata.mftype = .Float
+                return ret
+            case .Double:
+                let ret = mathf_by_vForce(mfarray, vvnint)
+                ret.mfdata.mftype = .Double
+                return ret
+            }
+        } else {
+            let factor = pow(10.0, Double(decimals))
+            switch mfarray.storedType {
+            case .Float:
+                let scaled = mfarray * Float(factor)
+                let rounded = mathf_by_vForce(scaled, vvnintf)
+                rounded.mfdata.mftype = .Float
+                return rounded / Float(factor)
+            case .Double:
+                let scaled = mfarray * factor
+                let rounded = mathf_by_vForce(scaled, vvnint)
+                rounded.mfdata.mftype = .Double
+                return rounded / factor
+            }
+        }
+    }
+
+    public static func trunc(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvintf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvint)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func nearest(_ mfarray: MfArray) -> MfArray {
+        return Matft.math.round(mfarray)
+    }
+
+    public static func sign(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            return sign_by_vDSP(mfarray, vDSP_vminmg_func: vDSP_vminmg, vDSP_viclip_func: vDSP_viclip, vForce_copysign_func: vvcopysignf)
+        case .Double:
+            return sign_by_vDSP(mfarray, vDSP_vminmg_func: vDSP_vminmgD, vDSP_viclip_func: vDSP_viclipD, vForce_copysign_func: vvcopysign)
+        }
+    }
+}
+#endif

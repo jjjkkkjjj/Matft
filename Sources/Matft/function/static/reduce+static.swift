@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Accelerate
 
 public typealias biopufuncNoargs = (MfArray, MfArray) -> MfArray
 

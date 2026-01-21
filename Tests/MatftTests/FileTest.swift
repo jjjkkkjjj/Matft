@@ -1,7 +1,7 @@
+#if !os(WASI)
 import XCTest
-//@testable import Matft
-import Matft
 
+@testable import Matft
 
 final class FileTests: XCTestCase {
     var fileurl: URL!
@@ -159,3 +159,4 @@ final class FileTests: XCTestCase {
         }
     }
 }
+#endif

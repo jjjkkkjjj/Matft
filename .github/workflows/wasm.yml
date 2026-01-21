@@ -1,0 +1,55 @@
+name: wasm
+
+on:
+  push:
+
+env:
+  # Required Swift toolchain version for WASM builds
+  # Must match REQUIRED_TOOLCHAIN_VERSION in scripts/build-and-test-wasm.sh
+  SWIFT_TOOLCHAIN_VERSION: "DEVELOPMENT-SNAPSHOT-2025-11-03-a"
+  # Checksum for the WASM SDK (from SwiftWasm release page)
+  SWIFT_WASM_SDK_CHECKSUM: "879c08f24c36e20e0b3d1fadc37f4c34c089c72caa018aec726d9e0bf84ea6ff"
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install the specific Swift development snapshot required for WASM builds
+      # Toolchain comes from swift.org, SDK comes from SwiftWasm
+      - name: Install Swift Toolchain
+        run: |
+          SWIFT_URL="https://download.swift.org/development/ubuntu2404/swift-${SWIFT_TOOLCHAIN_VERSION}/swift-${SWIFT_TOOLCHAIN_VERSION}-ubuntu24.04.tar.gz"
+          echo "Downloading Swift toolchain from: $SWIFT_URL"
+          mkdir -p /opt/swift
+          curl -sL "$SWIFT_URL" | tar xz --strip-components=1 -C /opt/swift
+          echo "/opt/swift/usr/bin" >> $GITHUB_PATH
+
+      - name: Verify Swift Installation
+        run: swift --version
+
+      # Install the matching WASM SDK from SwiftWasm
+      - name: Install WASM SDK
+        run: |
+          SDK_URL="https://github.com/swiftwasm/swift/releases/download/swift-wasm-${SWIFT_TOOLCHAIN_VERSION}/swift-wasm-${SWIFT_TOOLCHAIN_VERSION}-wasm32-unknown-wasip1-threads.artifactbundle.zip"
+          echo "Installing WASM SDK from: $SDK_URL"
+          swift sdk install "$SDK_URL" --checksum "$SWIFT_WASM_SDK_CHECKSUM"
+          echo "Installed SDKs:"
+          swift sdk list
+
+      # Set environment variable to signal the correct toolchain is installed
+      - name: Set Toolchain Environment
+        run: echo "SWIFT_WASM_TOOLCHAIN_VERIFIED=1" >> $GITHUB_ENV
+
+      # Wasmtime is required because `swift test` doesn't work for WebAssembly targets.
+      # For WASM, we must build tests separately and run them with a WASM runtime.
+      # See: https://book.swiftwasm.org/getting-started/testing.html
+      - name: Install Wasmtime
+        uses: bytecodealliance/actions/wasmtime/setup@v1
+        with:
+          version: "40.0.2"
+          github_token: ${{ github.token }}
+
+      - name: Build and Test
+        run: ./scripts/build-and-test-wasm.sh
