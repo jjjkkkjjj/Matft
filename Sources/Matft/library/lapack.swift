@@ -733,6 +733,31 @@ internal typealias lapack_LU<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeM
 
 internal typealias lapack_inv<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
+// MARK: - CLAPACK Function Declarations with Correct Signatures
+// The CLAPACK header incorrectly declares these as returning int, but the implementation returns void.
+// We use @_silgen_name to declare them with the correct void return type to avoid ABI mismatch.
+
+@_silgen_name("dgetrf_")
+private func clapack_dgetrf_(
+    _ m: UnsafeMutablePointer<CLong>,
+    _ n: UnsafeMutablePointer<CLong>,
+    _ a: UnsafeMutablePointer<Double>,
+    _ lda: UnsafeMutablePointer<CLong>,
+    _ ipiv: UnsafeMutablePointer<CLong>,
+    _ info: UnsafeMutablePointer<CLong>
+) -> Void
+
+@_silgen_name("dgetri_")
+private func clapack_dgetri_(
+    _ n: UnsafeMutablePointer<CLong>,
+    _ a: UnsafeMutablePointer<Double>,
+    _ lda: UnsafeMutablePointer<CLong>,
+    _ ipiv: UnsafeMutablePointer<CLong>,
+    _ work: UnsafeMutablePointer<Double>,
+    _ lwork: UnsafeMutablePointer<CLong>,
+    _ info: UnsafeMutablePointer<CLong>
+) -> Void
+
 // MARK: - CLAPACK Wrapper Functions for WASI
 // Only dgetrf_ and dgetri_ are available in the CLAPACK eigen-support branch
 
@@ -760,7 +785,8 @@ internal func dgetrf_(_ m: UnsafeMutablePointer<__CLPK_integer>, _ n: UnsafeMuta
     let minMN = min(Int(m.pointee), Int(n.pointee))
     var ipivLong = Array<CLong>(repeating: 0, count: minMN)
 
-    CLAPACK.dgetrf_(&mLong, &nLong, a, &ldaLong, &ipivLong, &infoLong)
+    // Use correctly-typed function to avoid ABI mismatch (CLAPACK returns void, not int)
+    clapack_dgetrf_(&mLong, &nLong, a, &ldaLong, &ipivLong, &infoLong)
 
     for i in 0..<minMN {
         ipiv[i] = __CLPK_integer(ipivLong[i])
@@ -785,7 +811,8 @@ internal func dgetri_(_ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMuta
         ipivLong[i] = CLong(ipiv[i])
     }
 
-    CLAPACK.dgetri_(&nLong, a, &ldaLong, &ipivLong, work, &lworkLong, &infoLong)
+    // Use correctly-typed function to avoid ABI mismatch (CLAPACK returns void, not int)
+    clapack_dgetri_(&nLong, a, &ldaLong, &ipivLong, work, &lworkLong, &infoLong)
 
     info.pointee = __CLPK_integer(infoLong)
     return Int32(infoLong)
@@ -872,8 +899,11 @@ internal func wrap_lapack_inv<T: MfStorable>(_ rowcolnum: Int, _ srcdstptr: Unsa
 
 @inline(__always)
 internal func wrap_lapack_eigen<T: MfStorable>(_ rowcolnum: Int, _ srcptr: UnsafeMutablePointer<T>, _ dstLVecRePtr: UnsafeMutablePointer<T>, _ dstLVecImPtr: UnsafeMutablePointer<T>, _ dstRVecRePtr: UnsafeMutablePointer<T>, _ dstRVecImPtr: UnsafeMutablePointer<T>, _ dstValRePtr: UnsafeMutablePointer<T>, _ dstValImPtr: UnsafeMutablePointer<T>, lapack_func: lapack_eigen_func<T>) throws {
-    let JOBVL = UnsafeMutablePointer(mutating: ("V" as NSString).utf8String)!
-    let JOBVR = UnsafeMutablePointer(mutating: ("V" as NSString).utf8String)!
+    // Use Swift String instead of NSString for WASM compatibility
+    var jobvlStr = Array("V".utf8CString)
+    var jobvrStr = Array("V".utf8CString)
+    let JOBVL = UnsafeMutablePointer<CChar>(&jobvlStr)
+    let JOBVR = UnsafeMutablePointer<CChar>(&jobvrStr)
 
     var N = __CLPK_integer(rowcolnum)
     var LDA = __CLPK_integer(rowcolnum)
@@ -951,7 +981,9 @@ internal func wrap_lapack_eigen<T: MfStorable>(_ rowcolnum: Int, _ srcptr: Unsaf
 
 @inline(__always)
 internal func wrap_lapack_svd<T: MfStorable>(_ rownum: Int, _ colnum: Int, _ srcptr: UnsafeMutablePointer<T>, _ vptr: UnsafeMutablePointer<T>, _ sptr: UnsafeMutablePointer<T>, _ rtptr: UnsafeMutablePointer<T>, _ full_matrices: Bool, lapack_func: lapack_svd_func<T>) throws {
-    let JOBZ: UnsafeMutablePointer<Int8>
+    // Use Swift String instead of NSString for WASM compatibility
+    var jobzStr = full_matrices ? Array("A".utf8CString) : Array("S".utf8CString)
+    let JOBZ = UnsafeMutablePointer<CChar>(&jobzStr)
     var M = __CLPK_integer(rownum)
     var N = __CLPK_integer(colnum)
     let ucol: Int, vtrow: Int
@@ -964,13 +996,11 @@ internal func wrap_lapack_svd<T: MfStorable>(_ rownum: Int, _ colnum: Int, _ src
     var LDVT: __CLPK_integer
 
     if full_matrices {
-        JOBZ = UnsafeMutablePointer(mutating: ("A" as NSString).utf8String)!
         LDVT = __CLPK_integer(colnum)
         ucol = rownum
         vtrow = colnum
     }
     else {
-        JOBZ = UnsafeMutablePointer(mutating: ("S" as NSString).utf8String)!
         LDVT = __CLPK_integer(snum)
         ucol = snum
         vtrow = snum
