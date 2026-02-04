@@ -19,11 +19,18 @@ let package = Package(
             name: "pocketFFT"
             ),
         .target(
+            name: "CLAPACKHelper",
+            dependencies: [
+                .product(name: "CLAPACK", package: "CLAPACK"),
+            ],
+            publicHeadersPath: "include"
+            ),
+        .target(
             name: "Matft",
             dependencies: [
                 .product(name: "Collections", package: "swift-collections"),
                 "pocketFFT",
-                .product(name: "CLAPACK", package: "CLAPACK", condition: .when(platforms: [.wasi])),
+                .target(name: "CLAPACKHelper", condition: .when(platforms: [.wasi])),
             ]),
         .testTarget(
             name: "MatftTests",
