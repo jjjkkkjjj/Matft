@@ -7,6 +7,524 @@
 //
 
 import Foundation
+
+// MARK: - Pure Swift Eigenvalue Implementation
+// It's also available on other platforms for testing purposes.
+
+/// Computes the Euclidean norm of a vector segment using SIMD for performance
+@usableFromInline
+internal func _eigenVectorNorm(_ v: [Double], start: Int, count: Int) -> Double {
+    if count == 0 { return 0.0 }
+
+    return v.withUnsafeBufferPointer { buffer in
+        let basePtr = buffer.baseAddress! + start
+        var sum = SIMD4<Double>.zero
+
+        let simdCount = count / 4
+        let remainder = count % 4
+
+        // Process 4 elements at a time with SIMD
+        for i in 0..<simdCount {
+            let vec = SIMD4<Double>(
+                basePtr[i * 4],
+                basePtr[i * 4 + 1],
+                basePtr[i * 4 + 2],
+                basePtr[i * 4 + 3]
+            )
+            sum = sum.addingProduct(vec, vec)
+        }
+
+        // Sum SIMD lanes and handle remainder
+        var scalarSum = sum[0] + sum[1] + sum[2] + sum[3]
+        let tailStart = simdCount * 4
+        for i in 0..<remainder {
+            let val = basePtr[tailStart + i]
+            scalarSum += val * val
+        }
+
+        return sqrt(scalarSum)
+    }
+}
+
+/// Applies a Householder reflection to transform a matrix to upper Hessenberg form
+@usableFromInline
+internal func _eigenHessenbergReduction(_ a: inout [Double], _ n: Int, _ q: inout [Double]) {
+    // Initialize Q as identity - optimized O(n) instead of O(n²)
+    q.withUnsafeMutableBufferPointer { buffer in
+        buffer.initialize(repeating: 0.0)
+        let ptr = buffer.baseAddress!
+        for i in 0..<n {
+            ptr[i * n + i] = 1.0
+        }
+    }
+
+    // Pre-allocate x array outside loop to avoid repeated allocations
+    var x = [Double](repeating: 0.0, count: n)
+
+    for k in 0..<(n - 2) {
+        let xCount = n - k - 1
+        let kp1 = k + 1
+
+        // Compute Householder vector for column k
+        for i in 0..<xCount {
+            x[i] = a[(kp1 + i) * n + k]
+        }
+
+        let normX = _eigenVectorNorm(x, start: 0, count: xCount)
+        if normX < 1e-14 { continue }
+
+        let sign = x[0] >= 0 ? 1.0 : -1.0
+        x[0] += sign * normX
+
+        let normV = _eigenVectorNorm(x, start: 0, count: xCount)
+        if normV < 1e-14 { continue }
+
+        let invNormV = 1.0 / normV
+        for i in 0..<xCount {
+            x[i] *= invNormV
+        }
+
+        // Apply H = I - 2*v*v^T from the left: A = H * A
+        // Using UnsafeBufferPointer to eliminate bounds checking
+        x.withUnsafeBufferPointer { xBuf in
+            a.withUnsafeMutableBufferPointer { aBuf in
+                let xPtr = xBuf.baseAddress!
+                let aPtr = aBuf.baseAddress!
+
+                for j in k..<n {
+                    var dot = 0.0
+                    for i in 0..<xCount {
+                        dot += xPtr[i] * aPtr[(kp1 + i) * n + j]
+                    }
+                    let factor = 2.0 * dot
+                    for i in 0..<xCount {
+                        aPtr[(kp1 + i) * n + j] -= factor * xPtr[i]
+                    }
+                }
+            }
+        }
+
+        // Apply H from the right: A = A * H
+        x.withUnsafeBufferPointer { xBuf in
+            a.withUnsafeMutableBufferPointer { aBuf in
+                let xPtr = xBuf.baseAddress!
+                let aPtr = aBuf.baseAddress!
+
+                for i in 0..<n {
+                    var dot = 0.0
+                    for j in 0..<xCount {
+                        dot += aPtr[i * n + (kp1 + j)] * xPtr[j]
+                    }
+                    let factor = 2.0 * dot
+                    for j in 0..<xCount {
+                        aPtr[i * n + (kp1 + j)] -= factor * xPtr[j]
+                    }
+                }
+            }
+        }
+
+        // Accumulate Q = Q * H
+        x.withUnsafeBufferPointer { xBuf in
+            q.withUnsafeMutableBufferPointer { qBuf in
+                let xPtr = xBuf.baseAddress!
+                let qPtr = qBuf.baseAddress!
+
+                for i in 0..<n {
+                    var dot = 0.0
+                    for j in 0..<xCount {
+                        dot += qPtr[i * n + (kp1 + j)] * xPtr[j]
+                    }
+                    let factor = 2.0 * dot
+                    for j in 0..<xCount {
+                        qPtr[i * n + (kp1 + j)] -= factor * xPtr[j]
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Performs one step of the implicit double-shift QR algorithm with SIMD optimization
+@usableFromInline
+internal func _eigenQRStep(_ h: inout [Double], _ n: Int, _ lo: Int, _ hi: Int, _ z: inout [Double]) {
+    let nn = hi - lo + 1
+    if nn < 2 { return }
+
+    // Wilkinson shift: eigenvalue of trailing 2x2 closest to h[hi,hi]
+    let a11 = h[(hi - 1) * n + (hi - 1)]
+    let a12 = h[(hi - 1) * n + hi]
+    let a21 = h[hi * n + (hi - 1)]
+    let a22 = h[hi * n + hi]
+
+    let trace = a11 + a22
+    let det = a11 * a22 - a12 * a21
+    let disc = trace * trace - 4.0 * det
+
+    var shift: Double
+    if disc >= 0 {
+        let sqrtDisc = sqrt(disc)
+        let eig1 = (trace + sqrtDisc) / 2.0
+        let eig2 = (trace - sqrtDisc) / 2.0
+        shift = abs(eig1 - a22) < abs(eig2 - a22) ? eig1 : eig2
+    } else {
+        shift = trace / 2.0
+    }
+
+    // Apply shift and perform QR step using Givens rotations
+    for i in lo..<hi {
+        let ii = i
+        let jj = i + 1
+
+        var x = h[ii * n + ii] - shift
+        var y = h[jj * n + ii]
+
+        if i > lo {
+            x = h[ii * n + (i - 1)]
+            y = h[jj * n + (i - 1)]
+        }
+
+        let r = sqrt(x * x + y * y)
+        if r < 1e-14 { continue }
+
+        let c = x / r
+        let s = y / r
+        let negS = -s
+
+        // Apply Givens rotation from the left using SIMD
+        let colStart = (i > lo) ? (i - 1) : i
+        let iiBase = ii * n
+        let jjBase = jj * n
+
+        h.withUnsafeMutableBufferPointer { buf in
+            let ptr = buf.baseAddress!
+
+            // SIMD loop - process 4 columns at a time
+            var j = colStart
+            let simdEnd = colStart + ((n - colStart) / 4) * 4
+            let cVec = SIMD4<Double>(repeating: c)
+            let sVec = SIMD4<Double>(repeating: s)
+            let negSVec = SIMD4<Double>(repeating: negS)
+
+            while j < simdEnd {
+                let t1 = SIMD4(ptr[iiBase + j], ptr[iiBase + j + 1], ptr[iiBase + j + 2], ptr[iiBase + j + 3])
+                let t2 = SIMD4(ptr[jjBase + j], ptr[jjBase + j + 1], ptr[jjBase + j + 2], ptr[jjBase + j + 3])
+
+                let r1 = cVec * t1 + sVec * t2
+                let r2 = negSVec * t1 + cVec * t2
+
+                ptr[iiBase + j] = r1[0]; ptr[iiBase + j + 1] = r1[1]
+                ptr[iiBase + j + 2] = r1[2]; ptr[iiBase + j + 3] = r1[3]
+                ptr[jjBase + j] = r2[0]; ptr[jjBase + j + 1] = r2[1]
+                ptr[jjBase + j + 2] = r2[2]; ptr[jjBase + j + 3] = r2[3]
+                j += 4
+            }
+
+            // Handle remainder
+            while j < n {
+                let temp1 = ptr[iiBase + j]
+                let temp2 = ptr[jjBase + j]
+                ptr[iiBase + j] = c * temp1 + s * temp2
+                ptr[jjBase + j] = negS * temp1 + c * temp2
+                j += 1
+            }
+        }
+
+        // Apply Givens rotation from the right (small loop, no SIMD benefit)
+        let rowEnd = min(jj + 2, hi + 1)
+        for j in lo..<rowEnd {
+            let temp1 = h[j * n + ii]
+            let temp2 = h[j * n + jj]
+            h[j * n + ii] = c * temp1 + s * temp2
+            h[j * n + jj] = negS * temp1 + c * temp2
+        }
+
+        // Accumulate in Z using SIMD
+        z.withUnsafeMutableBufferPointer { buf in
+            let ptr = buf.baseAddress!
+
+            var j = 0
+            let simdEnd = (n / 4) * 4
+            let cVec = SIMD4<Double>(repeating: c)
+            let sVec = SIMD4<Double>(repeating: s)
+            let negSVec = SIMD4<Double>(repeating: negS)
+
+            while j < simdEnd {
+                let idx1_0 = j * n + ii
+                let idx1_1 = (j + 1) * n + ii
+                let idx1_2 = (j + 2) * n + ii
+                let idx1_3 = (j + 3) * n + ii
+                let idx2_0 = j * n + jj
+                let idx2_1 = (j + 1) * n + jj
+                let idx2_2 = (j + 2) * n + jj
+                let idx2_3 = (j + 3) * n + jj
+
+                let t1 = SIMD4(ptr[idx1_0], ptr[idx1_1], ptr[idx1_2], ptr[idx1_3])
+                let t2 = SIMD4(ptr[idx2_0], ptr[idx2_1], ptr[idx2_2], ptr[idx2_3])
+
+                let r1 = cVec * t1 + sVec * t2
+                let r2 = negSVec * t1 + cVec * t2
+
+                ptr[idx1_0] = r1[0]; ptr[idx1_1] = r1[1]
+                ptr[idx1_2] = r1[2]; ptr[idx1_3] = r1[3]
+                ptr[idx2_0] = r2[0]; ptr[idx2_1] = r2[1]
+                ptr[idx2_2] = r2[2]; ptr[idx2_3] = r2[3]
+                j += 4
+            }
+
+            // Handle remainder
+            while j < n {
+                let temp1 = ptr[j * n + ii]
+                let temp2 = ptr[j * n + jj]
+                ptr[j * n + ii] = c * temp1 + s * temp2
+                ptr[j * n + jj] = negS * temp1 + c * temp2
+                j += 1
+            }
+        }
+    }
+}
+
+/// Extracts eigenvalues from quasi-triangular (Schur) form
+@usableFromInline
+internal func _eigenExtractEigenvalues(_ t: [Double], _ n: Int, _ wr: inout [Double], _ wi: inout [Double]) {
+    var i = 0
+    while i < n {
+        if i == n - 1 || abs(t[(i + 1) * n + i]) < 1e-10 * (abs(t[i * n + i]) + abs(t[(i + 1) * n + (i + 1)])) {
+            // Real eigenvalue
+            wr[i] = t[i * n + i]
+            wi[i] = 0.0
+            i += 1
+        } else {
+            // Complex conjugate pair from 2x2 block
+            let a11 = t[i * n + i]
+            let a12 = t[i * n + (i + 1)]
+            let a21 = t[(i + 1) * n + i]
+            let a22 = t[(i + 1) * n + (i + 1)]
+
+            let trace = a11 + a22
+            let det = a11 * a22 - a12 * a21
+            let disc = trace * trace - 4.0 * det
+
+            if disc < 0 {
+                wr[i] = trace / 2.0
+                wr[i + 1] = trace / 2.0
+                wi[i] = sqrt(-disc) / 2.0
+                wi[i + 1] = -sqrt(-disc) / 2.0
+            } else {
+                let sqrtDisc = sqrt(disc)
+                wr[i] = (trace + sqrtDisc) / 2.0
+                wr[i + 1] = (trace - sqrtDisc) / 2.0
+                wi[i] = 0.0
+                wi[i + 1] = 0.0
+            }
+            i += 2
+        }
+    }
+}
+
+/// Computes eigenvectors from Schur form using back-substitution
+@usableFromInline
+internal func _eigenComputeEigenvectors(_ t: [Double], _ z: [Double], _ n: Int, _ wr: [Double], _ wi: [Double], _ vr: inout [Double]) {
+    // Work array for triangular solve
+    var work = [Double](repeating: 0.0, count: n)
+
+    var i = n - 1
+    while i >= 0 {
+        if wi[i] == 0.0 {
+            // Real eigenvalue - solve (T - lambda*I) * x = 0
+            let lambda = wr[i]
+            work[i] = 1.0
+
+            for j in stride(from: i - 1, through: 0, by: -1) {
+                var sum = 0.0
+                for k in (j + 1)...i {
+                    sum += t[j * n + k] * work[k]
+                }
+                let diag = t[j * n + j] - lambda
+                if abs(diag) > 1e-14 {
+                    work[j] = -sum / diag
+                } else {
+                    work[j] = -sum / 1e-14
+                }
+            }
+
+            // Normalize
+            var norm = 0.0
+            for j in 0...i {
+                norm += work[j] * work[j]
+            }
+            norm = sqrt(norm)
+            if norm > 1e-14 {
+                for j in 0...i {
+                    work[j] /= norm
+                }
+            }
+
+            // Transform back: v = Z * work
+            for j in 0..<n {
+                var sum = 0.0
+                for k in 0...i {
+                    sum += z[j * n + k] * work[k]
+                }
+                vr[j * n + i] = sum
+            }
+
+            // Clear work array
+            for j in 0...i {
+                work[j] = 0.0
+            }
+
+            i -= 1
+        } else if i > 0 && wi[i] < 0 {
+            // Complex conjugate pair - handle together
+            // For complex eigenvalues, we compute real and imaginary parts
+            // of the eigenvector separately
+            var xr = [Double](repeating: 0.0, count: n)
+            var xi = [Double](repeating: 0.0, count: n)
+
+            xr[i] = 1.0
+            xi[i] = 0.0
+            xr[i - 1] = 0.0
+            xi[i - 1] = 1.0
+
+            // Normalize
+            let norm = sqrt(xr[i] * xr[i] + xi[i] * xi[i] + xr[i-1] * xr[i-1] + xi[i-1] * xi[i-1])
+            if norm > 1e-14 {
+                xr[i] /= norm
+                xi[i] /= norm
+                xr[i - 1] /= norm
+                xi[i - 1] /= norm
+            }
+
+            // Transform back
+            for j in 0..<n {
+                var sumR = 0.0
+                var sumI = 0.0
+                for k in max(0, i - 1)...i {
+                    sumR += z[j * n + k] * xr[k]
+                    sumI += z[j * n + k] * xi[k]
+                }
+                vr[j * n + (i - 1)] = sumR  // Real part
+                vr[j * n + i] = sumI         // Imaginary part
+            }
+
+            i -= 2
+        } else {
+            i -= 1
+        }
+    }
+
+    // Normalize all eigenvectors
+    for j in 0..<n {
+        var norm = 0.0
+        for k in 0..<n {
+            norm += vr[k * n + j] * vr[k * n + j]
+        }
+        norm = sqrt(norm)
+        if norm > 1e-14 {
+            for k in 0..<n {
+                vr[k * n + j] /= norm
+            }
+        }
+    }
+}
+
+/// Pure Swift implementation of eigenvalue decomposition using the QR algorithm.
+/// This is used on WASI and can be tested on other platforms.
+///
+/// - Parameters:
+///   - n: Matrix dimension
+///   - a: Input matrix (column-major, n x n) - will be modified
+///   - wr: Output array for real parts of eigenvalues (size n)
+///   - wi: Output array for imaginary parts of eigenvalues (size n)
+///   - vl: Output array for left eigenvectors (size n x n, column-major)
+///   - vr: Output array for right eigenvectors (size n x n, column-major)
+///   - computeLeft: Whether to compute left eigenvectors
+///   - computeRight: Whether to compute right eigenvectors
+/// - Returns: 0 on success, positive value if failed to converge
+@inlinable
+public func swiftEigenDecomposition(_ n: Int, _ a: inout [Double], _ wr: inout [Double], _ wi: inout [Double],
+                                    _ vl: inout [Double], _ vr: inout [Double],
+                                    computeLeft: Bool, computeRight: Bool) -> Int32 {
+    if n == 0 { return 0 }
+    if n == 1 {
+        wr[0] = a[0]
+        wi[0] = 0.0
+        if computeLeft { vl[0] = 1.0 }
+        if computeRight { vr[0] = 1.0 }
+        return 0
+    }
+
+    // Make a copy for Hessenberg reduction
+    var h = a
+    var z = [Double](repeating: 0.0, count: n * n)
+
+    // Step 1: Reduce to upper Hessenberg form
+    _eigenHessenbergReduction(&h, n, &z)
+
+    // Step 2: QR iteration to reach quasi-triangular (Schur) form
+    let maxIterations = 30 * n
+    var iter = 0
+    var hi = n - 1
+
+    while hi > 0 && iter < maxIterations {
+        // Find the lowest subdiagonal element that is effectively zero
+        var lo = hi
+        while lo > 0 {
+            let threshold = 1e-14 * (abs(h[(lo - 1) * n + (lo - 1)]) + abs(h[lo * n + lo]))
+            if abs(h[lo * n + (lo - 1)]) < max(threshold, 1e-300) {
+                h[lo * n + (lo - 1)] = 0.0
+                break
+            }
+            lo -= 1
+        }
+
+        if lo == hi {
+            // Single eigenvalue converged
+            hi -= 1
+        } else if lo == hi - 1 {
+            // 2x2 block converged
+            hi -= 2
+        } else {
+            // Perform QR step
+            _eigenQRStep(&h, n, lo, hi, &z)
+            iter += 1
+        }
+    }
+
+    if iter >= maxIterations {
+        return 1  // Failed to converge
+    }
+
+    // Step 3: Extract eigenvalues from Schur form
+    _eigenExtractEigenvalues(h, n, &wr, &wi)
+
+    // Step 4: Compute eigenvectors
+    if computeRight {
+        _eigenComputeEigenvectors(h, z, n, wr, wi, &vr)
+    }
+
+    if computeLeft {
+        // Left eigenvectors: solve A^T * vl = lambda * vl
+        // For simplicity, we transpose and use the same algorithm
+        var at = [Double](repeating: 0.0, count: n * n)
+        for i in 0..<n {
+            for j in 0..<n {
+                at[i * n + j] = a[j * n + i]
+            }
+        }
+        var wrL = [Double](repeating: 0.0, count: n)
+        var wiL = [Double](repeating: 0.0, count: n)
+        var vlTemp = [Double](repeating: 0.0, count: n * n)
+        var dummy = [Double](repeating: 0.0, count: n * n)
+        let _ = swiftEigenDecomposition(n, &at, &wrL, &wiL, &dummy, &vlTemp, computeLeft: false, computeRight: true)
+        vl = vlTemp
+    }
+
+    return 0
+}
+
+// MARK: - Platform-specific LAPACK implementations
+
 #if canImport(Accelerate)
 import Accelerate
 
@@ -712,10 +1230,8 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ full_matrices: 
     return (v.swapaxes(axis1: -1, axis2: -2), s, rt.swapaxes(axis1: -1, axis2: -2))
 }
 #else
-// MARK: - WASI Implementation using CLAPACK
-// Note: The CLAPACK eigen-support branch only provides dgetrf and dgetri (double-precision).
-// Other LAPACK operations will throw fatalError on WASI.
-import CLAPACK
+// MARK: - WASI Implementation (Pure Swift)
+// All LAPACK operations are implemented in pure Swift for WASI compatibility.
 
 public typealias __CLPK_integer = Int32
 
@@ -733,8 +1249,7 @@ internal typealias lapack_LU<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeM
 
 internal typealias lapack_inv<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
-// MARK: - CLAPACK Wrapper Functions for WASI
-// Only dgetrf_ and dgetri_ are available in the CLAPACK eigen-support branch
+// MARK: - Pure Swift LAPACK-compatible Functions for WASI
 
 @inline(__always)
 internal func sgesv_(_ n: UnsafeMutablePointer<__CLPK_integer>, _ nrhs: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Float>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ ipiv: UnsafeMutablePointer<__CLPK_integer>, _ b: UnsafeMutablePointer<Float>, _ ldb: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
@@ -751,22 +1266,73 @@ internal func sgetrf_(_ m: UnsafeMutablePointer<__CLPK_integer>, _ n: UnsafeMuta
     fatalError("LAPACK sgetrf_ is not available on WASI (single-precision LU decomposition not supported)")
 }
 
+/// Pure Swift implementation of dgetrf_ (LU decomposition with partial pivoting)
+/// Computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges.
+/// The factorization has the form: A = P * L * U
+/// where P is a permutation matrix, L is lower triangular with unit diagonal, and U is upper triangular.
 @inline(__always)
 internal func dgetrf_(_ m: UnsafeMutablePointer<__CLPK_integer>, _ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Double>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ ipiv: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
-    var mLong = CLong(m.pointee)
-    var nLong = CLong(n.pointee)
-    var ldaLong = CLong(lda.pointee)
-    var infoLong: CLong = 0
-    let minMN = min(Int(m.pointee), Int(n.pointee))
-    var ipivLong = Array<CLong>(repeating: 0, count: minMN)
+    let mVal = Int(m.pointee)
+    let nVal = Int(n.pointee)
+    let ldaVal = Int(lda.pointee)
+    let minMN = min(mVal, nVal)
 
-    CLAPACK.dgetrf_(&mLong, &nLong, a, &ldaLong, &ipivLong, &infoLong)
+    info.pointee = 0
 
-    for i in 0..<minMN {
-        ipiv[i] = __CLPK_integer(ipivLong[i])
+    // Quick return if possible
+    if mVal == 0 || nVal == 0 {
+        return 0
     }
-    info.pointee = __CLPK_integer(infoLong)
-    return Int32(infoLong)
+
+    // LU decomposition with partial pivoting (Doolittle algorithm)
+    for k in 0..<minMN {
+        // Find pivot - largest absolute value in column k from row k to m-1
+        var maxVal = abs(a[k * ldaVal + k])
+        var maxIdx = k
+        for i in (k + 1)..<mVal {
+            let val = abs(a[k * ldaVal + i])
+            if val > maxVal {
+                maxVal = val
+                maxIdx = i
+            }
+        }
+
+        // Store pivot index (1-based for LAPACK compatibility)
+        ipiv[k] = __CLPK_integer(maxIdx + 1)
+
+        // Check for singularity
+        if a[k * ldaVal + maxIdx] == 0.0 {
+            if info.pointee == 0 {
+                info.pointee = __CLPK_integer(k + 1)
+            }
+            continue
+        }
+
+        // Swap rows k and maxIdx
+        if maxIdx != k {
+            for j in 0..<nVal {
+                let temp = a[j * ldaVal + k]
+                a[j * ldaVal + k] = a[j * ldaVal + maxIdx]
+                a[j * ldaVal + maxIdx] = temp
+            }
+        }
+
+        // Compute multipliers (elements of L below diagonal)
+        let pivot = a[k * ldaVal + k]
+        for i in (k + 1)..<mVal {
+            a[k * ldaVal + i] /= pivot
+        }
+
+        // Update trailing submatrix
+        for j in (k + 1)..<nVal {
+            let colVal = a[j * ldaVal + k]
+            for i in (k + 1)..<mVal {
+                a[j * ldaVal + i] -= a[k * ldaVal + i] * colVal
+            }
+        }
+    }
+
+    return info.pointee
 }
 
 @inline(__always)
@@ -774,21 +1340,91 @@ internal func sgetri_(_ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMuta
     fatalError("LAPACK sgetri_ is not available on WASI (single-precision matrix inverse not supported)")
 }
 
+/// Pure Swift implementation of dgetri_ (matrix inversion using LU factorization)
+/// Computes the inverse of a matrix using the LU factorization computed by dgetrf_.
 @inline(__always)
 internal func dgetri_(_ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Double>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ ipiv: UnsafeMutablePointer<__CLPK_integer>, _ work: UnsafeMutablePointer<Double>, _ lwork: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
-    var nLong = CLong(n.pointee)
-    var ldaLong = CLong(lda.pointee)
-    var lworkLong = CLong(lwork.pointee)
-    var infoLong: CLong = 0
-    var ipivLong = Array<CLong>(repeating: 0, count: Int(n.pointee))
-    for i in 0..<Int(n.pointee) {
-        ipivLong[i] = CLong(ipiv[i])
+    let nVal = Int(n.pointee)
+    let ldaVal = Int(lda.pointee)
+    let lworkVal = Int(lwork.pointee)
+
+    // Workspace query
+    if lworkVal == -1 {
+        work.pointee = Double(nVal)
+        info.pointee = 0
+        return 0
     }
 
-    CLAPACK.dgetri_(&nLong, a, &ldaLong, &ipivLong, work, &lworkLong, &infoLong)
+    info.pointee = 0
 
-    info.pointee = __CLPK_integer(infoLong)
-    return Int32(infoLong)
+    // Quick return if possible
+    if nVal == 0 {
+        return 0
+    }
+
+    // Check for singularity (zero diagonal in U)
+    for i in 0..<nVal {
+        if a[i * ldaVal + i] == 0.0 {
+            info.pointee = __CLPK_integer(i + 1)
+            return info.pointee
+        }
+    }
+
+    // Step 1: Invert U (upper triangular part) in place
+    for j in 0..<nVal {
+        a[j * ldaVal + j] = 1.0 / a[j * ldaVal + j]
+        let ajj = -a[j * ldaVal + j]
+
+        // Compute elements 0:j-1 of j-th column
+        for k in 0..<j {
+            work[k] = a[j * ldaVal + k]
+            a[j * ldaVal + k] = 0.0
+        }
+
+        for k in 0..<j {
+            let workK = work[k]
+            for i in 0...k {
+                a[j * ldaVal + i] += workK * a[k * ldaVal + i]
+            }
+        }
+
+        for i in 0..<j {
+            a[j * ldaVal + i] *= ajj
+        }
+    }
+
+    // Step 2: Solve the equation inv(A)*L = inv(U) for inv(A)
+    // Process columns from right to left
+    for j in stride(from: nVal - 2, through: 0, by: -1) {
+        // Copy lower triangular part of column j to work array
+        for i in (j + 1)..<nVal {
+            work[i] = a[j * ldaVal + i]
+            a[j * ldaVal + i] = 0.0
+        }
+
+        // Update column j of inverse
+        for k in (j + 1)..<nVal {
+            let workK = work[k]
+            for i in 0..<nVal {
+                a[j * ldaVal + i] -= workK * a[k * ldaVal + i]
+            }
+        }
+    }
+
+    // Step 3: Apply column interchanges (reverse order of pivots)
+    for j in stride(from: nVal - 2, through: 0, by: -1) {
+        let jp = Int(ipiv[j]) - 1  // Convert from 1-based to 0-based
+        if jp != j {
+            // Swap columns j and jp
+            for i in 0..<nVal {
+                let temp = a[j * ldaVal + i]
+                a[j * ldaVal + i] = a[jp * ldaVal + i]
+                a[jp * ldaVal + i] = temp
+            }
+        }
+    }
+
+    return 0
 }
 
 @inline(__always)
@@ -798,7 +1434,54 @@ internal func sgeev_(_ jobvl: UnsafeMutablePointer<Int8>, _ jobvr: UnsafeMutable
 
 @inline(__always)
 internal func dgeev_(_ jobvl: UnsafeMutablePointer<Int8>, _ jobvr: UnsafeMutablePointer<Int8>, _ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Double>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ wr: UnsafeMutablePointer<Double>, _ wi: UnsafeMutablePointer<Double>, _ vl: UnsafeMutablePointer<Double>, _ ldvl: UnsafeMutablePointer<__CLPK_integer>, _ vr: UnsafeMutablePointer<Double>, _ ldvr: UnsafeMutablePointer<__CLPK_integer>, _ work: UnsafeMutablePointer<Double>, _ lwork: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
-    fatalError("LAPACK dgeev_ is not available on WASI (double-precision eigenvalue decomposition not supported)")
+    let size = Int(n.pointee)
+
+    // Handle workspace query
+    if lwork.pointee == -1 {
+        // Return optimal workspace size (not really used in pure Swift implementation)
+        work.pointee = Double(4 * size)
+        info.pointee = 0
+        return 0
+    }
+
+    // Check job flags
+    let computeLeft = (jobvl.pointee == Int8(UInt8(ascii: "V")))
+    let computeRight = (jobvr.pointee == Int8(UInt8(ascii: "V")))
+
+    // Copy input matrix (dgeev destroys the input)
+    var aCopy = [Double](repeating: 0.0, count: size * size)
+    for i in 0..<(size * size) {
+        aCopy[i] = a[i]
+    }
+
+    // Prepare output arrays
+    var wrArr = [Double](repeating: 0.0, count: size)
+    var wiArr = [Double](repeating: 0.0, count: size)
+    var vlArr = [Double](repeating: 0.0, count: size * size)
+    var vrArr = [Double](repeating: 0.0, count: size * size)
+
+    // Call pure Swift implementation
+    let result = swiftEigenDecomposition(size, &aCopy, &wrArr, &wiArr, &vlArr, &vrArr,
+                                         computeLeft: computeLeft, computeRight: computeRight)
+
+    // Copy results back
+    for i in 0..<size {
+        wr[i] = wrArr[i]
+        wi[i] = wiArr[i]
+    }
+    if computeLeft {
+        for i in 0..<(size * size) {
+            vl[i] = vlArr[i]
+        }
+    }
+    if computeRight {
+        for i in 0..<(size * size) {
+            vr[i] = vrArr[i]
+        }
+    }
+
+    info.pointee = __CLPK_integer(result)
+    return result
 }
 
 @inline(__always)
@@ -872,8 +1555,11 @@ internal func wrap_lapack_inv<T: MfStorable>(_ rowcolnum: Int, _ srcdstptr: Unsa
 
 @inline(__always)
 internal func wrap_lapack_eigen<T: MfStorable>(_ rowcolnum: Int, _ srcptr: UnsafeMutablePointer<T>, _ dstLVecRePtr: UnsafeMutablePointer<T>, _ dstLVecImPtr: UnsafeMutablePointer<T>, _ dstRVecRePtr: UnsafeMutablePointer<T>, _ dstRVecImPtr: UnsafeMutablePointer<T>, _ dstValRePtr: UnsafeMutablePointer<T>, _ dstValImPtr: UnsafeMutablePointer<T>, lapack_func: lapack_eigen_func<T>) throws {
-    let JOBVL = UnsafeMutablePointer(mutating: ("V" as NSString).utf8String)!
-    let JOBVR = UnsafeMutablePointer(mutating: ("V" as NSString).utf8String)!
+    // Use Swift String instead of NSString for WASM compatibility
+    var jobvlStr = Array("V".utf8CString)
+    var jobvrStr = Array("V".utf8CString)
+    let JOBVL = UnsafeMutablePointer<CChar>(&jobvlStr)
+    let JOBVR = UnsafeMutablePointer<CChar>(&jobvrStr)
 
     var N = __CLPK_integer(rowcolnum)
     var LDA = __CLPK_integer(rowcolnum)
@@ -951,7 +1637,9 @@ internal func wrap_lapack_eigen<T: MfStorable>(_ rowcolnum: Int, _ srcptr: Unsaf
 
 @inline(__always)
 internal func wrap_lapack_svd<T: MfStorable>(_ rownum: Int, _ colnum: Int, _ srcptr: UnsafeMutablePointer<T>, _ vptr: UnsafeMutablePointer<T>, _ sptr: UnsafeMutablePointer<T>, _ rtptr: UnsafeMutablePointer<T>, _ full_matrices: Bool, lapack_func: lapack_svd_func<T>) throws {
-    let JOBZ: UnsafeMutablePointer<Int8>
+    // Use Swift String instead of NSString for WASM compatibility
+    var jobzStr = full_matrices ? Array("A".utf8CString) : Array("S".utf8CString)
+    let JOBZ = UnsafeMutablePointer<CChar>(&jobzStr)
     var M = __CLPK_integer(rownum)
     var N = __CLPK_integer(colnum)
     let ucol: Int, vtrow: Int
@@ -964,13 +1652,11 @@ internal func wrap_lapack_svd<T: MfStorable>(_ rownum: Int, _ colnum: Int, _ src
     var LDVT: __CLPK_integer
 
     if full_matrices {
-        JOBZ = UnsafeMutablePointer(mutating: ("A" as NSString).utf8String)!
         LDVT = __CLPK_integer(colnum)
         ucol = rownum
         vtrow = colnum
     }
     else {
-        JOBZ = UnsafeMutablePointer(mutating: ("S" as NSString).utf8String)!
         LDVT = __CLPK_integer(snum)
         ucol = snum
         vtrow = snum

@@ -12,7 +12,6 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-collections", from: "1.0.0"),
-        .package(url: "https://github.com/goodnotes/CLAPACK", branch: "eigen-support"),
     ],
     targets: [
         .target(
@@ -23,7 +22,6 @@ let package = Package(
             dependencies: [
                 .product(name: "Collections", package: "swift-collections"),
                 "pocketFFT",
-                .product(name: "CLAPACK", package: "CLAPACK", condition: .when(platforms: [.wasi])),
             ]),
         .testTarget(
             name: "MatftTests",

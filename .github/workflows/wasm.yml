@@ -2,6 +2,7 @@ name: wasm
 
 on:
   push:
+  pull_request:
 
 env:
   # Required Swift toolchain version for WASM builds
