@@ -465,9 +465,7 @@ final class WASIFallbackTests: XCTestCase {
         XCTAssertEqual(scalar, 42)
     }
 
-    // MARK: - Linear Algebra Tests (CLAPACK-backed for WASI)
-    // These tests validate the CLAPACK wrapper implementations used on WASI
-    // Only Double-precision is supported via CLAPACK
+    // MARK: - Linear Algebra Tests
 
     func testMatrixInverseDouble() {
         // Test 2x2 matrix inverse (Double precision - supported on WASI)

@@ -47,7 +47,7 @@ final class LinAlgTests: XCTestCase {
                                                                      [ 1.5, -0.5]], mftype: .Float))
         }
         #endif
-        // Double test - uses dgetrf_/dgetri_ (available on WASM via CLAPACK)
+        // Double test - uses dgetrf_/dgetri_
         do{
             let a = MfArray([[[1.0, 2.0],
                               [3.0, 4.0]],
@@ -70,7 +70,7 @@ final class LinAlgTests: XCTestCase {
         }
         #endif
 
-        // Double test - uses dgetrf_ (available on WASM via CLAPACK)
+        // Double test - uses dgetrf_
         do{
             let a = MfArray([[[1.0, 2.0],
                               [3.0, 4.0]],

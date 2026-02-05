@@ -9,7 +9,6 @@
 import Foundation
 
 // MARK: - Pure Swift Eigenvalue Implementation
-// This implementation is used on WASI where CLAPACK doesn't include dgeev.
 // It's also available on other platforms for testing purposes.
 
 /// Computes the Euclidean norm of a vector segment using SIMD for performance
@@ -1231,10 +1230,8 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ full_matrices: 
     return (v.swapaxes(axis1: -1, axis2: -2), s, rt.swapaxes(axis1: -1, axis2: -2))
 }
 #else
-// MARK: - WASI Implementation using CLAPACK
-// Note: The CLAPACK eigen-support branch only provides dgetrf and dgetri (double-precision).
-// Other LAPACK operations will throw fatalError on WASI.
-import CLAPACKHelper
+// MARK: - WASI Implementation (Pure Swift)
+// All LAPACK operations are implemented in pure Swift for WASI compatibility.
 
 public typealias __CLPK_integer = Int32
 
@@ -1252,12 +1249,7 @@ internal typealias lapack_LU<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeM
 
 internal typealias lapack_inv<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
-// MARK: - CLAPACK Wrapper Functions for WASI
-// dgeev_ is implemented in pure Swift (swiftEigenDecomposition) above
-// Note: CLAPACK uses "integer" = long int, which on wasm32 is 32-bit (CLong)
-// Note: The CLAPACK header declares functions as returning int, but the f2c-generated
-// implementation returns void. This causes linker warnings but doesn't affect correctness
-// since we don't rely on the return value from the C function (we use info parameter instead).
+// MARK: - Pure Swift LAPACK-compatible Functions for WASI
 
 @inline(__always)
 internal func sgesv_(_ n: UnsafeMutablePointer<__CLPK_integer>, _ nrhs: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Float>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ ipiv: UnsafeMutablePointer<__CLPK_integer>, _ b: UnsafeMutablePointer<Float>, _ ldb: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
@@ -1274,23 +1266,73 @@ internal func sgetrf_(_ m: UnsafeMutablePointer<__CLPK_integer>, _ n: UnsafeMuta
     fatalError("LAPACK sgetrf_ is not available on WASI (single-precision LU decomposition not supported)")
 }
 
+/// Pure Swift implementation of dgetrf_ (LU decomposition with partial pivoting)
+/// Computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges.
+/// The factorization has the form: A = P * L * U
+/// where P is a permutation matrix, L is lower triangular with unit diagonal, and U is upper triangular.
 @inline(__always)
 internal func dgetrf_(_ m: UnsafeMutablePointer<__CLPK_integer>, _ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Double>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ ipiv: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
-    // Call CLAPACK via helper wrapper that uses correct void return type
-    var mLong = clapack_int(m.pointee)
-    var nLong = clapack_int(n.pointee)
-    var ldaLong = clapack_int(lda.pointee)
-    var infoLong: clapack_int = 0
-    let minMN = min(Int(m.pointee), Int(n.pointee))
+    let mVal = Int(m.pointee)
+    let nVal = Int(n.pointee)
+    let ldaVal = Int(lda.pointee)
+    let minMN = min(mVal, nVal)
 
-    // On wasm32, clapack_int (long) and __CLPK_integer (Int32) are both 32-bit,
-    // so we can use withMemoryRebound to avoid array allocation and copying
-    ipiv.withMemoryRebound(to: clapack_int.self, capacity: minMN) { ipivRebound in
-        clapack_dgetrf_wrapper(&mLong, &nLong, a, &ldaLong, ipivRebound, &infoLong)
+    info.pointee = 0
+
+    // Quick return if possible
+    if mVal == 0 || nVal == 0 {
+        return 0
     }
 
-    info.pointee = __CLPK_integer(infoLong)
-    return Int32(infoLong)
+    // LU decomposition with partial pivoting (Doolittle algorithm)
+    for k in 0..<minMN {
+        // Find pivot - largest absolute value in column k from row k to m-1
+        var maxVal = abs(a[k * ldaVal + k])
+        var maxIdx = k
+        for i in (k + 1)..<mVal {
+            let val = abs(a[k * ldaVal + i])
+            if val > maxVal {
+                maxVal = val
+                maxIdx = i
+            }
+        }
+
+        // Store pivot index (1-based for LAPACK compatibility)
+        ipiv[k] = __CLPK_integer(maxIdx + 1)
+
+        // Check for singularity
+        if a[k * ldaVal + maxIdx] == 0.0 {
+            if info.pointee == 0 {
+                info.pointee = __CLPK_integer(k + 1)
+            }
+            continue
+        }
+
+        // Swap rows k and maxIdx
+        if maxIdx != k {
+            for j in 0..<nVal {
+                let temp = a[j * ldaVal + k]
+                a[j * ldaVal + k] = a[j * ldaVal + maxIdx]
+                a[j * ldaVal + maxIdx] = temp
+            }
+        }
+
+        // Compute multipliers (elements of L below diagonal)
+        let pivot = a[k * ldaVal + k]
+        for i in (k + 1)..<mVal {
+            a[k * ldaVal + i] /= pivot
+        }
+
+        // Update trailing submatrix
+        for j in (k + 1)..<nVal {
+            let colVal = a[j * ldaVal + k]
+            for i in (k + 1)..<mVal {
+                a[j * ldaVal + i] -= a[k * ldaVal + i] * colVal
+            }
+        }
+    }
+
+    return info.pointee
 }
 
 @inline(__always)
@@ -1298,23 +1340,91 @@ internal func sgetri_(_ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMuta
     fatalError("LAPACK sgetri_ is not available on WASI (single-precision matrix inverse not supported)")
 }
 
+/// Pure Swift implementation of dgetri_ (matrix inversion using LU factorization)
+/// Computes the inverse of a matrix using the LU factorization computed by dgetrf_.
 @inline(__always)
 internal func dgetri_(_ n: UnsafeMutablePointer<__CLPK_integer>, _ a: UnsafeMutablePointer<Double>, _ lda: UnsafeMutablePointer<__CLPK_integer>, _ ipiv: UnsafeMutablePointer<__CLPK_integer>, _ work: UnsafeMutablePointer<Double>, _ lwork: UnsafeMutablePointer<__CLPK_integer>, _ info: UnsafeMutablePointer<__CLPK_integer>) -> Int32 {
-    // Call CLAPACK via helper wrapper that uses correct void return type
-    var nLong = clapack_int(n.pointee)
-    var ldaLong = clapack_int(lda.pointee)
-    var lworkLong = clapack_int(lwork.pointee)
-    var infoLong: clapack_int = 0
     let nVal = Int(n.pointee)
+    let ldaVal = Int(lda.pointee)
+    let lworkVal = Int(lwork.pointee)
 
-    // On wasm32, clapack_int (long) and __CLPK_integer (Int32) are both 32-bit,
-    // so we can use withMemoryRebound to avoid array allocation and copying
-    ipiv.withMemoryRebound(to: clapack_int.self, capacity: nVal) { ipivRebound in
-        clapack_dgetri_wrapper(&nLong, a, &ldaLong, ipivRebound, work, &lworkLong, &infoLong)
+    // Workspace query
+    if lworkVal == -1 {
+        work.pointee = Double(nVal)
+        info.pointee = 0
+        return 0
     }
 
-    info.pointee = __CLPK_integer(infoLong)
-    return Int32(infoLong)
+    info.pointee = 0
+
+    // Quick return if possible
+    if nVal == 0 {
+        return 0
+    }
+
+    // Check for singularity (zero diagonal in U)
+    for i in 0..<nVal {
+        if a[i * ldaVal + i] == 0.0 {
+            info.pointee = __CLPK_integer(i + 1)
+            return info.pointee
+        }
+    }
+
+    // Step 1: Invert U (upper triangular part) in place
+    for j in 0..<nVal {
+        a[j * ldaVal + j] = 1.0 / a[j * ldaVal + j]
+        let ajj = -a[j * ldaVal + j]
+
+        // Compute elements 0:j-1 of j-th column
+        for k in 0..<j {
+            work[k] = a[j * ldaVal + k]
+            a[j * ldaVal + k] = 0.0
+        }
+
+        for k in 0..<j {
+            let workK = work[k]
+            for i in 0...k {
+                a[j * ldaVal + i] += workK * a[k * ldaVal + i]
+            }
+        }
+
+        for i in 0..<j {
+            a[j * ldaVal + i] *= ajj
+        }
+    }
+
+    // Step 2: Solve the equation inv(A)*L = inv(U) for inv(A)
+    // Process columns from right to left
+    for j in stride(from: nVal - 2, through: 0, by: -1) {
+        // Copy lower triangular part of column j to work array
+        for i in (j + 1)..<nVal {
+            work[i] = a[j * ldaVal + i]
+            a[j * ldaVal + i] = 0.0
+        }
+
+        // Update column j of inverse
+        for k in (j + 1)..<nVal {
+            let workK = work[k]
+            for i in 0..<nVal {
+                a[j * ldaVal + i] -= workK * a[k * ldaVal + i]
+            }
+        }
+    }
+
+    // Step 3: Apply column interchanges (reverse order of pivots)
+    for j in stride(from: nVal - 2, through: 0, by: -1) {
+        let jp = Int(ipiv[j]) - 1  // Convert from 1-based to 0-based
+        if jp != j {
+            // Swap columns j and jp
+            for i in 0..<nVal {
+                let temp = a[j * ldaVal + i]
+                a[j * ldaVal + i] = a[jp * ldaVal + i]
+                a[jp * ldaVal + i] = temp
+            }
+        }
+    }
+
+    return 0
 }
 
 @inline(__always)
