@@ -140,18 +140,8 @@ extension Matft{
             - axis: the expanded axis
     */
     public static func expand_dims(_ mfarray: MfArray, axis: Int) -> MfArray{
-        let newarray = mfarray.shallowcopy()
         
-        var newshape = mfarray.shape
-        let axis = get_positive_axis_for_expand_dims(axis, ndim: mfarray.ndim)
-        
-        newshape.insert(1, at: axis)
-        var newstrides = mfarray.strides
-        newstrides.insert(0, at: axis)
-        
-        newarray.mfstructure = MfStructure(shape: newshape, strides: newstrides)
-        
-        return newarray
+        return Matft.expand_dims(mfarray, axes: [axis])
     }
     /**
        Create mfarray expanded dimension for given axis
@@ -161,15 +151,22 @@ extension Matft{
     */
     public static func expand_dims(_ mfarray: MfArray, axes: [Int]) -> MfArray{
         let newarray = mfarray.shallowcopy()
-        // reorder descending
-        let axes = axes.sorted{ $0 < $1 }
-        var newshape = mfarray.shape
-        var newstrides = mfarray.strides
-        for axis in axes{
-            let axis = get_positive_axis_for_expand_dims(axis, ndim: newshape.count)
-            
-            newshape.insert(1, at: axis)
-            newstrides.insert(0, at: axis)
+        let out_ndim = mfarray.ndim + axes.count
+        var newshape: [Int] = Array(repeating: 0, count: out_ndim)
+        var newstrides: [Int] = Array(repeating: 0, count: out_ndim)
+        let orig_shape = mfarray.shape
+        let orig_strides = mfarray.strides
+        var orig_ax = 0
+        let axes = axes.map{ get_positive_axis_for_expand_dims($0, ndim: out_ndim) }
+        for ax in (0..<out_ndim){
+            if axes.contains(ax) {
+                newshape[ax] = 1
+                newstrides[ax] = 0
+            } else {
+                newshape[ax] = orig_shape[orig_ax]
+                newstrides[ax] = orig_strides[orig_ax]
+                orig_ax += 1
+            }
         }
         
         newarray.mfstructure = MfStructure(shape: newshape, strides: newstrides)
