@@ -322,6 +322,18 @@ final class ConversionTests: XCTestCase {
             XCTAssertEqual(Matft.expand_dims(a, axes: [2, 0]), MfArray([[[1],
                                                                          [2]]]))
         }
+        
+        do{
+            let a = Matft.nums(Float(0), shape: [3, 4, 5])
+            XCTAssertEqual(Matft.expand_dims(a, axis: -1).shape, [3, 4, 5, 1])
+        }
+        
+        do{
+            let a = Matft.nums(Float(0), shape: [3, 4, 5])
+            XCTAssertEqual(Matft.expand_dims(a, axes: [-1, 2]).shape, [3, 4, 1, 5, 1])
+            
+            XCTAssertEqual(Matft.expand_dims(a, axes: [2, -1]).shape, [3, 4, 1, 5, 1])
+        }
     }
     
     func testReshape(){
