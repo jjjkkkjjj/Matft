@@ -27,6 +27,10 @@ mlx-swift に存在しない（特に「出力 shape がデータ依存」「nan
 | `nansum, nanmean, nanmax, nanmin, nanargmax, nanargmin, nanstd, nanvar, nanmedian` | 全 NaN スライスの挙動（NaN + warning）は NaN を返すだけでよい |
 
 ### 4-C: データ依存 shape
+> **実装済み（branch `feature/numpy-gaps-search`）**: `Matft.nonzero/argwhere/where`（1 引数・3 引数，スカラー版あり），`searchsorted`（`MfSearchSide`），`digitize`，`bincount`，
+> `histogram`（bins: Int / MfArray，range，density，weights．NumPy 2 のビン番号補正を再現），`unique/unique_values/unique_counts/unique_inverse/unique_all`（NumPy 2 の Array API 名），`isin`，`intersect1d/union1d/setdiff1d`．
+> テスト: `SearchTest.swift`，`SetOpsTest.swift`．`Matft.where` はキーワード名でも宣言・呼び出しできた．
+> 速度（100 万要素）: nonzero 8.8ms（NumPy 4.0），unique 22ms（5.0，radix sort），unique_all 76ms（72），histogram 3.6ms（3.8），isin 2.7ms（0.6）．
 | 関数 | 要点 |
 |---|---|
 | `Matft.nonzero(a) -> [MfArray]` | タプル相当を配列で返す |
