@@ -247,25 +247,33 @@ internal func wrap_vDSP_compare<T: MfStorable>(_ size: Int, _ srcptr: UnsafePoin
 ///   - size: A size to be converted
 ///   - srcptr: A source pointer
 ///   - dstptr: A destination pointer
-///   - vDSP_vminmg_func: The vDSP vminmg function
-///   - vDSP_viclip_func: The vDSP viclip function
-///   - vForce_copysign_func: The vForce copysign function
+///   - vDSP_vthrsc_func: The vDSP vthrsc function
+///   - vDSP_vadd_func: The vDSP vadd function
+///   - vDSP_sve_func: The vDSP sve function
 @inline(__always)
-internal func wrap_vDSP_sign<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_vminmg_func: vDSP_vminmg_func<T>, _ vDSP_viclip_func: vDSP_viclip_func<T>, _ vForce_copysign_func: vForce_copysign_func<T>){
-    var i32size = Int32(size)
+internal func wrap_vDSP_sign<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_vthrsc_func: vDSP_vthrsc_func<T>, _ vDSP_vadd_func: vDSP_biopvv_func<T>, _ vDSP_sve_func: vDSP_stats_func<T>){
+    let n = vDSP_Length(size)
+    let workptr = UnsafeMutablePointer<T>.allocate(capacity: size)
+    defer { workptr.deallocate() }
     
-    // if |src| <= 1  => dst = |src|
-    //    |src| > 1   => dst = 1
-    // Note that the 0<= dst <= 1
-    var one = T.from(1)
-    vDSP_vminmg_func(srcptr, vDSP_Stride(1), &one, vDSP_Stride(0), dstptr, vDSP_Stride(1), vDSP_Length(size))
-    
+    var half = T.from(1) / T.from(2)
+    // x > 0  => +0.5, otherwise -0.5
+    var tiny = T.leastNonzeroMagnitude
+    vDSP_vthrsc_func(srcptr, vDSP_Stride(1), &tiny, &half, dstptr, vDSP_Stride(1), n)
+    // x >= 0 => +0.5, otherwise -0.5
     var zero = T.zero
-    one = T.from(1)
-    // if src <= 0, 1 <= src   => dst = src
-    //    0 < src <= 1         => dst = 1
-    vDSP_viclip_func(dstptr, vDSP_Stride(1), &zero, &one, dstptr, vDSP_Stride(1), vDSP_Length(size))
-    vForce_copysign_func(dstptr, dstptr, srcptr, &i32size)
+    vDSP_vthrsc_func(srcptr, vDSP_Stride(1), &zero, &half, workptr, vDSP_Stride(1), n)
+    // x > 0 => 1, x == ±0 => +0, x < 0 => -1 (NaN => -1)
+    vDSP_vadd_func(dstptr, vDSP_Stride(1), workptr, vDSP_Stride(1), dstptr, vDSP_Stride(1), n)
+    
+    // sign(NaN) is NaN. The sum is NaN only when src contains NaN (or both of +inf and -inf), so fix them up only then
+    var sum = T.zero
+    vDSP_sve_func(srcptr, vDSP_Stride(1), &sum, n)
+    if sum.isNaN{
+        for i in 0..<size where srcptr[i].isNaN{
+            dstptr[i] = srcptr[i]
+        }
+    }
 }
 
 /// Wrapper of vDSP clip function
@@ -1043,11 +1051,11 @@ internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ minval: T, _ max
 /// Generate sign by vDSP
 /// - Parameters:
 ///    - mfarray: An input mfarray
-///    - vDSP_vminmg_func: vDSP_vminmg function
-///    - vDSP_viclip_func: vDSP_viclip function
-///    - vForce_copysign_func: vForce_copysign function
+///    - vDSP_vthrsc_func: vDSP_vthrsc function
+///    - vDSP_vadd_func: vDSP_vadd function
+///    - vDSP_sve_func: vDSP_sve function
 /// - Returns: Converted mfarray
-internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_vminmg_func: vDSP_vminmg_func<T>, vDSP_viclip_func: vDSP_viclip_func<T>, vForce_copysign_func: vForce_copysign_func<T>) -> MfArray{
+internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_vthrsc_func: vDSP_vthrsc_func<T>, _ vDSP_vadd_func: vDSP_biopvv_func<T>, _ vDSP_sve_func: vDSP_stats_func<T>) -> MfArray{
     let mfarray = check_contiguous(mfarray)
         
     let size = mfarray.storedSize
@@ -1055,8 +1063,7 @@ internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_vminmg_func: 
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            wrap_vDSP_sign(size, $0, dstptrT, vDSP_vminmg_func, vDSP_viclip_func,
-                vForce_copysign_func)
+            wrap_vDSP_sign(size, $0, dstptrT, vDSP_vthrsc_func, vDSP_vadd_func, vDSP_sve_func)
         }
     }
     
@@ -2969,29 +2976,20 @@ internal func dotpr_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: Mf
 
 // MARK: - Sign Functions for WASI
 
-@inline(__always)
-internal func wrap_vDSP_sign<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_vminmg_func: vDSP_vminmg_func<T>, _ vDSP_viclip_func: vDSP_viclip_func<T>, _ vForce_copysign_func: vForce_copysign_func<T>){
-    var i32size = Int32(size)
-
-    var one = T.from(1)
-    vDSP_vminmg_func(srcptr, 1, &one, 0, dstptr, 1, size)
-
-    var zero = T.zero
-    one = T.from(1)
-    vDSP_viclip_func(dstptr, 1, &zero, &one, dstptr, 1, size)
-    vForce_copysign_func(dstptr, dstptr, srcptr, &i32size)
-}
-
-internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, vDSP_vminmg_func: vDSP_vminmg_func<T>, vDSP_viclip_func: vDSP_viclip_func<T>, vForce_copysign_func: vForce_copysign_func<T>) -> MfArray{
+/// Pure Swift fallback for sign_by_vDSP (numpy semantics: sign(NaN) = NaN, sign(-0.0) = +0.0)
+internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ type: T.Type) -> MfArray{
     let mfarray = check_contiguous(mfarray)
 
     let size = mfarray.storedSize
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
-        dstptrT in
+        dstptr in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            wrap_vDSP_sign(size, $0, dstptrT, vDSP_vminmg_func, vDSP_viclip_func,
-                vForce_copysign_func)
+            srcptr in
+            for i in 0..<size{
+                let x = srcptr[i]
+                dstptr[i] = x > T.zero ? T.from(1) : (x < T.zero ? T.from(-1) : (x.isNaN ? x : T.zero))
+            }
         }
     }
 

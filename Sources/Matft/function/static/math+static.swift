@@ -664,9 +664,9 @@ extension Matft.math{//use vDSP
         
         switch mfarray.storedType {
         case .Float:
-            return sign_by_vDSP(mfarray, vDSP_vminmg_func: vDSP_vminmg, vDSP_viclip_func: vDSP_viclip, vForce_copysign_func: vvcopysignf)
+            return sign_by_vDSP(mfarray, vDSP_vthrsc, vDSP_vadd, vDSP_sve)
         case .Double:
-            return sign_by_vDSP(mfarray, vDSP_vminmg_func: vDSP_vminmgD, vDSP_viclip_func: vDSP_viclipD, vForce_copysign_func: vvcopysign)
+            return sign_by_vDSP(mfarray, vDSP_vthrscD, vDSP_vaddD, vDSP_sveD)
         }
     }
 }
@@ -1118,9 +1118,9 @@ extension Matft.math {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
         case .Float:
-            return sign_by_vDSP(mfarray, vDSP_vminmg_func: vDSP_vminmg, vDSP_viclip_func: vDSP_viclip, vForce_copysign_func: vvcopysignf)
+            return sign_by_vDSP(mfarray, Float.self)
         case .Double:
-            return sign_by_vDSP(mfarray, vDSP_vminmg_func: vDSP_vminmgD, vDSP_viclip_func: vDSP_viclipD, vForce_copysign_func: vvcopysign)
+            return sign_by_vDSP(mfarray, Double.self)
         }
     }
 }
