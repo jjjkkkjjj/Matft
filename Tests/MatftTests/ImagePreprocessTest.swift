@@ -64,9 +64,9 @@ final class ImagePreprocessTest: XCTestCase {
         let bilinear = Matft.image.resize(rena, width: 100, height: 60, resample: .bilinear)
         XCTAssertEqual(bilinear, _load("resize_rena_bilinear_100x60.csv", shape: [60, 100, 3]))
 
-        ImageSnapshot.save(Matft.image.color(bicubic, conversion: .RGB2RGBA), as: "resize_pil_bicubic_100x60")
+        ImageSnapshot.check(Matft.image.color(bicubic, conversion: .RGB2RGBA), as: "resize_pil_bicubic_100x60")
         let up = Matft.image.resize(rena, width: 300, height: 400, resample: .bicubic)
-        ImageSnapshot.save(Matft.image.color(up, conversion: .RGB2RGBA), as: "resize_pil_bicubic_300x400")
+        ImageSnapshot.check(Matft.image.color(up, conversion: .RGB2RGBA), as: "resize_pil_bicubic_300x400")
     }
 
     func test_center_crop() {

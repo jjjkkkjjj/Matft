@@ -53,7 +53,7 @@ final class ImageTest: XCTestCase {
         // The fixture is opaque, so resized alpha stays 1
         XCTAssertLessThan(maxAbsDiff(ret[Matft.all, Matft.all, 3], Matft.nums(Float(1), shape: [150, 300])), 1e-3)
 
-        ImageSnapshot.save(ret, as: "resize_300x150")
+        ImageSnapshot.check(ret, as: "resize_300x150")
     }
 
     func test_resize_gray() {
@@ -67,7 +67,7 @@ final class ImageTest: XCTestCase {
         let expected = Matft.image.color(Matft.image.resize(image, width: 300, height: 150), conversion: .RGBA2GRAY)
         XCTAssertLessThan(maxAbsDiff(ret, expected), 1e-3)
 
-        ImageSnapshot.save(ret, as: "resize_gray_300x150")
+        ImageSnapshot.check(ret, as: "resize_gray_300x150")
     }
 
     func test_resize_colmajor() {
@@ -83,7 +83,7 @@ final class ImageTest: XCTestCase {
         XCTAssertLessThan(maxAbsDiff(Matft.image.resize(sliced, width: 90, height: 170),
                                      Matft.image.resize(sliced.deepcopy(.Row), width: 90, height: 170)), 1e-5)
 
-        ImageSnapshot.save(ret, as: "resize_colmajor_300x150")
+        ImageSnapshot.check(ret, as: "resize_colmajor_300x150")
     }
 
     // MARK: - warpAffine
@@ -100,7 +100,7 @@ final class ImageTest: XCTestCase {
         XCTAssertLessThan(ret[0~<10].max().scalar(Float.self)!, 1e-3)
         XCTAssertLessThan(ret[Matft.all, 0~<20].max().scalar(Float.self)!, 1e-3)
 
-        ImageSnapshot.save(ret, as: "warpAffine_translate")
+        ImageSnapshot.check(ret, as: "warpAffine_translate")
     }
 
     func test_warpAffine_rotate() {
@@ -124,11 +124,11 @@ final class ImageTest: XCTestCase {
         XCTAssertLessThan(maxAbsDiff(fill[112, 112], image[112, 112]), 5e-2)
         // corners are out of the source
         XCTAssertLessThan(maxAbsDiff(fill[0, 0], MfArray([0, 0, 0, 1] as [Float])), 1e-3)
-        ImageSnapshot.save(fill, as: "warpAffine_rotate30_colorFill")
+        ImageSnapshot.check(fill, as: "warpAffine_rotate30_colorFill")
 
         let edge = Matft.image.warpAffine(image, matrix: matrix, width: 225, height: 225, mode: .EdgeExtend)
         XCTAssertLessThan(maxAbsDiff(edge[112, 112], image[112, 112]), 5e-2)
-        ImageSnapshot.save(edge, as: "warpAffine_rotate30_edgeExtend")
+        ImageSnapshot.check(edge, as: "warpAffine_rotate30_edgeExtend")
     }
 
     // MARK: - color
@@ -138,7 +138,7 @@ final class ImageTest: XCTestCase {
         let ret = Matft.image.color(image, conversion: .RGBA2GRAY)
         XCTAssertEqual(ret.shape, [225, 225])
         XCTAssertEqual(ret.mftype, .Float)
-        ImageSnapshot.save(ret, as: "color_rgba2gray")
+        ImageSnapshot.check(ret, as: "color_rgba2gray")
 
         // UInt8 gray is rounded like cv2
         let ret8 = Matft.image.color(loadRena(.UInt8), conversion: .RGBA2GRAY)
@@ -160,7 +160,7 @@ final class ImageTest: XCTestCase {
         XCTAssertEqual(pixel, MfArray([[[0.2, 0.4, 0.6, 0.5]]] as [[[Float]]]))
 
         let image = withAlphaRamp(loadRena())
-        ImageSnapshot.save(Matft.image.color(image, conversion: .RGBA2GRAY, exclude_alpha: false), as: "color_rgba2gray_alpha_white")
+        ImageSnapshot.check(Matft.image.color(image, conversion: .RGBA2GRAY, exclude_alpha: false), as: "color_rgba2gray_alpha_white")
     }
 
     func test_color_rgba2rgb_uint8() {
@@ -185,7 +185,7 @@ final class ImageTest: XCTestCase {
         XCTAssertEqual(rgba8.shape, [225, 225, 4])
         XCTAssertEqual(rgba8[Matft.all, Matft.all, 3].min().scalar(UInt8.self)!, 255)
 
-        ImageSnapshot.save(rgba8, as: "color_rgba2rgb_uint8")
+        ImageSnapshot.check(rgba8, as: "color_rgba2rgb_uint8")
     }
 
     // MARK: - cvtColor
@@ -226,7 +226,7 @@ final class ImageTest: XCTestCase {
         let bgra = Matft.image.cvtColor(rgba, code: .RGBA2BGRA)
         XCTAssertEqual(bgra[Matft.all, Matft.all, 0], rgba[Matft.all, Matft.all, 2])
         XCTAssertEqual(Matft.image.cvtColor(bgra, code: .BGRA2RGBA), rgba)
-        ImageSnapshot.save(bgra, as: "cvtColor_rgba2bgra")
+        ImageSnapshot.check(bgra, as: "cvtColor_rgba2bgra")
     }
 
     func test_cvtColor_hsv() {
@@ -245,7 +245,7 @@ final class ImageTest: XCTestCase {
         XCTAssertLessThan(maxAbsDiff(Matft.image.cvtColor(hsvF, code: .HSV2RGB) * Float(255), pixels8), 1e-3)
 
         let hsv = Matft.image.cvtColor(loadRenaRGB8(), code: .RGB2HSV)
-        ImageSnapshot.save(hsv[Matft.all, Matft.all, 0], as: "cvtColor_rgb2hsv_h")
+        ImageSnapshot.check(hsv[Matft.all, Matft.all, 0], as: "cvtColor_rgb2hsv_h")
     }
 
     // MARK: - threshold
@@ -273,14 +273,14 @@ final class ImageTest: XCTestCase {
 
         let (_, rena) = Matft.image.threshold(loadRenaGray8(), thresh: 127, maxval: 255, type: .Binary)
         XCTAssertEqual(rena.mftype, .UInt8)
-        ImageSnapshot.save(rena, as: "threshold_binary_127")
+        ImageSnapshot.check(rena, as: "threshold_binary_127")
     }
 
     func test_threshold_otsu() {
         // cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[0] == 116
         let (retval, dst) = Matft.image.threshold(loadRenaGray8(), thresh: 0, maxval: 255, type: .Binary, otsu: true)
         XCTAssertEqual(retval, 116)
-        ImageSnapshot.save(dst, as: "threshold_otsu")
+        ImageSnapshot.check(dst, as: "threshold_otsu")
     }
 
     // MARK: - histogram
@@ -305,7 +305,7 @@ final class ImageTest: XCTestCase {
         let ret = Matft.image.equalizeHist(loadRenaGray8())
         XCTAssertEqual(ret[~<<50, ~<<50], MfArray([[203, 112, 138, 183, 113], [67, 101, 228, 188, 20], [91, 128, 139, 196, 173],
                                                    [51, 42, 103, 22, 221], [11, 49, 151, 242, 135]] as [[UInt8]]))
-        ImageSnapshot.save(ret, as: "equalizeHist")
+        ImageSnapshot.check(ret, as: "equalizeHist")
     }
 
     func test_LUT() {
@@ -316,7 +316,7 @@ final class ImageTest: XCTestCase {
 
         let ret = Matft.image.LUT(loadRena(.UInt8), lut: lut)
         XCTAssertEqual(ret.shape, [225, 225, 4])
-        ImageSnapshot.save(ret, as: "LUT_gamma05")
+        ImageSnapshot.check(ret, as: "LUT_gamma05")
     }
 
     func test_normalize() {
@@ -359,7 +359,7 @@ final class ImageTest: XCTestCase {
         let ret = Matft.image.filter2D(loadRena(.UInt8), kernel: sharpen)
         XCTAssertEqual(ret.mftype, .UInt8)
         XCTAssertEqual(ret.shape, [225, 225, 4])
-        ImageSnapshot.save(ret, as: "filter2D_sharpen")
+        ImageSnapshot.check(ret, as: "filter2D_sharpen")
     }
 
     func test_blur() {
@@ -375,7 +375,7 @@ final class ImageTest: XCTestCase {
 
         let ret = Matft.image.blur(loadRena(), ksize: (5, 5))
         XCTAssertEqual(ret.shape, [225, 225, 4])
-        ImageSnapshot.save(ret, as: "blur_5x5")
+        ImageSnapshot.check(ret, as: "blur_5x5")
     }
 
     func test_GaussianBlur() {
@@ -396,7 +396,7 @@ final class ImageTest: XCTestCase {
 
         let ret = Matft.image.GaussianBlur(loadRena(), ksize: (9, 9), sigmaX: 0)
         XCTAssertEqual(ret.shape, [225, 225, 4])
-        ImageSnapshot.save(ret, as: "GaussianBlur_k9")
+        ImageSnapshot.check(ret, as: "GaussianBlur_k9")
     }
 
     func test_Sobel() {
@@ -420,7 +420,7 @@ final class ImageTest: XCTestCase {
         // |dx| of gray rena
         let gray = loadRenaGray8()
         let dx = Matft.image.convertScaleAbs(Matft.image.Sobel(gray, ddepth: .Float, dx: 1, dy: 0))
-        ImageSnapshot.save(dx, as: "Sobel_dx")
+        ImageSnapshot.check(dx, as: "Sobel_dx")
     }
 
     func test_Laplacian() {
@@ -434,7 +434,7 @@ final class ImageTest: XCTestCase {
                                 [-624, -832, -1040, -1248, -1456], [-1664, -1872, -2080, -2288, -2496]] as [[Float]]))
 
         let lap = Matft.image.convertScaleAbs(Matft.image.Laplacian(loadRenaGray8(), ddepth: .Float, ksize: 3))
-        ImageSnapshot.save(lap, as: "Laplacian_k3")
+        ImageSnapshot.check(lap, as: "Laplacian_k3")
     }
 
     func test_adaptiveThreshold() {
@@ -446,11 +446,11 @@ final class ImageTest: XCTestCase {
         // (cv2.adaptiveThreshold(g, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2) // 255).sum() == 31668
         let mean = Matft.image.adaptiveThreshold(gray, maxValue: 255, adaptiveMethod: .Mean, thresholdType: .Binary, blockSize: 11, C: 2)
         XCTAssertEqual((mean.astype(.Float) / Float(255)).sum().scalar(Float.self)!, 31668)
-        ImageSnapshot.save(mean, as: "adaptiveThreshold_mean")
+        ImageSnapshot.check(mean, as: "adaptiveThreshold_mean")
         // (cv2.adaptiveThreshold(g, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2) // 255).sum() == 16717
         let gauss = Matft.image.adaptiveThreshold(gray, maxValue: 255, adaptiveMethod: .Gaussian, thresholdType: .BinaryInv, blockSize: 11, C: 2)
         XCTAssertEqual((gauss.astype(.Float) / Float(255)).sum().scalar(Float.self)!, 16717, accuracy: 50)
-        ImageSnapshot.save(gauss, as: "adaptiveThreshold_gaussian_inv")
+        ImageSnapshot.check(gauss, as: "adaptiveThreshold_gaussian_inv")
     }
 
     // MARK: - morphology
@@ -495,9 +495,9 @@ final class ImageTest: XCTestCase {
         let image = loadRena(.UInt8)
         let eroded = Matft.image.erode(image, kernel: Matft.image.getStructuringElement(shape: .Rect, ksize: (5, 5)))
         XCTAssertEqual(eroded.shape, [225, 225, 4])
-        ImageSnapshot.save(eroded, as: "erode_rect5")
+        ImageSnapshot.check(eroded, as: "erode_rect5")
         let dilated = Matft.image.dilate(image, kernel: Matft.image.getStructuringElement(shape: .Ellipse, ksize: (7, 7)))
-        ImageSnapshot.save(dilated, as: "dilate_ellipse7")
+        ImageSnapshot.check(dilated, as: "dilate_ellipse7")
     }
 
     func test_morphologyEx() {
@@ -516,8 +516,8 @@ final class ImageTest: XCTestCase {
 
         let (_, binary) = Matft.image.threshold(loadRenaGray8(), thresh: 0, maxval: 255, type: .Binary, otsu: true)
         let ellipse = Matft.image.getStructuringElement(shape: .Ellipse, ksize: (5, 5))
-        ImageSnapshot.save(Matft.image.morphologyEx(binary, op: .Open, kernel: ellipse), as: "morphologyEx_open_ellipse5")
-        ImageSnapshot.save(Matft.image.morphologyEx(loadRenaGray8(), op: .Gradient, kernel: cross), as: "morphologyEx_gradient_cross3")
+        ImageSnapshot.check(Matft.image.morphologyEx(binary, op: .Open, kernel: ellipse), as: "morphologyEx_open_ellipse5")
+        ImageSnapshot.check(Matft.image.morphologyEx(loadRenaGray8(), op: .Gradient, kernel: cross), as: "morphologyEx_gradient_cross3")
     }
 
     // MARK: - geometry
@@ -536,10 +536,10 @@ final class ImageTest: XCTestCase {
         let image = loadRena()
         let flipped = Matft.image.flip(image, flipCode: 1)
         XCTAssertEqual(flipped[10, 0], image[10, 224])
-        ImageSnapshot.save(flipped, as: "flip_horizontal")
+        ImageSnapshot.check(flipped, as: "flip_horizontal")
         let rotated = Matft.image.rotate(image[0~<150], rotateCode: .Rotate90Clockwise)
         XCTAssertEqual(rotated.shape, [225, 150, 4])
-        ImageSnapshot.save(rotated, as: "rotate_90cw")
+        ImageSnapshot.check(rotated, as: "rotate_90cw")
     }
 
     func test_transform_matrix() {
@@ -590,10 +590,10 @@ final class ImageTest: XCTestCase {
         let persp = Matft.image.getPerspectiveTransform(src: src, dst: dst)
         let ret = Matft.image.warpPerspective(loadRena(), M: persp, dsize: (225, 225), borderValue: [0, 0, 0, 1])
         XCTAssertEqual(ret.shape, [225, 225, 4])
-        ImageSnapshot.save(ret, as: "warpPerspective")
+        ImageSnapshot.check(ret, as: "warpPerspective")
         // warpAffine accepts the Double matrix of getRotationMatrix2D
         let rot = Matft.image.warpAffine(loadRena(), matrix: Matft.image.getRotationMatrix2D(center: (112, 112), angle: 45, scale: 0.8), width: 225, height: 225, borderValue: [0, 0, 0, 1])
-        ImageSnapshot.save(rot, as: "warpAffine_getRotationMatrix2D_45")
+        ImageSnapshot.check(rot, as: "warpAffine_getRotationMatrix2D_45")
     }
 
     func test_resize_interpolation() {
@@ -610,8 +610,8 @@ final class ImageTest: XCTestCase {
                                               [23.25, 24.75, 26.25, 27.75], [27.25, 28.75, 30.25, 31.75], [30.25, 31.75, 33.25, 34.75]] as [[Float]])), 1e-5)
 
         let image = loadRena()
-        ImageSnapshot.save(Matft.image.resize(image, width: 300, height: 150, interpolation: .Linear), as: "resize_linear_300x150")
-        ImageSnapshot.save(Matft.image.resize(image, width: 100, height: 60, interpolation: .Nearest), as: "resize_nearest_100x60")
+        ImageSnapshot.check(Matft.image.resize(image, width: 300, height: 150, interpolation: .Linear), as: "resize_linear_300x150")
+        ImageSnapshot.check(Matft.image.resize(image, width: 100, height: 60, interpolation: .Nearest), as: "resize_nearest_100x60")
     }
 
     // MARK: - Canny
@@ -629,11 +629,11 @@ final class ImageTest: XCTestCase {
         let edges = Matft.image.Canny(gray, threshold1: 100, threshold2: 200)
         XCTAssertEqual(edges.mftype, .UInt8)
         XCTAssertEqual((edges.astype(.Float) / Float(255)).sum().scalar(Float.self)!, 5558, accuracy: 30)
-        ImageSnapshot.save(edges, as: "Canny_100_200")
+        ImageSnapshot.check(edges, as: "Canny_100_200")
         // (cv2.Canny(g, 50, 150, L2gradient=True) // 255).sum() == 6727
         let edgesL2 = Matft.image.Canny(gray, threshold1: 50, threshold2: 150, L2gradient: true)
         XCTAssertEqual((edgesL2.astype(.Float) / Float(255)).sum().scalar(Float.self)!, 6727, accuracy: 30)
-        ImageSnapshot.save(edgesL2, as: "Canny_50_150_L2")
+        ImageSnapshot.check(edgesL2, as: "Canny_50_150_L2")
     }
 }
 #endif
