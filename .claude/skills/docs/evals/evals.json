@@ -4,19 +4,19 @@
     {
       "id": 1,
       "prompt": "ガイドの Math and Statistics のページに，nan 系の関数（nanmean, nanmax, nanargmin あたり）の使い方の節を追加して。NaN を含む配列の例があると嬉しい",
-      "expected_output": "website/docs/guide/math-and-stats.md に nan 系関数の節が追加され，コード例の出力が実際に実行して得た値になっている．サイトのビルドが通る．",
+      "expected_output": "A section on the nan functions is added to website/docs/guide/math-and-stats.md, and the output in the code examples is what was actually obtained by running them. The site build passes.",
       "files": []
     },
     {
       "id": 2,
       "prompt": "NumPy 対応表（website/docs/numpy-mapping）に載っていない公開関数がないか Sources/Matft/function/static/ と突き合わせて，抜けていたら表に追加して",
-      "expected_output": "抜けていた公開関数が適切なカテゴリの表に Matft | Numpy | Method | Complex の 4 列形式で追加され，Method / Complex 列が実装と一致している．サイトのビルドが通る．",
+      "expected_output": "Missing public functions are added to the table of the right category in the 4-column Matft | Numpy | Method | Complex format, with the Method / Complex columns matching the implementation. The site build passes.",
       "files": []
     },
     {
       "id": 3,
       "prompt": "Matft.linalg.det の API ドキュメント（コメント）を見直して。NumPy と挙動が違うところがあればちゃんと書いておいて",
-      "expected_output": "det のドキュメントコメントが実装に基づいて更新され，DocC 警告 0．コードは変更せず，挙動の疑い（奇数次で符号が反転する可能性，特異行列で例外，mftype が保持される等）をユーザーに報告している．",
+      "expected_output": "The doc comment for det is updated based on the implementation with 0 DocC warnings. The code is not changed, and suspected behavior issues (sign may flip for odd orders, exception on singular matrices, mftype is preserved, etc.) are reported to the user.",
       "files": []
     }
   ]

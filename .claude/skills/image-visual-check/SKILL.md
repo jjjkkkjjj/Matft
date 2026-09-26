@@ -1,41 +1,41 @@
 ---
 name: image-visual-check
-description: Matft の画像処理（Matft.image.* や，画像に対するインデックス操作・チャンネル入れ替えなど）のテストを追加し，変換結果を OpenCV の参照画像と並べた比較画像を生成して，目視で正しく変換されているか確認する手順。「画像処理のテスト追加して」「resize / warpAffine / color を目視確認したい」「画像が正しく変換されてるか見て」「OpenCV と見比べたい」「README / ドキュメントの画像みたいに確認したい」など，Matft で画像を扱う機能の追加・修正・テスト・確認の話が出たら，明示的に "skill" と言われなくても必ずこのスキルを使うこと。
+description: Procedure for adding tests for Matft's image processing (Matft.image.*, indexing or channel swapping on images, etc.), generating comparison images that put the result next to an OpenCV reference, and visually checking that the conversion is correct. Use this skill whenever the conversation is about adding, fixing, testing, or checking Matft features that handle images — e.g. "add an image processing test", "visually check resize / warpAffine / color", "see if the image is converted correctly", "compare with OpenCV", "check it like the images in the README / docs", or in Japanese「画像処理のテスト追加して」「resize / warpAffine / color を目視確認したい」「画像が正しく変換されてるか見て」「OpenCV と見比べたい」「README / ドキュメントの画像みたいに確認したい」— even if the word "skill" is never mentioned.
 ---
 
-# 画像処理テストの追加と目視確認
+# Adding image processing tests and checking them visually
 
-画像処理は数値の assert だけでは，上下反転や RGB の取り違え，補間のずれを見落としやすい。
-そこで，数値テストで仕様を押さえたうえで，**入力｜Matft｜OpenCV｜差分** を 1 枚に並べた比較画像を作り，Claude とユーザーの両方で目視確認する。
-比較画像はリポジトリにコミットし，PR で見返せるようにする。
+With numeric asserts alone, image processing bugs like vertical flips, swapped RGB, or shifted interpolation are easy to miss.
+So pin down the spec with numeric tests, then build a comparison image that lays out **input | Matft | OpenCV | diff** side by side, and have both Claude and the user check it visually.
+The comparison images are committed to the repository so they can be reviewed in the PR.
 
-## 仕組み
+## How it works
 
-| 場所 | 役割 |
+| Location | Role |
 |---|---|
-| `Tests/MatftTests/files/images/rena.png` | 入力画像（225x225，RGBA）。JPEG だとデコーダの差が混ざるので，可逆な PNG を使う |
-| `Tests/MatftTests/ImageSnapshot.swift` | テスト用ヘルパ。`loadFixture()` で CGImage を読み込み，`save(_:as:)` で Matft の出力を PNG で保存する |
-| `Tests/MatftTests/ImageTest.swift` | 画像処理のテスト（無ければ作る） |
-| `scripts/image_compare.py` | `CASES` に登録した OpenCV 版の変換を実行し，参照画像・比較画像・差分の指標を出力する |
-| `files/images/matft/<case>.png` | Matft の出力（コミット対象） |
-| `files/images/opencv/<case>.png` | OpenCV の出力（コミット対象） |
-| `files/images/compare/<case>.png` | 比較画像（コミット対象）。目視確認ではこれを見る |
+| `Tests/MatftTests/files/images/rena.png` | Input image (225x225, RGBA). Lossless PNG, because JPEG mixes in decoder differences |
+| `Tests/MatftTests/ImageSnapshot.swift` | Test helper. `loadFixture()` loads a CGImage; `save(_:as:)` saves Matft's output as PNG |
+| `Tests/MatftTests/ImageTest.swift` | Image processing tests (create it if missing) |
+| `scripts/image_compare.py` | Runs the OpenCV version of each conversion registered in `CASES` and writes reference images, comparison images, and diff metrics |
+| `files/images/matft/<case>.png` | Matft's output (committed) |
+| `files/images/opencv/<case>.png` | OpenCV's output (committed) |
+| `files/images/compare/<case>.png` | Comparison image (committed). This is what you look at |
 
-`ImageSnapshot.save` は，環境変数 `MATFT_IMAGE_SNAPSHOT=1` を付けて実行したときだけ書き出す。
-普段の `swift test` でリポジトリのファイルが変わらないようにするため。
+`ImageSnapshot.save` writes files only when run with the environment variable `MATFT_IMAGE_SNAPSHOT=1`,
+so that a regular `swift test` does not modify files in the repository.
 
-## 0. 事前確認
+## 0. Pre-checks
 
 ```sh
 python3 -c "import cv2, numpy; print(cv2.__version__, numpy.__version__)"
 ```
 
-cv2 が無い場合は `pip3 install --user opencv-python-headless` を提案する。インストールはユーザーの了承を得てから行う。
+If cv2 is missing, suggest `pip3 install --user opencv-python-headless`. Install only with the user's consent.
 
-## 1. テストを書く（Red）
+## 1. Write the test (Red)
 
-CLAUDE.md の方針どおり TDD で進める。`ImageTest.swift` が無ければ次の形で作る。
-Accelerate/ImageIO が無い環境（WASI・Linux）でもビルドできるように，ファイル全体を `#if` で囲む。
+Follow TDD as CLAUDE.md requires. If `ImageTest.swift` does not exist, create it in this form.
+Wrap the whole file in `#if` so it still builds where Accelerate/ImageIO are unavailable (WASI, Linux).
 
 ```swift
 #if canImport(Accelerate) && canImport(ImageIO)
@@ -50,7 +50,7 @@ final class ImageTest: XCTestCase {
 
         XCTAssertEqual(ret.shape, [150, 300, 4])
         XCTAssertEqual(ret.mftype, .Float)
-        // 代表画素の値など，数値で確かめられることを assert する
+        // Assert whatever can be checked numerically, e.g. representative pixel values
 
         ImageSnapshot.save(ret, as: "resize_300x150")
     }
@@ -58,18 +58,18 @@ final class ImageTest: XCTestCase {
 #endif
 ```
 
-数値 assert を書くときのポイント：
+Tips for numeric asserts:
 
-- 期待値は Python（numpy / cv2）で `rena.png` から計算して得る。コードに埋め込む値の出どころが分かるよう，コメントに Python の式を書いておく。
-- 補間を伴う処理（resize，warpAffine）は，vImage と OpenCV で結果が画素単位では一致しない。そのため shape，dtype，値域，平坦な領域の画素，境界値（warpAffine の borderValue）など，**アルゴリズムに依存しない性質**を assert する。
-- 変換が厳密に定まる処理（反転，チャンネル入れ替え，グレー変換）は，代表画素を numpy / cv2 の値と比べる（Float なら `/255` し，許容誤差 1e-2 程度）。
-- 1 つのテストメソッドにつき，`save` のケース名は処理と条件が分かる名前にする（例：`warpAffine_rotate30_edgeExtend`）。
+- Get expected values by computing them from `rena.png` in Python (numpy / cv2). Write the Python expression in a comment so it is clear where the embedded values come from.
+- For operations involving interpolation (resize, warpAffine), vImage and OpenCV do not match pixel for pixel. So assert **algorithm-independent properties**: shape, dtype, value range, pixels in flat regions, border values (warpAffine's borderValue), etc.
+- For operations that are exactly defined (flip, channel swap, grayscale), compare representative pixels with the numpy / cv2 values (divide by 255 for Float; tolerance around 1e-2).
+- Give each `save` a case name that tells the operation and its conditions (e.g. `warpAffine_rotate30_edgeExtend`).
 
-`swift test --filter MatftTests.ImageTest` で失敗することを確認する。
+Confirm it fails with `swift test --filter MatftTests.ImageTest`.
 
-## 2. OpenCV 版を登録する
+## 2. Register the OpenCV version
 
-`scripts/image_compare.py` の `CASES` に，同じケース名で OpenCV の処理を追加する。
+Add the OpenCV operation to `CASES` in `scripts/image_compare.py` under the same case name.
 
 ```python
 "resize_300x150": Case("rena.png",
@@ -77,74 +77,74 @@ final class ImageTest: XCTestCase {
                        "Matft.image.resize(width: 300, height: 150) vs cv2.resize(LANCZOS4)"),
 ```
 
-`op` は RGBA の uint8 配列を受け取る。戻り値は uint8，または [0, 1] の float（自動で uint8 に変換される）のどちらでもよい。
-Matft と OpenCV の作法の違いで，本当は正しいのに「ずれている」ように見えることがよくある。次の点に気をつける。
+`op` receives an RGBA uint8 array. It may return either uint8 or float in [0, 1] (converted to uint8 automatically).
+Differences in conventions between Matft and OpenCV often make a correct result look "off". Watch for:
 
-- **チャンネル順**：Matft は RGBA，OpenCV は BGR(A)。スクリプトが RGBA に揃えて渡すので，`op` の中で BGR 前提の変換（`COLOR_BGR2GRAY` など）を使わない。
-- **サイズ引数**：`cv2.resize` は `(width, height)` の順，Matft の shape は `(height, width, channel)`。
-- **値域**：Matft の Float 画像は [0, 1]，OpenCV は 0–255。`borderValue` などは 255 倍して渡す。
-- **補間方式**：vImage の resize は Lanczos 系の補間で，`INTER_LINEAR` とは縁の出方が違う。最も近い補間方式を選び，説明文に何と比べたかを書く。
-- **保存できるチャンネル数**：`mfarray2cgimage` が対応しているのは 1 ch と 4 ch だけ。`RGBA2RGB` のように 3 ch になる結果は，`Matft.image.color(ret, conversion: .RGB2RGBA)` で 4 ch に戻してから `save` する。OpenCV 側も同じように 4 ch に揃える。
+- **Channel order**: Matft is RGBA, OpenCV is BGR(A). The script passes RGBA, so do not use BGR-based conversions (`COLOR_BGR2GRAY`, etc.) inside `op`.
+- **Size arguments**: `cv2.resize` takes `(width, height)`; Matft's shape is `(height, width, channel)`.
+- **Value range**: Matft's Float images are [0, 1]; OpenCV uses 0–255. Multiply `borderValue` and the like by 255.
+- **Interpolation**: vImage's resize uses Lanczos-style interpolation, whose edges differ from `INTER_LINEAR`. Pick the closest interpolation and state in the description what it was compared against.
+- **Savable channel counts**: `mfarray2cgimage` supports only 1 and 4 channels. For results with 3 channels, such as `RGBA2RGB`, convert back to 4 channels with `Matft.image.color(ret, conversion: .RGB2RGBA)` before `save`. Do the same on the OpenCV side.
 
-## 3. 実装してテストを通す（Green）
+## 3. Implement and pass the test (Green)
 
-テストを通す最小限の実装を行い，`swift test` で全テストが通ることを確認する。
-Matft 本体の実装が不要なケース（既存機能にテストと目視確認を足すだけ）では，このステップは確認だけでよい。
+Write the minimal implementation that passes the test, and confirm all tests pass with `swift test`.
+When no change to Matft itself is needed (just adding tests and a visual check to an existing feature), this step is only a check.
 
-## 4. 比較画像を生成する
+## 4. Generate the comparison images
 
 ```sh
 MATFT_IMAGE_SNAPSHOT=1 swift test --filter MatftTests.ImageTest
-python3 scripts/image_compare.py --filter '<ケース名の正規表現>'
+python3 scripts/image_compare.py --filter '<regex of case names>'
 ```
 
-スクリプトが出力する表の `status` を確認する。
+Check the `status` column of the table the script prints.
 
-- `missing-matft`：Swift 側で `save` が呼ばれていない。`MATFT_IMAGE_SNAPSHOT=1` の付け忘れか，ケース名の不一致。
-- `missing-case`：`CASES` に登録されていない。
+- `missing-matft`: `save` was not called on the Swift side. Either `MATFT_IMAGE_SNAPSHOT=1` was forgotten or the case names do not match.
+- `missing-case`: not registered in `CASES`.
 
-## 5. 目視確認（Claude）
+## 5. Visual check (Claude)
 
-`compare/<case>.png` を Read ツールで開き，実際に画像を見て判断する。指標だけで合否を決めない。
-PSNR が高くても左右反転していれば誤りだし，補間方式が違えば差分があっても正しい。
+Open `compare/<case>.png` with the Read tool and actually look at the image. Do not decide pass/fail from the metrics alone.
+A high PSNR is still wrong if the image is mirrored, and a diff can be fine if only the interpolation differs.
 
-次の順に見る。
+Look in this order:
 
-1. **向きと位置**：上下左右の反転や回転の向き，平行移動の方向が，意図した変換と一致しているか。
-2. **色**：肌や背景の色味が入力と比べて不自然でないか。R と B の入れ替わり（青っぽい肌）やアルファの扱い（白飛び・黒つぶれ）がないか。
-3. **形状**：出力サイズやアスペクト比は OpenCV と同じか。
-4. **差分マップ**：差分の**分布の形**を見る。
-   - 全体に薄く散らばる → 丸め誤差や補間方式の違い。許容できることが多い。
-   - エッジに沿って出る → 補間方式の違い，または半画素のずれ。
-   - 領域全体や画像の端が明るい → 座標系・境界処理・チャンネルの取り違えなど，本物のバグの可能性が高い。
+1. **Orientation and position**: do flips, rotation direction, and translation direction match the intended transform?
+2. **Color**: do skin and background tones look natural compared with the input? Any R/B swap (bluish skin) or alpha mishandling (blown-out whites, crushed blacks)?
+3. **Shape**: is the output size and aspect ratio the same as OpenCV's?
+4. **Diff map**: look at the **shape of the diff's distribution**.
+   - Faintly scattered everywhere → rounding error or different interpolation. Usually acceptable.
+   - Along edges → different interpolation, or a half-pixel shift.
+   - A whole region or the image border is bright → likely a real bug: coordinate system, border handling, swapped channels, etc.
 
-指標の目安（あくまで目安）：
+Rough metric guidelines (guidelines only):
 
-| 処理の種類 | 期待 |
+| Kind of operation | Expected |
 |---|---|
-| インデックス操作（反転・スライス・チャンネル入れ替え） | `max|diff| = 0` |
-| 色変換 | `max|diff| ≤ 2`（丸め誤差） |
-| resize，warpAffine | 画素一致は期待しない。PSNR が概ね 30dB 以上で，差分がエッジに限られていれば正常 |
+| Indexing (flip, slice, channel swap) | `max|diff| = 0` |
+| Color conversion | `max|diff| ≤ 2` (rounding error) |
+| resize, warpAffine | No pixel match expected. Fine if PSNR is roughly 30 dB or higher and the diff is confined to edges |
 
-目安から外れたときは，バグと決めつける前に 2. の作法の違い（OpenCV 側の書き方の誤り）を疑い，どちらが正しいかを入力画像と見比べて判断する。
+When a result falls outside the guidelines, before calling it a bug, suspect the convention differences in step 2 (a mistake on the OpenCV side), and decide which is right by comparing against the input image.
 
-## 6. ユーザーに見せて報告する
+## 6. Show the user and report
 
 ```sh
-open Tests/MatftTests/files/images/compare/<case>.png   # 複数あればまとめて渡す
+open Tests/MatftTests/files/images/compare/<case>.png   # pass several at once if there are multiple
 ```
 
-報告には次を含める。
+Include in the report:
 
-- 追加したテストと，assert している内容
-- スクリプトの出力した表（ケースごとの指標）
-- 目視で確認した内容：何が正しく見えたか，差分がどこに出ていて，なぜ許容できると判断したか（または何がおかしいか）
+- The tests added and what they assert
+- The table the script printed (metrics per case)
+- What you checked visually: what looked correct, where the diff appears and why you judged it acceptable (or what is wrong)
 
-最終的に正しいかどうかはユーザーに判断してもらう。
+Let the user make the final call on correctness.
 
-## 7. コミット（ユーザーの指示があるときだけ）
+## 7. Commit (only when the user tells you to)
 
-テストと一緒に `files/images/{matft,opencv,compare}/<case>.png` をコミットする。
-既存のケースの画像が意図せず変わっていないか，`git status` で確認する。変わっていたら，その差分もユーザーに伝える。
+Commit `files/images/{matft,opencv,compare}/<case>.png` together with the tests.
+Check with `git status` that images of existing cases have not changed unintentionally. If they have, tell the user about that diff too.
 
-新しいケースをドキュメントに載せるなら，`website/docs/guide/image.md` の「Visual check against OpenCV」節に `#### 関数名` と `![alt](/img/compare/<case>.png)` を追加する。画像はビルド時に `website/scripts/copy-assets.mjs` が static へコピーするので，website 側に二重にコミットしない。
+To show a new case in the docs, add `#### <function name>` and `![alt](/img/compare/<case>.png)` to the "Visual check against OpenCV" section of `website/docs/guide/image.md`. `website/scripts/copy-assets.mjs` copies the images into static at build time, so do not commit them a second time on the website side.
