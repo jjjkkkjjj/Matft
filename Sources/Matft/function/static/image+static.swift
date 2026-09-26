@@ -33,7 +33,7 @@ extension Matft.image{
        - Returns: MfArray
     */
     public static func cgimage2mfarray(_ cgimage: CGImage, mftype: MfType = .Float) -> MfArray{
-        return cgimage2mfarray_by_vDSP(cgimage, mftype: mftype, vDSP_func: vDSP_vfltu8)
+        return cgimage2mfarray_by_vImage(cgimage, mftype: mftype)
     }
     
     /**

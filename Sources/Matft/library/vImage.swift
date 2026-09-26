@@ -352,3 +352,70 @@ internal func morphology_by_vImage(_ image: MfArray, mask: [Bool], maskHeight: I
     return ret
 }
 #endif
+
+#if canImport(CoreGraphics)
+import CoreGraphics
+
+/// Decode CGImage into mfarray keeping the stored values (straight alpha) like PIL and OpenCV
+/// - Parameters:
+///   - cgimage: An input cgimage
+///   - mftype: UInt8 or Float (in [0, 1])
+/// - Returns: (h, w) for gray images, (h, w, 4) RGBA for the others
+internal func cgimage2mfarray_by_vImage(_ cgimage: CGImage, mftype: MfType) -> MfArray{
+    precondition(mftype == .Float || mftype == .UInt8, "mftype must be Float or UInt8, but got \(mftype)")
+
+    let width = cgimage.width
+    let height = cgimage.height
+    let model = cgimage.colorSpace?.model
+    let isGray = model == .monochrome
+    let channel = isGray ? 1 : 4
+    // keep the source color space to avoid color conversions
+    let colorSpace: CGColorSpace
+    if let space = cgimage.colorSpace, model == .monochrome || model == .rgb{
+        colorSpace = space
+    }
+    else{
+        colorSpace = isGray ? CGColorSpaceCreateDeviceGray() : CGColorSpaceCreateDeviceRGB()
+    }
+    // decode deeper sources into Float to keep their precision
+    let decodeFloat = cgimage.bitsPerComponent > 8
+    let alphaInfo: CGImageAlphaInfo = isGray ? .none : .last
+    var bitmapInfo = CGBitmapInfo(rawValue: alphaInfo.rawValue)
+    if decodeFloat{
+        bitmapInfo.formUnion(CGBitmapInfo(rawValue: CGBitmapInfo.floatComponents.rawValue | CGImageByteOrderInfo.order32Little.rawValue))
+    }
+    let bitsPerComponent: UInt32 = decodeFloat ? 32 : 8
+    var format = vImage_CGImageFormat(bitsPerComponent: bitsPerComponent, bitsPerPixel: bitsPerComponent * UInt32(channel), colorSpace: Unmanaged.passUnretained(colorSpace), bitmapInfo: bitmapInfo, version: 0, decode: nil, renderingIntent: .defaultIntent)
+
+    var buffer = vImage_Buffer()
+    let err = vImageBuffer_InitWithCGImage(&buffer, &format, nil, cgimage, vImage_Flags(kvImageNoFlags))
+    precondition(err == kvImageNoError, "Failed to decode CGImage: \(err)")
+    defer { free(buffer.data) }
+
+    let rowSize = width * channel
+    let newdata = MfData(uninitializedSize: height * rowSize, mftype: decodeFloat ? .Float : .UInt8)
+    newdata.withUnsafeMutableStartPointer(datatype: Float.self){
+        dstptr in
+        for y in 0..<height{
+            let srcrow = buffer.data + y * buffer.rowBytes
+            if decodeFloat{
+                (dstptr + y * rowSize).update(from: srcrow.assumingMemoryBound(to: Float.self), count: rowSize)
+            }
+            else{
+                vDSP_vfltu8(srcrow.assumingMemoryBound(to: UInt8.self), 1, dstptr + y * rowSize, 1, vDSP_Length(rowSize))
+            }
+        }
+    }
+    let shape = isGray ? [height, width] : [height, width, channel]
+    let ret = MfArray(mfdata: newdata, mfstructure: MfStructure(shape: shape, mforder: .Row))
+
+    switch (decodeFloat, mftype){
+    case (false, .Float):
+        return ui8Xfloat_image(ret)
+    case (true, .UInt8):
+        return saturate_ui8_image(ret * Float(255))
+    default:
+        return ret
+    }
+}
+#endif
