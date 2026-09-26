@@ -546,6 +546,24 @@ For more complex conversion, see OpenCV [code](https://github.com/opencv/opencv/
 
 <img width="513" alt="Screen Shot 2022-07-19 at 21 09 02" src="https://user-images.githubusercontent.com/16914891/179746856-c4e8048d-3e7c-4835-b39c-ddf6af5b5fd7.png">
 
+#### Preprocessing for vision models (PIL / transformers compatible)
+
+`Matft.image.resize(_:width:height:resample:)` reproduces `PIL.Image.resize` (Pillow's fixed-point arithmetic), so a UInt8 image is resized to **exactly the same pixels as PIL**.
+On top of it, the preprocessing of Hugging Face transformers' image processors is available, e.g. to feed the same input as Python to a VLM running on Core ML or MLX.
+
+```swift
+let rgba = Matft.image.cgimage2mfarray(cgimage, mftype: .UInt8)     // (h, w, 4), 0...255
+let rgb = rgba[Matft.all, Matft.all, 0~<3].to_contiguous(mforder: .Row)
+
+let resized = Matft.image.resize(rgb, width: 224, height: 224, resample: .bicubic) // == PIL.Image.resize(BICUBIC)
+
+let pixel_values = Matft.image.clip_preprocess(rgb)                       // (1, 3, 224, 224), same as CLIPImageProcessor
+let (patches, grid_thw) = Matft.image.qwen2vl_preprocess(rgb)             // same as Qwen2VLImageProcessor
+```
+
+> [!NOTE]
+> Unlike PIL, an RGBA image is not premultiplied by alpha. Convert it to RGB first as transformers does.
+
 #### Visual check against OpenCV
 
 Each image function is tested in [ImageTest.swift](./Tests/MatftTests/ImageTest.swift), and its output is compared with OpenCV's one (input | Matft | OpenCV | |diff| x8) by [scripts/image_compare.py](./scripts/image_compare.py).
@@ -832,6 +850,17 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.image.warpAffine               | cv2.warpAffine |
 | Matft.image.warpPerspective     | cv2.warpPerspective |
 | Matft.image.remap               | cv2.remap |
+
+| Matft                            | PIL / transformers              |
+| -------------------------------- | ----------------- |
+| Matft.image.resize(_:width:height:resample:) | PIL.Image.resize |
+| Matft.image.center_crop          | transformers.image_transforms.center_crop |
+| Matft.image.rescale              | transformers.image_transforms.rescale |
+| Matft.image.normalize_meanstd    | transformers.image_transforms.normalize |
+| Matft.image.clip_preprocess      | CLIPImageProcessor |
+| Matft.image.smart_resize         | transformers.models.qwen2_vl.image_processing_qwen2_vl.smart_resize |
+| Matft.image.qwen2vl_patchify     | Qwen2VLImageProcessor (patchify) |
+| Matft.image.qwen2vl_preprocess   | Qwen2VLImageProcessor |
 
 > [!NOTE]
 > Filters use `MfBorderType.Replicate` by default, because OpenCV's default border (`BORDER_REFLECT_101`) is not supported by vImage.

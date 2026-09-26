@@ -262,3 +262,11 @@ public enum MfMeshIndexing: Int{
     /// Matrix indexing
     case ij
 }
+
+/// The resampling filter. Same as `PIL.Image.Resampling`
+public enum MfResample: Int{
+    case nearest
+    case bilinear
+    case bicubic
+    case lanczos
+}
