@@ -285,3 +285,17 @@ public enum MfMelNorm: Int{
     /// Divide the triangular mel weights by the width of the mel band (area normalization)
     case slaney
 }
+
+/// The method to estimate the quantile. Same as `method` of `np.quantile`
+public enum MfQuantileMethod: Int{
+    /// Linear interpolation between the two nearest values (default)
+    case linear
+    /// The lower one of the two nearest values
+    case lower
+    /// The higher one of the two nearest values
+    case higher
+    /// The nearest value (round half to even)
+    case nearest
+    /// The midpoint of the two nearest values
+    case midpoint
+}
