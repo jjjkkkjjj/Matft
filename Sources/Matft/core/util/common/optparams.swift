@@ -44,11 +44,14 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
     var upaxis: Int //indicates which axis will be counted up
     var indicesOfAxes: [Int]
     var offset: (b: Int, s: Int)? = (0, 0)
+    /// No elements to iterate (a dimension is 0)
+    let isEmpty: Bool
     
     
     /// Initialization
     /// - Parameter optParams: Optimal offset and stride parameters sequence
     public init(optParams: OptOffsetParamsSequence){
+        self.isEmpty = optParams.shape.contains(0)
         var shape = optParams.shape
         var b_strides = optParams.strides.b
         var s_strides = optParams.strides.s
@@ -78,6 +81,9 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
     }
     
     mutating func next() -> (b_offset: Int, b_stride: Int, s_offset: Int, s_stride: Int, blocksize: Int)? {
+        if self.isEmpty{
+            return nil
+        }
         if self.indicesOfAxes.isEmpty{//offset (0, 0) must be returned even if itershapes doesn't exist
             
             self.indicesOfAxes = [-1] //dummy
