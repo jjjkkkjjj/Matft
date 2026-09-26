@@ -81,6 +81,33 @@ internal func check_contiguous(_ mfarray: MfArray, _ mforder: MfOrder? = nil) ->
     }
 }
 
+/// Return the mfarray itself when its elements occupy the whole stored data exactly once,
+/// i.e. row/column contiguous or any axis permutation of them (e.g. `a.transpose(axes: [0,2,1])`). Otherwise return a row contiguous copy.
+///
+/// - Important: Use this only for element-wise kernels that process `storedSize` elements linearly
+///   and create the result with the same shape and strides. The other kernels must use `check_contiguous`.
+internal func check_dense(_ mfarray: MfArray) -> MfArray{
+    // A view (e.g. `a[1~<2]`) shares the base's stored data, so `storedSize` elements from its offset would run past the end
+    if mfarray.offsetIndex == 0 && mfarray.size == mfarray.storedSize &&
+        (mfarray.mfstructure.row_contiguous || mfarray.mfstructure.column_contiguous || _is_dense_permutation(shape: mfarray.shape, strides: mfarray.strides)){
+        return mfarray
+    }
+    return mfarray.to_contiguous(mforder: .Row)
+}
+
+/// Whether the strides are a permutation of contiguous strides without gaps
+fileprivate func _is_dense_permutation(shape: [Int], strides: [Int]) -> Bool{
+    let axes = (0..<shape.count).filter{ shape[$0] != 1 }.sorted{ strides[$0] < strides[$1] }
+    var expected = 1
+    for axis in axes{
+        if strides[axis] != expected{
+            return false
+        }
+        expected *= shape[axis]
+    }
+    return true
+}
+
 @usableFromInline
 internal func check_biop_contiguous(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ mforder: MfOrder = .Row, convertL: Bool = true) -> (l: MfArray, r: MfArray, biggerL: Bool, retsize: Int){
     let l: MfArray, r: MfArray

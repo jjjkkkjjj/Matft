@@ -1,0 +1,105 @@
+import XCTest
+
+@testable import Matft
+
+final class DenseLayoutTests: XCTestCase {
+    
+    func testCheckDense(){
+        let a = Matft.arange(start: 0, to: 24, by: 1, shape: [2, 3, 4])
+        // row / column contiguous
+        XCTAssertTrue(check_dense(a) === a)
+        let t = a.T
+        XCTAssertTrue(check_dense(t) === t)
+        // permuted but dense: no copy
+        let p = a.transpose(axes: [1, 0, 2])
+        XCTAssertTrue(check_dense(p) === p)
+        // slice view (offset, gap): copied into row contiguous
+        let v = a[1~<2]
+        XCTAssertFalse(check_dense(v) === v)
+        XCTAssertTrue(check_dense(v).mfstructure.row_contiguous)
+        let s = a[Matft.all, Matft.all, 0~<4~<2]
+        XCTAssertFalse(check_dense(s) === s)
+        // broadcast (stride 0)
+        let bc = MfArray([1, 2, 3]).broadcast_to(shape: [2, 3])
+        XCTAssertFalse(check_dense(bc) === bc)
+    }
+    
+    // element-wise ops on a dense permuted array must keep values and layout (numpy computes them without copy too)
+    func testElementwiseOnPermuted(){
+        let a = Matft.arange(start: -12, to: 12, by: 1, shape: [2, 3, 4])
+        let p = a.transpose(axes: [2, 0, 1])
+        let pc = p.to_contiguous(mforder: .Row)
+        
+        XCTAssertEqual(p.sign(), pc.sign())
+        XCTAssertEqual(Matft.math.sin(p), Matft.math.sin(pc))
+        XCTAssertEqual(p > 0, pc > 0)
+        XCTAssertEqual(p + 1, pc + 1)
+        XCTAssertEqual(1 - p, 1 - pc)
+        XCTAssertEqual(-p, -pc)
+        XCTAssertEqual(p.clip(min: -3, max: 3), pc.clip(min: -3, max: 3))
+        
+        // row contiguous slice view: must not process the base's whole stored data
+        let v = a[1~<2]
+        XCTAssertEqual(v.sign(), MfArray([[[0, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]]))
+        XCTAssertEqual(v.sign().storedSize, 12)
+        XCTAssertEqual((v > 0).storedSize, 12)
+        
+        // the result keeps the input's strides instead of copying it
+        XCTAssertEqual(p.sign().strides, p.strides)
+        XCTAssertEqual(Matft.math.sin(p).strides, p.strides)
+        XCTAssertEqual((p > 0).strides, p.strides)
+        XCTAssertEqual((p + 1).strides, p.strides)
+    }
+    
+    /// Expected row-major values of `src.transpose(axes: axes)` computed index by index
+    private func transposedValues(_ values: [Float], shape: [Int], axes: [Int]) -> [Float]{
+        let newshape = axes.map{ shape[$0] }
+        var strides = [Int](repeating: 1, count: shape.count)
+        for i in stride(from: shape.count - 2, through: 0, by: -1){ strides[i] = strides[i + 1] * shape[i + 1] }
+        var ret: [Float] = []
+        var idx = [Int](repeating: 0, count: shape.count)
+        for _ in 0..<values.count{
+            ret.append(values[zip(idx, axes).map{ $0 * strides[$1] }.reduce(0, +)])
+            var k = shape.count - 1
+            while k >= 0{ idx[k] += 1; if idx[k] < newshape[k]{ break }; idx[k] = 0; k -= 1 }
+        }
+        return ret
+    }
+    
+    func testToContiguousPermutations(){
+        let shape = [2, 3, 4, 5]
+        let a = Matft.arange(start: 0, to: 120, by: 1, shape: shape, mftype: .Float)
+        let values = (0..<120).map{ Float($0) }
+        func permutations(_ xs: [Int]) -> [[Int]]{
+            xs.count <= 1 ? [xs] : xs.flatMap{ x in permutations(xs.filter{ $0 != x }).map{ [x] + $0 } }
+        }
+        for axes in permutations([0, 1, 2, 3]){
+            let p = a.transpose(axes: axes)
+            XCTAssertEqual(p.to_contiguous(mforder: .Row).data as! [Float], transposedValues(values, shape: shape, axes: axes), "axes: \(axes)")
+            XCTAssertEqual(p.astype(.Double).to_contiguous(mforder: .Row).data as! [Double], transposedValues(values, shape: shape, axes: axes).map{ Double($0) }, "axes: \(axes)")
+        }
+        
+        // non-dense / negative strides fall back to the block copy
+        let s = a[Matft.all, 0~<3~<2]
+        XCTAssertEqual(s.to_contiguous(mforder: .Row), MfArray((0..<120).filter{ ($0 / 20) % 3 != 1 }.map{ Float($0) }, shape: [2, 2, 4, 5]))
+        let f = a[Matft.reverse]
+        XCTAssertEqual(f.to_contiguous(mforder: .Row).data as! [Float], Array(values[60..<120]) + Array(values[0..<60]))
+    }
+    
+    func testBinaryOperationPermutations(){
+        let shape = [2, 3, 4, 5]
+        let a = Matft.arange(start: 0, to: 120, by: 1, shape: shape, mftype: .Float)
+        for axes in [[0, 1, 2, 3], [3, 2, 1, 0], [0, 2, 1, 3], [1, 0, 3, 2], [0, 3, 2, 1]]{
+            let inverse = axes.indices.map{ axes.firstIndex(of: $0)! }
+            let p = (-a).transpose(axes: axes).to_contiguous(mforder: .Row).transpose(axes: inverse)
+            // p equals -a element-wise, in a permuted layout
+            XCTAssertEqual(a + p, Matft.nums(Float(0), shape: shape), "axes: \(axes)")
+            XCTAssertEqual(p + a, Matft.nums(Float(0), shape: shape), "axes: \(axes)")
+            XCTAssertEqual(a - p, a * 2, "axes: \(axes)")
+            XCTAssertEqual(a > p, a > 0, "axes: \(axes)")
+        }
+        // broadcast operand (stride 0)
+        let row = Matft.arange(start: 0, to: 5, by: 1, shape: [5], mftype: .Float)
+        XCTAssertEqual(a.transpose(axes: [1, 0, 2, 3]) - row, (a - row).transpose(axes: [1, 0, 2, 3]))
+    }
+}

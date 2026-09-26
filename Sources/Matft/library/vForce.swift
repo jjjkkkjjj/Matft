@@ -22,7 +22,7 @@ public typealias vForce_math_biop_func<T> = (UnsafeMutablePointer<T>, UnsafePoin
 ///   - vForce_func: The vForce math function
 /// - Returns: The math-operated mfarray
 internal func math_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: vForce_math_func<T>) -> MfArray{
-    let mfarray = check_contiguous(mfarray)
+    let mfarray = check_dense(mfarray)
     var ret_size = Int32(mfarray.size)
     
     let newdata = MfData(size: mfarray.size, mftype: mfarray.mftype)
@@ -45,7 +45,7 @@ internal func math_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: v
 /// - Returns: The math-operated mfarray
 internal func mathf_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: vForce_math_func<T>) -> MfArray{
     var mfarray = mfarray
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -535,7 +535,7 @@ internal func vvcopysign(_ dst: UnsafeMutablePointer<Double>, _ mag: UnsafePoint
 // MARK: - vForce High-Level Functions for WASI
 
 internal func math_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: vForce_math_func<T>) -> MfArray{
-    let mfarray = check_contiguous(mfarray)
+    let mfarray = check_dense(mfarray)
     var ret_size = Int32(mfarray.size)
 
     let newdata = MfData(size: mfarray.size, mftype: mfarray.mftype)
@@ -553,7 +553,7 @@ internal func math_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: v
 
 internal func mathf_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: vForce_math_func<T>) -> MfArray{
     var mfarray = mfarray
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
 
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){

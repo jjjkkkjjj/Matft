@@ -117,6 +117,16 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
 }
 
 
+/// Weight for a block whose strides are unit on both sides.
+/// vDSP/cblas with non-unit strides are several times slower per element, while each call costs only a few ns.
+/// e.g. 10 elements with unit strides (score 320) are cheaper than 100 elements with strides (1000, 10) (score 100).
+fileprivate let unitStrideWeight = 32
+
+/// Score of a block to be passed to vDSP or cblas. The larger, the cheaper per element.
+fileprivate func _blockScore(_ blockSize: Int, _ l_stride: Int, _ r_stride: Int) -> Int{
+    return abs(l_stride) == 1 && abs(r_stride) == 1 ? blockSize * unitStrideWeight : blockSize
+}
+
 /// Search maximum and common contiguous stride between two mfarray
 /// - Parameters:
 ///   - shape: An input shape array
@@ -127,7 +137,7 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
 ///   - blocksize: maximum size calculated once by vDSP or cblas
 ///   - iterAxes: indices of non-contiguous strides
 fileprivate func _optStrides(shape: inout [Int], l_strides: inout [Int], r_strides: inout [Int]) -> (axis: Int, blocksize: Int, iterAxes: [Int]){
-    var optaxis = 0, optBlockSize = -1
+    var optaxis = 0, optBlockSize = -1, optScore = -1
     
     let ndim = shape.count
     var optiterAxes: [Int] = Array(0..<ndim)
@@ -171,8 +181,10 @@ fileprivate func _optStrides(shape: inout [Int], l_strides: inout [Int], r_strid
             n += 1
         }
         
-        //check if it is maximum blocksize or not
-        if blockSize > optBlockSize{
+        //check if it is the cheapest block or not
+        let score = _blockScore(blockSize, l_strides[axis], r_strides[axis])
+        if score > optScore{
+            optScore = score
             optBlockSize = blockSize
             optaxis = axis
             optiterAxes = iterAxes

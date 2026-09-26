@@ -592,6 +592,12 @@ final class SubscriptTests: XCTestCase {
         }
         
         do{
+            // #18: a[a > 0] with Double must be judged in Double precision
+            let a = MfArray([-1.0, 1e-50, 0.0, 2.5, -1e-50], mftype: .Double)
+            XCTAssertEqual(a[a > 0], MfArray([1e-50, 2.5], mftype: .Double))
+        }
+        
+        do{
             let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])
             let b = MfArray([true, false, true])
 

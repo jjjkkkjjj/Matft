@@ -10,68 +10,43 @@ import Foundation
 import Accelerate
 #endif
 
-#if !canImport(Accelerate)
-/// Pure Swift fallback for toBool_by_vDSP
-internal func toBool_by_vDSP(_ mfarray: MfArray) -> MfArray {
-    let mfarray = check_contiguous(mfarray)
-    let size = mfarray.storedSize
-    let newdata = MfData(size: size, mftype: .Bool)
-
-    newdata.withUnsafeMutableStartPointer(datatype: Float.self) { dstptr in
-        mfarray.withUnsafeMutableStartPointer(datatype: Float.self) { srcptr in
-            for i in 0..<size {
-                dstptr[i] = srcptr[i] != 0 ? Float(1) : Float(0)
-            }
+/// Element-wise comparison operator between an mfarray and a scalar
+internal enum MfCompareOp{
+    case greater, greaterEqual, less, lessEqual, equal, notEqual
+    
+    /// The operator to use when the operands are swapped, i.e. `s op a` == `a op.flipped s`
+    var flipped: MfCompareOp{
+        switch self {
+        case .greater: return .less
+        case .greaterEqual: return .lessEqual
+        case .less: return .greater
+        case .lessEqual: return .greaterEqual
+        case .equal, .notEqual: return self
         }
     }
-
-    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
-    return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
-/// Pure Swift fallback for toIBool_by_vDSP
-internal func toIBool_by_vDSP(_ mfarray: MfArray) -> MfArray {
-    let mfarray = check_contiguous(mfarray)
-    let size = mfarray.storedSize
-    let newdata = MfData(size: size, mftype: .Bool)
-
-    newdata.withUnsafeMutableStartPointer(datatype: Float.self) { dstptr in
-        mfarray.withUnsafeMutableStartPointer(datatype: Float.self) { srcptr in
-            for i in 0..<size {
-                dstptr[i] = srcptr[i] == 0 ? Float(1) : Float(0)
-            }
-        }
+/// Compare mfarray's elements with a scalar. The scalar is converted into the mfarray's stored type.
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - op: The comparison operator
+///   - scalar: The right-hand scalar
+/// - Returns: Bool mfarray
+internal func compare_mfarray<U: MfTypable>(_ mfarray: MfArray, _ op: MfCompareOp, _ scalar: U) -> MfArray{
+    switch mfarray.storedType {
+    case .Float:
+        return compare_by_vDSP(mfarray, op, Float.from(scalar))
+    case .Double:
+        return compare_by_vDSP(mfarray, op, Double.from(scalar))
     }
-
-    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
-    return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
-#endif
 
 internal func to_Bool(_ mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray{
-    //convert float and contiguous
-    let ret = mfarray.astype(.Float)
-    // TODO: use vDSP_vthr?
-    switch ret.storedType {
-    case .Float:
-        let ret = toBool_by_vDSP(ret)
-        return ret
-    case .Double:
-        fatalError("Bug was occurred. Bool's storedType is not double.")
-    }
+    return compare_mfarray(mfarray, .notEqual, 0)
 }
 
 internal func to_IBool(_ mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray{
-    //convert float and contiguous
-    let ret = mfarray.astype(.Float)
-    // TODO: use vDSP_vthr?
-    switch ret.storedType {
-    case .Float:
-        let ret = toIBool_by_vDSP(ret)
-        return ret
-    case .Double:
-        fatalError("Bug was occurred. Bool's storedType is not double.")
-    }
+    return compare_mfarray(mfarray, .equal, 0)
 }
 
 /*
