@@ -41,7 +41,7 @@ mlx-swift に存在しない（特に「出力 shape がデータ依存」「nan
 ### 4-D: 数値計算（LAPACK/補間）
 | 関数 | 要点 |
 |---|---|
-| `Matft.interp(x, xp, fp, left:, right:, period:)` | 既存 `interp1d` の linear を内部再利用可 |
+| ~~`Matft.interp`~~ | **既存（`interpolation+static.swift`）**．`period` 引数のみ未対応 |
 | `Matft.polyfit(x, y, deg:)`, `Matft.polyval(p, x)` | polyfit は lstsq 経由 |
 | `Matft.linalg.lstsq(a, b, rcond:)` | 戻り値 `(x, residuals, rank, s)`．LAPACK `dgelsd`/`sgelsd`（`library/lapack.swift` に追加） |
 | `Matft.linalg.matrix_rank`, `Matft.linalg.expm` | expm は優先度低（math に `expm` 名の既存関数があるので衝突確認） |

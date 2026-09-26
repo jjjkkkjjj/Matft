@@ -596,6 +596,20 @@ python3 scripts/image_compare.py
 | `resize(.Linear)` | ![resize linear](./Tests/MatftTests/files/images/compare/resize_linear_300x150.png) |
 | `resize(.Nearest)` | ![resize nearest](./Tests/MatftTests/files/images/compare/resize_nearest_100x60.png) |
 
+### Audio
+
+`Matft.audio` computes audio features compatible with librosa, e.g. the log-mel spectrogram for Whisper.
+
+```swift
+let audio = MfArray(samples, mftype: .Float) // 16kHz mono
+let logmel = Matft.audio.whisper_log_mel(Matft.audio.pad_or_trim(audio), n_mels: 80)
+// logmel.shape == [80, 3000]
+
+let spec = Matft.audio.stft(audio, n_fft: 400, hop_length: 160, pad_mode: .reflect) // complex, (201, n_frames)
+let mel = Matft.audio.melspectrogram(audio, sr: 16000, n_fft: 400, hop_length: 160, n_mels: 80)
+let db = Matft.audio.power_to_db(mel)
+```
+
 ## Function List
 
 Below is Matft's function list. As I mentioned above, almost functions are similar to Numpy. Also, these function use Accelerate framework inside, the perfomance may keep high.
@@ -623,6 +637,8 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.append  | numpy.append |
 | *Matft.insert  | numpy.insert |
 | *Matft.take  | numpy.take |
+| Matft.meshgrid  | numpy.meshgrid |
+| Matft.hanning / hamming / blackman / bartlett / kaiser | numpy.hanning / hamming / blackman / bartlett / kaiser |
 | ^MfArray.item  | ^numpy.ndarray.item |
 
 
@@ -644,6 +660,8 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.roll          | numpy.roll          |
 | *Matft.sort         | *numpy.sort              |
 | *Matft.argsort      | *numpy.argsort           |
+| *Matft.pad          | numpy.pad                |
+| *Matft.diff         | numpy.diff               |
 | ^MfArray.toArray | ^numpy.ndarray.tolist |
 | ^MfArray.toFlattenArray | n/a |
 | ^MfArray.toMLMultiArray | n/a |
@@ -720,6 +738,9 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.math.arctan2 | numpy.arctan2 |
 | Matft.math.square | numpy.square |
 | Matft.math.sign | numpy.sign |
+| Matft.math.isnan | numpy.isnan |
+| Matft.math.isinf | numpy.isinf |
+| Matft.math.isfinite | numpy.isfinite |
 
 - Statistics function
 
@@ -736,6 +757,8 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.stats.sumsqrt | n/a |
 | *Matft.stats.squaresum | n/a |
 | *Matft.stats.cumsum | *numpy.cumsum |
+| *Matft.stats.var | *numpy.var |
+| *Matft.stats.std | *numpy.std |
 
 - Random function
 
@@ -774,6 +797,19 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | -------------------------------- | ----------------- |
 | Matft.fft.rfft       | numpy.fft.rfft |
 | Matft.fft.irfft         | numpy.fft.irfft   |
+
+- Audio
+
+| Matft                            | Python              |
+| -------------------------------- | ----------------- |
+| Matft.audio.get_window           | scipy.signal.get_window |
+| Matft.audio.frame                | librosa.util.frame |
+| Matft.audio.stft                 | librosa.stft |
+| Matft.audio.mel_filters          | librosa.filters.mel |
+| Matft.audio.melspectrogram       | librosa.feature.melspectrogram |
+| Matft.audio.power_to_db          | librosa.power_to_db |
+| Matft.audio.pad_or_trim          | whisper.audio.pad_or_trim |
+| Matft.audio.whisper_log_mel      | whisper.audio.log_mel_spectrogram |
 
 - Interpolation
 
