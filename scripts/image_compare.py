@@ -141,6 +141,20 @@ CASES: Dict[str, Case] = {
     "adaptiveThreshold_gaussian_inv": Case("rena.png",
                                            lambda x: cv2.adaptiveThreshold(_gray(x), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2),
                                            "adaptiveThreshold(.Gaussian, .BinaryInv, 11, 2) vs cv2"),
+    # morphology (default border)
+    "erode_rect5": Case("rena.png",
+                        lambda x: cv2.erode(x, cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))),
+                        "erode(rect 5x5) vs cv2.erode"),
+    "dilate_ellipse7": Case("rena.png",
+                            lambda x: cv2.dilate(x, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))),
+                            "dilate(ellipse 7x7) vs cv2.dilate"),
+    "morphologyEx_open_ellipse5": Case("rena.png",
+                                       lambda x: cv2.morphologyEx(cv2.threshold(_gray(x), 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1],
+                                                                  cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))),
+                                       "morphologyEx(.Open, ellipse 5x5) of Otsu binary vs cv2"),
+    "morphologyEx_gradient_cross3": Case("rena.png",
+                                         lambda x: cv2.morphologyEx(_gray(x), cv2.MORPH_GRADIENT, cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))),
+                                         "morphologyEx(.Gradient, cross 3x3) vs cv2"),
 }
 
 

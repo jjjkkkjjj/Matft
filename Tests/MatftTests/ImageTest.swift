@@ -454,5 +454,72 @@ final class ImageTest: XCTestCase {
         XCTAssertEqual((gauss.astype(.Float) / Float(255)).sum().scalar(Float.self)!, 16717, accuracy: 50)
         ImageSnapshot.save(gauss, as: "adaptiveThreshold_gaussian_inv")
     }
+
+    // MARK: - morphology
+
+    // u = np.array([[1,2,3,4,5],[6,7,8,9,10],[11,12,99,14,15],[16,17,18,0,20]], np.uint8)
+    private let morphSrc = MfArray([[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11, 12, 99, 14, 15], [16, 17, 18, 0, 20]] as [[UInt8]])
+
+    func test_getStructuringElement() {
+        // cv2.getStructuringElement(shape, (5, 5))
+        XCTAssertEqual(Matft.image.getStructuringElement(shape: .Rect, ksize: (5, 5)), Matft.nums(UInt8(1), shape: [5, 5]))
+        XCTAssertEqual(Matft.image.getStructuringElement(shape: .Cross, ksize: (5, 5)),
+                       MfArray([[0, 0, 1, 0, 0], [0, 0, 1, 0, 0], [1, 1, 1, 1, 1], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0]] as [[UInt8]]))
+        XCTAssertEqual(Matft.image.getStructuringElement(shape: .Ellipse, ksize: (5, 5)),
+                       MfArray([[0, 0, 1, 0, 0], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [0, 0, 1, 0, 0]] as [[UInt8]]))
+        XCTAssertEqual(Matft.image.getStructuringElement(shape: .Ellipse, ksize: (7, 5)),
+                       MfArray([[0, 0, 0, 1, 0, 0, 0], [1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 1, 0, 0, 0]] as [[UInt8]]))
+        // cv2.getStructuringElement(cv2.MORPH_CROSS, (4, 3), anchor=(1, 2))
+        XCTAssertEqual(Matft.image.getStructuringElement(shape: .Cross, ksize: (4, 3), anchor: (1, 2)),
+                       MfArray([[0, 1, 0, 0], [0, 1, 0, 0], [1, 1, 1, 1]] as [[UInt8]]))
+    }
+
+    func test_erode_dilate() {
+        let rect = Matft.nums(UInt8(1), shape: [3, 3])
+        let cross = Matft.image.getStructuringElement(shape: .Cross, ksize: (3, 3))
+        // cv2.erode(u, np.ones((3, 3))), cv2.dilate(u, np.ones((3, 3)))
+        XCTAssertEqual(Matft.image.erode(morphSrc, kernel: rect), MfArray([[1, 1, 2, 3, 4], [1, 1, 2, 3, 4], [6, 6, 0, 0, 0], [11, 11, 0, 0, 0]] as [[UInt8]]))
+        XCTAssertEqual(Matft.image.dilate(morphSrc, kernel: rect), MfArray([[7, 8, 9, 10, 10], [12, 99, 99, 99, 15], [17, 99, 99, 99, 20], [17, 99, 99, 99, 20]] as [[UInt8]]))
+        // cv2.erode(u, cross), cv2.dilate(u, cross)
+        XCTAssertEqual(Matft.image.erode(morphSrc, kernel: cross), MfArray([[1, 1, 2, 3, 4], [1, 2, 3, 4, 5], [6, 7, 8, 0, 10], [11, 12, 0, 0, 0]] as [[UInt8]]))
+        XCTAssertEqual(Matft.image.dilate(morphSrc, kernel: cross), MfArray([[6, 7, 8, 9, 10], [11, 12, 99, 14, 15], [16, 99, 99, 99, 20], [17, 18, 99, 20, 20]] as [[UInt8]]))
+        // even kernel: cv2.dilate(u, np.array([[0, 1], [1, 1]]))
+        XCTAssertEqual(Matft.image.dilate(morphSrc, kernel: MfArray([[0, 1], [1, 1]] as [[UInt8]])),
+                       MfArray([[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11, 12, 99, 99, 15], [16, 17, 99, 18, 20]] as [[UInt8]]))
+        // center excluded: cv2.dilate(u, np.array([[1, 0, 1], [0, 0, 0], [1, 0, 1]]))
+        XCTAssertEqual(Matft.image.dilate(morphSrc, kernel: MfArray([[1, 0, 1], [0, 0, 0], [1, 0, 1]] as [[UInt8]])),
+                       MfArray([[7, 8, 9, 10, 9], [12, 99, 14, 99, 14], [17, 18, 17, 20, 9], [12, 99, 14, 99, 14]] as [[UInt8]]))
+        // cv2.erode(u, np.ones((3, 3)), iterations=2)
+        XCTAssertEqual(Matft.image.erode(morphSrc, kernel: rect, iterations: 2), MfArray([[1, 1, 1, 2, 3], [1, 0, 0, 0, 0], [1, 0, 0, 0, 0], [6, 0, 0, 0, 0]] as [[UInt8]]))
+        // default kernel is 3x3 rect, and Float works too
+        XCTAssertEqual(Matft.image.erode(morphSrc.astype(.Float)), MfArray([[1, 1, 2, 3, 4], [1, 1, 2, 3, 4], [6, 6, 0, 0, 0], [11, 11, 0, 0, 0]] as [[Float]]))
+
+        let image = loadRena(.UInt8)
+        let eroded = Matft.image.erode(image, kernel: Matft.image.getStructuringElement(shape: .Rect, ksize: (5, 5)))
+        XCTAssertEqual(eroded.shape, [225, 225, 4])
+        ImageSnapshot.save(eroded, as: "erode_rect5")
+        let dilated = Matft.image.dilate(image, kernel: Matft.image.getStructuringElement(shape: .Ellipse, ksize: (7, 7)))
+        ImageSnapshot.save(dilated, as: "dilate_ellipse7")
+    }
+
+    func test_morphologyEx() {
+        let cross = Matft.image.getStructuringElement(shape: .Cross, ksize: (3, 3))
+        // cv2.morphologyEx(u, op, cross)
+        let expected: [(MfMorphOp, [[UInt8]])] = [
+            (.Open, [[1, 2, 3, 4, 5], [6, 7, 8, 5, 10], [11, 12, 8, 10, 10], [12, 12, 12, 0, 10]]),
+            (.Close, [[6, 6, 7, 8, 9], [6, 7, 8, 9, 10], [11, 12, 99, 14, 15], [16, 17, 18, 20, 20]]),
+            (.Gradient, [[5, 6, 6, 6, 6], [10, 10, 96, 10, 10], [10, 92, 91, 99, 10], [6, 6, 99, 20, 20]]),
+            (.TopHat, [[0, 0, 0, 0, 0], [0, 0, 0, 4, 0], [0, 0, 91, 4, 5], [4, 5, 6, 0, 10]]),
+            (.BlackHat, [[5, 4, 4, 4, 4], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 20, 0]]),
+        ]
+        for (op, value) in expected {
+            XCTAssertEqual(Matft.image.morphologyEx(morphSrc, op: op, kernel: cross), MfArray(value), "\(op)")
+        }
+
+        let (_, binary) = Matft.image.threshold(loadRenaGray8(), thresh: 0, maxval: 255, type: .Binary, otsu: true)
+        let ellipse = Matft.image.getStructuringElement(shape: .Ellipse, ksize: (5, 5))
+        ImageSnapshot.save(Matft.image.morphologyEx(binary, op: .Open, kernel: ellipse), as: "morphologyEx_open_ellipse5")
+        ImageSnapshot.save(Matft.image.morphologyEx(loadRenaGray8(), op: .Gradient, kernel: cross), as: "morphologyEx_gradient_cross3")
+    }
 }
 #endif
