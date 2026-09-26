@@ -66,8 +66,33 @@ final class SubscriptTests: XCTestCase {
         
     }
 
+    func testSlicingStep(){
+        // the number of elements must be ceil((to - start) / by) like numpy
+        let b = Matft.arange(start: 0, to: 10, by: 1)
+        XCTAssertEqual(b[~<<3], MfArray([0, 3, 6, 9]))              // b[::3]
+        XCTAssertEqual(b[~<<4], MfArray([0, 4, 8]))                 // b[::4]
+        XCTAssertEqual(b[1~<8~<3], MfArray([1, 4, 7]))              // b[1:8:3]
+        XCTAssertEqual(b[~<<-3], MfArray([9, 6, 3, 0]))             // b[::-3]
+        XCTAssertEqual(b[8~<1~<-3], MfArray([8, 5, 2]))             // b[8:1:-3]
+        XCTAssertEqual(b[~<<-4], MfArray([9, 5, 1]))                // b[::-4]
+        XCTAssertEqual(b[MfSlice(start: 2, by: -4)], MfArray([2]))  // b[2::-4]
+        XCTAssertEqual(b[7~<3~<-1], MfArray([7, 6, 5, 4]))          // b[7:3:-1]
+
+        // np.arange(225)[::50]
+        XCTAssertEqual(Matft.arange(start: 0, to: 225, by: 1)[~<<50], MfArray([0, 50, 100, 150, 200]))
+        // np.arange(35).reshape(5, 7)[::2, ::3]
+        let a = Matft.arange(start: 0, to: 35, by: 1, shape: [5, 7])
+        XCTAssertEqual(a[~<<2, ~<<3], MfArray([[0, 3, 6], [14, 17, 20], [28, 31, 34]]))
+        XCTAssertEqual(a.T[~<<3, ~<<2], MfArray([[0, 14, 28], [3, 17, 31], [6, 20, 34]]))
+
+        // setter
+        let c = Matft.arange(start: 0, to: 10, by: 1)
+        c[~<<4] = MfArray([-1])
+        XCTAssertEqual(c, MfArray([-1, 1, 2, 3, -1, 5, 6, 7, -1, 9]))
+    }
+
     func testSlicing(){
-        
+
         do{
             let a = Matft.arange(start: 0, to: 27*2, by: 2, shape: [3,3,3], mftype: .Double, mforder: .Column)
             XCTAssertEqual(a[~<1], MfArray([[[ 0, 18, 36],

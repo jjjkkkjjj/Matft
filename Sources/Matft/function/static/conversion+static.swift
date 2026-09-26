@@ -337,30 +337,25 @@ extension Matft{
     */
     public static func flip(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         if let axis = axis{
-            let axis = get_positive_axis(axis, ndim: mfarray.ndim)
-            var slices = Array<MfSlice>(repeating: MfSlice(start: 0, to: nil, by: 1), count: mfarray.ndim)
-            slices[axis] = MfSlice(start: 0, to: nil, by: -1)
-            return mfarray[slices]
+            return Matft.flip(mfarray, axes: [axis])
         }
         else{
-            return Matft.flip(mfarray, axes: nil)
+            return Matft.flip(mfarray, axes: Array(stride(from: 0, to: mfarray.ndim, by: 1)))
         }
     }
     /**
        Reverse the mfarray order along given axes
        - parameters:
             - mfarray: mfarray
-            - axes: (optional) the reversed axis of list
+            - axes: the reversed axis of list
     */
-    public static func flip(_ mfarray: MfArray, axes: [Int]? = nil) -> MfArray{
-        let axes = axes ?? Array(stride(from: 0, to: mfarray.ndim, by: 1))
-        
-        var slices = Array<MfSlice>(repeating: MfSlice(start: 0, to: nil, by: 1), count: mfarray.ndim)
+    public static func flip(_ mfarray: MfArray, axes: [Int]) -> MfArray{
+        var slices: [Any] = Array(repeating: MfSlice(), count: mfarray.ndim)
         for axis in axes{
             let axis = get_positive_axis(axis, ndim: mfarray.ndim)
-            slices[axis] = MfSlice(start: 0, to: nil, by: -1)
+            slices[axis] = MfSlice(by: -1)
         }
-        return mfarray[slices]
+        return mfarray._get_mfarray(indices: &slices)
     }
     
     /**
