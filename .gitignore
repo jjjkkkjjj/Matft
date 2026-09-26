@@ -160,3 +160,6 @@ DerivedData/
 
 # Python
 __pycache__/
+
+# llvm coverage output of xctest
+*.profraw

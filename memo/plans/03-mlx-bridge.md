@@ -72,3 +72,33 @@ let mx2 = mfArray.toMLXArray(dtype: .float16)      // dtype 変換付き（コ�
 - 配置 (a)/(b)/(c) の最終決定．
 - Matft 本体にページアラインの確保オプション（例: `MfData(size:mftype:alignment:)`）を追加するか — 追加する場合は本体側 TDD．
 - CVPixelBuffer ⇄ MfArray（本体側 `#if canImport(CoreVideo)`）もこのプランで扱うか → 本体側の別小タスクとして扱うのを推奨．
+
+## 実装結果（2026-09-27, branch `feature/mlx-bridge`）
+配置は (a) `Extensions/MatftMLX` で確定．本体の `Package.swift` / 最小 OS は変更なし．テストは `scripts/build-and-test-mlx.sh`（20 件 Green）．
+
+### スパイク結果（mlx-swift 0.31.4, macOS 26.2, Apple Silicon, Xcode 26.2）
+- **ページアラインは不要**．`UnsafeMutableRawPointer.allocate(alignment: 4)` や +4 バイトずらしたポインタでも `MLXArray(rawPointer:)` はゼロコピーで受け取り，CPU・GPU ともに正しく計算（作成後の書き換えも GPU から見える）．
+  - MLX core（`array.cpp`）は `allocator::make_buffer` が失敗すると **自動でコピーして deleter を即時呼ぶ** ため，どの環境でも正しさは保証される．→ Matft 本体にアライン確保オプションは追加しない．
+- float64 は CPU stream で動作．
+- **バッファ donation の罠**: `MLXArray(rawPointer:)` で包んだ配列が一時値として演算に渡ると，MLX は出力を入力バッファに書き込む（`is_donatable`: desc と data の use_count が 1）．→ Matft→MLX の共有は **オプトイン（デフォルト `share: false`）**．MLX→Matft は `MLXArrayOwner` が MLXArray を保持するので donation されない（ミューテーションテストで確認）．
+- `Data(bytesNoCopy:)` は **14 バイト以下を inline コピー**するため，`asData(access: .noCopy)` のアドレスが実体と異なる．MLX に生ポインタを返す公開 API は無い → 14 バイト以下は常にコピー（`dataKeepsAddress` で実行時判定）．
+- SwiftPM CLI（`swift test`）は **CPU デフォルトでも起動時に metallib ロードで失敗**（`Device.setDefault(.cpu)` でも不可）→ xcodebuild 必須．Metal Toolchain（`xcodebuild -downloadComponent MetalToolchain`, 約 700MB）が必要．
+- `xcodebuild test`（test-without-building 含む）を **リポジトリ内のスクリプトから** 呼ぶと "Failed to create a bundle instance" で失敗する現象があり原因不明（スクリプトを /tmp に置くと成功）．→ スクリプトは `build-for-testing` + `xcrun xctest` で実行．
+- mlx-swift 0.31.5 以降は `swift-tools-version: 6.3`．`from: "0.30.0"` 指定で Swift 6.2 では 0.31.4 に解決される（SwiftPM が非対応版をスキップ）．
+
+### API（実装済み）
+- `MfArray(mlx:share: = true)` / `MLXArray(matft:share: = false)` / `mfArray.toMLXArray(share: = false, dtype:)` / `mfArray.isSharingMemory(with:)`
+- complex128 → `toMLXArray(dtype: .complex64)` の明示指定時のみ縮小（未指定は precondition failure）．
+
+### 配布（決定: 当面ローカル checkout 経由）
+- SwiftPM はリモートリポジトリのサブディレクトリのパッケージを参照できないため，submodule 等で checkout して `.package(path: ".../Extensions/MatftMLX")`．手順は `Extensions/MatftMLX/README.md`．
+- 利用者が Matft を URL でも追加すると "multiple similar targets 'Matft', 'pocketFFT'" エラー → Matft も同じ checkout を path 参照する（検証済み）．
+- 配布を重視する段階で (b) 別リポジトリ化を再検討．
+
+### デモ（実装済み）
+- `Examples/MatftMLXDemo`（`scripts/run-mlx-demo.sh`）: whisper_log_mel → Whisper encoder stem / clip_preprocess → CLIP ViT-B/32 patch embedding / qwen2vl_preprocess → Qwen2-VL patch embed + merger．重みはランダム．
+- 罠: `mfarray * 0.5`（Double リテラル）で Float が Double に昇格し，MLX GPU で "float64 is not supported on the GPU" の fatalError．
+
+### 残課題
+- CI（GitHub Actions の macOS runner で Metal Toolchain を入れて回す）未整備．
+- 学習済み重みを使うデモ（mlx-swift-lm 連携）．
