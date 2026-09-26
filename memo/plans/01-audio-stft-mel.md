@@ -1,5 +1,10 @@
 # Plan 1: 音声前処理（窓関数・STFT・mel・log-mel）
 
+> **実装済み（branch `feature/audio-stft-mel`）**: `Matft.hanning/hamming/blackman/bartlett/kaiser`，`Matft.audio.get_window/frame/stft/mel_filters/melspectrogram/power_to_db/pad_or_trim/whisper_log_mel`．
+> 参照値: `python/gen_audio_fixtures.py`（librosa 0.11 / transformers 5.17 の WhisperFeatureExtractor と差 3.4e-6 を確認）→ `Tests/MatftTests/files/audio/`．
+> 速度（M系 Mac, release, 30 秒音声）: whisper_log_mel 6.5ms（transformers numpy 11.4ms），stft 5.8ms（librosa 1.9ms，主に pocketFFT 部分 3.4ms）．
+> 未実装: `istft`，多次元（バッチ）入力の stft，`frame` の view 返却（現状コピー），callable な `ref`（`np.max`）．
+
 ## 目的
 Swift エコシステムに存在しない（mlx-swift-lm も `ProcessedAudio(features:)` の器のみ）音声特徴量計算を Matft で提供する．
 ゴールは **Whisper の log-mel spectrogram を Python（openai-whisper / transformers WhisperFeatureExtractor）と数値一致で出せる** こと．

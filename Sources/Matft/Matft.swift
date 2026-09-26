@@ -56,6 +56,11 @@ public class Matft{
     public class complex{}
     
     /**
+       Audio
+     */
+    public class audio{}
+    
+    /**
        The kernel of mfarray.
     */
     //internal class mfdata{}

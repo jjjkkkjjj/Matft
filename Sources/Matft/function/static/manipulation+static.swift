@@ -29,27 +29,29 @@ extension Matft{
                 continue
             }
 
-            if mode == .constant{
-                var parts: [MfArray] = []
-                if before > 0{
+            let size = ret.shape[axis]
+            precondition(mode == .constant || size > 0, "can't extend empty axis \(axis) using modes other than 'constant'")
+
+            // Create only the padded parts and concatenate them with the original values
+            func padded_part(_ range: Range<Int>) -> MfArray{
+                if mode == .constant{
                     var shape = ret.shape
-                    shape[axis] = before
-                    parts.append(Matft.nums(constant_values, shape: shape, mftype: mfarray.mftype))
+                    shape[axis] = range.count
+                    return Matft.nums(constant_values, shape: shape, mftype: mfarray.mftype)
                 }
-                parts.append(ret)
-                if after > 0{
-                    var shape = ret.shape
-                    shape[axis] = after
-                    parts.append(Matft.nums(constant_values, shape: shape, mftype: mfarray.mftype))
-                }
-                ret = Matft.concatenate(parts, axis: axis)
+                let indices = range.map{ _pad_source_index($0, size: size, mode: mode) }
+                return Matft.take(ret, indices: MfArray(indices, mftype: .Int), axis: axis)
             }
-            else{
-                let size = ret.shape[axis]
-                precondition(size > 0, "can't extend empty axis \(axis) using modes other than 'constant'")
-                let indices = (-before..<size + after).map{ _pad_source_index($0, size: size, mode: mode) }
-                ret = Matft.take(ret, indices: MfArray(indices, mftype: .Int), axis: axis)
+
+            var parts: [MfArray] = []
+            if before > 0{
+                parts.append(padded_part(-before..<0))
             }
+            parts.append(ret)
+            if after > 0{
+                parts.append(padded_part(size..<size + after))
+            }
+            ret = Matft.concatenate(parts, axis: axis)
         }
 
         return ret === mfarray ? mfarray.deepcopy() : ret
