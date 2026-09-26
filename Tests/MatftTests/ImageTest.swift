@@ -303,10 +303,8 @@ final class ImageTest: XCTestCase {
 
         // cv2.equalizeHist(gray)[::50, ::50]
         let ret = Matft.image.equalizeHist(loadRenaGray8())
-        // NOTE: use item() because step slices of non-divisible length have a bug for now
-        let sampled = (0..<5).map { i in (0..<5).map { j in ret.item(indices: [i * 50, j * 50], type: UInt8.self) } }
-        XCTAssertEqual(sampled, [[203, 112, 138, 183, 113], [67, 101, 228, 188, 20], [91, 128, 139, 196, 173],
-                                 [51, 42, 103, 22, 221], [11, 49, 151, 242, 135]])
+        XCTAssertEqual(ret[~<<50, ~<<50], MfArray([[203, 112, 138, 183, 113], [67, 101, 228, 188, 20], [91, 128, 139, 196, 173],
+                                                   [51, 42, 103, 22, 221], [11, 49, 151, 242, 135]] as [[UInt8]]))
         ImageSnapshot.save(ret, as: "equalizeHist")
     }
 

@@ -166,7 +166,9 @@ extension MfArray: MfSubscriptable{
                 startIndex = startIndex >= 0 ? startIndex : orig_dim + startIndex
                 toIndex = toIndex >= 0 ? toIndex : orig_dim + toIndex
                 
-                var nsteps = (toIndex - startIndex) / mfslice.by + (toIndex - startIndex) % mfslice.by
+                // ceil((toIndex - startIndex) / by). It's non-positive when the signs of the range and by differ
+                let distance = toIndex - startIndex
+                var nsteps = (distance + by - (by > 0 ? 1 : -1)) / by
                 if nsteps <= 0{
                     nsteps = 0
                     by = 1

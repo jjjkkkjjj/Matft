@@ -20,7 +20,8 @@ extension Matft.image{
     */
     public static func flip(_ src: MfArray, flipCode: Int) -> MfArray{
         precondition(src.ndim == 2 || src.ndim == 3, "src must be 2d or 3d, but got \(src.shape)")
-        return flip_image(src, vertical: flipCode <= 0, horizontal: flipCode != 0)
+        let axes = flipCode == 0 ? [0] : (flipCode > 0 ? [1] : [0, 1])
+        return Matft.flip(src, axes: axes).to_contiguous(mforder: .Row)
     }
 
     /**
@@ -34,11 +35,11 @@ extension Matft.image{
         precondition(src.ndim == 2 || src.ndim == 3, "src must be 2d or 3d, but got \(src.shape)")
         switch rotateCode{
         case .Rotate90Clockwise:
-            return flip_image(src.swapaxes(axis1: 0, axis2: 1), vertical: false, horizontal: true)
+            return Matft.flip(src.swapaxes(axis1: 0, axis2: 1), axis: 1).to_contiguous(mforder: .Row)
         case .Rotate180:
-            return flip_image(src, vertical: true, horizontal: true)
+            return Matft.flip(src, axes: [0, 1]).to_contiguous(mforder: .Row)
         case .Rotate90Counterclockwise:
-            return flip_image(src.swapaxes(axis1: 0, axis2: 1), vertical: true, horizontal: false)
+            return Matft.flip(src.swapaxes(axis1: 0, axis2: 1), axis: 0).to_contiguous(mforder: .Row)
         }
     }
 
@@ -173,18 +174,6 @@ extension Matft.image{
         let edges = canny_edges(dx: dx, dy: dy, height: height, width: width, threshold1: Double(threshold1), threshold2: Double(threshold2), L2gradient: L2gradient)
         return floats2image(edges, shape: image.shape, mftype: .UInt8)
     }
-}
-
-/// Flip the image by the reversed slices
-/// - Parameters:
-///     - image: An image mfarray
-///     - vertical: Whether to flip upside down
-///     - horizontal: Whether to flip left and right
-/// - Returns: The row contiguous mfarray
-fileprivate func flip_image(_ image: MfArray, vertical: Bool, horizontal: Bool) -> MfArray{
-    let rows = vertical ? ~<<-1 : MfSlice()
-    let cols = horizontal ? ~<<-1 : MfSlice()
-    return image[rows, cols].to_contiguous(mforder: .Row)
 }
 
 /// Get the row contiguous values as Double array
