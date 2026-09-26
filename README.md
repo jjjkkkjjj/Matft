@@ -777,6 +777,20 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | *Matft.stats.cumsum | *numpy.cumsum |
 | *Matft.stats.var | *numpy.var |
 | *Matft.stats.std | *numpy.std |
+| Matft.stats.median | numpy.median |
+| Matft.stats.percentile | numpy.percentile |
+| Matft.stats.quantile | numpy.quantile |
+| Matft.stats.nansum | numpy.nansum |
+| Matft.stats.nanmean | numpy.nanmean |
+| Matft.stats.nanmax | numpy.nanmax |
+| Matft.stats.nanmin | numpy.nanmin |
+| Matft.stats.nanargmax | numpy.nanargmax |
+| Matft.stats.nanargmin | numpy.nanargmin |
+| Matft.stats.nanvar | numpy.nanvar |
+| Matft.stats.nanstd | numpy.nanstd |
+| Matft.stats.nanmedian | numpy.nanmedian |
+| Matft.stats.nanpercentile | numpy.nanpercentile |
+| Matft.stats.nanquantile | numpy.nanquantile |
 
 - Random function
 

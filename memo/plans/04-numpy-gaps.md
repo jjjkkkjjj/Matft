@@ -20,6 +20,10 @@ mlx-swift に存在しない（特に「出力 shape がデータ依存」「nan
 | `Matft.isnan / isinf / isfinite` | Bool 配列を返す |
 
 ### 4-B: 順序統計・nan 系
+> **実装済み（branch `feature/numpy-gaps-stats`）**: `Matft.stats.median/percentile/quantile`（`MfQuantileMethod`: linear/lower/higher/nearest/midpoint，q は Double か [Double]），
+> `nansum/nanmean/nanmax/nanmin/nanargmax/nanargmin/nanvar/nanstd/nanmedian/nanpercentile/nanquantile`．テスト: `OrderStatsTest.swift`．
+> 共通ヘルパー `_reduce_lanes`（軸を最後に移して 1 次元の列ごとに計算）．median と単一 q は Wirth の選択アルゴリズムで O(n)．速度は NumPy と同等（1000x1000 median 約 8ms）．
+> 出力型: median/percentile/nanmean/nanvar 等は mean と同じく Double 入力→Double，それ以外→Float．nansum/nanmax/nanmin は入力の型．
 | 関数 | 要点 |
 |---|---|
 | `Matft.stats.median(a, axis:, keepDims:)` | |
