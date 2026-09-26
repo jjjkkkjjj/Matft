@@ -570,6 +570,31 @@ python3 scripts/image_compare.py
 | `color(.RGBA2GRAY)` | ![RGBA2GRAY](./Tests/MatftTests/files/images/compare/color_rgba2gray.png) |
 | `color(.RGBA2GRAY, exclude_alpha: false)` | ![RGBA2GRAY alpha](./Tests/MatftTests/files/images/compare/color_rgba2gray_alpha_white.png) |
 | `color(.RGBA2RGB)` (UInt8) | ![RGBA2RGB UInt8](./Tests/MatftTests/files/images/compare/color_rgba2rgb_uint8.png) |
+| `cvtColor(.RGBA2BGRA)` | ![RGBA2BGRA](./Tests/MatftTests/files/images/compare/cvtColor_rgba2bgra.png) |
+| `cvtColor(.RGB2HSV)` (H channel) | ![RGB2HSV](./Tests/MatftTests/files/images/compare/cvtColor_rgb2hsv_h.png) |
+| `threshold(.Binary)` | ![threshold](./Tests/MatftTests/files/images/compare/threshold_binary_127.png) |
+| `threshold(otsu: true)` | ![threshold otsu](./Tests/MatftTests/files/images/compare/threshold_otsu.png) |
+| `adaptiveThreshold(.Mean)` | ![adaptiveThreshold mean](./Tests/MatftTests/files/images/compare/adaptiveThreshold_mean.png) |
+| `adaptiveThreshold(.Gaussian, .BinaryInv)` | ![adaptiveThreshold gaussian](./Tests/MatftTests/files/images/compare/adaptiveThreshold_gaussian_inv.png) |
+| `equalizeHist` | ![equalizeHist](./Tests/MatftTests/files/images/compare/equalizeHist.png) |
+| `LUT` (gamma 0.5) | ![LUT](./Tests/MatftTests/files/images/compare/LUT_gamma05.png) |
+| `filter2D` (sharpen) | ![filter2D](./Tests/MatftTests/files/images/compare/filter2D_sharpen.png) |
+| `blur((5, 5))` | ![blur](./Tests/MatftTests/files/images/compare/blur_5x5.png) |
+| `GaussianBlur((9, 9))` | ![GaussianBlur](./Tests/MatftTests/files/images/compare/GaussianBlur_k9.png) |
+| `Sobel(dx: 1)` | ![Sobel](./Tests/MatftTests/files/images/compare/Sobel_dx.png) |
+| `Laplacian(ksize: 3)` | ![Laplacian](./Tests/MatftTests/files/images/compare/Laplacian_k3.png) |
+| `Canny(100, 200)` | ![Canny](./Tests/MatftTests/files/images/compare/Canny_100_200.png) |
+| `Canny(50, 150, L2gradient: true)` | ![Canny L2](./Tests/MatftTests/files/images/compare/Canny_50_150_L2.png) |
+| `erode` (rect 5x5) | ![erode](./Tests/MatftTests/files/images/compare/erode_rect5.png) |
+| `dilate` (ellipse 7x7) | ![dilate](./Tests/MatftTests/files/images/compare/dilate_ellipse7.png) |
+| `morphologyEx(.Open)` | ![morphologyEx open](./Tests/MatftTests/files/images/compare/morphologyEx_open_ellipse5.png) |
+| `morphologyEx(.Gradient)` | ![morphologyEx gradient](./Tests/MatftTests/files/images/compare/morphologyEx_gradient_cross3.png) |
+| `flip(flipCode: 1)` | ![flip](./Tests/MatftTests/files/images/compare/flip_horizontal.png) |
+| `rotate(.Rotate90Clockwise)` | ![rotate](./Tests/MatftTests/files/images/compare/rotate_90cw.png) |
+| `warpAffine(getRotationMatrix2D)` | ![warpAffine rotation matrix](./Tests/MatftTests/files/images/compare/warpAffine_getRotationMatrix2D_45.png) |
+| `warpPerspective(getPerspectiveTransform)` | ![warpPerspective](./Tests/MatftTests/files/images/compare/warpPerspective.png) |
+| `resize(.Linear)` | ![resize linear](./Tests/MatftTests/files/images/compare/resize_linear_300x150.png) |
+| `resize(.Nearest)` | ![resize nearest](./Tests/MatftTests/files/images/compare/resize_nearest_100x60.png) |
 
 ## Function List
 
@@ -776,8 +801,40 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft                            | OpenCV              |
 | -------------------------------- | ----------------- |
 | Matft.image.color               | cv2.cvtColor |
+| Matft.image.cvtColor            | cv2.cvtColor |
+| Matft.image.threshold           | cv2.threshold |
+| Matft.image.adaptiveThreshold   | cv2.adaptiveThreshold |
+| Matft.image.calcHist            | cv2.calcHist |
+| Matft.image.equalizeHist        | cv2.equalizeHist |
+| Matft.image.LUT                 | cv2.LUT |
+| Matft.image.normalize           | cv2.normalize |
+| Matft.image.convertScaleAbs     | cv2.convertScaleAbs |
+| Matft.image.filter2D            | cv2.filter2D |
+| Matft.image.sepFilter2D         | cv2.sepFilter2D |
+| Matft.image.boxFilter           | cv2.boxFilter |
+| Matft.image.blur                | cv2.blur |
+| Matft.image.getGaussianKernel   | cv2.getGaussianKernel |
+| Matft.image.GaussianBlur        | cv2.GaussianBlur |
+| Matft.image.getDerivKernels     | cv2.getDerivKernels |
+| Matft.image.Sobel               | cv2.Sobel |
+| Matft.image.Laplacian           | cv2.Laplacian |
+| Matft.image.Canny               | cv2.Canny |
+| Matft.image.getStructuringElement | cv2.getStructuringElement |
+| Matft.image.erode               | cv2.erode |
+| Matft.image.dilate              | cv2.dilate |
+| Matft.image.morphologyEx        | cv2.morphologyEx |
 | Matft.image.resize               | cv2.resize |
+| Matft.image.flip                | cv2.flip |
+| Matft.image.rotate              | cv2.rotate |
+| Matft.image.getRotationMatrix2D | cv2.getRotationMatrix2D |
+| Matft.image.getAffineTransform  | cv2.getAffineTransform |
+| Matft.image.getPerspectiveTransform | cv2.getPerspectiveTransform |
 | Matft.image.warpAffine               | cv2.warpAffine |
+| Matft.image.warpPerspective     | cv2.warpPerspective |
+| Matft.image.remap               | cv2.remap |
+
+> [!NOTE]
+> Filters use `MfBorderType.Replicate` by default, because OpenCV's default border (`BORDER_REFLECT_101`) is not supported by vImage.
 
 
 ## Performance
