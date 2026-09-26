@@ -3,6 +3,15 @@ import XCTest
 import Matft
 
 final class StackTests: XCTestCase {
+    func testVstack1D(){
+        // numpy: np.vstack([[1, 2, 3], [4, 5, 6]]) -> [[1, 2, 3], [4, 5, 6]]
+        XCTAssertEqual(Matft.vstack([MfArray([1, 2, 3]), MfArray([4, 5, 6])]), MfArray([[1, 2, 3], [4, 5, 6]]))
+        // numpy: np.vstack([[[1, 2, 3]], [4, 5, 6]]) -> [[1, 2, 3], [4, 5, 6]]
+        XCTAssertEqual(Matft.vstack([MfArray([[1, 2, 3]]), MfArray([4, 5, 6])]), MfArray([[1, 2, 3], [4, 5, 6]]))
+        // numpy: np.vstack([[1, 2]]) -> [[1, 2]]
+        XCTAssertEqual(Matft.vstack([MfArray([1, 2])]), MfArray([[1, 2]]))
+    }
+
 
     func test_hstack() {
         do{

@@ -3,6 +3,42 @@ import XCTest
 @testable import Matft
 
 final class LinAlgTests: XCTestCase {
+    func testDetOddSize() throws {
+        // numpy: np.linalg.det(np.eye(3)) -> 1, det of a permutation matrix -> -1
+        XCTAssertClose(try Matft.linalg.det(Matft.eye(dim: 3, mftype: .Double)), MfArray([1.0]))
+        XCTAssertClose(try Matft.linalg.det(MfArray([[0, 1, 0], [1, 0, 0], [0, 0, 1]] as [[Double]])), MfArray([-1.0]))
+        // numpy: -7.999999999999924
+        XCTAssertClose(try Matft.linalg.det(MfArray([[1, 2, 3, 4], [0, 1, 5, 6], [7, 0, 1, 2], [3, 4, 0, 1]] as [[Double]])), MfArray([-8.0]), rtol: 1e-12)
+        // numpy: [1, 8]
+        XCTAssertClose(try Matft.linalg.det(Matft.concatenate([Matft.eye(dim: 3, mftype: .Double), Matft.eye(dim: 3, mftype: .Double) * 2]).reshape([2, 3, 3])), MfArray([1.0, 8.0]), rtol: 1e-12)
+        #if !os(WASI)
+        XCTAssertClose(try Matft.linalg.det(Matft.eye(dim: 3)), MfArray([1.0] as [Float]), rtol: 1e-6)
+        #endif
+    }
+
+    func testNormMatDefaultAxes(){
+        // a = np.array([[1, -2, 3], [4, 5, -6]], float); np.linalg.norm(a, ord=o)
+        let a = MfArray([[1, -2, 3], [4, 5, -6]] as [[Double]])
+        XCTAssertClose(Matft.linalg.normlp_mat(a, ord: 1), MfArray([9.0]))
+        XCTAssertClose(Matft.linalg.normlp_mat(a, ord: -1), MfArray([5.0]))
+        XCTAssertClose(Matft.linalg.normlp_mat(a, ord: Float.infinity), MfArray([15.0]))
+        XCTAssertClose(Matft.linalg.normlp_mat(a, ord: -Float.infinity), MfArray([6.0]))
+        #if !os(WASI)
+        XCTAssertClose(Matft.linalg.normlp_mat(a, ord: 2), MfArray([9.225027715260927]), rtol: 1e-12)
+        XCTAssertClose(Matft.linalg.normlp_mat(a, ord: -2), MfArray([2.4287576356375586]), rtol: 1e-12)
+        #endif
+        // ord=None is the frobenius norm
+        XCTAssertClose(Matft.linalg.normlp_mat(a, ord: nil), MfArray([9.539392014169456]), rtol: 1e-12)
+        XCTAssertClose(Matft.linalg.normfro_mat(a), MfArray([9.539392014169456]), rtol: 1e-12)
+
+        // b = np.arange(24.).reshape(2, 3, 4) - 10
+        let b = Matft.arange(start: -10, to: 14, by: 1, shape: [2, 3, 4], mftype: .Double)
+        // numpy: norm(b, 1, axis=(1, 2)) -> [18, 27], norm(b, inf, axis=(1, 2)) -> [34, 46], norm(b, 1, axis=(2, 0)) -> [34, 30, 46]
+        XCTAssertClose(Matft.linalg.normlp_mat(b, ord: 1, axes: (1, 2)), MfArray([18.0, 27.0]))
+        XCTAssertClose(Matft.linalg.normlp_mat(b, ord: Float.infinity, axes: (1, 2)), MfArray([34.0, 46.0]))
+        XCTAssertClose(Matft.linalg.normlp_mat(b, ord: 1, axes: (2, 0)), MfArray([34.0, 30.0, 46.0]))
+    }
+
 
     // MARK: - Tests requiring gesv_ (not available on WASM)
     #if !os(WASI)

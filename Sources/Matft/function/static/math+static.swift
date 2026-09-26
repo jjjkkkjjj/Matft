@@ -204,7 +204,8 @@ extension Matft.math{//use math_vv_by_vecLib
             let cosx = Matft.math.cos(x)
             let sinhy = Matft.math.sinh(y)
             let denomitar = cosx*cosx + sinhy*sinhy
-            return MfArray(real: Matft.math.sin(x)*cosx/denomitar, imag: Matft.math.cosh(x)*sinhy/denomitar)
+            // tan(x + iy) = (sin(x)cos(x) + i sinh(y)cosh(y)) / (cos(x)^2 + sinh(y)^2)
+            return MfArray(real: Matft.math.sin(x)*cosx/denomitar, imag: Matft.math.cosh(y)*sinhy/denomitar)
         }
     }
     /**

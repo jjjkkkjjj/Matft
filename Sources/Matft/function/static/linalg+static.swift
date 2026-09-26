@@ -282,7 +282,11 @@ extension Matft.linalg{
        - parameters:
            - mfarray: mfarray
     */
-    public static func normlp_mat(_ mfarray: MfArray, ord: Float? = 2, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray{
+    public static func normlp_mat(_ mfarray: MfArray, ord: Float? = 2, axes: (row: Int, col: Int) = (-2, -1), keepDims: Bool = false) -> MfArray{
+        // ord=None is the frobenius norm like numpy
+        guard let ord = ord else {
+            return Matft.linalg.normfro_mat(mfarray, axes: axes, keepDims: keepDims)
+        }
         var axes: (row: Int, col: Int) = (get_positive_axis(axes.row, ndim: mfarray.ndim), get_positive_axis(axes.col, ndim: mfarray.ndim))
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
@@ -338,7 +342,7 @@ extension Matft.linalg{
        - parameters:
            - mfarray: mfarray
     */
-    public static func normfro_mat(_ mfarray: MfArray, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray{
+    public static func normfro_mat(_ mfarray: MfArray, axes: (row: Int, col: Int) = (-2, -1), keepDims: Bool = false) -> MfArray{
         let axes: (row: Int, col: Int) = (get_positive_axis(axes.row, ndim: mfarray.ndim), get_positive_axis(axes.col, ndim: mfarray.ndim))
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
