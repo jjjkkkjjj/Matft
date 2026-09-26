@@ -68,7 +68,7 @@ extension Matft.linalg{
         precondition(a.ndim == 1 || a.ndim == 2, "a must be 1d or 2d")
         unsupport_complex(a)
         if a.ndim == 1{
-            return a.toFlattenArray(datatype: Double.self){ $0 }.contains{ $0 != 0 } ? 1 : 0
+            return a.astype(.Double).toFlattenArray(datatype: Double.self){ $0 }.contains{ $0 != 0 } ? 1 : 0
         }
         let eps = a.storedType == .Double ? Double.ulpOfOne : Double(Float.ulpOfOne)
         let sv = try Matft.linalg.svd(a.astype(.Double), full_matrices: false).s.toFlattenArray(datatype: Double.self){ $0 }
@@ -92,7 +92,7 @@ extension Matft{
         precondition(x.ndim == 1 && x.size > 0, "expected 1d non-empty x")
         precondition(y.shape[0] == x.size, "expected x and y to have the same length")
 
-        let xv = x.toFlattenArray(datatype: Double.self){ $0 }
+        let xv = x.astype(.Double).toFlattenArray(datatype: Double.self){ $0 }
         let m = xv.count
         let isDouble = x.storedType == .Double || y.storedType == .Double
         let eps = isDouble ? Double.ulpOfOne : Double(Float.ulpOfOne)
@@ -134,7 +134,7 @@ extension Matft{
     public static func polyval(_ p: MfArray, _ x: MfArray) -> MfArray{
         precondition(p.ndim == 1, "p must be 1d")
         let rettype = MfType.priority(p.mftype, x.mftype)
-        let coefs = p.toFlattenArray(datatype: Double.self){ $0 }
+        let coefs = p.astype(.Double).toFlattenArray(datatype: Double.self){ $0 }
         let xd = x.astype(.Double)
         // Horner's method
         var y = Matft.nums_like(0.0, mfarray: xd)
