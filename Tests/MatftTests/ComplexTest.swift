@@ -14,6 +14,25 @@ import Matft
 import Accelerate
 
 final class ComplexTests: XCTestCase {
+    func testSetterIntoViews(){
+        for mftype in [MfType.Float, .Double]{
+            // z = (np.arange(6) + 1j*np.arange(6)[::-1]).reshape(2, 3)
+            var z = MfArray(real: Matft.arange(start: 0, to: 6, by: 1, shape: [2, 3], mftype: mftype), imag: Matft.arange(start: 5, to: -1, by: -1, shape: [2, 3], mftype: mftype))
+            // zt = z.T; zt[zt.real > 2] = 100 - 1j
+            let zt = z.T
+            zt[zt.real > 2] = MfArray(real: MfArray([100]), imag: MfArray([-1]))
+            XCTAssertEqual(z.real, MfArray([[0, 1, 2], [100, 100, 100]], mftype: mftype))
+            XCTAssertEqual(z.imag!, MfArray([[5, 4, 3], [-1, -1, -1]], mftype: mftype))
+
+            z = MfArray(real: Matft.arange(start: 0, to: 6, by: 1, shape: [2, 3], mftype: mftype), imag: Matft.arange(start: 5, to: -1, by: -1, shape: [2, 3], mftype: mftype))
+            // v = z[:, ::-1]; v[[0, 1], [0, 2]] = [7+7j, 8-8j]
+            let v = z[Matft.all, Matft.reverse]
+            v[MfArray([0, 1]), MfArray([0, 2])] = MfArray(real: MfArray([7, 8]), imag: MfArray([7, -8]))
+            XCTAssertEqual(z.real, MfArray([[0, 1, 7], [8, 4, 5]], mftype: mftype))
+            XCTAssertEqual(z.imag!, MfArray([[5, 4, 7], [-8, 1, 0]], mftype: mftype))
+        }
+    }
+
     func testDivide(){
         for mftype in [MfType.Float, .Double]{
             // z = np.array([1-1j, 2-2j, 4, -3+4j]), w = np.array([2+1j, 1j, -1, 1-1j])

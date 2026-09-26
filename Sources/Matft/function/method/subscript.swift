@@ -82,11 +82,13 @@ extension MfArray: MfSubscriptable{
     
     //Use opaque?
     internal func _get_mfarray(indices: inout [Any]) -> MfArray{
-        precondition(indices.count <= self.ndim, "cannot return value because given indices were too many")
+        // newaxis doesn't consume an axis
+        let consumed = indices.filter{ ($0 as? SubscriptOps) != .newaxis }.count
+        precondition(consumed <= self.ndim, "cannot return value because given indices were too many")
 
         // supplement insufficient slices
-        if indices.count < self.ndim{
-            for _ in 0..<self.ndim - indices.count{
+        if consumed < self.ndim{
+            for _ in 0..<self.ndim - consumed{
                 indices.append(MfSlice())
             }
         }
@@ -104,15 +106,15 @@ extension MfArray: MfSubscriptable{
         //Indexing ref: https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
         var fancy_axes: [Int] = []
         var fancy_ops: [MfArray] = []
-        while orig_axis < self.ndim {
-            if let _index = indices[orig_axis] as? Int { // normal indexing
+        for index in indices {
+            if let _index = index as? Int { // normal indexing
                 let index = get_positive_index(_index, axissize: orig_shape[orig_axis], axis: orig_axis)
 
                 offset += index * orig_strides[orig_axis]
                 orig_axis += 1 // not move
                 new_axis += 0
             }
-            else if let mfslice = indices[orig_axis] as? MfSlice{// slicing
+            else if let mfslice = index as? MfSlice{// slicing
                 let orig_dim = orig_shape[orig_axis]
                 //default value is 0(if by >= 0), dim - 1(if by < 0)
                 var startIndex = mfslice.start ?? (mfslice.by >= 0 ? 0 : orig_dim - 1)
@@ -183,7 +185,7 @@ extension MfArray: MfSubscriptable{
                 orig_axis += 1
                 new_axis += 1
             }
-            else if let subop = indices[orig_axis] as? SubscriptOps{// expand dim
+            else if let subop = index as? SubscriptOps{// expand dim
                 switch subop {
                 case .newaxis:
                     newshape.append(1)
@@ -215,7 +217,7 @@ extension MfArray: MfSubscriptable{
                     fatalError("\(subop) is invalid in getter")*/
                 }
             }
-            else if let subop = indices[orig_axis] as? MfArray{// fancy indexing
+            else if let subop = index as? MfArray{// fancy indexing
                 // get all values first, fancyget later
                 let orig_dim = orig_shape[orig_axis]
                 
@@ -229,7 +231,7 @@ extension MfArray: MfSubscriptable{
                 new_axis += 1
             }
             else{
-                preconditionFailure("\(indices[orig_axis]) is not subscriptable value")
+                preconditionFailure("\(index) is not subscriptable value")
             }
         }
         

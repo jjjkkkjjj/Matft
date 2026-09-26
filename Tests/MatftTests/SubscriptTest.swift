@@ -66,6 +66,25 @@ final class SubscriptTests: XCTestCase {
         
     }
 
+    func testNewaxis(){
+        // a = np.arange(6).reshape(2, 3)
+        let a = Matft.arange(start: 0, to: 6, by: 1, shape: [2, 3])
+        // numpy: a[:, None].shape -> (2, 1, 3), a[None].shape -> (1, 2, 3)
+        XCTAssertEqual(a[Matft.all, Matft.newaxis].shape, [2, 1, 3])
+        XCTAssertEqual(a[Matft.all, Matft.newaxis], MfArray([[[0, 1, 2]], [[3, 4, 5]]]))
+        XCTAssertEqual(a[Matft.newaxis].shape, [1, 2, 3])
+        // numpy: a[:, None, 1] -> [[1], [4]]
+        XCTAssertEqual(a[Matft.all, Matft.newaxis, 1], MfArray([[1], [4]]))
+        // numpy: a[None, :, ::-1] -> [[[2, 1, 0], [5, 4, 3]]]
+        XCTAssertEqual(a[Matft.newaxis, Matft.all, Matft.reverse], MfArray([[[2, 1, 0], [5, 4, 3]]]))
+        // numpy: a[1, None] -> [[3, 4, 5]]
+        XCTAssertEqual(a[1, Matft.newaxis], MfArray([[3, 4, 5]]))
+        // a view: writing into it changes a
+        let v = a[Matft.all, Matft.newaxis]
+        v[1, 0, 2] = MfArray([-1])
+        XCTAssertEqual(a, MfArray([[0, 1, 2], [3, 4, -1]]))
+    }
+
     func testSlicingStep(){
         // the number of elements must be ceil((to - start) / by) like numpy
         let b = Matft.arange(start: 0, to: 10, by: 1)
