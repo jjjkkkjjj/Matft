@@ -189,13 +189,15 @@ internal func c4toc1_by_vImage(_ image: MfArray, pre_bias: [Float], coef: [Float
 ///   - dstHeight: The destination height
 /// - Returns: Resized image mfarray
 internal func resize_by_vImage(_ image: MfArray, dstWidth: Int, dstHeight: Int) -> MfArray{
-    return apply_by_vImage(image, dstHeight: dstHeight, dstWidth: dstWidth, argb_func: {
+    let ret = apply_by_vImage(image, dstHeight: dstHeight, dstWidth: dstWidth, argb_func: {
         srcptr, dstptr, srcHeight, srcWidth, dstHeight, dstWidth, channel, _ in
         wrap_vImage_resize(srcptr, srcHeight, srcWidth, dstptr, dstHeight, dstWidth, channel, vImage_func: vImageScale_ARGBFFFF)
     }, planar_func: {
         srcptr, dstptr, srcHeight, srcWidth, dstHeight, dstWidth, channel, _ in
         wrap_vImage_resize(srcptr, srcHeight, srcWidth, dstptr, dstHeight, dstWidth, channel, vImage_func: vImageScale_PlanarF)
     })
+    // the interpolated values of UInt8 image are rounded and saturated like OpenCV
+    return image.mftype == .UInt8 ? saturate_ui8_image(ret) : ret
 }
 
 
@@ -242,7 +244,7 @@ internal func affine_by_vImage(_ image: MfArray, dstHeight: Int, dstWidth: Int, 
         flags = kvImageEdgeExtend
     }
 
-    return borderValue.withUnsafeBufferPointer{
+    let ret = borderValue.withUnsafeBufferPointer{
         borderptr in
         apply_by_vImage(image, dstHeight: dstHeight, dstWidth: dstWidth, argb_func: {
             srcptr, dstptr, srcHeight, srcWidth, dstHeight, dstWidth, channel, _ in
@@ -253,6 +255,8 @@ internal func affine_by_vImage(_ image: MfArray, dstHeight: Int, dstWidth: Int, 
             wrap_vImage_affine(srcptr, srcHeight, srcWidth, dstptr, dstHeight, dstWidth, channel, transform, borderptr.baseAddress! + plane, flags, vImage_func: vImageAffineWarp_PlanarF_)
         })
     }
+    // the interpolated values of UInt8 image are rounded and saturated like OpenCV
+    return image.mftype == .UInt8 ? saturate_ui8_image(ret) : ret
 }
 
 /// Wrapper of vImage convolution function (correlation like cv2.filter2D)
@@ -349,7 +353,8 @@ internal func morphology_by_vImage(_ image: MfArray, mask: [Bool], maskHeight: I
             }
         })
     }
-    return ret
+    // the border values (+-inf) saturate like OpenCV (e.g. 255 for erode)
+    return image.mftype == .UInt8 ? saturate_ui8_image(ret) : ret
 }
 #endif
 
