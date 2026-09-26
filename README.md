@@ -7,6 +7,8 @@
 INFO: Support Complex!!
 
 - [Matft](#matft)
+  * [Matft and MLX](#matft-and-mlx)
+    + [Using Matft with MLX](#using-matft-with-mlx)
   * [Feature & Usage](#feature---usage)
     + [Declaration](#declaration)
       - [MfArray](#mfarray)
@@ -35,6 +37,49 @@ INFO: Support Complex!!
 <strike>
 Note: You can use [Protocol version(beta version)](https://github.com/jjjkkkjjj/Matft/tree/protocol) too.
 </strike>
+
+## Matft and MLX
+
+Matft is a **complement** to [mlx-swift](https://github.com/ml-explore/mlx-swift), not a replacement.
+In short: **Matft plays the role of NumPy / SciPy / OpenCV / librosa, and MLX plays the role of PyTorch.**
+Use Matft for exact, CPU-side pre / post processing and numerical work, and MLX for neural networks on the GPU.
+
+| | Matft | mlx-swift (as of 2026-09, v0.31.4) |
+|---|---|---|
+| Backend | CPU (Accelerate) | GPU (Metal) + CPU |
+| Hardware | Apple silicon and Intel Mac [^intel] | Apple silicon ([README](https://github.com/ml-explore/mlx-swift#readme), [#133](https://github.com/ml-explore/mlx-swift/issues/133)) |
+| iOS Simulator | ✅ [^simulator] | ❌ ([Running on iOS](https://github.com/ml-explore/mlx-swift/blob/main/Source/MLX/Documentation.docc/Articles/running-on-ios.md)) |
+| WebAssembly | ✅ ([build script](#-webassembly-build--test)) | |
+| Minimum OS | No restriction in `Package.swift` | macOS 14 / iOS 17 |
+| float64 | ✅ | CPU stream only ("float64 is not supported on the GPU") |
+| complex128 | ✅ | ❌ (complex64 only) |
+| Writing to a slice | Updates the original array like a NumPy [view](#view) | The slice is an independent array |
+| Functions whose output shape depends on the data<br>(`unique`, `nonzero`, `argwhere`, `histogram`, `bincount`, `searchsorted`, set routines) | ✅ | ❌ |
+| `percentile` / `quantile`, nan-functions, `lstsq`, `polyfit` | ✅ | ❌ (`median` ✅) |
+| Image processing (OpenCV-like, PIL-compatible resize, CLIP / Qwen2-VL preprocessing) | ✅ ([Image](#image)) | NN layers only (conv, pooling, upsample) |
+| Audio features (STFT, mel, Whisper log-mel) | ✅ ([Audio](#audio)) | FFT only |
+| Autograd / NN layers / GPU training | ❌ | ✅ |
+
+[^intel]: The tests are run on x86_64 under Rosetta. 3 tests (the integer overflow wrap-around of `Int16` and the `NaN` comparison in `==`) currently fail on x86_64.
+[^simulator]: All the 310 tests of `MatftTests` pass on the iOS Simulator (iPhone 16 Pro, iOS 18.6).
+
+### Using Matft with MLX
+
+[`Extensions/MatftMLX`](./Extensions/MatftMLX) converts between `MfArray` and `MLXArray`, sharing the memory (zero-copy) when possible.
+It is a separate package, so Matft itself does not depend on MLX.
+
+```swift
+import Matft
+import MLX
+import MatftMLX
+
+let pixelValues = Matft.image.clip_preprocess(rgb)        // (1, 3, 224, 224), same as CLIPImageProcessor
+let output = model(pixelValues.toMLXArray())              // inference with MLX (GPU)
+let result = MfArray(mlx: output)                         // back to Matft without copy (float32 / float64)
+```
+
+See [its README](./Extensions/MatftMLX/README.md) for the installation (via a local checkout), the zero-copy conditions and the demos
+(Whisper log-mel, CLIP and Qwen2-VL preprocessing with Matft → MLX).
 
 ## Feature & Usage
 
@@ -1094,6 +1139,16 @@ This script will:
 - 🧪 Build and run tests using wasmtime
 
 **Note:** The WASM script automatically handles toolchain, SDK and runtime installation, so you can run it on a fresh machine without any prior setup!
+
+### 🧠 MatftMLX Build & Test
+
+To build and test [MatftMLX](./Extensions/MatftMLX) (Apple silicon and Xcode with the Metal Toolchain are required, `swift test` cannot build MLX's Metal shaders):
+
+```bash
+xcodebuild -downloadComponent MetalToolchain  # only once
+./scripts/build-and-test-mlx.sh
+./scripts/run-mlx-demo.sh                      # demos: Matft preprocessing -> MLX
+```
 
 ### Requirements
 

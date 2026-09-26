@@ -41,3 +41,15 @@ Matft が mlx-swift の代替ではなく **補完** であることを README �
 ## 注意
 - 他プロジェクトを貶める書き方をしない（事実ベース，リンク付き）．
 - MLX 側の状況は変わるので「as of 2026-09」と明記．
+
+## 実装結果（2026-09-27, branch `docs/readme-positioning`）
+- README 冒頭に "Matft and MLX"（比較表 + 1 行サマリ）と "Using Matft with MLX"，Build Scripts に MatftMLX を追加．
+- 表の各行の裏付け:
+  - MLX 側（mlx-swift 0.31.4 のソースで確認）: `platforms` macOS 14 / iOS 17，Simulator 非対応（docc `running-on-ios.md`），complex128 なし（`DType`），float64 GPU 不可（実行時 fatalError を実測），unique/nonzero/argwhere/histogram/bincount/searchsorted/percentile/quantile/nan 系/lstsq なし（median はある），STFT なし，MLXNN に conv/pooling/upsample．スライスへの書き込みが元配列に伝播しないことを実測．
+  - Matft 側: x86_64（Rosetta）で全テスト実行 → **3 件失敗**（`IntegerWrapTests.testSigned` の Int16 ラップ，`RedundantCopyTests.testAllEqual` の NaN 比較 ×2）．脚注に明記．iOS Simulator（iPhone 16 Pro, iOS 18.6）で MatftTests 310 件パス．
+- Minimum OS は未確定のまま「Package.swift に制限なし」と記載．実測: SwiftPM デフォルトで arm64 macOS は minos 11.0．テストターゲットは `UTType` を使うため iOS 14 未満のデプロイ先ではコンパイル不可（`IPHONEOS_DEPLOYMENT_TARGET=14.0` で実行）．→ `platforms` 明示は別 PR．
+- `memo/usage.md` はチュートリアル形式のため未更新（関数一覧は README の Function List が正で，Plan 1/2/4 の関数は各 PR で反映済み）．
+
+### 残課題
+- x86_64 の 3 件の失敗修正（別 PR）．
+- `Package.swift` に `platforms` を明示するか決定（別 PR）．
