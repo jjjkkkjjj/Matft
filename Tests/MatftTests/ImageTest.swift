@@ -330,5 +330,129 @@ final class ImageTest: XCTestCase {
         // cv2.convertScaleAbs(f, alpha=100, beta=-50)
         XCTAssertEqual(Matft.image.convertScaleAbs(f, alpha: 100, beta: -50), MfArray([[150, 0], [150, 250]] as [[UInt8]]))
     }
+
+    // MARK: - filter
+
+    // a = np.arange(20, dtype=np.float32).reshape(4, 5)
+    private let rampF = Matft.arange(start: 0, to: 20, by: 1, shape: [4, 5], mftype: .Float)
+    // u = (np.arange(20) * 13 % 256).astype(np.uint8).reshape(4, 5)
+    private let ramp8 = MfArray([[0, 13, 26, 39, 52], [65, 78, 91, 104, 117], [130, 143, 156, 169, 182], [195, 208, 221, 234, 247]] as [[UInt8]])
+
+    func test_filter2D() {
+        // correlation (not convolution): cv2.filter2D(a, -1, [[0,0,0],[0,0,1],[0,0,0]], borderType=cv2.BORDER_REPLICATE)
+        let shift = MfArray([[0, 0, 0], [0, 0, 1], [0, 0, 0]] as [[Float]])
+        XCTAssertEqual(Matft.image.filter2D(rampF, kernel: shift),
+                       MfArray([[1, 2, 3, 4, 4], [6, 7, 8, 9, 9], [11, 12, 13, 14, 14], [16, 17, 18, 19, 19]] as [[Float]]))
+        // column major input
+        XCTAssertEqual(Matft.image.filter2D(rampF.to_contiguous(mforder: .Column), kernel: shift),
+                       MfArray([[1, 2, 3, 4, 4], [6, 7, 8, 9, 9], [11, 12, 13, 14, 14], [16, 17, 18, 19, 19]] as [[Float]]))
+
+        // even kernel and anchor
+        let k2 = MfArray([[1, 2], [3, 4]] as [[Float]])
+        // cv2.filter2D(a, -1, k2, anchor=(0, 0), borderType=cv2.BORDER_REPLICATE)
+        XCTAssertEqual(Matft.image.filter2D(rampF, kernel: k2, anchor: (0, 0)),
+                       MfArray([[41, 51, 61, 71, 75], [91, 101, 111, 121, 125], [141, 151, 161, 171, 175], [156, 166, 176, 186, 190]] as [[Float]]))
+        // cv2.filter2D(a, -1, k2, borderType=cv2.BORDER_CONSTANT)
+        XCTAssertEqual(Matft.image.filter2D(rampF, kernel: k2, borderType: .Constant),
+                       MfArray([[0, 4, 11, 18, 25], [20, 41, 51, 61, 71], [50, 91, 101, 111, 121], [80, 141, 151, 161, 171]] as [[Float]]))
+
+        // sharpen RGBA (UInt8 output is saturated)
+        let sharpen = MfArray([[0, -1, 0], [-1, 5, -1], [0, -1, 0]] as [[Float]])
+        let ret = Matft.image.filter2D(loadRena(.UInt8), kernel: sharpen)
+        XCTAssertEqual(ret.mftype, .UInt8)
+        XCTAssertEqual(ret.shape, [225, 225, 4])
+        ImageSnapshot.save(ret, as: "filter2D_sharpen")
+    }
+
+    func test_blur() {
+        // cv2.blur(u, (3, 3), borderType=cv2.BORDER_REPLICATE)
+        XCTAssertEqual(Matft.image.blur(ramp8, ksize: (3, 3)),
+                       MfArray([[26, 35, 48, 61, 69], [69, 78, 91, 104, 113], [134, 143, 156, 169, 178], [178, 186, 199, 212, 221]] as [[UInt8]]))
+        // cv2.blur(u, (4, 2), borderType=cv2.BORDER_REPLICATE)
+        XCTAssertEqual(Matft.image.blur(ramp8, ksize: (4, 2)),
+                       MfArray([[3, 10, 20, 33, 42], [36, 42, 52, 65, 75], [101, 107, 117, 130, 140], [166, 172, 182, 195, 205]] as [[UInt8]]))
+        // cv2.boxFilter(a, -1, (3, 3), normalize=False, borderType=cv2.BORDER_CONSTANT)
+        XCTAssertEqual(Matft.image.boxFilter(rampF, ksize: (3, 3), normalize: false, borderType: .Constant),
+                       MfArray([[12, 21, 27, 33, 24], [33, 54, 63, 72, 51], [63, 99, 108, 117, 81], [52, 81, 87, 93, 64]] as [[Float]]))
+
+        let ret = Matft.image.blur(loadRena(), ksize: (5, 5))
+        XCTAssertEqual(ret.shape, [225, 225, 4])
+        ImageSnapshot.save(ret, as: "blur_5x5")
+    }
+
+    func test_GaussianBlur() {
+        // cv2.getGaussianKernel(5, 0), cv2.getGaussianKernel(5, 1.5)
+        XCTAssertEqual(Matft.image.getGaussianKernel(ksize: 5, sigma: 0), MfArray([0.0625, 0.25, 0.375, 0.25, 0.0625] as [Float]).reshape([5, 1]))
+        XCTAssertLessThan(maxAbsDiff(Matft.image.getGaussianKernel(ksize: 5, sigma: 1.5),
+                                     MfArray([0.120078, 0.233881, 0.292082, 0.233881, 0.120078] as [Float]).reshape([5, 1])), 1e-6)
+        XCTAssertEqual(Matft.image.getGaussianKernel(ksize: 9, sigma: 0),
+                       MfArray([0.015625, 0.05078125, 0.1171875, 0.19921875, 0.234375, 0.19921875, 0.1171875, 0.05078125, 0.015625] as [Float]).reshape([9, 1]))
+
+        // cv2.GaussianBlur(u, (5, 5), 1.0, borderType=cv2.BORDER_REPLICATE)
+        XCTAssertLessThanOrEqual(maxAbsDiff(Matft.image.GaussianBlur(ramp8, ksize: (5, 5), sigmaX: 1),
+                                            MfArray([[27, 37, 49, 61, 70], [73, 82, 95, 107, 116], [131, 140, 152, 165, 174], [177, 186, 198, 210, 220]] as [[UInt8]])), 1)
+        // cv2.GaussianBlur(a, (3, 5), 0, borderType=cv2.BORDER_REPLICATE)
+        XCTAssertLessThan(maxAbsDiff(Matft.image.GaussianBlur(rampF, ksize: (3, 5), sigmaX: 0),
+                                     MfArray([[2.125, 2.875, 3.875, 4.875, 5.625], [5.5625, 6.3125, 7.3125, 8.3125, 9.0625],
+                                              [9.9375, 10.6875, 11.6875, 12.6875, 13.4375], [13.375, 14.125, 15.125, 16.125, 16.875]] as [[Float]])), 1e-5)
+
+        let ret = Matft.image.GaussianBlur(loadRena(), ksize: (9, 9), sigmaX: 0)
+        XCTAssertEqual(ret.shape, [225, 225, 4])
+        ImageSnapshot.save(ret, as: "GaussianBlur_k9")
+    }
+
+    func test_Sobel() {
+        // cv2.getDerivKernels(1, 0, 5), cv2.getDerivKernels(2, 0, 7)
+        let (kx, ky) = Matft.image.getDerivKernels(dx: 1, dy: 0, ksize: 5)
+        XCTAssertEqual(kx, MfArray([-1, -2, 0, 2, 1] as [Float]).reshape([5, 1]))
+        XCTAssertEqual(ky, MfArray([1, 4, 6, 4, 1] as [Float]).reshape([5, 1]))
+        XCTAssertEqual(Matft.image.getDerivKernels(dx: 2, dy: 0, ksize: 7).kx, MfArray([1, 2, -1, -4, -1, 2, 1] as [Float]).reshape([7, 1]))
+
+        // cv2.Sobel(a, cv2.CV_32F, 1, 0, ksize=3, borderType=cv2.BORDER_REPLICATE)
+        XCTAssertEqual(Matft.image.Sobel(rampF, dx: 1, dy: 0),
+                       MfArray([[4, 8, 8, 8, 4], [4, 8, 8, 8, 4], [4, 8, 8, 8, 4], [4, 8, 8, 8, 4]] as [[Float]]))
+        // cv2.Sobel(u, cv2.CV_32F, 0, 1, ksize=3, borderType=cv2.BORDER_REPLICATE)
+        XCTAssertEqual(Matft.image.Sobel(ramp8, ddepth: .Float, dx: 0, dy: 1),
+                       MfArray([[260, 260, 260, 260, 260], [520, 520, 520, 520, 520], [520, 520, 520, 520, 520], [260, 260, 260, 260, 260]] as [[Float]]))
+        // cv2.Sobel(u, -1, 1, 0, ksize=3, borderType=cv2.BORDER_REPLICATE)
+        let sobel8 = Matft.image.Sobel(ramp8, dx: 1, dy: 0)
+        XCTAssertEqual(sobel8.mftype, .UInt8)
+        XCTAssertEqual(sobel8, MfArray([[52, 104, 104, 104, 52], [52, 104, 104, 104, 52], [52, 104, 104, 104, 52], [52, 104, 104, 104, 52]] as [[UInt8]]))
+
+        // |dx| of gray rena
+        let gray = loadRenaGray8()
+        let dx = Matft.image.convertScaleAbs(Matft.image.Sobel(gray, ddepth: .Float, dx: 1, dy: 0))
+        ImageSnapshot.save(dx, as: "Sobel_dx")
+    }
+
+    func test_Laplacian() {
+        // cv2.Laplacian(u, cv2.CV_32F, ksize=1 / 3 / 5, borderType=cv2.BORDER_REPLICATE)
+        XCTAssertEqual(Matft.image.Laplacian(ramp8, ddepth: .Float, ksize: 1),
+                       MfArray([[78, 65, 65, 65, 52], [13, 0, 0, 0, -13], [13, 0, 0, 0, -13], [-52, -65, -65, -65, -78]] as [[Float]]))
+        XCTAssertEqual(Matft.image.Laplacian(ramp8, ddepth: .Float, ksize: 3),
+                       MfArray([[312, 260, 260, 260, 208], [52, 0, 0, 0, -52], [52, 0, 0, 0, -52], [-208, -260, -260, -260, -312]] as [[Float]]))
+        XCTAssertEqual(Matft.image.Laplacian(ramp8, ddepth: .Float, ksize: 5),
+                       MfArray([[2496, 2288, 2080, 1872, 1664], [1456, 1248, 1040, 832, 624],
+                                [-624, -832, -1040, -1248, -1456], [-1664, -1872, -2080, -2288, -2496]] as [[Float]]))
+
+        let lap = Matft.image.convertScaleAbs(Matft.image.Laplacian(loadRenaGray8(), ddepth: .Float, ksize: 3))
+        ImageSnapshot.save(lap, as: "Laplacian_k3")
+    }
+
+    func test_adaptiveThreshold() {
+        // cv2.adaptiveThreshold(u, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 5)
+        XCTAssertEqual(Matft.image.adaptiveThreshold(ramp8, maxValue: 255, adaptiveMethod: .Mean, thresholdType: .Binary, blockSize: 3, C: 5),
+                       MfArray([[0, 0, 0, 0, 0], [255, 255, 255, 255, 255], [255, 255, 255, 255, 255], [255, 255, 255, 255, 255]] as [[UInt8]]))
+
+        let gray = loadRenaGray8()
+        // (cv2.adaptiveThreshold(g, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2) // 255).sum() == 31668
+        let mean = Matft.image.adaptiveThreshold(gray, maxValue: 255, adaptiveMethod: .Mean, thresholdType: .Binary, blockSize: 11, C: 2)
+        XCTAssertEqual((mean.astype(.Float) / Float(255)).sum().scalar(Float.self)!, 31668)
+        ImageSnapshot.save(mean, as: "adaptiveThreshold_mean")
+        // (cv2.adaptiveThreshold(g, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2) // 255).sum() == 16717
+        let gauss = Matft.image.adaptiveThreshold(gray, maxValue: 255, adaptiveMethod: .Gaussian, thresholdType: .BinaryInv, blockSize: 11, C: 2)
+        XCTAssertEqual((gauss.astype(.Float) / Float(255)).sum().scalar(Float.self)!, 16717, accuracy: 50)
+        ImageSnapshot.save(gauss, as: "adaptiveThreshold_gaussian_inv")
+    }
 }
 #endif

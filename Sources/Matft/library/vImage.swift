@@ -301,11 +301,12 @@ internal func convolve_by_vImage(_ image: MfArray, kernel: [Float], kernelHeight
 ///   - image: An image mfarray (Float or UInt8)
 ///   - kernelX: The kernel along x axis
 ///   - kernelY: The kernel along y axis
+///   - anchor: The anchor (x, y). nil means the center
 ///   - borderType: The border type
 /// - Returns: The Float image mfarray. Note that UInt8 image is not saturated
-internal func sep_convolve_by_vImage(_ image: MfArray, kernelX: [Float], kernelY: [Float], borderType: MfBorderType) -> MfArray{
-    let ret = convolve_by_vImage(image, kernel: kernelX, kernelHeight: 1, kernelWidth: kernelX.count, borderType: borderType)
-    return convolve_by_vImage(ret, kernel: kernelY, kernelHeight: kernelY.count, kernelWidth: 1, borderType: borderType)
+internal func sep_convolve_by_vImage(_ image: MfArray, kernelX: [Float], kernelY: [Float], anchor: (x: Int, y: Int)? = nil, borderType: MfBorderType) -> MfArray{
+    let ret = convolve_by_vImage(image, kernel: kernelX, kernelHeight: 1, kernelWidth: kernelX.count, anchor: anchor.map{ ($0.x, 0) }, borderType: borderType)
+    return convolve_by_vImage(ret, kernel: kernelY, kernelHeight: kernelY.count, kernelWidth: 1, anchor: anchor.map{ (0, $0.y) }, borderType: borderType)
 }
 
 /// Apply erode (min) or dilate (max) filter with the mask for each channel.

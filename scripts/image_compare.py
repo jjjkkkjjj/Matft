@@ -119,6 +119,28 @@ CASES: Dict[str, Case] = {
     "LUT_gamma05": Case("rena.png",
                         lambda x: cv2.LUT(x, np.rint(np.sqrt(np.arange(256) / 255) * 255).astype(np.uint8)),
                         "LUT(gamma 0.5) vs cv2.LUT"),
+    # filter (Matft's default border is Replicate)
+    "filter2D_sharpen": Case("rena.png",
+                             lambda x: cv2.filter2D(x, -1, np.float32([[0, -1, 0], [-1, 5, -1], [0, -1, 0]]), borderType=cv2.BORDER_REPLICATE),
+                             "filter2D(sharpen) vs cv2.filter2D(BORDER_REPLICATE)"),
+    "blur_5x5": Case("rena.png",
+                     lambda x: cv2.blur(x, (5, 5), borderType=cv2.BORDER_REPLICATE),
+                     "blur((5, 5)) vs cv2.blur(BORDER_REPLICATE)"),
+    "GaussianBlur_k9": Case("rena.png",
+                            lambda x: cv2.GaussianBlur(x, (9, 9), 0, borderType=cv2.BORDER_REPLICATE),
+                            "GaussianBlur((9, 9), 0) vs cv2.GaussianBlur(BORDER_REPLICATE)"),
+    "Sobel_dx": Case("rena.png",
+                     lambda x: cv2.convertScaleAbs(cv2.Sobel(_gray(x), cv2.CV_32F, 1, 0, ksize=3, borderType=cv2.BORDER_REPLICATE)),
+                     "convertScaleAbs(Sobel(gray, dx=1)) vs cv2"),
+    "Laplacian_k3": Case("rena.png",
+                         lambda x: cv2.convertScaleAbs(cv2.Laplacian(_gray(x), cv2.CV_32F, ksize=3, borderType=cv2.BORDER_REPLICATE)),
+                         "convertScaleAbs(Laplacian(gray, ksize=3)) vs cv2"),
+    "adaptiveThreshold_mean": Case("rena.png",
+                                   lambda x: cv2.adaptiveThreshold(_gray(x), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2),
+                                   "adaptiveThreshold(.Mean, .Binary, 11, 2) vs cv2"),
+    "adaptiveThreshold_gaussian_inv": Case("rena.png",
+                                           lambda x: cv2.adaptiveThreshold(_gray(x), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2),
+                                           "adaptiveThreshold(.Gaussian, .BinaryInv, 11, 2) vs cv2"),
 }
 
 
