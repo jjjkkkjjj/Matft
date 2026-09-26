@@ -29,6 +29,9 @@ let c = Matft.math.sin(a) + a.T        // broadcasting & element-wise math
 - **Audio features** (STFT, mel spectrogram, Whisper log-mel) compatible with librosa.
 - **MLX interop** — zero-copy conversion between `MfArray` and `MLXArray` via the separate [MatftMLX](./guide/mlx.md) package.
 
+Matft is a complement to [mlx-swift](https://github.com/ml-explore/mlx-swift): Matft plays the role of NumPy / SciPy / OpenCV / librosa, and MLX plays the role of PyTorch.
+See [Matft and MLX](./guide/mlx.md#matft-and-mlx) for the comparison.
+
 ## Where to go next
 
 - [Installation](./getting-started/installation.md) and [Quick Start](./getting-started/quick-start.md)

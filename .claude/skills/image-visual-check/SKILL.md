@@ -1,6 +1,6 @@
 ---
 name: image-visual-check
-description: Matft の画像処理（Matft.image.* や，画像に対するインデックス操作・チャンネル入れ替えなど）のテストを追加し，変換結果を OpenCV の参照画像と並べた比較画像を生成して，目視で正しく変換されているか確認する手順。「画像処理のテスト追加して」「resize / warpAffine / color を目視確認したい」「画像が正しく変換されてるか見て」「OpenCV と見比べたい」「README の画像みたいに確認したい」など，Matft で画像を扱う機能の追加・修正・テスト・確認の話が出たら，明示的に "skill" と言われなくても必ずこのスキルを使うこと。
+description: Matft の画像処理（Matft.image.* や，画像に対するインデックス操作・チャンネル入れ替えなど）のテストを追加し，変換結果を OpenCV の参照画像と並べた比較画像を生成して，目視で正しく変換されているか確認する手順。「画像処理のテスト追加して」「resize / warpAffine / color を目視確認したい」「画像が正しく変換されてるか見て」「OpenCV と見比べたい」「README / ドキュメントの画像みたいに確認したい」など，Matft で画像を扱う機能の追加・修正・テスト・確認の話が出たら，明示的に "skill" と言われなくても必ずこのスキルを使うこと。
 ---
 
 # 画像処理テストの追加と目視確認
@@ -146,3 +146,5 @@ open Tests/MatftTests/files/images/compare/<case>.png   # 複数あればまと�
 
 テストと一緒に `files/images/{matft,opencv,compare}/<case>.png` をコミットする。
 既存のケースの画像が意図せず変わっていないか，`git status` で確認する。変わっていたら，その差分もユーザーに伝える。
+
+新しいケースをドキュメントに載せるなら，`website/docs/guide/image.md` の「Visual check against OpenCV」節に `#### 関数名` と `![alt](/img/compare/<case>.png)` を追加する。画像はビルド時に `website/scripts/copy-assets.mjs` が static へコピーするので，website 側に二重にコミットしない。

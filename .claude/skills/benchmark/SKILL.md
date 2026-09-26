@@ -1,6 +1,6 @@
 ---
 name: benchmark
-description: Matft の PerformanceTests を Numpy と比較計測し，結果を報告する（必要なら README の速度比較表も更新する）手順。「ベンチ回して」「Numpy と速度比較して」「README の速度表を更新して」「perf 計測」「最適化の効果を測って」など，Matft の実行速度を測る・Numpy と比べる・README の Performance 節を更新する話が出たら，明示的に "skill" と言われなくても必ずこのスキルを使うこと。
+description: Matft の PerformanceTests を Numpy と比較計測し，結果を報告する（必要ならドキュメントサイトの速度比較表 website/docs/performance.md も更新する）手順。「ベンチ回して」「Numpy と速度比較して」「README / ドキュメントの速度表を更新して」「perf 計測」「最適化の効果を測って」など，Matft の実行速度を測る・Numpy と比べる・ドキュメント（旧 README）の Performance 節を更新する話が出たら，明示的に "skill" と言われなくても必ずこのスキルを使うこと。
 ---
 
 # Matft vs Numpy ベンチマーク
@@ -16,9 +16,9 @@ description: Matft の PerformanceTests を Numpy と比較計測し，結果を
 - Numpy 側：同じ式を `timeit` で計測する
 - 結果：両者の median を比較して `benchmarks/results/latest.{json,md}` に書き出す
 
-README の Performance 節は `<!-- BENCHMARK:START -->` 〜 `<!-- BENCHMARK:END -->` の間が自動生成になっている。手で編集しないこと。
+ドキュメントサイトの Performance ページ（`website/docs/performance.md`）は `<!-- BENCHMARK:START -->` 〜 `<!-- BENCHMARK:END -->` の間が自動生成になっている。手で編集しないこと。
 
-計測はローカルの Mac 専用。CI ランナーは計測のばらつきが大きいので，README の数値には使わない。
+計測はローカルの Mac 専用。CI ランナーは計測のばらつきが大きいので，ドキュメントの数値には使わない。
 
 ## 1. 事前確認
 
@@ -27,7 +27,7 @@ git status --porcelain
 python3 -c "import numpy; print(numpy.__version__)"
 ```
 
-- 未コミットの変更があっても計測はできる。ただしレポートのコミット欄が `-dirty` になる。README に載せる計測なら，コミット後に回すようユーザーに一言添える。
+- 未コミットの変更があっても計測はできる。ただしレポートのコミット欄が `-dirty` になる。ドキュメントに載せる計測なら，コミット後に回すようユーザーに一言添える。
 - numpy が無ければ `pip3 install numpy` を提案する。勝手にインストールしない。
 - 電源接続と，重い処理（ビルドやブラウザの動画，VM など）を止めてもらうことを一言伝える。`uptime` の load average と `ps -Ao pcpu,comm -r | head` で負荷を確認できる。
 
@@ -74,14 +74,14 @@ python3 scripts/benchmark.py --skip-numpy && cp benchmarks/results/latest.json /
 
 表の全文を貼る必要はない。要点と，気になる数値だけを示す。
 
-## 4. README 更新（ユーザーが了承したときだけ）
+## 4. ドキュメント更新（ユーザーが了承したときだけ）
 
 ```sh
-python3 scripts/benchmark.py --skip-swift --skip-numpy --update-readme   # 直前の計測結果をそのまま README に反映
-git diff README.md
+python3 scripts/benchmark.py --skip-swift --skip-numpy --update-docs   # 直前の計測結果をそのまま website/docs/performance.md に反映
+git diff website/docs/performance.md
 ```
 
-- `--update-readme` は `--filter` と併用できない（全ケースが必要）。
+- `--update-docs`（旧名 `--update-readme`）は `--filter` と併用できない（全ケースが必要）。
 - 差分がマーカーの間だけに収まっていることを確認して見せる。
 - コミットはユーザーの指示があるときだけ行う。
 
@@ -91,6 +91,6 @@ git diff README.md
 
 1. `Tests/PerformanceTests/*PefTests.swift` にテストメソッドを追加する。入力は `PerfFixtures.swift` を使う。計測は `self.measure {}` ではなく必ず `self.measureWithWarmup {}` で書く。`self.measure {}` だとウォームアップされず，呼び出し回数の行も出ない（N=1 として扱われる）。
 2. `scripts/benchmark.py` の `CASES` に `Case("<Class>.<method>", "<Category>", "<Swift 式>", "<numpy 式>")` を追加する。新しい入力が必要なら `SETUP` と `PerfFixtures` の両方に追加する。
-3. README の Performance 節冒頭にある Swift / Python のセットアップ例も，入力を変えたなら合わせて更新する。
+3. `website/docs/performance.md` 冒頭にある Swift / Python のセットアップ例も，入力を変えたなら合わせて更新する。
 
 `scripts/benchmark.py` のパーサーや描画を変えたときは，先に `scripts/test_benchmark.py` にテストを追加し（TDD），`python3 -m unittest scripts/test_benchmark.py` で確認する。

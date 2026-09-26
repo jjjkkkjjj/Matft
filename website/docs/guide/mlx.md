@@ -4,6 +4,43 @@ title: Using Matft with MLX
 
 # Using Matft with MLX
 
+## Matft and MLX
+
+Matft is a **complement** to [mlx-swift](https://github.com/ml-explore/mlx-swift), not a replacement.
+In short: **Matft plays the role of NumPy / SciPy / OpenCV / librosa, and MLX plays the role of PyTorch.**
+Use Matft for exact, CPU-side pre / post processing and numerical work, and MLX for neural networks on the GPU.
+
+| | Matft | mlx-swift (as of 2026-09, v0.31.4) |
+|---|---|---|
+| Backend | CPU (Accelerate) | GPU (Metal) + CPU |
+| Hardware | Apple silicon and Intel Mac [^intel] | Apple silicon ([README](https://github.com/ml-explore/mlx-swift#readme), [#133](https://github.com/ml-explore/mlx-swift/issues/133)) |
+| iOS Simulator | ✅ [^simulator] | ❌ ([Running on iOS](https://github.com/ml-explore/mlx-swift/blob/main/Source/MLX/Documentation.docc/Articles/running-on-ios.md)) |
+| WebAssembly | ✅ ([build script](../contributing.md#webassembly-build--test)) | |
+| Minimum OS | No restriction in `Package.swift` | macOS 14 / iOS 17 |
+| float64 | ✅ | CPU stream only ("float64 is not supported on the GPU") |
+| complex128 | ✅ | ❌ (complex64 only) |
+| Writing to a slice | Updates the original array like a NumPy [view](./views.md) | The slice is an independent array |
+| Functions whose output shape depends on the data<br />(`unique`, `nonzero`, `argwhere`, `histogram`, `bincount`, `searchsorted`, set routines) | ✅ | ❌ |
+| `percentile` / `quantile`, nan-functions, `lstsq`, `polyfit` | ✅ | ❌ (`median` ✅) |
+| Image processing (OpenCV-like, PIL-compatible resize, CLIP / Qwen2-VL preprocessing) | ✅ ([Image](./image.md)) | NN layers only (conv, pooling, upsample) |
+| Audio features (STFT, mel, Whisper log-mel) | ✅ ([Audio](./audio.md)) | FFT only |
+| Autograd / NN layers / GPU training | ❌ | ✅ |
+
+[^intel]: The tests are run on x86_64 under Rosetta. 3 tests (the integer overflow wrap-around of `Int16` and the `NaN` comparison in `==`) currently fail on x86_64.
+[^simulator]: All the 310 tests of `MatftTests` pass on the iOS Simulator (iPhone 16 Pro, iOS 18.6).
+
+```swift
+import Matft
+import MLX
+import MatftMLX
+
+let pixelValues = Matft.image.clip_preprocess(rgb)        // (1, 3, 224, 224), same as CLIPImageProcessor
+let output = model(pixelValues.toMLXArray())              // inference with MLX (GPU)
+let result = MfArray(mlx: output)                         // back to Matft without copy (float32 / float64)
+```
+
+## MatftMLX
+
 [MatftMLX](https://github.com/jjjkkkjjj/Matft/tree/main/Extensions/MatftMLX) converts between Matft's `MfArray` and [mlx-swift](https://github.com/ml-explore/mlx-swift)'s `MLXArray`.
 Do the pre / post processing with Matft (CPU, float64, Numpy compatible), and the inference with MLX (GPU).
 
