@@ -532,7 +532,7 @@ internal func zpreop_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vDSP_
     //return mfarray must be either row or column major
     var mfarray = mfarray
     //print(mfarray)
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
     //print(mfarray)
     //print(mfarray.strides)
     
@@ -559,7 +559,7 @@ internal func z2r_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vDSP_fun
     //return mfarray must be either row or column major
     var mfarray = mfarray
     //print(mfarray)
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
     //print(mfarray)
     //print(mfarray.strides)
     
@@ -586,7 +586,7 @@ internal func conjugate_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vD
     //return mfarray must be either row or column major
     var mfarray = mfarray
     //print(mfarray)
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
     //print(mfarray)
     //print(mfarray.strides)
     
@@ -648,7 +648,7 @@ internal func biopzvs_by_vDSP<T: vDSP_ComplexTypable>(_ l_mfarray: MfArray, _ r_
     var mfarray = l_mfarray
     var r_scalar = r_scalar
     
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
     newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
@@ -699,7 +699,7 @@ internal func biopzsv_by_vDSP<T: vDSP_ComplexTypable>(_ l_scalar: T.T, _ r_mfarr
     var mfarray = r_mfarray
     var l_scalar = l_scalar
     
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
     newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
@@ -974,7 +974,7 @@ internal func sort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ ord
     
     srcdst_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
         srcdstptr in
-        for _ in 0..<mfarray.storedSize / count{
+        for _ in 0..<srcdst_mfarray.size / count{
             wrap_vDSP_sort(count, srcdstptr + offset, order, vDSP_func)
             offset += count
         }
@@ -1010,7 +1010,7 @@ internal func argsort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ 
         srcmfarray.withUnsafeMutableStartPointer(datatype: T.self){
             srcptr in
             
-            for _ in 0..<mfarray.storedSize / count{
+            for _ in 0..<srcmfarray.size / count{
                 var uiarray = Array<UInt>(stride(from: 0, to: UInt(count), by: 1))
                 //let srcptr = stride >= 0 ? srcptr.baseAddress! : srcptr.baseAddress! - mfarray.offsetIndex
                 wrap_vDSP_argsort(count, srcptr + offset, &uiarray, order, vDSP_func)
@@ -1201,8 +1201,9 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
     case .Double:
         indicesT = indices.astype(.Double)
     }
-    //let mfarray = check_contiguous(mfarray, .Row)
-    
+    // compressed results are written sequentially, so both mfarray and indices must be row contiguous
+    let mfarray = check_contiguous(mfarray, .Row)
+    let size = mfarray.size
     
     let lastShape = Array(mfarray.shape.suffix(mfarray.ndim - orig_ind_dim))
     var retShape = [true_num] + lastShape
@@ -1219,9 +1220,7 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
                 mfarray.withUnsafeMutableStartPointer(datatype: T.self){
                     srcptr in
                     
-                    for vDSPPrams in OptOffsetParamsSequence(shape: indicesT.shape, bigger_strides: indicesT.strides, smaller_strides: mfarray.strides){
-                        wrap_vDSP_cmprs(vDSPPrams.blocksize, srcptr + vDSPPrams.s_offset, vDSPPrams.s_stride, indptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
-                    }
+                    wrap_vDSP_cmprs(size, srcptr, 1, indptr, 1, dstptrT, 1, vDSP_func)
                     //vDSP_func(srcptr.baseAddress!, vDSP_Stride(1), indptr.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(indicesT.size))
                 }
             }
@@ -1247,10 +1246,8 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
                     let dstptrTr = dstptrT.pointee.realp as! UnsafeMutablePointer<T>
                     let dstptrTi = dstptrT.pointee.imagp as! UnsafeMutablePointer<T>
                     
-                    for vDSPPrams in OptOffsetParamsSequence(shape: indicesT.shape, bigger_strides: indicesT.strides, smaller_strides: mfarray.strides){
-                        wrap_vDSP_cmprs(vDSPPrams.blocksize, srcptrr + vDSPPrams.s_offset, vDSPPrams.s_stride, indptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrTr + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
-                        wrap_vDSP_cmprs(vDSPPrams.blocksize, srcptri + vDSPPrams.s_offset, vDSPPrams.s_stride, indptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrTi + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
-                    }
+                    wrap_vDSP_cmprs(size, srcptrr, 1, indptr, 1, dstptrTr, 1, vDSP_func)
+                    wrap_vDSP_cmprs(size, srcptri, 1, indptr, 1, dstptrTi, 1, vDSP_func)
                     //vDSP_func(srcptr.baseAddress!, vDSP_Stride(1), indptr.baseAddress!, vDSP_Stride(1), dstptrT, vDSP_Stride(1), vDSP_Length(indicesT.size))
                 }
             }
@@ -2817,7 +2814,7 @@ internal func sort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ ord
 
     srcdst_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
         srcdstptr in
-        for _ in 0..<mfarray.storedSize / count{
+        for _ in 0..<srcdst_mfarray.size / count{
             wrap_vDSP_sort(count, srcdstptr + offset, order, vDSP_func)
             offset += count
         }
@@ -2843,7 +2840,7 @@ internal func argsort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ 
         srcmfarray.withUnsafeMutableStartPointer(datatype: T.self){
             srcptr in
 
-            for _ in 0..<mfarray.storedSize / count{
+            for _ in 0..<srcmfarray.size / count{
                 var uiarray = Array<UInt>(stride(from: 0, to: UInt(count), by: 1))
                 wrap_vDSP_argsort(count, srcptr + offset, &uiarray, order, vDSP_func)
 
@@ -2901,6 +2898,9 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
     case .Double:
         indicesT = indices.astype(.Double)
     }
+    // compressed results are written sequentially, so both mfarray and indices must be row contiguous
+    let mfarray = check_contiguous(mfarray, .Row)
+    let size = mfarray.size
 
     let lastShape = Array(mfarray.shape.suffix(mfarray.ndim - orig_ind_dim))
     var retShape = [true_num] + lastShape
@@ -2915,9 +2915,7 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
                 mfarray.withUnsafeMutableStartPointer(datatype: T.self){
                     srcptr in
 
-                    for vDSPPrams in OptOffsetParamsSequence(shape: indicesT.shape, bigger_strides: indicesT.strides, smaller_strides: mfarray.strides){
-                        wrap_vDSP_cmprs(vDSPPrams.blocksize, srcptr + vDSPPrams.s_offset, vDSPPrams.s_stride, indptr + vDSPPrams.b_offset, vDSPPrams.b_stride, dstptrT + vDSPPrams.b_offset, vDSPPrams.b_stride, vDSP_func)
-                    }
+                    wrap_vDSP_cmprs(size, srcptr, 1, indptr, 1, dstptrT, 1, vDSP_func)
                 }
             }
         }

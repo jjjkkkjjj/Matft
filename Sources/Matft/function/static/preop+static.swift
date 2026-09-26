@@ -75,7 +75,7 @@ fileprivate func _prefix_operation(_ mfarray: MfArray, _ preop: PreOp) -> MfArra
 }
 #else
 fileprivate func _prefix_operation(_ mfarray: MfArray, _ preop: PreOp) -> MfArray{
-    let mfarray = check_contiguous(mfarray)
+    let mfarray = check_dense(mfarray)
     let size = mfarray.storedSize
     let newdata = MfData(size: size, mftype: mfarray.mftype, complex: mfarray.isComplex)
 

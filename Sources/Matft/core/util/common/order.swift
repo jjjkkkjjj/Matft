@@ -30,11 +30,11 @@ internal func copy_all_mfarray(_ src_mfarray: MfArray) -> MfArray{
             }
         }
         if src_mfarray.isComplex{
-            _ = src_mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
+            _ = src_mfarray.withUnsafeMutableStartImagPointer(datatype: Float.self){
                 srcptr in
                 dst_mfarray.withUnsafeMutableStartImagPointer(datatype: Float.self){
                     dstptr in
-                    memcpy(dstptr!, srcptr, MemoryLayout<Float>.size*newsize)
+                    memcpy(dstptr!, srcptr!, MemoryLayout<Float>.size*newsize)
                 }
             }
         }
@@ -47,11 +47,11 @@ internal func copy_all_mfarray(_ src_mfarray: MfArray) -> MfArray{
             }
         }
         if src_mfarray.isComplex{
-            _ = src_mfarray.withUnsafeMutableStartPointer(datatype: Double.self){
+            _ = src_mfarray.withUnsafeMutableStartImagPointer(datatype: Double.self){
                 srcptr in
                 dst_mfarray.withUnsafeMutableStartImagPointer(datatype: Double.self){
                     dstptr in
-                    memcpy(dstptr!, srcptr, MemoryLayout<Double>.size*newsize)
+                    memcpy(dstptr!, srcptr!, MemoryLayout<Double>.size*newsize)
                 }
             }
         }
