@@ -13,11 +13,24 @@ import Accelerate
 
 extension Matft.stats{
     /**
-       Get mean value along axis
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, get mean for all elements
-            - keepDims: (Optional) whether to keep original dimension, default is true
+       Compute the arithmetic mean along the given axis.
+
+       Equivalent to `numpy.mean`.
+
+       ```swift
+       let a = MfArray([[3, -19],
+                        [-22, 4]])
+       Matft.stats.mean(a)          // MfArray([-8.5], mftype: .Float)
+       Matft.stats.mean(a, axis: 0) // MfArray([-9.5, -7.5], mftype: .Float)
+       ```
+
+       - Parameters:
+            - mfarray: The input array.
+            - axis: The axis along which to average. Negative values count from the last axis. If `nil` (default), the reduction is over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+       - Returns: The mean. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs give `.Float`).
+       - Precondition: Complex arrays are not supported.
+       - Note: Unlike Numpy, reducing all elements (`axis == nil`, `keepDims == false`) returns a 1-d array of shape `[1]` instead of a scalar. NaN handling follows vDSP and is not guaranteed to propagate like Numpy; use the `nan*` functions to ignore NaN.
     */
     public static func mean(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         unsupport_complex(mfarray)
@@ -30,11 +43,25 @@ extension Matft.stats{
         }
     }
     /**
-       Get maximum value along axis
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, get maximum for all elements
-            - keepDims: (Optional) whether to keep original dimension, default is true
+       Return the maximum along the given axis.
+
+       Equivalent to `numpy.max`.
+
+       ```swift
+       let a = MfArray([[3, -19],
+                        [-22, 4]])
+       Matft.stats.max(a)           // MfArray([4])
+       Matft.stats.max(a, axis: 0)  // MfArray([3, 4])
+       Matft.stats.max(a, axis: -1) // MfArray([3, 4])
+       ```
+
+       - Parameters:
+            - mfarray: The input array.
+            - axis: The axis along which to reduce. Negative values count from the last axis. If `nil` (default), the reduction is over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+       - Returns: The maximum with the same `mftype` as `mfarray`.
+       - Precondition: Complex arrays are not supported.
+       - Note: Unlike Numpy, reducing all elements (`axis == nil`, `keepDims == false`) returns a 1-d array of shape `[1]` instead of a scalar. NaN handling follows vDSP and is not guaranteed to propagate like Numpy; use the `nan*` functions to ignore NaN.
     */
     public static func max(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         unsupport_complex(mfarray)
@@ -47,10 +74,16 @@ extension Matft.stats{
         }
     }
     /**
-       Get index of maximum value along axis
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, get index of maximum for all elements (flattenarray)
+       Return the indices of the maximum values along the given axis.
+
+       Equivalent to `numpy.argmax`.
+
+       - Parameters:
+            - mfarray: The input array.
+            - axis: The axis along which to search. If `nil` (default), the index is into the flattened (row-major) array.
+       - Returns: The indices of the maximum values, with the reduced axis removed.
+       - Precondition: Complex arrays are not supported.
+       - Note: Unlike Numpy, the indices are stored with the same `mftype` as `mfarray` (e.g. a `.Float` input gives `.Float` indices), and `axis == nil` returns shape `[1]`. When the extreme value appears multiple times, the first index is returned.
     */
     public static func argmax(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         unsupport_complex(mfarray)
@@ -63,11 +96,17 @@ extension Matft.stats{
         }
     }
     /**
-       Get minimum value along axis
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, get minimum for all elements
-            - keepDims: (Optional) whether to keep original dimension, default is true
+       Return the minimum along the given axis.
+
+       Equivalent to `numpy.min`.
+
+       - Parameters:
+            - mfarray: The input array.
+            - axis: The axis along which to reduce. Negative values count from the last axis. If `nil` (default), the reduction is over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+       - Returns: The minimum with the same `mftype` as `mfarray`.
+       - Precondition: Complex arrays are not supported.
+       - Note: Unlike Numpy, reducing all elements (`axis == nil`, `keepDims == false`) returns a 1-d array of shape `[1]` instead of a scalar. NaN handling follows vDSP and is not guaranteed to propagate like Numpy; use the `nan*` functions to ignore NaN.
     */
     public static func min(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         unsupport_complex(mfarray)
@@ -80,10 +119,16 @@ extension Matft.stats{
         }
     }
     /**
-       Get index of minimum value along axis
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, get index of minimum for all elements (flattenarray)
+       Return the indices of the minimum values along the given axis.
+
+       Equivalent to `numpy.argmin`.
+
+       - Parameters:
+            - mfarray: The input array.
+            - axis: The axis along which to search. If `nil` (default), the index is into the flattened (row-major) array.
+       - Returns: The indices of the minimum values, with the reduced axis removed.
+       - Precondition: Complex arrays are not supported.
+       - Note: Unlike Numpy, the indices are stored with the same `mftype` as `mfarray` (e.g. a `.Float` input gives `.Float` indices), and `axis == nil` returns shape `[1]`. When the extreme value appears multiple times, the first index is returned.
     */
     public static func argmin(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         unsupport_complex(mfarray)
@@ -97,10 +142,15 @@ extension Matft.stats{
     }
     
     /**
-       Element-wise  maximum of mfarray and mfarray
-       - parameters:
-            - l_mfarray: mfarray
-            - r_mfarray: mfarray
+       Compute the element-wise maximum of two arrays with broadcasting.
+
+       Equivalent to `numpy.maximum`.
+
+       - Parameters:
+            - l_mfarray: The first array.
+            - r_mfarray: The second array. It is broadcast against `l_mfarray`.
+       - Returns: A new array with the broadcast shape and the promoted `mftype` of the two inputs.
+       - Precondition: Complex arrays are not supported.
     */
     public static func maximum(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
@@ -116,10 +166,15 @@ extension Matft.stats{
     }
 
     /**
-       Element-wise  minimum of mfarray and mfarray
-       - parameters:
-            - l_mfarray: mfarray
-            - r_mfarray: mfarray
+       Compute the element-wise minimum of two arrays with broadcasting.
+
+       Equivalent to `numpy.minimum`.
+
+       - Parameters:
+            - l_mfarray: The first array.
+            - r_mfarray: The second array. It is broadcast against `l_mfarray`.
+       - Returns: A new array with the broadcast shape and the promoted `mftype` of the two inputs.
+       - Precondition: Complex arrays are not supported.
     */
     public static func minimum(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
@@ -135,11 +190,17 @@ extension Matft.stats{
     }
     
     /**
-       Get summation value along axis
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, get summation for all elements
-            - keepDims: (Optional) whether to keep original dimension, default is true
+       Compute the sum of the elements along the given axis.
+
+       Equivalent to `numpy.sum`.
+
+       - Parameters:
+            - mfarray: The input array.
+            - axis: The axis along which to sum. Negative values count from the last axis. If `nil` (default), the reduction is over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+       - Returns: The sum with the same `mftype` as `mfarray`, except that `.Bool` input gives `.Float` (Numpy gives an integer).
+       - Precondition: Complex arrays are not supported.
+       - Note: Unlike Numpy, reducing all elements (`axis == nil`, `keepDims == false`) returns a 1-d array of shape `[1]` instead of a scalar. NaN handling follows vDSP and is not guaranteed to propagate like Numpy; use the `nan*` functions to ignore NaN.
     */
     public static func sum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         unsupport_complex(mfarray)
@@ -152,11 +213,16 @@ extension Matft.stats{
         }
     }
     /**
-       Calculate root of sum MfArray
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, get summation for all elements
-            - keepDims: (Optional) whether to keep original dimension, default is true
+       Compute the square root of the sum along the given axis, i.e. `sqrt(sum(mfarray, axis:))`.
+
+       There is no direct Numpy counterpart; it is `numpy.sqrt(numpy.sum(a, axis))`.
+
+       - Parameters:
+            - mfarray: The input array.
+            - axis: The axis along which to sum. Negative values count from the last axis. If `nil` (default), the reduction is over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+       - Returns: The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Precondition: Complex arrays are not supported.
     */
     public static func sumsqrt(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         unsupport_complex(mfarray)
@@ -164,11 +230,16 @@ extension Matft.stats{
         return Matft.math.sqrt(Matft.stats.sum(mfarray, axis: axis, keepDims: keepDims))
     }
     /**
-       Calculate sum of squared MfArray
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, get summation for all elements
-            - keepDims: (Optional) whether to keep original dimension, default is true
+       Compute the sum of the squared elements along the given axis, i.e. `sum(mfarray * mfarray, axis:)`.
+
+       There is no direct Numpy counterpart; it is `numpy.sum(numpy.square(a), axis)`.
+
+       - Parameters:
+            - mfarray: The input array.
+            - axis: The axis along which to sum. Negative values count from the last axis. If `nil` (default), the reduction is over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+       - Returns: The sum of squares with the same `mftype` as `mfarray`, except that `.Bool` input gives `.Float`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func squaresum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         unsupport_complex(mfarray)
@@ -182,10 +253,15 @@ extension Matft.stats{
     }
     
     /**
-       Calculate cumulative sum of MfArray along axis
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, get cumulative summation for flatten array
+       Return the cumulative sum of the elements along the given axis.
+
+       Equivalent to `numpy.cumsum`.
+
+       - Parameters:
+            - mfarray: The input array.
+            - axis: The axis along which the cumulative sum is computed. If `nil` (default), the array is flattened first and a 1-d result is returned.
+       - Returns: An array with the same shape as `mfarray` (1-d for `axis == nil`) and the same `mftype`, except that `.Bool` is summed as `.Int` like Numpy.
+       - Precondition: Complex arrays are not supported.
     */
     public static func cumsum(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         unsupport_complex(mfarray)
@@ -212,12 +288,18 @@ extension Matft.stats{
     }
 
     /**
-       Calculate variance along axis. Same as `np.var`
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, get variance for all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
-            - ddof: (Optional) Delta degrees of freedom. The divisor is `N - ddof`, by default 0
+       Compute the variance along the given axis.
+
+       Equivalent to `numpy.var`. The variance is `sum((x - mean)^2) / (N - ddof)`, where `N` is the number of elements reduced.
+
+       - Parameters:
+            - mfarray: The input array.
+            - axis: The axis along which to compute the variance. Negative values count from the last axis. If `nil` (default), the reduction is over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+            - ddof: Delta degrees of freedom. The divisor is `N - ddof` (clamped to 0). Default is 0.
+       - Returns: The variance. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Precondition: Complex arrays are not supported.
+       - Note: NaN propagates. Use `nanvar(_:axis:keepDims:ddof:)` to ignore NaN.
     */
     public static func `var`(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false, ddof: Int = 0) -> MfArray{
         unsupport_complex(mfarray)
@@ -238,12 +320,18 @@ extension Matft.stats{
     }
 
     /**
-       Calculate standard deviation along axis. Same as `np.std`
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, get standard deviation for all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
-            - ddof: (Optional) Delta degrees of freedom. The divisor is `N - ddof`, by default 0
+       Compute the standard deviation along the given axis.
+
+       Equivalent to `numpy.std`. It is the square root of `var(_:axis:keepDims:ddof:)`.
+
+       - Parameters:
+            - mfarray: The input array.
+            - axis: The axis along which to compute the standard deviation. Negative values count from the last axis. If `nil` (default), the reduction is over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+            - ddof: Delta degrees of freedom. The divisor is `N - ddof` (clamped to 0). Default is 0.
+       - Returns: The standard deviation. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Precondition: Complex arrays are not supported.
+       - Note: NaN propagates. Use `nanstd(_:axis:keepDims:ddof:)` to ignore NaN.
     */
     public static func std(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false, ddof: Int = 0) -> MfArray{
         return Matft.math.sqrt(Matft.stats.var(mfarray, axis: axis, keepDims: keepDims, ddof: ddof))

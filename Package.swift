@@ -5,6 +5,11 @@ import PackageDescription
 
 let package = Package(
     name: "Matft",
+    // The same as SwiftPM's default. The other platforms (tvOS, watchOS, visionOS) use SwiftPM's default and are not tested
+    platforms: [
+        .macOS(.v10_13),
+        .iOS(.v12),
+    ],
     products: [
         .library(
             name: "Matft",

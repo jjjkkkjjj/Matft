@@ -9,17 +9,20 @@ import Foundation
 
 extension Matft.file{
     /**
-        Load file from given path and create mfarray. If the file is not loaded, return nil.
-       - parameters:
-           - url: URL
-           - mfarray: mfarray
-           - delimiter:  The character separating columns
-           - mftype: MfType
-           - skiprows: (Optional) The row number to slip
-           - use_cols: (Optional) [Int] The column number to parse
-           - encoding:  Encoding format
-           - max_rows: (Optional) The maximum row number
-           - removeBlank: Whether to remove blank
+       Load data from a delimited text file at a URL.
+
+       Every value must be parseable as a number; use `genfromtxt` for files with missing values. Empty lines are ignored.
+       Similar to `numpy.loadtxt`.
+       - Parameters:
+           - url: The URL of the file to load.
+           - delimiter: The character separating columns.
+           - mftype: (Optional) The type of the result, by default `.Float`.
+           - skiprows: (Optional) The indices of the rows to skip (counted after empty lines are removed).
+           - use_cols: (Optional) The indices of the columns to read. If `nil`, all columns are read.
+           - encoding: (Optional) The text encoding, by default `.utf8`.
+           - max_rows: (Optional) The maximum number of rows to read. If `nil`, all rows are read.
+           - removeBlank: (Optional) Whether to remove all space characters before parsing, by default `true`.
+       - Returns: The loaded array, squeezed (a single row becomes 1-D), or `nil` if the file cannot be opened, decoded or parsed.
     */
     public static func loadtxt(url: URL, delimiter: Character, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
 
@@ -35,17 +38,26 @@ extension Matft.file{
     }
     
     /**
-        Load file from given path and create mfarray. If the file is not loaded, return nil.
-       - parameters:
-           - path: The file path to load
-           - mfarray: mfarray
-           - delimiter:  The character separating columns
-           - mftype: MfType
-           - skiprows: (Optional) The row number to slip
-           - use_cols: (Optional) [Int] The column number to parse
-           - encoding:  Encoding format
-           - max_rows: (Optional) The maximum row number
-           - removeBlank: Whether to remove blank
+       Load data from a delimited text file at a path.
+
+       Every value must be parseable as a number; use `genfromtxt` for files with missing values. Empty lines are ignored.
+       Similar to `numpy.loadtxt`.
+
+       ```swift
+       if let a = Matft.file.loadtxt(path: "data.csv", delimiter: ",", mftype: .Double){
+           print(a.shape)
+       }
+       ```
+       - Parameters:
+           - path: The path of the file to load.
+           - delimiter: The character separating columns.
+           - mftype: (Optional) The type of the result, by default `.Float`.
+           - skiprows: (Optional) The indices of the rows to skip (counted after empty lines are removed).
+           - use_cols: (Optional) The indices of the columns to read. If `nil`, all columns are read.
+           - encoding: (Optional) The text encoding, by default `.utf8`.
+           - max_rows: (Optional) The maximum number of rows to read. If `nil`, all rows are read.
+           - removeBlank: (Optional) Whether to remove all space characters before parsing, by default `true`.
+       - Returns: The loaded array, squeezed (a single row becomes 1-D), or `nil` if the file cannot be opened, decoded or parsed.
     */
     public static func loadtxt(path: String, delimiter: Character, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
         
@@ -61,17 +73,21 @@ extension Matft.file{
     }
     
     /**
-        Load file with missing values from given path and create mfarray. If the file is not loaded, return nil.
-       - parameters:
-           - url: URL
-           - mfarray: mfarray
-           - delimiter:  The character separating columns
-           - mftype: MfType
-           - skiprows: (Optional) The row number to slip
-           - use_cols: (Optional) [Int] The column number to parse
-           - encoding:  Encoding format
-           - max_rows: (Optional) The maximum row number
-           - removeBlank: Whether to remove blank
+       Load data with missing values from a delimited text file at a URL, filling them with a given value.
+
+       An empty field is treated as a missing value. When `use_cols` is `nil`, every row must have the same number of columns.
+       Similar to `numpy.genfromtxt` with `filling_values`.
+       - Parameters:
+           - url: The URL of the file to load.
+           - delimiter: The character separating columns.
+           - fillnan: The value used for missing fields.
+           - mftype: (Optional) The type of the result, by default `.Float`.
+           - skiprows: (Optional) The indices of the rows to skip (counted after empty lines are removed).
+           - use_cols: (Optional) The indices of the columns to read. If `nil`, all columns are read.
+           - encoding: (Optional) The text encoding, by default `.utf8`.
+           - max_rows: (Optional) The maximum number of rows to read. If `nil`, all rows are read.
+           - removeBlank: (Optional) Whether to remove all space characters before parsing, by default `true`.
+       - Returns: The loaded array, squeezed (a single row becomes 1-D), or `nil` if the file cannot be opened, decoded or parsed.
     */
     public static func genfromtxt<T: MfStorable>(url: URL, delimiter: Character, fillnan: T, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
         
@@ -87,17 +103,20 @@ extension Matft.file{
     }
     
     /**
-        Load file with missing values from given path and create mfarray. If the file is not loaded, return nil.
-       - parameters:
-           - url: URL
-           - mfarray: mfarray
-           - delimiter:  The character separating columns
-           - mftype: MfType
-           - skiprows: (Optional) The row number to slip
-           - use_cols: (Optional) [Int] The column number to parse
-           - encoding:  Encoding format
-           - max_rows: (Optional) The maximum row number
-           - removeBlank: Whether to remove blank
+       Load data with missing values from a delimited text file at a URL, filling them with NaN.
+
+       An empty field is treated as a missing value. When `use_cols` is `nil`, every row must have the same number of columns.
+       Similar to `numpy.genfromtxt`.
+       - Parameters:
+           - url: The URL of the file to load.
+           - delimiter: The character separating columns.
+           - mftype: (Optional) The type of the result, by default `.Float`. Use a floating-point type to keep the NaN values.
+           - skiprows: (Optional) The indices of the rows to skip (counted after empty lines are removed).
+           - use_cols: (Optional) The indices of the columns to read. If `nil`, all columns are read.
+           - encoding: (Optional) The text encoding, by default `.utf8`.
+           - max_rows: (Optional) The maximum number of rows to read. If `nil`, all rows are read.
+           - removeBlank: (Optional) Whether to remove all space characters before parsing, by default `true`.
+       - Returns: The loaded array, squeezed (a single row becomes 1-D), or `nil` if the file cannot be opened, decoded or parsed.
     */
     public static func genfromtxt(url: URL, delimiter: Character, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
         
@@ -113,17 +132,21 @@ extension Matft.file{
     }
     
     /**
-        Load file with missing values from given path and create mfarray. If the file is not loaded, return nil.
-       - parameters:
-           - path: The file path to load
-           - mfarray: mfarray
-           - delimiter:  The character separating columns
-           - mftype: MfType
-           - skiprows: (Optional) The row number to slip
-           - use_cols: (Optional) [Int] The column number to parse
-           - encoding:  Encoding format
-           - max_rows: (Optional) The maximum row number
-           - removeBlank: Whether to remove blank
+       Load data with missing values from a delimited text file at a path, filling them with a given value.
+
+       An empty field is treated as a missing value. When `use_cols` is `nil`, every row must have the same number of columns.
+       Similar to `numpy.genfromtxt` with `filling_values`.
+       - Parameters:
+           - path: The path of the file to load.
+           - delimiter: The character separating columns.
+           - fillnan: The value used for missing fields.
+           - mftype: (Optional) The type of the result, by default `.Float`.
+           - skiprows: (Optional) The indices of the rows to skip (counted after empty lines are removed).
+           - use_cols: (Optional) The indices of the columns to read. If `nil`, all columns are read.
+           - encoding: (Optional) The text encoding, by default `.utf8`.
+           - max_rows: (Optional) The maximum number of rows to read. If `nil`, all rows are read.
+           - removeBlank: (Optional) Whether to remove all space characters before parsing, by default `true`.
+       - Returns: The loaded array, squeezed (a single row becomes 1-D), or `nil` if the file cannot be opened, decoded or parsed.
     */
     public static func genfromtxt<T: MfStorable>(path: String, delimiter: Character, fillnan: T, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
         
@@ -139,17 +162,20 @@ extension Matft.file{
     }
     
     /**
-        Load file with missing values from given path and create mfarray. If the file is not loaded, return nil.
-       - parameters:
-           - path: The file path to load
-           - mfarray: mfarray
-           - delimiter:  The character separating columns
-           - mftype: MfType
-           - skiprows: (Optional) The row number to slip
-           - use_cols: (Optional) [Int] The column number to parse
-           - encoding:  Encoding format
-           - max_rows: (Optional) The maximum row number
-           - removeBlank: Whether to remove blank
+       Load data with missing values from a delimited text file at a path, filling them with NaN.
+
+       An empty field is treated as a missing value. When `use_cols` is `nil`, every row must have the same number of columns.
+       Similar to `numpy.genfromtxt`.
+       - Parameters:
+           - path: The path of the file to load.
+           - delimiter: The character separating columns.
+           - mftype: (Optional) The type of the result, by default `.Float`. Use a floating-point type to keep the NaN values.
+           - skiprows: (Optional) The indices of the rows to skip (counted after empty lines are removed).
+           - use_cols: (Optional) The indices of the columns to read. If `nil`, all columns are read.
+           - encoding: (Optional) The text encoding, by default `.utf8`.
+           - max_rows: (Optional) The maximum number of rows to read. If `nil`, all rows are read.
+           - removeBlank: (Optional) Whether to remove all space characters before parsing, by default `true`.
+       - Returns: The loaded array, squeezed (a single row becomes 1-D), or `nil` if the file cannot be opened, decoded or parsed.
     */
     public static func genfromtxt(path: String, delimiter: Character, mftype: MfType = .Float, skiprows: [Int]? = nil, use_cols: [Int]? = nil, encoding: String.Encoding = .utf8, max_rows: Int? = nil, removeBlank: Bool = true) -> MfArray?{
         
@@ -165,26 +191,34 @@ extension Matft.file{
     }
     
     /**
-        Save file to a given url
-       - parameters:
-           - url: The file URL to save
-           - mfarray: mfarray
-           - delimiter:  The character separating columns
-           - newline:  The newline character
-           - encoding:  Encoding format
+       Save a 1-D or 2-D array to a delimited text file at a URL.
+
+       A 1-D array is written as a single row. Values are written with Swift's `String(_:)` of the element type.
+       Similar to `numpy.savetxt`.
+       - Parameters:
+           - url: The URL of the file to write. An existing file is overwritten.
+           - mfarray: The array to save. It must be 1-D or 2-D.
+           - delimiter: The character separating columns.
+           - newline: (Optional) The character written after each row, by default `"\n"`.
+           - encoding: (Optional) The text encoding, by default `.utf8`.
+       - Note: Write errors are silently ignored.
     */
     public static func savetxt(url: URL, mfarray: MfArray, delimiter: Character, newline: Character = "\n", encoding: String.Encoding = .utf8){
         _save(url: url, mfarray: mfarray, delimiter: delimiter, newline: newline, encoding: encoding)
     }
     
     /**
-        Save file to a given path
-       - parameters:
-           - path: The file path to save
-           - mfarray: mfarray
-           - delimiter:  The character separating columns
-           - newline:  The newline character
-           - encoding:  Encoding format
+       Save a 1-D or 2-D array to a delimited text file at a path.
+
+       A 1-D array is written as a single row. Values are written with Swift's `String(_:)` of the element type.
+       Similar to `numpy.savetxt`.
+       - Parameters:
+           - path: The path of the file to write. An existing file is overwritten.
+           - mfarray: The array to save. It must be 1-D or 2-D.
+           - delimiter: The character separating columns.
+           - newline: (Optional) The character written after each row, by default `"\n"`.
+           - encoding: (Optional) The text encoding, by default `.utf8`.
+       - Note: Write errors are silently ignored.
     */
     public static func savetxt(path: String, mfarray: MfArray, delimiter: Character, newline: Character = "\n", encoding: String.Encoding = .utf8){
         let url = URL(fileURLWithPath: path)

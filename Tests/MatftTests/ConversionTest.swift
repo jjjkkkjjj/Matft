@@ -637,7 +637,7 @@ final class ConversionTests: XCTestCase {
 
     #if canImport(CoreML)
     @available(macOS 12.0, *)
-    @available(iOS 14.0, *)
+    @available(macOS 12.0, iOS 14.0, *)
     func testToMlMultiArray() throws{
         do {
             let arr = [1.0, 2, 3, 4.0, 5, 6]
@@ -661,6 +661,7 @@ final class ConversionTests: XCTestCase {
         }
     }
 
+    @available(macOS 12.0, iOS 14.0, *)
     func testToMLMultiArrayLayouts() throws {
         /// Values in row major order read by the logical indices
         func values(_ m: MLMultiArray) -> [Double] {

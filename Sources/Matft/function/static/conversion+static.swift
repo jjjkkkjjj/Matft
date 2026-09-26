@@ -14,12 +14,22 @@ import Collections
 
 extension Matft{
     /**
-       Create another typed mfarray. Created mfarray will be different object from original one
-       - parameters:
-            - mfarray: mfarray
-            - mftype: the type of mfarray
-            - mforder: The order
-            - complex: Whether to be complex or not.
+       Return a copy of the array converted to the given type.
+
+       The result is always a new array (a copy), even when `mftype` equals the current type.
+       Converting to `.Bool` maps non-zero values to `true`. A complex array stays complex.
+       Equivalent to `numpy.ndarray.astype`.
+
+       ```swift
+       let a = MfArray([1, 2, 3])                 // .Int
+       let b = Matft.astype(a, mftype: .Double)   // .Double copy
+       ```
+       - Parameters:
+            - mfarray: The source array.
+            - mftype: The type of the returned array.
+            - mforder: (Optional) The memory layout of the returned array, by default `.Row`.
+            - complex: (Optional) If `true`, a real array is converted into a complex array (with zero imaginary part), by default `false`.
+       - Returns: A contiguous copy with the given `mftype`.
     */
     public static func astype(_ mfarray: MfArray, mftype: MfType, mforder: MfOrder = .Row, complex: Bool = false) -> MfArray{
         //let newarray = Matft.shallowcopy(mfarray)
@@ -62,10 +72,20 @@ extension Matft{
         }
     }
     /**
-       Create any ordered transposed mfarray. Created mfarray will be sharing data with original one
-       - parameters:
-            - mfarray: mfarray
-            - axes: (Optional) the indices of shape. In case this is left out, get transposed mfarray
+       Permute the axes of an array.
+
+       The result is a view that shares memory with the original array.
+       Equivalent to `numpy.transpose`.
+
+       ```swift
+       let a = Matft.arange(start: 0, to: 24, by: 1, shape: [2, 3, 4])
+       let b = Matft.transpose(a)                    // shape [4, 3, 2]
+       let c = Matft.transpose(a, axes: [0, 2, 1])   // shape [2, 4, 3]
+       ```
+       - Parameters:
+            - mfarray: The source array.
+            - axes: (Optional) A permutation of `0..<ndim` (negative values are allowed). If `nil`, the order of the axes is reversed.
+       - Returns: The transposed view.
     */
     public static func transpose(_ mfarray: MfArray, axes: [Int]? = nil) -> MfArray{
         var permutation: [Int] = [], reverse_permutation: [Int] = []
@@ -103,12 +123,21 @@ extension Matft{
         return MfArray(base: mfarray, mfstructure: newstructure, offset: mfarray.offsetIndex)
     }
     /**
-       Convert new shaped mfarray
-       - parameters:
-            - mfarray: mfarray
-            - shape: the new shape
-            - order: (Optional) order, default is nil, which means close to either row or column major if possibe.
-       - Important: this function will create copy not view
+       Return an array with the same data and a new shape.
+
+       Equivalent to `numpy.reshape`.
+
+       ```swift
+       let a = Matft.arange(start: 0, to: 6, by: 1)
+       let b = Matft.reshape(a, newshape: [2, 3])
+       let c = Matft.reshape(a, newshape: [-1, 2])   // shape [3, 2]
+       ```
+       - Parameters:
+            - mfarray: The source array.
+            - newshape: The new shape. Its size must equal `mfarray.size`. One element may be `-1`, which is inferred from the remaining dimensions.
+            - order: (Optional) The order in which elements are read and placed. If `nil` (default), `.Row` is used.
+       - Returns: A new array with shape `newshape`.
+       - Important: Unlike Numpy, this function always returns a copy, not a view.
     */
     public static func reshape(_ mfarray: MfArray, newshape: [Int], order: MfOrder? = nil) -> MfArray{
         var newshape = get_positive_shape(newshape, mfarray.size)
@@ -141,20 +170,28 @@ extension Matft{
         }*/
     }
     /**
-       Create mfarray expanded dimension for given axis
-       - parameters:
-            - mfarray: mfarray
-            - axis: the expanded axis
+       Insert a new axis of length 1 at the given position.
+
+       The result is a view that shares memory with the original array.
+       Equivalent to `numpy.expand_dims`.
+       - Parameters:
+            - mfarray: The source array.
+            - axis: The position of the new axis in the result. Negative values count from the end.
+       - Returns: A view with `ndim + 1` dimensions.
     */
     public static func expand_dims(_ mfarray: MfArray, axis: Int) -> MfArray{
         
         return Matft.expand_dims(mfarray, axes: [axis])
     }
     /**
-       Create mfarray expanded dimension for given axis
-       - parameters:
-            - mfarray: mfarray
-            - axes: the list of expanded axes
+       Insert new axes of length 1 at the given positions.
+
+       The result is a view that shares memory with the original array.
+       Equivalent to `numpy.expand_dims` with a tuple `axis`.
+       - Parameters:
+            - mfarray: The source array.
+            - axes: The positions of the new axes in the result. Negative values count from the end.
+       - Returns: A view with `ndim + axes.count` dimensions.
     */
     public static func expand_dims(_ mfarray: MfArray, axes: [Int]) -> MfArray{
         let newarray = mfarray.shallowcopy()
@@ -181,10 +218,14 @@ extension Matft{
         return newarray
     }
     /**
-       Create mfarray removed for 1-dimension
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) the removed axis
+       Remove axes of length 1.
+
+       The result is a view that shares memory with the original array.
+       Equivalent to `numpy.squeeze`.
+       - Parameters:
+            - mfarray: The source array.
+            - axis: (Optional) The axis to remove. Its length must be 1. If `nil`, all axes of length 1 are removed.
+       - Returns: The squeezed view.
     */
     public static func squeeze(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         var newshape = mfarray.shape
@@ -226,10 +267,14 @@ extension Matft{
         */
     }
     /**
-       Create mfarray removed for 1-dimension
-       - parameters:
-            - mfarray: mfarray
-            - axes: the list of  removed axes
+       Remove the given axes of length 1.
+
+       The result is a view that shares memory with the original array.
+       Equivalent to `numpy.squeeze` with a tuple `axis`.
+       - Parameters:
+            - mfarray: The source array.
+            - axes: The axes to remove. Each of them must have length 1.
+       - Returns: The squeezed view.
     */
     public static func squeeze(_ mfarray: MfArray, axes: [Int]) -> MfArray{
         // reoder descending
@@ -249,10 +294,14 @@ extension Matft{
     }
     
     /**
-       Create broadcasted mfarray.
-       - parameters:
-            - mfarray: mfarray
-            - shape: shape
+       Broadcast an array to a new shape.
+
+       The result is a view (broadcast axes have stride 0) that shares memory with the original array.
+       Equivalent to `numpy.broadcast_to`.
+       - Parameters:
+            - mfarray: The source array.
+            - shape: The shape to broadcast to. It must be compatible with `mfarray.shape` under the Numpy broadcasting rules.
+       - Returns: The broadcast view.
     */
     public static func broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
         var new_shape = shape
@@ -294,10 +343,14 @@ extension Matft{
     }
 
     /**
-       Convert order of stored data.
-       - parameters:
-            - mfarray: mfarray
-            - mforder: mforder
+       Return a contiguous copy of an array in the given memory order.
+
+       The result is always a copy.
+       Similar to `numpy.ascontiguousarray` (`.Row`) and `numpy.asfortranarray` (`.Column`).
+       - Parameters:
+            - mfarray: The source array.
+            - mforder: The memory layout of the result, `.Row` (C order) or `.Column` (Fortran order).
+       - Returns: A contiguous copy.
     */
     public static func to_contiguous(_ mfarray: MfArray, mforder: MfOrder) -> MfArray{
         if mfarray.isReal{
@@ -323,10 +376,14 @@ extension Matft{
         }
     }
     /**
-       Flatten 1d-mfarray
-       - parameters:
-            - mfarray: mfarray
-            - mforder: (Optional) mforder, default is Row
+       Return a copy of an array collapsed into one dimension.
+
+       The result is always a copy.
+       Equivalent to `numpy.ndarray.flatten`.
+       - Parameters:
+            - mfarray: The source array.
+            - mforder: (Optional) The order in which elements are read, `.Row` (default, C order) or `.Column` (Fortran order).
+       - Returns: A 1-D copy of size `mfarray.size`.
     */
     public static func flatten(_ mfarray: MfArray, mforder: MfOrder = .Row) -> MfArray{
         let ret = Matft.to_contiguous(mfarray, mforder: mforder)
@@ -337,10 +394,14 @@ extension Matft{
     }
     
     /**
-       Reverse the mfarray order along given axis
-       - parameters:
-            - mfarray: mfarray
-            - axis: (optional) the reversed axis
+       Reverse the order of elements along the given axis.
+
+       The result is a view that shares memory with the original array.
+       Equivalent to `numpy.flip`.
+       - Parameters:
+            - mfarray: The source array.
+            - axis: (Optional) The axis to reverse. If `nil`, all axes are reversed.
+       - Returns: The flipped view.
     */
     public static func flip(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         if let axis = axis{
@@ -351,10 +412,14 @@ extension Matft{
         }
     }
     /**
-       Reverse the mfarray order along given axes
-       - parameters:
-            - mfarray: mfarray
-            - axes: the reversed axis of list
+       Reverse the order of elements along the given axes.
+
+       The result is a view that shares memory with the original array.
+       Equivalent to `numpy.flip` with a tuple `axis`.
+       - Parameters:
+            - mfarray: The source array.
+            - axes: The axes to reverse.
+       - Returns: The flipped view.
     */
     public static func flip(_ mfarray: MfArray, axes: [Int]) -> MfArray{
         var slices: [Any] = Array(repeating: MfSlice(), count: mfarray.ndim)
@@ -366,11 +431,16 @@ extension Matft{
     }
     
     /**
-       Clip the mfarray
-       - parameters:
-            - mfarray: mfarray
-            - min: (optional) Minimum value. If nil is passed, handled as -inf
-            - max: (optional) Maximum value. If nil is passed, handled as inf
+       Clip (limit) the values in an array.
+
+       The result is a new array with the same `mftype`.
+       Equivalent to `numpy.clip`.
+       - Parameters:
+            - mfarray: The source array.
+            - min: (Optional) The minimum value. If `nil`, it is treated as `-inf`.
+            - max: (Optional) The maximum value. If `nil`, it is treated as `inf`.
+       - Returns: The clipped array.
+       - Note: Only the real part is processed; the result of a complex array is real.
     */
     public static func clip<T: MfTypable>(_ mfarray: MfArray, min: T? = nil, max: T? = nil) -> MfArray{
         func _clip<U: MfStorable>(_ vDSP_func: vDSP_clip_func<U>) -> MfArray{
@@ -388,11 +458,15 @@ extension Matft{
     }
     
     /**
-       Swap given axis1 and axis2
-       - parameters:
-            - mfarray: mfarray
-            - axis1: Int
-            - axis2: Int
+       Interchange two axes of an array.
+
+       The result is a view that shares memory with the original array.
+       Equivalent to `numpy.swapaxes`.
+       - Parameters:
+            - mfarray: The source array.
+            - axis1: The first axis. Negative values count from the end.
+            - axis2: The second axis. Negative values count from the end.
+       - Returns: The view with `axis1` and `axis2` swapped.
     */
     public static func swapaxes(_ mfarray: MfArray, axis1: Int, axis2: Int) -> MfArray{
         let axis1 = get_positive_axis(axis1, ndim: mfarray.ndim)
@@ -406,11 +480,15 @@ extension Matft{
     }
    
     /**
-       move from given axis to dstination axis
-       - parameters:
-            - mfarray: mfarray
-            - src: Int
-            - dst: Int
+       Move an axis of an array to a new position.
+
+       The other axes keep their relative order. The result is a view that shares memory with the original array.
+       Equivalent to `numpy.moveaxis`.
+       - Parameters:
+            - mfarray: The source array.
+            - src: The original position of the axis to move.
+            - dst: The destination position of the axis.
+       - Returns: The view with the axis moved.
     */
     public static func moveaxis(_ mfarray: MfArray, src: Int, dst: Int) -> MfArray{
         let src = get_positive_axis(src, ndim: mfarray.ndim)
@@ -424,11 +502,15 @@ extension Matft{
         return mfarray.transpose(axes: axes)
     }
     /**
-       move from given axis to dstination axis
-       - parameters:
-            - mfarray: mfarray
-            - src: [Int]
-            - dst: [Int]
+       Move axes of an array to new positions.
+
+       The other axes keep their relative order. The result is a view that shares memory with the original array.
+       Equivalent to `numpy.moveaxis` with sequences.
+       - Parameters:
+            - mfarray: The source array.
+            - src: The original positions of the axes to move.
+            - dst: The destination positions of the axes. It must have the same count as `src`.
+       - Returns: The view with the axes moved.
     */
     public static func moveaxis(_ mfarray: MfArray, src: [Int], dst: [Int]) -> MfArray{
         precondition(src.count == dst.count, "must be same size")
@@ -453,11 +535,15 @@ extension Matft{
     }
     
     /**
-       Get sorted mfarray along given  axis
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, get summation for all elements
-            - order: (Optional) ascending or descending. default is ascending
+       Return a sorted copy of an array.
+
+       Complex arrays are not supported.
+       Equivalent to `numpy.sort`.
+       - Parameters:
+            - mfarray: The source array.
+            - axis: (Optional) The axis along which to sort, by default `-1` (the last axis). If `nil`, the flattened array is sorted.
+            - order: (Optional) `.Ascending` (default) or `.Descending`.
+       - Returns: A sorted copy with the same `mftype`.
     */
     public static func sort(_ mfarray: MfArray, axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray{
         unsupport_complex(mfarray)
@@ -480,11 +566,15 @@ extension Matft{
         }
     }
     /**
-       Get sorted mfarray's indices along given  axis
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, get summation for all elements
-            - order: (Optional) ascending or descending. default is ascending
+       Return the indices that would sort an array.
+
+       Complex arrays are not supported.
+       Equivalent to `numpy.argsort`.
+       - Parameters:
+            - mfarray: The source array.
+            - axis: (Optional) The axis along which to sort, by default `-1` (the last axis). If `nil`, the flattened array is used.
+            - order: (Optional) `.Ascending` (default) or `.Descending`.
+       - Returns: An `.Int` array of indices.
     */
     public static func argsort(_ mfarray: MfArray, axis: Int? = -1, order: MfSortOrder = .Ascending) -> MfArray{
         unsupport_complex(mfarray)
@@ -509,10 +599,14 @@ extension Matft{
     
     /**
        Roll array elements along a given axis.
-       - parameters:
-            - mfarray: mfarray
-            - shift: The number of places by which elements are shifted.
-            - axis: (Optional) axis, if not given, get summation for all elements
+
+       Elements that roll beyond the last position are re-introduced at the first. Complex arrays are not supported.
+       Equivalent to `numpy.roll`.
+       - Parameters:
+            - mfarray: The source array.
+            - shift: The number of places by which elements are shifted. Negative values shift backwards.
+            - axis: (Optional) The axis along which elements are shifted. If `nil`, the array is flattened before shifting and the original shape is restored.
+       - Returns: The rolled copy.
     */
     public static func roll(_ mfarray: MfArray, shift: Int, axis: Int? = nil) -> MfArray{
         unsupport_complex(mfarray)
@@ -526,10 +620,13 @@ extension Matft{
     }
     
     /**
-       Get ordered unique mfarray  along given axis
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, get summation for all elements
+       Find the unique elements (or sub-arrays) of an array, keeping their first-occurrence order.
+
+       Unlike `numpy.unique`, the result is not sorted. Complex arrays are not supported.
+       - Parameters:
+            - mfarray: The source array.
+            - axis: (Optional) The axis along which unique sub-arrays are searched. If `nil`, unique elements of the whole array are returned as a 1-D array.
+       - Returns: The unique elements.
     */
     public static func orderedUnique(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         unsupport_complex(mfarray)

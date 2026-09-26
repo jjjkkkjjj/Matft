@@ -149,6 +149,26 @@ class ConfigurationTest(unittest.TestCase):
         with self.assertRaises(SystemExit):
             benchmark.main(["--configuration", "debug", "--update-readme", "--skip-swift", "--skip-numpy"])
 
+    def test_update_docs_requires_release(self):
+        with self.assertRaises(SystemExit):
+            benchmark.main(["--configuration", "debug", "--update-docs", "--skip-swift", "--skip-numpy"])
+
+
+class DocsTargetTest(unittest.TestCase):
+    def test_performance_doc_has_markers(self):
+        self.assertEqual(os.path.relpath(benchmark.PERFORMANCE_DOC, benchmark.ROOT),
+                         os.path.join("website", "docs", "performance.md"))
+        with open(benchmark.PERFORMANCE_DOC) as f:
+            text = f.read()
+        self.assertIn(benchmark.MARKER_START, text)
+        self.assertIn(benchmark.MARKER_END, text)
+
+    def test_report_mentions_update_docs(self):
+        cases = [benchmark.Case("X.testY", "Math", "let _ = y", "y")]
+        env = {"cpu": "c", "macos": "m", "swift": "s", "python": "p", "numpy": "n", "commit": "x", "date": "d"}
+        md = benchmark.render_report(cases, {"swift": {}, "numpy": {}}, env)
+        self.assertIn("python3 scripts/benchmark.py --update-docs", md)
+
 
 if __name__ == "__main__":
     unittest.main()

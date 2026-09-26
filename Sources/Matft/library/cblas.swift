@@ -11,8 +11,12 @@ import Foundation
 import Accelerate
 
 
+/// The signature of the BLAS copy functions (`cblas_scopy` / `cblas_dcopy`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias cblas_copy_func<T> = (Int32, UnsafePointer<T>, Int32, UnsafeMutablePointer<T>, Int32) -> Void
 
+/// The signature of the BLAS general matrix multiplication functions (`cblas_sgemm` / `cblas_dgemm`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias cblas_matmul_func<T> = (CBLAS_ORDER, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, Int32, Int32, Int32, T, UnsafePointer<T>, Int32, UnsafePointer<T>, Int32, T, UnsafeMutablePointer<T>, Int32) -> Void
 
 
@@ -767,18 +771,31 @@ internal func fancysetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
 
 // MARK: - Type Definitions
 
+/// The signature of the BLAS copy functions (`cblas_scopy` / `cblas_dcopy`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias cblas_copy_func<T> = (Int32, UnsafePointer<T>, Int32, UnsafeMutablePointer<T>, Int32) -> Void
 
+/// The signature of the BLAS general matrix multiplication functions (`cblas_sgemm` / `cblas_dgemm`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias cblas_matmul_func<T> = (CBLAS_ORDER, CBLAS_TRANSPOSE, CBLAS_TRANSPOSE, Int32, Int32, Int32, T, UnsafePointer<T>, Int32, UnsafePointer<T>, Int32, T, UnsafeMutablePointer<T>, Int32) -> Void
 
 // CBLAS enums for WASI
+/// The matrix storage order of CBLAS, defined for platforms without Accelerate.
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias CBLAS_ORDER = Int32
+/// Row-major storage order.
 public let CblasRowMajor: CBLAS_ORDER = 101
+/// Column-major storage order.
 public let CblasColMajor: CBLAS_ORDER = 102
 
+/// The transpose option of CBLAS, defined for platforms without Accelerate.
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias CBLAS_TRANSPOSE = Int32
+/// Do not transpose.
 public let CblasNoTrans: CBLAS_TRANSPOSE = 111
+/// Transpose.
 public let CblasTrans: CBLAS_TRANSPOSE = 112
+/// Conjugate transpose.
 public let CblasConjTrans: CBLAS_TRANSPOSE = 113
 
 // MARK: - CBLAS Copy Functions

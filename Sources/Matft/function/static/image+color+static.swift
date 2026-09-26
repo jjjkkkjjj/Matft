@@ -12,12 +12,34 @@ import Accelerate
 extension Matft.image{
 
     /**
-       Convert color space. Same as cv2.cvtColor.
-       Float image is in [0, 1] and UInt8 image is in [0, 255]. For HSV, H is in [0, 360) for Float and [0, 180) for UInt8.
-       - parameters:
-            - src: An image mfarray (UInt8 or Float)
-            - code: The conversion code
-       - Returns: MfArray
+       Converts the color space of an image.
+
+       Equivalent to `cv2.cvtColor`. Float images are in `0...1` and UInt8 images are in `0...255`;
+       the output has the same mftype as the input, and UInt8 results are rounded and saturated.
+
+       | Code | Input layout | Output layout |
+       | --- | --- | --- |
+       | `.RGBA2GRAY`, `.BGRA2GRAY` | `(h, w, 4)` | `(h, w)` |
+       | `.RGB2GRAY`, `.BGR2GRAY` | `(h, w, 3)` | `(h, w)` |
+       | `.GRAY2RGB` / `.GRAY2RGBA` | `(h, w)` or `(h, w, 1)` | `(h, w, 3)` / `(h, w, 4)` |
+       | `.RGBA2RGB` | `(h, w, 4)` | `(h, w, 3)` |
+       | `.RGB2RGBA` | `(h, w, 3)` | `(h, w, 4)` with opaque alpha |
+       | `.RGB2BGR`, `.BGR2RGB` | `(h, w, 3)` | `(h, w, 3)` |
+       | `.RGBA2BGRA`, `.BGRA2RGBA` | `(h, w, 4)` | `(h, w, 4)` |
+       | `.RGB2HSV`, `.HSV2RGB` | `(h, w, 3)` | `(h, w, 3)` |
+
+       Gray conversions use the weights `0.299 R + 0.587 G + 0.114 B` as OpenCV does.
+       For HSV, H is in `0..<360` for Float and in `0..<180` for UInt8 (as OpenCV), and S and V use
+       the same range as the input.
+
+       - Parameters:
+            - src: An image mfarray (UInt8 or Float) whose layout matches `code`.
+            - code: The conversion code.
+       - Returns: The converted mfarray with the same mftype as `src`.
+       - Precondition: The mftype must be UInt8 or Float, and the channel count must match `code`.
+       - Note: Unlike `cv2.COLOR_RGBA2RGB`, which just drops the alpha channel, `.RGBA2RGB` composites
+         the image onto a white background using the alpha channel. `.RGBA2GRAY` and `.BGRA2GRAY` ignore alpha,
+         and return a 1-channel input without conversion (as `(h, w, 1)`).
     */
     public static func cvtColor(_ src: MfArray, code: MfColorConversion) -> MfArray{
         unsupport_complex(src)
@@ -55,14 +77,20 @@ extension Matft.image{
     }
 
     /**
-       Apply a fixed-level threshold. Same as cv2.threshold.
-       - parameters:
-            - src: An image mfarray (UInt8 or Float)
-            - thresh: The threshold value
-            - maxval: The value used for Binary and BinaryInv
-            - type: The threshold type
-            - otsu: (Optional) Whether to determine the threshold by Otsu's method. The source must be 1 channel UInt8 image.
-       - Returns: The threshold value used and the thresholded image
+       Applies a fixed-level threshold to each element.
+
+       Equivalent to `cv2.threshold`. The comparison is `src > thresh`; see `MfThresholdType` for the formula of each type.
+       For a UInt8 image, `thresh` is floored and `maxval` is rounded before thresholding, as OpenCV does.
+
+       - Parameters:
+            - src: An image mfarray (UInt8 or Float) of any number of channels.
+            - thresh: The threshold value. Ignored when `otsu` is `true`.
+            - maxval: The value assigned by `.Binary` and `.BinaryInv`.
+            - type: The threshold type.
+            - otsu: Whether to determine the threshold by Otsu's method (`cv2.THRESH_OTSU`), by default `false`.
+       - Returns: A tuple of the threshold actually used (`retval`) and the thresholded image (`dst`)
+         with the same shape and mftype as `src`.
+       - Precondition: The mftype must be UInt8 or Float. With `otsu`, `src` must be a 1-channel UInt8 image.
     */
     public static func threshold(_ src: MfArray, thresh: Float, maxval: Float, type: MfThresholdType, otsu: Bool = false) -> (retval: Float, dst: MfArray){
         unsupport_complex(src)
@@ -99,13 +127,18 @@ extension Matft.image{
     }
 
     /**
-       Calculate a histogram of the channel. Same as cv2.calcHist([src], [channel], None, [histSize], range) with uniform bins.
-       - parameters:
-            - src: An image mfarray (UInt8 or Float)
-            - channel: (Optional) The channel index, by default 0
-            - histSize: The number of bins
-            - range: The lower (inclusive) and upper (exclusive) boundaries
-       - Returns: The Float histogram (shape = (histSize, 1))
+       Calculates the histogram of one channel.
+
+       Equivalent to `cv2.calcHist([src], [channel], None, [histSize], [range.0, range.1])` with uniform bins.
+       Values outside `range.0..<range.1` are not counted.
+
+       - Parameters:
+            - src: An image mfarray (UInt8 or Float) of `(height, width)` or `(height, width, channels)`.
+            - channel: The channel index, by default 0.
+            - histSize: The number of bins.
+            - range: The lower (inclusive) and upper (exclusive) boundaries of the bins.
+       - Returns: The Float histogram of shape `(histSize, 1)`.
+       - Precondition: `histSize` must be positive, `range.0 < range.1`, and `channel` must be a valid index.
     */
     public static func calcHist(_ src: MfArray, channel: Int = 0, histSize: Int, range: (Float, Float)) -> MfArray{
         unsupport_complex(src)
@@ -119,10 +152,14 @@ extension Matft.image{
     }
 
     /**
-       Equalize the histogram of gray image. Same as cv2.equalizeHist.
-       - parameters:
-            - src: A 1 channel UInt8 image mfarray
-       - Returns: UInt8 mfarray
+       Equalizes the histogram of a grayscale image.
+
+       Equivalent to `cv2.equalizeHist`.
+
+       - Parameters:
+            - src: A 1-channel UInt8 image mfarray of `(height, width)` or `(height, width, 1)`.
+       - Returns: The equalized UInt8 mfarray with the same shape as `src`.
+       - Precondition: `src` must be a 1-channel UInt8 image.
     */
     public static func equalizeHist(_ src: MfArray) -> MfArray{
         precondition(src.mftype == .UInt8 && (src.ndim == 2 || (src.ndim == 3 && src.shape[2] == 1)), "equalizeHist supports 1 channel UInt8 image only")
@@ -148,11 +185,15 @@ extension Matft.image{
     }
 
     /**
-       Look up table transform. Same as cv2.LUT.
-       - parameters:
-            - src: An UInt8 image mfarray
-            - lut: The look up table of 256 elements. The returned mfarray has the lut's mftype.
-       - Returns: MfArray
+       Transforms each element with a look-up table.
+
+       Equivalent to `cv2.LUT` with a single-channel table: `dst[i] = lut[src[i]]`.
+
+       - Parameters:
+            - src: A UInt8 mfarray of any shape.
+            - lut: A look-up table of 256 elements (UInt8 or Float).
+       - Returns: The transformed mfarray with the same shape as `src` and the same mftype as `lut`.
+       - Precondition: `src` must be UInt8, and `lut` must be UInt8 or Float with 256 elements.
     */
     public static func LUT(_ src: MfArray, lut: MfArray) -> MfArray{
         precondition(src.mftype == .UInt8, "src must be UInt8, but got \(src.mftype)")
@@ -165,13 +206,23 @@ extension Matft.image{
     }
 
     /**
-       Normalize the norm or value range. Same as cv2.normalize(src, None, alpha, beta, norm_type).
-       - parameters:
-            - src: An image mfarray (UInt8 or Float)
-            - alpha: (Optional) The norm value, or the lower boundary of the range for MinMax, by default 1
-            - beta: (Optional) The upper boundary of the range for MinMax, by default 0
-            - normType: (Optional) The norm type, by default L2
-       - Returns: MfArray whose mftype is same as the input
+       Normalizes the norm or the value range of an image.
+
+       Equivalent to `cv2.normalize(src, None, alpha, beta, norm_type)` without a mask.
+       The norm or range is computed over all elements (all channels together).
+
+       - For `.MinMax`, the values are linearly mapped into `min(alpha, beta)...max(alpha, beta)`.
+       - For `.Inf`, `.L1` and `.L2`, the values are scaled so that the norm becomes `alpha`.
+
+       For the transformers-style `(x - mean) / std` normalization, use `normalize_meanstd(_:mean:std:)`.
+
+       - Parameters:
+            - src: An image mfarray (UInt8 or Float).
+            - alpha: The target norm, or one boundary of the range for `.MinMax`, by default 1.
+            - beta: The other boundary of the range for `.MinMax`, by default 0. Ignored for the other norms.
+            - normType: The norm type, by default `.L2`.
+       - Returns: The normalized mfarray with the same shape and mftype as `src`. UInt8 results are rounded and saturated.
+       - Precondition: The mftype must be UInt8 or Float.
     */
     public static func normalize(_ src: MfArray, alpha: Float = 1, beta: Float = 0, normType: MfNormType = .L2) -> MfArray{
         unsupport_complex(src)
@@ -203,12 +254,16 @@ extension Matft.image{
     }
 
     /**
-       Scale, calculate absolute values, and convert the result into UInt8. Same as cv2.convertScaleAbs.
-       - parameters:
-            - src: An image mfarray (UInt8 or Float)
-            - alpha: (Optional) The scale factor, by default 1
-            - beta: (Optional) The delta added to the scaled values, by default 0
-       - Returns: UInt8 mfarray
+       Scales an image, takes the absolute values and converts the result into UInt8.
+
+       Equivalent to `cv2.convertScaleAbs`: `dst = saturate(|src * alpha + beta|)`.
+
+       - Parameters:
+            - src: An image mfarray (UInt8 or Float).
+            - alpha: The scale factor, by default 1.
+            - beta: The delta added to the scaled values, by default 0.
+       - Returns: The UInt8 mfarray with the same shape as `src`, rounded and saturated into `0...255`.
+       - Precondition: The mftype must be UInt8 or Float.
     */
     public static func convertScaleAbs(_ src: MfArray, alpha: Float = 1, beta: Float = 0) -> MfArray{
         unsupport_complex(src)

@@ -12,11 +12,16 @@ import Accelerate
 extension Matft.image{
 
     /**
-       Flip the image. Same as cv2.flip.
-       - parameters:
-            - src: An image mfarray
-            - flipCode: 0 means flipping around the x axis (vertical), positive means around the y axis (horizontal), and negative means both
-       - Returns: The row contiguous mfarray
+       Flips an image around the vertical axis, the horizontal axis, or both.
+
+       Equivalent to `cv2.flip`.
+
+       - Parameters:
+            - src: An image mfarray of `(height, width)` or `(height, width, channels)`. Any mftype is accepted.
+            - flipCode: 0 flips vertically (around the x axis), a positive value flips horizontally
+              (around the y axis), and a negative value flips both.
+       - Returns: The flipped row-contiguous mfarray with the same shape and mftype as `src`.
+       - Precondition: `src` must be 2D or 3D.
     */
     public static func flip(_ src: MfArray, flipCode: Int) -> MfArray{
         precondition(src.ndim == 2 || src.ndim == 3, "src must be 2d or 3d, but got \(src.shape)")
@@ -25,11 +30,15 @@ extension Matft.image{
     }
 
     /**
-       Rotate the image by 90 degrees multiples. Same as cv2.rotate.
-       - parameters:
-            - src: An image mfarray
-            - rotateCode: The rotation
-       - Returns: The row contiguous mfarray
+       Rotates an image by a multiple of 90 degrees.
+
+       Equivalent to `cv2.rotate`.
+
+       - Parameters:
+            - src: An image mfarray of `(height, width)` or `(height, width, channels)`. Any mftype is accepted.
+            - rotateCode: The rotation.
+       - Returns: The rotated row-contiguous mfarray. The height and width are swapped for 90-degree rotations.
+       - Precondition: `src` must be 2D or 3D.
     */
     public static func rotate(_ src: MfArray, rotateCode: MfRotateCode) -> MfArray{
         precondition(src.ndim == 2 || src.ndim == 3, "src must be 2d or 3d, but got \(src.shape)")
@@ -44,12 +53,22 @@ extension Matft.image{
     }
 
     /**
-       Get the affine matrix of 2d rotation. Same as cv2.getRotationMatrix2D.
-       - parameters:
-            - center: The center (x, y) of the rotation
+       Calculates the affine matrix of a 2D rotation with scaling.
+
+       Equivalent to `cv2.getRotationMatrix2D`. The result can be passed to
+       `warpAffine(_:matrix:width:height:mode:borderValue:)`.
+
+       ```swift
+       let M = Matft.image.getRotationMatrix2D(center: (Float(w) / 2, Float(h) / 2), angle: 45, scale: 1)
+       let rotated = Matft.image.warpAffine(image, matrix: M, width: w, height: h)
+       ```
+
+       - Parameters:
+            - center: The center `(x, y)` of the rotation in the source image.
             - angle: The rotation angle in degrees. Positive values mean counter-clockwise rotation
-            - scale: The isotropic scale factor
-       - Returns: The Double affine matrix (shape = (2, 3))
+              (the origin is the top-left corner).
+            - scale: The isotropic scale factor.
+       - Returns: The Double affine matrix of shape `(2, 3)`.
     */
     public static func getRotationMatrix2D(center: (x: Float, y: Float), angle: Float, scale: Float) -> MfArray{
         let rad = Double(angle) * Double.pi / 180
@@ -61,11 +80,15 @@ extension Matft.image{
     }
 
     /**
-       Calculate the affine transform from 3 pairs of the corresponding points. Same as cv2.getAffineTransform.
-       - parameters:
-            - src: The source points (shape = (3, 2))
-            - dst: The destination points (shape = (3, 2))
-       - Returns: The Double affine matrix (shape = (2, 3))
+       Calculates the affine transform from three pairs of corresponding points.
+
+       Equivalent to `cv2.getAffineTransform`.
+
+       - Parameters:
+            - src: The source points `(x, y)` of shape `(3, 2)`.
+            - dst: The destination points `(x, y)` of shape `(3, 2)`.
+       - Returns: The Double affine matrix of shape `(2, 3)` mapping `src` into `dst`.
+       - Precondition: `src` and `dst` must be `(3, 2)`. The points must not be collinear.
     */
     public static func getAffineTransform(src: MfArray, dst: MfArray) -> MfArray{
         precondition(src.shape == [3, 2] && dst.shape == [3, 2], "src and dst must be (3, 2)")
@@ -79,11 +102,15 @@ extension Matft.image{
     }
 
     /**
-       Calculate the perspective transform from 4 pairs of the corresponding points. Same as cv2.getPerspectiveTransform.
-       - parameters:
-            - src: The source points (shape = (4, 2))
-            - dst: The destination points (shape = (4, 2))
-       - Returns: The Double perspective matrix (shape = (3, 3))
+       Calculates the perspective transform from four pairs of corresponding points.
+
+       Equivalent to `cv2.getPerspectiveTransform`.
+
+       - Parameters:
+            - src: The source points `(x, y)` of shape `(4, 2)`.
+            - dst: The destination points `(x, y)` of shape `(4, 2)`.
+       - Returns: The Double perspective matrix of shape `(3, 3)` whose last element is 1.
+       - Precondition: `src` and `dst` must be `(4, 2)`, and no three points may be collinear.
     */
     public static func getPerspectiveTransform(src: MfArray, dst: MfArray) -> MfArray{
         precondition(src.shape == [4, 2] && dst.shape == [4, 2], "src and dst must be (4, 2)")
@@ -103,15 +130,23 @@ extension Matft.image{
     }
 
     /**
-       Apply the perspective transformation. Same as cv2.warpPerspective.
-       - parameters:
-            - src: An image mfarray (UInt8 or Float)
-            - M: The perspective matrix (shape = (3, 3)) mapping the source coordinate into the destination one
-            - dsize: The destination size (width, height)
-            - interpolation: (Optional) Linear or Nearest, by default Linear
-            - borderMode: (Optional) The border type, by default Constant
-            - borderValue: (Optional) The border value. The count must be 1 or the channel number
-       - Returns: MfArray
+       Applies a perspective transformation to an image.
+
+       Equivalent to `cv2.warpPerspective` (without `WARP_INVERSE_MAP`). Each destination pixel is sampled
+       from the source at the inverse-mapped position, as `remap(_:map1:map2:interpolation:borderMode:borderValue:)` does.
+
+       - Parameters:
+            - src: An image mfarray (UInt8 or Float) of `(height, width)` or `(height, width, channels)`.
+            - M: The `(3, 3)` perspective matrix mapping source coordinates into destination coordinates.
+            - dsize: The destination size `(width, height)`.
+            - interpolation: `.Linear` (default) or `.Nearest`. `.Lanczos` is not supported.
+            - borderMode: How to fill the pixels mapped from outside the source, by default `.Constant`.
+            - borderValue: The fill value for `.Constant`, by default `[0]`. Pass one value, or one value per channel;
+              missing channels use the last value.
+       - Returns: The transformed mfarray of `(dsize.height, dsize.width)` or `(dsize.height, dsize.width, channels)`
+         with the same mftype as `src`. UInt8 results are rounded and saturated.
+       - Precondition: The mftype of `src` must be UInt8 or Float, `M` must be `(3, 3)` and invertible,
+         and `dsize` must be positive.
     */
     public static func warpPerspective(_ src: MfArray, M: MfArray, dsize: (width: Int, height: Int), interpolation: MfInterpolation = .Linear, borderMode: MfBorderType = .Constant, borderValue: [Float] = [0]) -> MfArray{
         unsupport_complex(src)
@@ -136,15 +171,22 @@ extension Matft.image{
     }
 
     /**
-       Remap the image. Same as cv2.remap with Float maps.
-       - parameters:
-            - src: An image mfarray (UInt8 or Float)
-            - map1: The x coordinates of the source (shape = (h, w))
-            - map2: The y coordinates of the source (shape = (h, w))
-            - interpolation: Linear or Nearest
-            - borderMode: (Optional) The border type, by default Constant
-            - borderValue: (Optional) The border value. The count must be 1 or the channel number
-       - Returns: MfArray (shape = (h, w) or (h, w, c))
+       Remaps an image with per-pixel source coordinates.
+
+       Equivalent to `cv2.remap` with two Float maps: `dst(y, x) = src(map2(y, x), map1(y, x))`.
+
+       - Parameters:
+            - src: An image mfarray (UInt8 or Float) of `(height, width)` or `(height, width, channels)`.
+            - map1: The source x coordinates of shape `(h, w)`.
+            - map2: The source y coordinates of shape `(h, w)`.
+            - interpolation: `.Linear` or `.Nearest`. `.Lanczos` is not supported.
+            - borderMode: How to fill the pixels mapped from outside the source, by default `.Constant`.
+            - borderValue: The fill value for `.Constant`, by default `[0]`. Pass one value, or one value per channel;
+              missing channels use the last value.
+       - Returns: The remapped mfarray of `(h, w)` or `(h, w, channels)` with the same mftype as `src`.
+         UInt8 results are rounded and saturated.
+       - Precondition: The mftype of `src` must be UInt8 or Float, `map1` and `map2` must be 2D with the same shape,
+         and `interpolation` must not be `.Lanczos`.
     */
     public static func remap(_ src: MfArray, map1: MfArray, map2: MfArray, interpolation: MfInterpolation, borderMode: MfBorderType = .Constant, borderValue: [Float] = [0]) -> MfArray{
         unsupport_complex(src)
@@ -155,14 +197,19 @@ extension Matft.image{
     }
 
     /**
-       Find edges by the Canny algorithm. Same as cv2.Canny.
-       - parameters:
-            - image: A 1 channel UInt8 image mfarray
-            - threshold1: The first threshold for the hysteresis
-            - threshold2: The second threshold for the hysteresis
-            - apertureSize: (Optional) The aperture size of Sobel operator (3, 5 or 7), by default 3
-            - L2gradient: (Optional) Whether to use L2 norm of the gradient, by default false (L1 norm)
-       - Returns: UInt8 mfarray whose edges are 255
+       Finds edges in a grayscale image with the Canny algorithm.
+
+       Equivalent to `cv2.Canny`. The gradients are computed by `Sobel(_:ddepth:dx:dy:ksize:scale:delta:borderType:)`
+       with the `.Replicate` border, followed by non-maximum suppression and hysteresis thresholding.
+
+       - Parameters:
+            - image: A 1-channel UInt8 image mfarray of `(height, width)` or `(height, width, 1)`.
+            - threshold1: One threshold for the hysteresis. The smaller of the two is the lower threshold.
+            - threshold2: The other threshold for the hysteresis. The larger of the two is the upper threshold.
+            - apertureSize: The aperture size of the Sobel operator (3, 5 or 7), by default 3.
+            - L2gradient: Whether to use the L2 norm of the gradient, by default `false` (L1 norm).
+       - Returns: The UInt8 edge map with the same shape as `image`, where edges are 255 and the others are 0.
+       - Precondition: `image` must be a 1-channel UInt8 image, and `apertureSize` must be 3, 5 or 7.
     */
     public static func Canny(_ image: MfArray, threshold1: Float, threshold2: Float, apertureSize: Int = 3, L2gradient: Bool = false) -> MfArray{
         precondition(image.mftype == .UInt8 && (image.ndim == 2 || (image.ndim == 3 && image.shape[2] == 1)), "Canny supports 1 channel UInt8 image only")

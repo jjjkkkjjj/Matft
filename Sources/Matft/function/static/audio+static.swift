@@ -7,12 +7,17 @@ import Foundation
 
 extension Matft.audio{
     /**
-       Return a window of a given length and type. Same as `scipy.signal.get_window`
-       - parameters:
-            - window: The window type
-            - Nx: The number of samples in the window
-            - fftbins: (Optional) If true (default), create a periodic window for spectral analysis. If false, create a symmetric window
-       - Returns: The window (Double)
+       Returns a window of a given length and type.
+
+       Equivalent to `scipy.signal.get_window`. A periodic window (`fftbins: true`) is the symmetric window of
+       `Nx + 1` points without the last point, which is what `stft(_:n_fft:hop_length:win_length:window:center:pad_mode:)` uses.
+
+       - Parameters:
+            - window: The window type.
+            - Nx: The number of samples in the window.
+            - fftbins: If `true` (default), create a periodic window for spectral analysis.
+              If `false`, create a symmetric window (same as `Matft.hanning` and so on).
+       - Returns: The Double window of shape `(Nx)`.
     */
     public static func get_window(_ window: MfWindowType, Nx: Int, fftbins: Bool = true) -> MfArray{
         if window == .boxcar{
@@ -37,12 +42,18 @@ extension Matft.audio{
     }
 
     /**
-       Slice a signal into overlapping frames along the last axis. Same as `librosa.util.frame` with `axis=-1`
-       - parameters:
-            - x: The signal (..., n)
-            - frame_length: The length of each frame
-            - hop_length: The number of steps to advance between frames
-       - Returns: The framed signal (..., frame_length, n_frames). Unlike librosa, it is a copy
+       Slices a signal into overlapping frames along the last axis.
+
+       Equivalent to `librosa.util.frame` with `axis=-1`. The number of frames is
+       `1 + (n - frame_length) / hop_length` (integer division); trailing samples that do not fill a frame are dropped.
+
+       - Parameters:
+            - x: The signal of shape `(..., n)`.
+            - frame_length: The length of each frame.
+            - hop_length: The number of samples to advance between frames.
+       - Returns: The framed signal of shape `(..., frame_length, n_frames)` with the same mftype as `x`.
+         Unlike librosa, which returns a strided view, it is a row-contiguous copy.
+       - Precondition: `frame_length` and `hop_length` must be positive, and `n` must be at least `frame_length`.
     */
     public static func frame(_ x: MfArray, frame_length: Int, hop_length: Int) -> MfArray{
         precondition(frame_length >= 1 && hop_length >= 1, "frame_length and hop_length must be positive")
@@ -58,16 +69,27 @@ extension Matft.audio{
     }
 
     /**
-       Short-time Fourier transform. Same as `librosa.stft`
-       - parameters:
-            - y: The 1d real signal
-            - n_fft: (Optional) The length of the windowed signal after padding with zeros, by default 2048
-            - hop_length: (Optional) The number of samples between adjacent frames, by default `win_length / 4`
-            - win_length: (Optional) The window length (<= n_fft). The window is zero-padded at center to n_fft. By default n_fft
-            - window: (Optional) The window type (periodic), by default hann
-            - center: (Optional) Whether to pad the signal so that the t-th frame is centered at `y[t * hop_length]`, by default true
-            - pad_mode: (Optional) The padding mode used when center is true, by default constant (zero)
-       - Returns: The complex STFT matrix (1 + n_fft/2, n_frames)
+       Computes the short-time Fourier transform of a signal.
+
+       Equivalent to `librosa.stft`. Each frame is multiplied by a periodic window (zero-padded at the center to
+       `n_fft` when `win_length < n_fft`) and transformed with a real FFT.
+
+       ```swift
+       let spec = Matft.audio.stft(audio, n_fft: 400, hop_length: 160, pad_mode: .reflect) // complex, (201, n_frames)
+       ```
+
+       - Parameters:
+            - y: The 1D real signal.
+            - n_fft: The length of each FFT frame, by default 2048.
+            - hop_length: The number of samples between adjacent frames. `nil` (default) means `win_length / 4`.
+            - win_length: The window length (`<= n_fft`). `nil` (default) means `n_fft`.
+            - window: The window type (periodic), by default `.hann`.
+            - center: Whether to pad the signal on both sides by `n_fft / 2` so that the t-th frame is centered at
+              `y[t * hop_length]`, by default `true`.
+            - pad_mode: The padding mode used when `center` is `true`, by default `.constant` (zeros), as librosa >= 0.10.
+       - Returns: The complex STFT matrix of shape `(1 + n_fft / 2, n_frames)`. It is complex Float for a Float-stored
+         input (e.g. Float or integer types) and complex Double for a Double input, like librosa's `complex64` for `float32`.
+       - Precondition: `y` must be real and 1D, and `win_length` must be in `1...n_fft`.
     */
     public static func stft(_ y: MfArray, n_fft: Int = 2048, hop_length: Int? = nil, win_length: Int? = nil, window: MfWindowType = .hann, center: Bool = true, pad_mode: MfPadMode = .constant) -> MfArray{
         unsupport_complex(y)
@@ -99,17 +121,21 @@ extension Matft.audio{
     }
 
     /**
-       Create a mel filter bank. Same as `librosa.filters.mel`
-       - parameters:
-            - sr: The sampling rate
-            - n_fft: The number of FFT components
-            - n_mels: (Optional) The number of mel bands, by default 128
-            - fmin: (Optional) The lowest frequency (Hz), by default 0
-            - fmax: (Optional) The highest frequency (Hz), by default sr / 2
-            - htk: (Optional) Use HTK formula instead of Slaney, by default false
-            - norm: (Optional) The normalization. If nil, leave all the triangles aiming for a peak value of 1.0. By default slaney
-            - mftype: (Optional) The type of the returned mfarray, by default Float
-       - Returns: The mel transform matrix (n_mels, 1 + n_fft/2)
+       Creates a mel filter bank.
+
+       Equivalent to `librosa.filters.mel`. Multiply it by a power spectrogram of shape `(1 + n_fft / 2, n_frames)`
+       (e.g. with `*&`) to get a mel spectrogram.
+
+       - Parameters:
+            - sr: The sampling rate of the signal.
+            - n_fft: The number of FFT components.
+            - n_mels: The number of mel bands, by default 128.
+            - fmin: The lowest frequency in Hz, by default 0.
+            - fmax: The highest frequency in Hz. `nil` (default) means `sr / 2`.
+            - htk: Whether to use the HTK formula instead of Slaney's, by default `false`.
+            - norm: The normalization, by default `.slaney`. If `nil`, the triangles are left with a peak value of 1.
+            - mftype: The mftype of the returned mfarray, by default `.Float`.
+       - Returns: The mel transform matrix of shape `(n_mels, 1 + n_fft / 2)`.
     */
     public static func mel_filters(sr: Double, n_fft: Int, n_mels: Int = 128, fmin: Double = 0, fmax: Double? = nil, htk: Bool = false, norm: MfMelNorm? = .slaney, mftype: MfType = .Float) -> MfArray{
         let fmax = fmax ?? sr / 2
@@ -137,23 +163,32 @@ extension Matft.audio{
     }
 
     /**
-       Compute a mel-scaled power spectrogram. Same as `librosa.feature.melspectrogram`
-       - parameters:
-            - y: The 1d real signal
-            - sr: (Optional) The sampling rate, by default 22050
-            - n_fft: (Optional) See `stft`, by default 2048
-            - hop_length: (Optional) See `stft`, by default 512
-            - win_length: (Optional) See `stft`
-            - window: (Optional) See `stft`
-            - center: (Optional) See `stft`
-            - pad_mode: (Optional) See `stft`
-            - power: (Optional) Exponent for the magnitude spectrogram, by default 2 (power)
-            - n_mels: (Optional) See `mel_filters`
-            - fmin: (Optional) See `mel_filters`
-            - fmax: (Optional) See `mel_filters`
-            - htk: (Optional) See `mel_filters`
-            - norm: (Optional) See `mel_filters`
-       - Returns: The mel spectrogram (n_mels, n_frames)
+       Computes a mel-scaled spectrogram.
+
+       Equivalent to `librosa.feature.melspectrogram(y=y, sr=sr, ...)`: `mel_filters * |stft(y)| ** power`.
+
+       ```swift
+       let mel = Matft.audio.melspectrogram(audio, sr: 16000, n_fft: 400, hop_length: 160, n_mels: 80)
+       let db = Matft.audio.power_to_db(mel)
+       ```
+
+       - Parameters:
+            - y: The 1D real signal.
+            - sr: The sampling rate, by default 22050.
+            - n_fft: The length of each FFT frame, by default 2048. See `stft(_:n_fft:hop_length:win_length:window:center:pad_mode:)`.
+            - hop_length: The number of samples between adjacent frames, by default 512.
+            - win_length: The window length. `nil` (default) means `n_fft`.
+            - window: The window type, by default `.hann`.
+            - center: Whether to center the frames, by default `true`.
+            - pad_mode: The padding mode used when `center` is `true`, by default `.constant`.
+            - power: The exponent of the magnitude spectrogram, by default 2 (power). Use 1 for energy.
+            - n_mels: The number of mel bands, by default 128. See `mel_filters(sr:n_fft:n_mels:fmin:fmax:htk:norm:mftype:)`.
+            - fmin: The lowest frequency in Hz, by default 0.
+            - fmax: The highest frequency in Hz. `nil` (default) means `sr / 2`.
+            - htk: Whether to use the HTK formula instead of Slaney's, by default `false`.
+            - norm: The normalization of the mel filters, by default `.slaney`.
+       - Returns: The mel spectrogram of shape `(n_mels, n_frames)`. It is Float for a Float-stored input and Double for a Double input.
+       - Precondition: `y` must be real and 1D.
     */
     public static func melspectrogram(_ y: MfArray, sr: Double = 22050, n_fft: Int = 2048, hop_length: Int = 512, win_length: Int? = nil, window: MfWindowType = .hann, center: Bool = true, pad_mode: MfPadMode = .constant, power: Double = 2.0, n_mels: Int = 128, fmin: Double = 0, fmax: Double? = nil, htk: Bool = false, norm: MfMelNorm? = .slaney) -> MfArray{
         let spec = Matft.audio.stft(y, n_fft: n_fft, hop_length: hop_length, win_length: win_length, window: window, center: center, pad_mode: pad_mode)
@@ -163,13 +198,18 @@ extension Matft.audio{
     }
 
     /**
-       Convert a power spectrogram to decibel units. Same as `librosa.power_to_db` with a scalar ref
-       - parameters:
-            - S: The power spectrogram
-            - ref: (Optional) The reference power, by default 1.0
-            - amin: (Optional) The minimum threshold of S and ref, by default 1e-10
-            - top_db: (Optional) Threshold the output at `max - top_db`, by default 80. If nil, no threshold
-       - Returns: `10 * log10(S / ref)`
+       Converts a power spectrogram to decibel units.
+
+       Equivalent to `librosa.power_to_db` with a scalar `ref`:
+       `10 * log10(max(S, amin)) - 10 * log10(max(amin, ref))`, then clipped below at `max - top_db`.
+
+       - Parameters:
+            - S: The power spectrogram (real).
+            - ref: The reference power, by default 1.0.
+            - amin: The minimum threshold of `S` and `ref`, by default `1e-10`. It must be positive.
+            - top_db: Threshold the output at `max - top_db`, by default 80. If `nil`, no threshold is applied.
+       - Returns: The spectrogram in dB with the same shape as `S`. It is Float for a Float-stored input and Double for a Double input.
+       - Precondition: `S` must be real, `amin` must be positive, and `top_db` must be non-negative.
     */
     public static func power_to_db(_ S: MfArray, ref: Double = 1.0, amin: Double = 1e-10, top_db: Double? = 80.0) -> MfArray{
         unsupport_complex(S)
@@ -186,12 +226,15 @@ extension Matft.audio{
     }
 
     /**
-       Pad or trim the audio array to `length` along the axis. Same as `whisper.audio.pad_or_trim`
-       - parameters:
-            - array: The audio array
-            - length: (Optional) The length, by default 480000 (30 seconds of 16kHz audio)
-            - axis: (Optional) The axis, by default -1
-       - Returns: The padded or trimmed array
+       Pads with zeros or trims an array to a given length along an axis.
+
+       Equivalent to `whisper.audio.pad_or_trim`. Padding is appended to the end.
+
+       - Parameters:
+            - array: The audio array.
+            - length: The target length, by default 480000 (30 seconds of 16 kHz audio).
+            - axis: The axis to pad or trim, by default -1 (the last axis).
+       - Returns: A new mfarray whose size along `axis` is `length`, with the same mftype as `array`.
     */
     public static func pad_or_trim(_ array: MfArray, length: Int = 480000, axis: Int = -1) -> MfArray{
         let axis = get_positive_axis(axis, ndim: array.ndim)
@@ -210,12 +253,25 @@ extension Matft.audio{
     }
 
     /**
-       Compute the log-mel spectrogram for Whisper. Same as `whisper.audio.log_mel_spectrogram`
-       - parameters:
-            - audio: The 1d audio signal (16kHz)
-            - n_mels: (Optional) The number of mel bands, 80 or 128. By default 80
-            - padding: (Optional) The number of zero samples to pad to the right, by default 0
-       - Returns: The log-mel spectrogram (n_mels, n_frames)
+       Computes the log-mel spectrogram used as the input of Whisper.
+
+       Equivalent to `whisper.audio.log_mel_spectrogram` for an audio array: an STFT with `n_fft = 400`,
+       `hop_length = 160`, a periodic Hann window and reflect padding, the last frame dropped, a Slaney mel filter bank
+       (`sr = 16000`), `log10` clamped at `1e-10`, dynamic range limited to 8 (80 dB), and `(x + 4) / 4` scaling.
+
+       ```swift
+       let audio = MfArray(samples, mftype: .Float) // 16 kHz mono
+       let logmel = Matft.audio.whisper_log_mel(Matft.audio.pad_or_trim(audio), n_mels: 80)
+       // logmel.shape == [80, 3000]
+       ```
+
+       - Parameters:
+            - audio: The 1D audio signal sampled at 16 kHz.
+            - n_mels: The number of mel bands, by default 80. Whisper models use 80 or 128 (large-v3).
+            - padding: The number of zero samples appended to the end before the STFT, by default 0.
+       - Returns: The log-mel spectrogram of shape `(n_mels, n_frames)` where `n_frames` is `length / 160`
+         (3000 for 30 seconds). It is Float for a Float-stored input and Double for a Double input.
+       - Precondition: `audio` must be real and 1D.
     */
     public static func whisper_log_mel(_ audio: MfArray, n_mels: Int = 80, padding: Int = 0) -> MfArray{
         var audio = audio

@@ -10,44 +10,72 @@ import Foundation
 #if canImport(Accelerate)
 import Accelerate
 #else
-/// Fallback complex type for non-Apple platforms (split complex format for Float)
+/// Fallback complex type for non-Apple platforms (split complex format for Float).
+/// Mirrors Accelerate's `DSPSplitComplex`.
 public struct DSPSplitComplex {
+    /// A pointer to the real parts.
     public var realp: UnsafeMutablePointer<Float>
+    /// A pointer to the imaginary parts.
     public var imagp: UnsafeMutablePointer<Float>
 
+    /// Creates a split complex pointer pair.
+    /// - Parameters:
+    ///   - realp: A pointer to the real parts.
+    ///   - imagp: A pointer to the imaginary parts.
     public init(realp: UnsafeMutablePointer<Float>, imagp: UnsafeMutablePointer<Float>) {
         self.realp = realp
         self.imagp = imagp
     }
 }
 
-/// Fallback complex type for non-Apple platforms (split complex format for Double)
+/// Fallback complex type for non-Apple platforms (split complex format for Double).
+/// Mirrors Accelerate's `DSPDoubleSplitComplex`.
 public struct DSPDoubleSplitComplex {
+    /// A pointer to the real parts.
     public var realp: UnsafeMutablePointer<Double>
+    /// A pointer to the imaginary parts.
     public var imagp: UnsafeMutablePointer<Double>
 
+    /// Creates a split complex pointer pair.
+    /// - Parameters:
+    ///   - realp: A pointer to the real parts.
+    ///   - imagp: A pointer to the imaginary parts.
     public init(realp: UnsafeMutablePointer<Double>, imagp: UnsafeMutablePointer<Double>) {
         self.realp = realp
         self.imagp = imagp
     }
 }
 
-/// Fallback complex type for non-Apple platforms (interleaved complex format for Float)
+/// Fallback complex type for non-Apple platforms (interleaved complex format for Float).
+/// Mirrors Accelerate's `DSPComplex`.
 public struct DSPComplex {
+    /// The real part.
     public var real: Float
+    /// The imaginary part.
     public var imag: Float
 
+    /// Creates a complex value.
+    /// - Parameters:
+    ///   - real: The real part.
+    ///   - imag: The imaginary part.
     public init(real: Float, imag: Float) {
         self.real = real
         self.imag = imag
     }
 }
 
-/// Fallback complex type for non-Apple platforms (interleaved complex format for Double)
+/// Fallback complex type for non-Apple platforms (interleaved complex format for Double).
+/// Mirrors Accelerate's `DSPDoubleComplex`.
 public struct DSPDoubleComplex {
+    /// The real part.
     public var real: Double
+    /// The imaginary part.
     public var imag: Double
 
+    /// Creates a complex value.
+    /// - Parameters:
+    ///   - real: The real part.
+    ///   - imag: The imaginary part.
     public init(real: Double, imag: Double) {
         self.real = real
         self.imag = imag
@@ -72,20 +100,46 @@ extension Int: MfTypable {}
 extension Float: MfTypable {}
 extension Double: MfTypable {}
 */
+/// A Swift scalar type that can be an element of an `MfArray`.
+///
+/// `Bool`, `UInt8`, `UInt16`, `UInt32`, `UInt64`, `UInt`, `Int8`, `Int16`, `Int32`, `Int64`, `Int`,
+/// `Float` and `Double` conform to this protocol. Scalars of these types can be used with the arithmetic
+/// and comparison operators (e.g. `a + 1`) and with functions such as `item(index:type:)`.
 public protocol MfTypable: Equatable{
+    /// The zero value (`false` for `Bool`).
     static var zero: Self { get }
+    /// Converts an integer value into this type.
+    /// - Parameters:
+    ///   - value: The value to convert.
+    /// - Returns: The converted value. For `Bool`, `value != 0`.
     static func from<T: MfNumeric & BinaryInteger>(_ value: T) -> Self
+    /// Converts a floating point value into this type, truncating toward zero for integer types.
+    /// - Parameters:
+    ///   - value: The value to convert.
+    /// - Returns: The converted value. For `Bool`, `value != 0`.
     static func from<T: MfNumeric & BinaryFloatingPoint>(_ value: T) -> Self
+    /// Converts a binary (`Bool`) value into this type.
+    /// - Parameters:
+    ///   - value: The value to convert.
+    /// - Returns: 1 if `value` is non-zero (`true`), otherwise 0.
     static func from<T: MfBinary>(_ value: T) -> Self
 }
 
+/// A marker for scalar types that are stored as `Float`.
+/// - Note: This is an implementation detail of Matft and may change.
 public protocol StoredFloat: MfTypable{}
+/// A marker for scalar types that are stored as `Double`.
+/// - Note: This is an implementation detail of Matft and may change.
 public protocol StoredDouble: MfTypable{}
 
+/// A marker for signed scalar types (`Int8` ... `Int`, `Float`, `Double`).
 public protocol MfSignedNumeric {}
 
+/// A numeric scalar type that can be an element of an `MfArray` (all integer types, `Float` and `Double`).
 public protocol MfNumeric: Numeric, Strideable{}
+/// A binary scalar type that can be an element of an `MfArray` (`Bool`).
 public protocol MfBinary: Equatable{
+    /// The zero value (`false` for `Bool`).
     static var zero: Self { get }
 }
 
@@ -239,14 +293,38 @@ extension Bool: MfBinary, StoredFloat {
     }
 }
 
+/// A floating point type used to store the elements of an `MfArray` in memory: `Float` or `Double`.
 public protocol MfStorable: MfTypable, FloatingPoint{
+    /// The vDSP split-complex type for this type (`DSPSplitComplex` or `DSPDoubleSplitComplex`).
     associatedtype vDSPComplexType: vDSP_ComplexTypable
+    /// The interleaved complex type for this type (`DSPComplex` or `DSPDoubleComplex`).
     associatedtype blasComplexType: blas_ComplexTypable
-    
+
+    /// Converts an integer into this type.
+    /// - Parameters:
+    ///   - number: The integer to convert.
+    /// - Returns: The converted value.
     static func num(_ number: Int) -> Self
+    /// Converts any numeric `MfTypable` value into this type.
+    /// - Parameters:
+    ///   - value: The value to convert. Integer, `Float` and `Double` values are supported.
+    /// - Returns: The converted value.
+    /// - Note: `Bool` values are not handled by this conversion and cause a runtime error.
     static func from<T: MfTypable>(_ value: T) -> Self
+    /// Parses a string into this type.
+    /// - Parameters:
+    ///   - str: The string to parse.
+    /// - Returns: The parsed value, or `nil` if the string is not a valid number.
     static func from(_ str: String) -> Self?
+    /// Parses a substring into this type.
+    /// - Parameters:
+    ///   - str: The substring to parse.
+    /// - Returns: The parsed value, or `nil` if the substring is not a valid number.
     static func from(_ str: String.SubSequence) -> Self?
+    /// Converts a value of this type into `Int`, truncating toward zero.
+    /// - Parameters:
+    ///   - number: The value to convert.
+    /// - Returns: The converted integer.
     static func toInt(_ number: Self) -> Int
 }
 
@@ -346,13 +424,23 @@ extension Double: MfStorable{
 }
 
 // DSPSplitComplex
+/// A vDSP split-complex type (`DSPSplitComplex` or `DSPDoubleSplitComplex`), which holds separate real and imaginary pointers.
+/// - Note: This is an implementation detail of Matft and may change.
 public protocol vDSP_ComplexTypable{
+    /// The scalar type of each part (`Float` or `Double`).
     associatedtype T: MfStorable
+    /// The corresponding interleaved complex type.
     associatedtype blasType: blas_ComplexTypable
-    
+
+    /// A pointer to the real parts.
     var realp: UnsafeMutablePointer<T> { get set }
+    /// A pointer to the imaginary parts.
     var imagp: UnsafeMutablePointer<T> { get set }
-    
+
+    /// Creates a split-complex pointer pair.
+    /// - Parameters:
+    ///   - realp: A pointer to the real parts.
+    ///   - imagp: A pointer to the imaginary parts.
     init(realp: UnsafeMutablePointer<T>, imagp: UnsafeMutablePointer<T>)
 }
 
@@ -364,12 +452,22 @@ extension DSPDoubleSplitComplex: vDSP_ComplexTypable{
 }
 
 // DSPComplex
+/// An interleaved complex type (`DSPComplex` or `DSPDoubleComplex`) used with BLAS/LAPACK.
+/// - Note: This is an implementation detail of Matft and may change.
 public protocol blas_ComplexTypable{
+    /// The scalar type of each part (`Float` or `Double`).
     associatedtype T: MfStorable
+    /// The corresponding split-complex type.
     associatedtype vDSPType: vDSP_ComplexTypable
-    
+
+    /// The real part.
     var real: T { get set }
+    /// The imaginary part.
     var imag: T { get set }
+    /// Creates a complex value.
+    /// - Parameters:
+    ///   - real: The real part.
+    ///   - imag: The imaginary part.
     init(real: T, imag: T)
 }
 extension DSPComplex: blas_ComplexTypable{

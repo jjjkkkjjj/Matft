@@ -19,9 +19,18 @@ extension Matft.math{//use math_vv_by_vecLib
     // trigonometric
     //
     /**
-       Calculate the sin for all elements
-       - parameters:
-            - mfarray: mfarray
+       Compute the trigonometric sine element-wise.
+
+       Equivalent to `numpy.sin`.
+
+       ```swift
+       let a = Matft.arange(start: 0, to: 15, by: 1, shape: [3, 5], mftype: .Float)
+       let b = Matft.math.sin(a) // element-wise sine, shape [3, 5]
+       ```
+
+       - Parameters:
+            - mfarray: The input array of angles in radians.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`). Complex input is supported and returns a complex array.
     */
     public static func sin(_ mfarray: MfArray) -> MfArray{
         if mfarray.isReal{
@@ -43,9 +52,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the arcsin for all elements
-       - parameters:
-            - mfarray: mfarray
+       Compute the inverse sine element-wise.
+
+       Equivalent to `numpy.arcsin`.
+
+       - Parameters:
+            - mfarray: The input array. Values outside [-1, 1] produce NaN.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func asin(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -62,9 +76,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the hyperbolic sin for all elements
-       - parameters:
-            - mfarray: mfarray
+       Compute the hyperbolic sine element-wise.
+
+       Equivalent to `numpy.sinh`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func sinh(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -81,9 +100,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the archyperbolic sin for all elements
-       - parameters:
-            - mfarray: mfarray
+       Compute the inverse hyperbolic sine element-wise.
+
+       Equivalent to `numpy.arcsinh`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func asinh(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -100,9 +124,13 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the cos for all elements
-       - parameters:
-            - mfarray: mfarray
+       Compute the trigonometric cosine element-wise.
+
+       Equivalent to `numpy.cos`.
+
+       - Parameters:
+            - mfarray: The input array of angles in radians.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`). Complex input is supported and returns a complex array.
     */
     public static func cos(_ mfarray: MfArray) -> MfArray{
         if mfarray.isReal{
@@ -124,9 +152,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the arccos for all elements
-       - parameters:
-            - mfarray: mfarray
+       Compute the inverse cosine element-wise.
+
+       Equivalent to `numpy.arccos`.
+
+       - Parameters:
+            - mfarray: The input array. Values outside [-1, 1] produce NaN.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func acos(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -143,9 +176,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the hyperbolic cos for all elements
-       - parameters:
-            - mfarray: mfarray
+       Compute the hyperbolic cosine element-wise.
+
+       Equivalent to `numpy.cosh`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func cosh(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -162,9 +200,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the arc hyperbolic cos for all elements
-       - parameters:
-            - mfarray: mfarray
+       Compute the inverse hyperbolic cosine element-wise.
+
+       Equivalent to `numpy.arccosh`.
+
+       - Parameters:
+            - mfarray: The input array. Values less than 1 produce NaN.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func acosh(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -181,9 +224,13 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the tan for all elements
-       - parameters:
-            - mfarray: mfarray
+       Compute the trigonometric tangent element-wise.
+
+       Equivalent to `numpy.tan`.
+
+       - Parameters:
+            - mfarray: The input array of angles in radians.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`). Complex input is supported and returns a complex array.
     */
     public static func tan(_ mfarray: MfArray) -> MfArray{
         if mfarray.isReal{
@@ -209,9 +256,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the arctan for all elements
-       - parameters:
-            - mfarray: mfarray
+       Compute the inverse tangent element-wise.
+
+       Equivalent to `numpy.arctan`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func atan(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -228,9 +280,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the hyperbolic tan for all elements
-       - parameters:
-            - mfarray: mfarray
+       Compute the hyperbolic tangent element-wise.
+
+       Equivalent to `numpy.tanh`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func tanh(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -247,9 +304,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the arc hyperbolic tan for all elements
-       - parameters:
-            - mfarray: mfarray
+       Compute the inverse hyperbolic tangent element-wise.
+
+       Equivalent to `numpy.arctanh`.
+
+       - Parameters:
+            - mfarray: The input array. Values outside [-1, 1] produce NaN.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func atanh(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -271,9 +333,14 @@ extension Matft.math{//use math_vv_by_vecLib
     // power
     //
     /**
-       Return the square root of each element
-       - parameters:
-            - mfarray: mfarray
+       Compute the non-negative square root element-wise.
+
+       Equivalent to `numpy.sqrt`.
+
+       - Parameters:
+            - mfarray: The input array. Negative values produce NaN (they are not promoted to complex).
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func sqrt(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -290,9 +357,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Return the reciprocal square root of each element
-       - parameters:
-            - mfarray: mfarray
+       Compute the reciprocal square root, `1 / sqrt(x)`, element-wise.
+
+       Equivalent to `1 / numpy.sqrt(x)`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func rsqrt(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -309,9 +381,13 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the exponetial for all elements
-       - parameters:
-            - mfarray: mfarray
+       Compute the exponential, `e^x`, element-wise.
+
+       Equivalent to `numpy.exp`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`). Complex input is supported and returns a complex array.
     */
     public static func exp(_ mfarray: MfArray) -> MfArray{
         if mfarray.isReal{
@@ -335,9 +411,13 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate 2**x for all elements
-       - parameters:
-            - mfarray: mfarray
+       Compute `2**x` element-wise.
+
+       Equivalent to `numpy.exp2`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise.
     */
     public static func exp2(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -353,9 +433,13 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate exp(x) - 1 for all elements. It's accurate for small x
-       - parameters:
-            - mfarray: mfarray
+       Compute `exp(x) - 1` element-wise, accurately for small `x`.
+
+       Equivalent to `numpy.expm1`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise.
     */
     public static func expm1(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -371,9 +455,13 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate log(1 + x) for all elements. It's accurate for small x
-       - parameters:
-            - mfarray: mfarray
+       Compute `log(1 + x)` element-wise, accurately for small `x`.
+
+       Equivalent to `numpy.log1p`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise.
     */
     public static func log1p(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -389,9 +477,13 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the natural log for all elements. i.e. log_e X
-       - parameters:
-            - mfarray: mfarray
+       Compute the natural logarithm, `log_e(x)`, element-wise.
+
+       Equivalent to `numpy.log`.
+
+       - Parameters:
+            - mfarray: The input array. Negative values produce NaN for real input.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`). Complex input is supported and returns a complex array. For complex input the result is `log|z| + i*arg(z)`.
     */
     public static func log(_ mfarray: MfArray) -> MfArray{
         if mfarray.isReal{
@@ -411,9 +503,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the base 2 log for all elements. i.e. log_2 X
-       - parameters:
-            - mfarray: mfarray
+       Compute the base-2 logarithm, `log_2(x)`, element-wise.
+
+       Equivalent to `numpy.log2`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func log2(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -430,9 +527,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate the base 10 log for all elements. i.e. log_10 X
-       - parameters:
-            - mfarray: mfarray
+       Compute the base-10 logarithm, `log_10(x)`, element-wise.
+
+       Equivalent to `numpy.log10`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func log10(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -454,9 +556,14 @@ extension Matft.math{//use math_vv_by_vecLib
     // approximation
     //
     /**
-       Return the ceiling of each element
-       - parameters:
-            - mfarray: mfarray
+       Return the ceiling of each element, the smallest integer not less than it.
+
+       Equivalent to `numpy.ceil`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func ceil(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -473,9 +580,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Return the floor of each element
-       - parameters:
-            - mfarray: mfarray
+       Return the floor of each element, the largest integer not greater than it.
+
+       Equivalent to `numpy.floor`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func floor(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -492,9 +604,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Return the interfer truncation of each element
-       - parameters:
-            - mfarray: mfarray
+       Truncate each element toward zero, discarding the fractional part.
+
+       Equivalent to `numpy.trunc`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func trunc(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -511,9 +628,16 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Return the nearest interfer of each element
-       - parameters:
-            - mfarray: mfarray
+       Round each element to the nearest integer.
+
+       Equivalent to `numpy.rint`.
+
+       Computed with vForce `vvnint`. The values keep a floating-point type.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func nearest(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -530,9 +654,15 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-          Return the round give by number of decimals of each element
-          - parameters:
-            - decimals: (Optional) Int, default is 0, which is equivelent to nearest
+       Round each element to the given number of decimals.
+
+       Equivalent to `numpy.round`. Implemented as `nearest(mfarray * 10^decimals) / 10^decimals`, where the scaling factor is a `Float`.
+
+       - Parameters:
+            - mfarray: The input array.
+            - decimals: The number of decimal places to round to. Default is 0, which is equivalent to `nearest(_:)`. A negative value rounds to the left of the decimal point.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Precondition: Complex arrays are not supported.
     */
     public static func round(_ mfarray: MfArray, decimals: Int = 0) -> MfArray{
         unsupport_complex(mfarray)
@@ -546,9 +676,13 @@ extension Matft.math{//use math_vv_by_vecLib
     // basic function
     //
     /**
-       Return the absolute value of each element
-       - parameters:
-            - mfarray: mfarray
+       Compute the absolute value element-wise.
+
+       Equivalent to `numpy.abs`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`). Complex input is supported and returns the real magnitude `|z|` (same as `Matft.complex.abs`).
     */
     public static func abs(_ mfarray: MfArray) -> MfArray{
         if mfarray.isReal{
@@ -568,9 +702,16 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Return the reciprocal value of each element
-       - parameters:
-            - mfarray: mfarray
+       Compute the reciprocal, `1 / x`, element-wise.
+
+       Equivalent to `numpy.reciprocal`.
+
+       Unlike Numpy, integer input is not computed with integer division; it is converted to `.Float` first.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func reciprocal(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -590,10 +731,15 @@ extension Matft.math{//use math_vv_by_vecLib
 
 extension Matft.math{//use math_vv_by_vecLib
     /**
-       Calculate power of each element
-       - parameters:
-            - bases: Float
-            - exponents: mfarray
+       Raise a scalar base to the powers given by an array, element-wise.
+
+       Equivalent to `numpy.power(bases, exponents)` with a scalar base.
+
+       - Parameters:
+            - bases: The scalar base.
+            - exponents: The array of exponents.
+       - Returns: A new array with the same shape as `exponents`. For real `exponents` the result is `.Double` if `exponents` is `.Double` and `.Float` otherwise. Complex `exponents` are supported and computed as `exp(exponents * log|bases|)`.
+       - Note: For complex `exponents`, the phase of a negative `bases` is ignored (only `|bases|` is used).
     */
     public static func power(bases: Float, exponents: MfArray) -> MfArray{
         if exponents.isReal{
@@ -605,10 +751,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate power of each element
-       - parameters:
-            - bases: mfarray
-            - exponents: Float
+       Raise each element of an array to a scalar power.
+
+       Equivalent to `numpy.power(bases, exponents)` with a scalar exponent. An exponent of 2 is computed with a fast squaring kernel.
+
+       - Parameters:
+            - bases: The array of bases.
+            - exponents: The scalar exponent.
+       - Returns: A new array with the same shape as `bases`. For real `bases` the result is `.Double` for `.Double` input and `.Float` otherwise. Complex `bases` are supported and computed in polar form.
     */
     public static func power(bases: MfArray, exponents: Float) -> MfArray{
         if bases.isReal{
@@ -623,10 +773,14 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
-       Calculate power of each element
-       - parameters:
-            - base: mfarray
-            - exponents: mfarray
+       Raise the elements of `bases` to the powers in `exponents`, element-wise with broadcasting.
+
+       Equivalent to `numpy.power`.
+
+       - Parameters:
+            - bases: The array of bases.
+            - exponents: The array of exponents. It is broadcast against `bases`.
+       - Returns: A new array with the broadcast shape. For real inputs the result is `.Double` if the promoted type is stored as `Double` and `.Float` otherwise. Complex inputs are supported and computed as `exp(exponents * log(bases))`.
     */
     public static func power(bases: MfArray, exponents: MfArray) -> MfArray{
         let (bases, exponents, rettype, isReal) = biop_broadcast_to(bases, exponents)
@@ -651,10 +805,15 @@ extension Matft.math{//use math_vv_by_vecLib
     }
     
     /**
-       Calculate the arc tangent of x1/x2 choosing the quadrant correctly
-       - parameters:
-            - x1: y coordinates mfarray
-            - x2: x coordinates mfarray
+       Compute the element-wise arc tangent of `x1 / x2`, choosing the quadrant correctly.
+
+       Equivalent to `numpy.arctan2`. The result is in radians, in the range [-pi, pi].
+
+       - Parameters:
+            - x1: The y-coordinates.
+            - x2: The x-coordinates. It is broadcast against `x1`.
+       - Returns: A new array with the broadcast shape. The result is `.Double` if the promoted type is stored as `Double` and `.Float` otherwise.
+       - Precondition: Complex arrays are not supported.
     */
     public static func arctan2(x1: MfArray, x2: MfArray) -> MfArray{
         let (x1, x2, rettype, isReal) = biop_broadcast_to(x1, x2)
@@ -676,9 +835,14 @@ extension Matft.math{//use math_vv_by_vecLib
 
 extension Matft.math{//use vDSP
     /**
-       Calculate squared MfArray
-       - parameters:
-            - mfarray: mfarray
+       Compute the square of each element.
+
+       Equivalent to `numpy.square`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape and the same `mftype` as `mfarray`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func square(_ mfarray: MfArray) -> MfArray{
         unsupport_complex(mfarray)
@@ -692,9 +856,14 @@ extension Matft.math{//use vDSP
     }
     
     /**
-       Calculate signed MfArray
-       - parameters:
-            - mfarray: mfarray
+       Return an element-wise indication of the sign of a number: -1 for negative, 0 for zero and 1 for positive values.
+
+       Equivalent to `numpy.sign`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape and the same `mftype` as `mfarray`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func sign(_ mfarray: MfArray) -> MfArray{
         /*
@@ -729,6 +898,7 @@ extension Matft.math{//use vDSP
 #else
 // WASI fallback: Math operations using pure Swift implementations
 extension Matft.math {
+    /// Compute the trigonometric sine element-wise (WASI fallback; complex input is not supported).
     public static func sin(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -743,6 +913,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the inverse sine element-wise (WASI fallback).
     public static func asin(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -757,6 +928,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the hyperbolic sine element-wise (WASI fallback).
     public static func sinh(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -771,6 +943,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the inverse hyperbolic sine element-wise (WASI fallback).
     public static func asinh(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -785,6 +958,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the trigonometric cosine element-wise (WASI fallback; complex input is not supported).
     public static func cos(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -799,6 +973,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the inverse cosine element-wise (WASI fallback).
     public static func acos(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -813,6 +988,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the hyperbolic cosine element-wise (WASI fallback).
     public static func cosh(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -827,6 +1003,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the inverse hyperbolic cosine element-wise (WASI fallback).
     public static func acosh(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -841,6 +1018,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the trigonometric tangent element-wise (WASI fallback; complex input is not supported).
     public static func tan(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -855,6 +1033,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the inverse tangent element-wise (WASI fallback).
     public static func atan(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -869,6 +1048,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the hyperbolic tangent element-wise (WASI fallback).
     public static func tanh(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -883,6 +1063,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the inverse hyperbolic tangent element-wise (WASI fallback).
     public static func atanh(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -897,6 +1078,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the non-negative square root element-wise (WASI fallback).
     public static func sqrt(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -911,6 +1093,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the reciprocal square root element-wise (WASI fallback).
     public static func rsqrt(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -925,6 +1108,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the exponential element-wise (WASI fallback; complex input is not supported).
     public static func exp(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -939,6 +1123,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute `2^x` element-wise.
     public static func exp2(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -953,6 +1138,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute `exp(x) - 1` element-wise.
     public static func expm1(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -967,6 +1153,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the natural logarithm element-wise (WASI fallback; complex input is not supported).
     public static func log(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -981,6 +1168,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the base-2 logarithm element-wise (WASI fallback).
     public static func log2(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -995,6 +1183,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the base-10 logarithm element-wise (WASI fallback).
     public static func log10(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -1009,6 +1198,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute `log(1 + x)` element-wise.
     public static func log1p(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -1023,6 +1213,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute `x * x` element-wise.
     public static func square(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -1033,6 +1224,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the absolute value element-wise (WASI fallback; complex input is not supported).
     public static func abs(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -1047,6 +1239,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the reciprocal element-wise (WASI fallback).
     public static func reciprocal(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -1057,15 +1250,18 @@ extension Matft.math {
         }
     }
 
+    /// Raise a scalar base to the powers in `exponents` (WASI fallback).
     public static func power(bases: Float, exponents: MfArray) -> MfArray {
         return Matft.math.power(bases: Matft.nums(bases, shape: [1]), exponents: exponents)
     }
 
+    /// Raise each element of `bases` to a scalar power (WASI fallback; complex input is not supported).
     public static func power(bases: MfArray, exponents: Float) -> MfArray {
         unsupport_complex(bases)
         return pows_by_vForce(bases, exponents)
     }
 
+    /// Raise `bases` to the powers in `exponents` with broadcasting (WASI fallback; complex input is not supported).
     public static func power(bases: MfArray, exponents: MfArray) -> MfArray {
         unsupport_complex(bases)
         unsupport_complex(exponents)
@@ -1078,6 +1274,7 @@ extension Matft.math {
         }
     }
 
+    /// Compute the element-wise arc tangent of `x1 / x2` choosing the quadrant correctly (WASI fallback).
     public static func arctan2(x1 mfarrayY: MfArray, x2 mfarrayX: MfArray) -> MfArray {
         // arctan2 not in our vForce fallback, use element-wise atan2
         unsupport_complex(mfarrayY)
@@ -1114,6 +1311,7 @@ extension Matft.math {
         }
     }
 
+    /// Return the floor of each element (WASI fallback).
     public static func floor(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -1128,6 +1326,7 @@ extension Matft.math {
         }
     }
 
+    /// Return the ceiling of each element (WASI fallback).
     public static func ceil(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -1142,6 +1341,7 @@ extension Matft.math {
         }
     }
 
+    /// Round each element to the given number of decimals (WASI fallback).
     public static func round(_ mfarray: MfArray, decimals: Int = 0) -> MfArray {
         unsupport_complex(mfarray)
         if decimals == 0 {
@@ -1172,6 +1372,7 @@ extension Matft.math {
         }
     }
 
+    /// Truncate each element toward zero (WASI fallback).
     public static func trunc(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -1186,10 +1387,12 @@ extension Matft.math {
         }
     }
 
+    /// Round each element to the nearest integer (WASI fallback).
     public static func nearest(_ mfarray: MfArray) -> MfArray {
         return Matft.math.round(mfarray)
     }
 
+    /// Return the sign (-1, 0 or 1) of each element (WASI fallback).
     public static func sign(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -1204,30 +1407,42 @@ extension Matft.math {
 
 extension Matft.math{
     /**
-       Test element-wise for NaN. Same as `np.isnan`
-       - parameters:
-            - mfarray: mfarray
-       - Returns: Bool mfarray
+       Test element-wise for NaN.
+
+       Equivalent to `numpy.isnan`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A `.Bool` array with the same shape as `mfarray`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func isnan(_ mfarray: MfArray) -> MfArray{
         return _bool_map(mfarray, { $0.isNaN }, { $0.isNaN })
     }
 
     /**
-       Test element-wise for positive or negative infinity. Same as `np.isinf`
-       - parameters:
-            - mfarray: mfarray
-       - Returns: Bool mfarray
+       Test element-wise for positive or negative infinity.
+
+       Equivalent to `numpy.isinf`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A `.Bool` array with the same shape as `mfarray`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func isinf(_ mfarray: MfArray) -> MfArray{
         return _bool_map(mfarray, { $0.isInfinite }, { $0.isInfinite })
     }
 
     /**
-       Test element-wise for finiteness (not infinity and not NaN). Same as `np.isfinite`
-       - parameters:
-            - mfarray: mfarray
-       - Returns: Bool mfarray
+       Test element-wise for finiteness (neither infinity nor NaN).
+
+       Equivalent to `numpy.isfinite`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A `.Bool` array with the same shape as `mfarray`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func isfinite(_ mfarray: MfArray) -> MfArray{
         return _bool_map(mfarray, { $0.isFinite }, { $0.isFinite })

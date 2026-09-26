@@ -13,6 +13,14 @@ internal enum MfDataSource{
     case mlshapedarray
 }
 
+/// The raw storage of an `MfArray`.
+///
+/// `MfData` owns (or references) the contiguous memory buffer holding the elements.
+/// Every `MfType` is stored as either `Float` or `Double` (see `MfType.storedType(_:)`);
+/// complex arrays keep a second buffer for the imaginary part.
+/// Several `MfArray` views can share the same `MfData`.
+///
+/// - Note: You rarely need to use `MfData` directly; create arrays with `MfArray` initializers instead.
 public class MfData: MfDataProtocol{
     internal var _base: MfDataBasable? // must be referenced because refdata could be freed automatically?
     internal var _fromOtherDataSource: Bool = false
@@ -38,10 +46,10 @@ public class MfData: MfDataProtocol{
     internal var offset: Int
 
     
-    /// Initialization from flatten array. Allocate memories with stored type's size, which will store a given flatten array
+    /// Creates real data by allocating a new buffer of the stored type and copying a flattened array into it.
     /// - Parameters:
-    ///     - flattenArray: An input flatten array
-    ///     - mftype: Type
+    ///     - flattenArray: A flattened array of scalars. Each element is converted to the stored type of `mftype`.
+    ///     - mftype: The logical type of the data. When `.Bool`, non-zero values are stored as 1.
     public init(flattenArray: inout [Any], mftype: MfType){
         switch MfType.storedType(mftype){
         case .Float:
@@ -56,11 +64,12 @@ public class MfData: MfDataProtocol{
         self.offset = 0
     }
     
-    /// Initialization from flatten array. Allocate memories with stored type's size, which will store a given flatten array
+    /// Creates complex data by allocating new real and imaginary buffers and copying the flattened arrays into them.
     /// - Parameters:
-    ///     - flatten_realArray: An input flatten real array
-    ///     - flatten_imagArray: An input flatten imag array
-    ///     - mftype: Type
+    ///     - flatten_realArray: A flattened array of the real parts.
+    ///     - flatten_imagArray: A flattened array of the imaginary parts. Must have the same count as `flatten_realArray`.
+    ///     - mftype: The logical type of the data.
+    /// - Precondition: `flatten_realArray.count == flatten_imagArray.count`.
     public init(flatten_realArray: inout [Any], flatten_imagArray: inout [Any], mftype: MfType){
         precondition(flatten_realArray.count == flatten_imagArray.count, "Unsame flatten array between real: \(flatten_realArray.count) and imag: \(flatten_imagArray.count)")
         switch MfType.storedType(mftype){
@@ -78,14 +87,16 @@ public class MfData: MfDataProtocol{
         self.offset = 0
     }
     
-    /// Pass a pointer directly.
+    /// Creates data from raw pointers, either sharing or copying the memory.
     /// - Parameters:
-    ///    - source: A source data. If the source is nil, COPY it, otherwise, SHARE it.
-    ///    - data_real_ptr: A real data pointer
-    ///    - data_imag_ptr: A imag data pointer
-    ///    - storedSize: A size
-    ///    - mftype: Type
-    /// - Important: The given dataptr will NOT be freed in SHARE mode. So don't forget to free manually.
+    ///    - source: The object that owns the memory. If `nil`, the pointed memory is COPIED into a newly allocated buffer;
+    ///      otherwise the pointers are SHARED and `source` is retained to keep the memory alive.
+    ///    - data_real_ptr: A pointer to the real part, laid out as the stored type of `mftype` (`Float` or `Double`).
+    ///    - data_imag_ptr: A pointer to the imaginary part, or `nil` for real data.
+    ///    - storedSize: The number of stored elements.
+    ///    - mftype: The logical type of the data.
+    ///    - offset: The element offset of the first element within the buffer.
+    /// - Important: The given pointers will NOT be freed in SHARE mode. So don't forget to free them manually.
     public init(source: MfDataBasable?, data_real_ptr: UnsafeMutableRawPointer, data_imag_ptr: UnsafeMutableRawPointer? = nil, storedSize: Int, mftype: MfType, offset: Int){
         self._base = source
         self._fromOtherDataSource = source != nil
@@ -132,10 +143,11 @@ public class MfData: MfDataProtocol{
     internal static var _poisonUninitialized = false
     #endif
     
-    /// Create a zero padded MfData
+    /// Creates zero-filled data.
     /// - Parameters:
-    ///    - size: A size
-    ///    - mftype: Type
+    ///    - size: The number of stored elements.
+    ///    - mftype: The logical type of the data.
+    ///    - complex: Whether to also allocate a (zero-filled) imaginary buffer. Defaults to `false`.
     public convenience init(size: Int, mftype: MfType, complex: Bool = false){
         self.init(size: size, mftype: mftype, complex: complex, zeroed: true)
     }
@@ -169,10 +181,10 @@ public class MfData: MfDataProtocol{
         self.offset = 0
     }
     
-    /// Create a MfData with VIEW based on base mfdata
+    /// Creates a view that shares the buffers of another `MfData`.
     /// - Parameters:
-    ///   - refdata: The base mfdata
-    ///   - offset: The offset value from base's data
+    ///   - refdata: The base data whose memory is shared.
+    ///   - offset: The element offset from the start of the base's buffer.
     public init(refdata: MfData, offset: Int){
         self._base = refdata
         self.data_real = refdata.data_real
@@ -182,11 +194,15 @@ public class MfData: MfDataProtocol{
         self.offset = offset
     }
     
-    /// Create a MfData with VIEW based on base mfdata
+    /// Creates complex data by COPYING the real parts from one `MfData` and the imaginary parts from another.
+    ///
+    /// Despite the `ref_` labels, the result does not share memory: new buffers are allocated and
+    /// the whole stored data (`storedSize` elements from the beginning) of each source is copied.
     /// - Parameters:
-    ///   - ref_realdata: The base real mfdata
-    ///   - ref_imagdata: The base imag mfdata
-    ///   - offset: The offset value from base's data
+    ///   - ref_realdata: The data providing the real parts (its real buffer is used).
+    ///   - ref_imagdata: The data providing the imaginary parts (its real buffer is used).
+    ///   - offset: The offset of the result, usually `ref_realdata.offset`.
+    /// - Precondition: Both sources must have the same stored size, offset and `mftype` (checked only in debug builds).
     public init(ref_realdata: MfData, ref_imagdata: MfData, offset: Int) {
         assert(ref_realdata.storedSize == ref_imagdata.storedSize, "Must have same size!")
         assert(ref_realdata.offset == ref_imagdata.offset, "Must have same offset!")
@@ -264,9 +280,9 @@ internal func flatten_array(ptr: UnsafeBufferPointer<Any>, mforder: MfOrder) -> 
     }
 }
 
-/// Get a flatten array with row majar order from a given structured array. This function is using breadth-first search which is a recurrsive function
+/// Get a flatten array with row major order from a given structured array. This function is using breadth-first search which is a recursive function
 /// - Parameters:
-///   - queue: An input strucrured array
+///   - queue: An input structured array
 ///   - shape: An input-output shape. Input must be [queue.count], and final output is proper shape
 /// - Returns: flatten array with row major order
 fileprivate func _get_flatten_row_major(queue: inout [Any], shape: inout [Int]) -> [Any]{
@@ -310,9 +326,9 @@ fileprivate func _get_flatten_row_major(queue: inout [Any], shape: inout [Int]) 
     return Array(queue[head...])
 }
 
-/// Get a flatten array with column majar order from a given structured array. This function is a recurrsive function
+/// Get a flatten array with column major order from a given structured array. This function is a recursive function
 /// - Parameters:
-///   - queue: An input strucrured array
+///   - queue: An input structured array
 ///   - shape: An input-output shape. Input must be [queue.count], and final output is proper shape
 /// - Returns: flatten array with column major order
 fileprivate func _get_flatten_column_major(queue: inout [Any], shape: inout [Int]) -> [Any]{

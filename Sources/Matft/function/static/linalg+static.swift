@@ -13,39 +13,23 @@ import Accelerate
 
 extension Matft.linalg{
     /**
-        Solve N simultaneous equation. Get x in coef*x = b. Returned mfarray's type will be float but be double in case that  mftype of either coef or b is double.
-        - parameters:
-            - coef: Coefficients MfArray for N simultaneous equation
-            - b: Biases MfArray for N simultaneous equation
-        - throws:
-        An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
-     
-            /*
-            //must be flatten....?
-            let a = MfArray([[4, 2],
-                            [4, 5]])
-            let b = MfArray([[2, -7]])
-            let x = try! Matft.linalg.solve(a, b: b)
-            print(x)
-            ==> mfarray =
-                [[    2.0,        -3.0]], type=Float, shape=[1, 2]
-     
-            
-            //numpy
-            >>> a = np.array([[4,2],[4,5]])
-            >>> b = np.array([2,-7])
-            >>> np.linalg.solve(a,b)
-            array([ 2., -3.])
-            >>> np.linalg.solve(a,b.T)
-            array([ 2., -3.])
-            >>> b = np.array([[2,-7]])
-            >>> np.linalg.solve(a,b.T)
-            array([[ 2.],
-                   [-3.]])
+       Solve a linear matrix equation `coef * x = b` for `x`.
 
-                
-            */
-     */
+       Equivalent to `numpy.linalg.solve`. Solved with LAPACK `gesv` (LU decomposition with partial pivoting).
+
+       ```swift
+       let coef = MfArray([[3, 2], [1, 2]])
+       let b = MfArray([7, 1])
+       let x = try Matft.linalg.solve(coef, b: b) // MfArray([3.0, -1.0], mftype: .Float)
+       ```
+
+       - Parameters:
+            - coef: The square coefficient matrix of shape `(M, M)`.
+            - b: The ordinate values of shape `(M,)` or `(M, K)`.
+       - Returns: The solution `x` with the same shape as `b`. It is `.Double` if either `coef` or `b` is stored as `Double`, and `.Float` otherwise.
+       - Throws: `MfError.LinAlgError.factorizationError` if LAPACK reports an illegal argument, or `MfError.LinAlgError.singularMatrix` if the matrix is exactly singular.
+       - Precondition: `coef` must be 2-d and square, `b` must be 1-d or 2-d with `b.shape[0] == M`. Complex arrays are not supported. Unlike Numpy, stacked (batched) `coef` is not supported.
+    */
     public static func solve(_ coef: MfArray, b: MfArray) throws -> MfArray{
         unsupport_complex(coef)
         unsupport_complex(b)
@@ -62,11 +46,20 @@ extension Matft.linalg{
     }
     
     /**
-       Get last 2 dim's NxN mfarray's inverse. Returned mfarray's type will be float but be double in case that mftype of mfarray is double.
-       - parameters:
-           - mfarray: mfarray
-       - throws:
-       An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+       Compute the inverse of a square matrix, or of each matrix in a stack.
+
+       Equivalent to `numpy.linalg.inv`. The inverse is taken over the last two dimensions (LAPACK `getrf` + `getri`).
+
+       ```swift
+       let a = MfArray([[1, 2], [3, 4]])
+       let ainv = try Matft.linalg.inv(a) // MfArray([[-2.0, 1.0], [1.5, -0.5]], mftype: .Float)
+       ```
+
+       - Parameters:
+            - mfarray: The array of shape `(..., M, M)`.
+       - Returns: The inverse with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Throws: `MfError.LinAlgError.factorizationError` if LAPACK reports an illegal argument, or `MfError.LinAlgError.singularMatrix` if the matrix is exactly singular.
+       - Precondition: `mfarray` must be at least 2-d and its last two dimensions must be square. Complex arrays are not supported.
     */
     public static func inv(_ mfarray: MfArray) throws -> MfArray{
         unsupport_complex(mfarray)
@@ -81,11 +74,16 @@ extension Matft.linalg{
     }
     
     /**
-       Get last 2 dim's NxN mfarray's determinant.
-       - parameters:
-           - mfarray: mfarray
-       - throws:
-       An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+       Compute the determinant of a square matrix, or of each matrix in a stack.
+
+       Equivalent to `numpy.linalg.det`. The determinant is computed from the LU decomposition (LAPACK `getrf`) of the last two dimensions.
+
+       - Parameters:
+            - mfarray: The array of shape `(..., M, M)`.
+       - Returns: The determinants with shape `(...)`, or `[1]` for a single 2-d matrix. The result keeps the `mftype` of `mfarray`; the values are computed in `Float` (`Double` for `.Double` input).
+       - Throws: `MfError.LinAlgError.factorizationError` if LAPACK reports an illegal argument, or `MfError.LinAlgError.singularMatrix` if the matrix is exactly singular.
+       - Precondition: `mfarray` must be at least 2-d and its last two dimensions must be square. Complex arrays are not supported.
+       - Note: Unlike Numpy, which returns 0, an exactly singular matrix throws `MfError.LinAlgError.singularMatrix`.
     */
     public static func det(_ mfarray: MfArray) throws -> MfArray{
         unsupport_complex(mfarray)
@@ -100,8 +98,8 @@ extension Matft.linalg{
 
     }
     
-    /**
-        Get eigenvelues with real only. if eigenvalues contain imaginary part, raise `MfError.LinAlgError.foundComplex`. Returned mfarray's type will be converted properly.
+    /* (documentation of the disabled eigen_real below)
+        Get eigenvalues with real only. if eigenvalues contain imaginary part, raise `MfError.LinAlgError.foundComplex`. Returned mfarray's type will be converted properly.
         - parameters:
             - mfarray: mfarray
         - throws:
@@ -124,11 +122,18 @@ extension Matft.linalg{
     }*/
     
     /**
-       Get eigenvelues of passed mfarray. Returned mfarray's type will be converted properly.
-       - parameters:
-           - mfarray: mfarray
-       - throws:
-       An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge`
+       Compute the eigenvalues and the left and right eigenvectors of a square matrix, or of each matrix in a stack.
+
+       Similar to `numpy.linalg.eig` (LAPACK `geev`), but the real and imaginary parts are returned as separate real arrays, and the left eigenvectors are also returned.
+
+       - Parameters:
+            - mfarray: The array of shape `(..., M, M)`.
+       - Returns: A tuple of real arrays (`.Double` for `.Double` input and `.Float` otherwise):
+            - `valRe`, `valIm`: The real and imaginary parts of the eigenvalues, shape `(..., M)`.
+            - `lvecRe`, `lvecIm`: The real and imaginary parts of the left eigenvectors, shape `(..., M, M)`.
+            - `rvecRe`, `rvecIm`: The real and imaginary parts of the right eigenvectors, shape `(..., M, M)`. The column `[:, i]` corresponds to the eigenvalue `i`, as in Numpy.
+       - Throws: `MfError.LinAlgError.factorizationError` if LAPACK reports an illegal argument, or `MfError.LinAlgError.notConverge` if the decomposition does not converge.
+       - Precondition: `mfarray` must be at least 2-d and its last two dimensions must be square. Complex arrays are not supported.
     */
     public static func eigen(_ mfarray: MfArray) throws -> (valRe: MfArray, valIm: MfArray, lvecRe: MfArray, lvecIm: MfArray, rvecRe: MfArray, rvecIm: MfArray){
         unsupport_complex(mfarray)
@@ -144,12 +149,25 @@ extension Matft.linalg{
     }
     
     /**
-       Do singular value decomposition of passed mfarray. Returned mfarray's type will be converted properly.
-       - parameters:
-           - mfarray: mfarray
-           - full_matrices: Bool, if true returned v and rt have the shapes (..., M, M) and (..., N, N) respectively. Otherwise, the shapes are (..., M, K) and (..., K, N), respectively, where K = min(M, N).
-       - throws:
-       An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge`
+       Compute the singular value decomposition `mfarray = v * diag(s) * rt`.
+
+       Equivalent to `numpy.linalg.svd` (LAPACK `gesdd`). Note the naming: the returned `v` is Numpy's `U` (the left singular vectors) and `rt` is Numpy's `Vh`.
+
+       ```swift
+       let a = MfArray([[1, 2],
+                        [3, 4]])
+       let ret = try Matft.linalg.svd(a)
+       // ret.v  == MfArray([[-0.40455358, -0.9145143 ], [-0.9145143 , 0.40455358]], mftype: .Float)
+       // ret.s  == MfArray([ 5.4649857 , 0.36596619], mftype: .Float)
+       // ret.rt == MfArray([[-0.57604844, -0.81741556], [ 0.81741556, -0.57604844]], mftype: .Float)
+       ```
+
+       - Parameters:
+            - mfarray: The array of shape `(..., M, N)`.
+            - full_matrices: If `true` (default), `v` and `rt` have the shapes `(..., M, M)` and `(..., N, N)`. Otherwise, the shapes are `(..., M, K)` and `(..., K, N)`, where `K = min(M, N)`.
+       - Returns: A tuple of `v` (left singular vectors), `s` (singular values in descending order, shape `(..., K)`) and `rt` (right singular vectors, transposed). The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Throws: `MfError.LinAlgError.factorizationError` if LAPACK reports an illegal argument, or `MfError.LinAlgError.notConverge` if the decomposition does not converge.
+       - Precondition: `mfarray` must be at least 2-d. Complex arrays are not supported.
     */
     public static func svd(_ mfarray: MfArray, full_matrices: Bool = true) throws -> (v: MfArray, s: MfArray, rt: MfArray){
         unsupport_complex(mfarray)
@@ -164,11 +182,17 @@ extension Matft.linalg{
     }
     
     /**
-       Get last 2 dim's MxN mfarray's pseudo-inverse. Returned mfarray's type will be float but be double in case that mftype of mfarray is double.
-       - parameters:
-           - mfarray: mfarray
-       - throws:
-       An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.singularMatrix`
+       Compute the (Moore-Penrose) pseudo-inverse of a matrix.
+
+       Equivalent to `numpy.linalg.pinv`. It is computed from the SVD, and singular values not larger than `rcond * max(s)` are treated as zero.
+
+       - Parameters:
+            - mfarray: The matrix of shape `(M, N)`.
+            - rcond: The cutoff ratio for small singular values. Default is `1e-15`.
+       - Returns: The pseudo-inverse of shape `(N, M)`. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Throws: `MfError.LinAlgError.factorizationError` if LAPACK reports an illegal argument, or `MfError.LinAlgError.notConverge` if the decomposition does not converge.
+       - Precondition: `mfarray` must be at least 2-d. Complex arrays are not supported.
+       - Note: The cutoff and the reciprocal singular values are computed over all singular values at once, so only a single 2-d matrix is handled correctly; stacked matrices are not supported like in Numpy.
     */
     public static func pinv(_ mfarray: MfArray, rcond: Float = 1e-15) throws -> MfArray{
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
@@ -198,11 +222,16 @@ extension Matft.linalg{
     }
     
     /**
-       Do left polar decomposition of passed mfarray. Returned mfarray's type will be converted properly.
-       - parameters:
-           - mfarray: mfarray
-       - throws:
-       An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge`
+       Compute the left polar decomposition `mfarray = p * l` of a square matrix.
+
+       Similar to `scipy.linalg.polar(a, side="left")`, but the factors are returned in the order `(p, l)`. It is computed from the SVD `a = U S Vh` as `p = U S U^T` and `l = U Vh`.
+
+       - Parameters:
+            - mfarray: The square matrix of shape `(M, M)`.
+       - Returns: A tuple of `p` (the symmetric positive semi-definite factor) and `l` (the orthogonal factor). The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Throws: `MfError.LinAlgError.factorizationError` if LAPACK reports an illegal argument, or `MfError.LinAlgError.notConverge` if the decomposition does not converge.
+       - Precondition: `mfarray` must be at least 2-d and its last two dimensions must be square. Complex arrays are not supported.
+       - Note: The transposes use `.T`, which reverses all axes, so only 2-d input is handled correctly.
     */
     public static func polar_left(_ mfarray: MfArray) throws -> (p: MfArray, l: MfArray){
         let shape = mfarray.shape
@@ -221,11 +250,16 @@ extension Matft.linalg{
         return (p, l)
     }
     /**
-       Do right polar decomposition of passed mfarray. Returned mfarray's type will be converted properly.
-       - parameters:
-           - mfarray: mfarray
-       - throws:
-       An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge`
+       Compute the right polar decomposition `mfarray = u * p` of a square matrix.
+
+       Equivalent to `scipy.linalg.polar(a, side="right")`. It is computed from the SVD `a = U S Vh` as `u = U Vh` and `p = Vh^T S Vh`.
+
+       - Parameters:
+            - mfarray: The square matrix of shape `(M, M)`.
+       - Returns: A tuple of `u` (the orthogonal factor) and `p` (the symmetric positive semi-definite factor). The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Throws: `MfError.LinAlgError.factorizationError` if LAPACK reports an illegal argument, or `MfError.LinAlgError.notConverge` if the decomposition does not converge.
+       - Precondition: `mfarray` must be at least 2-d and its last two dimensions must be square. Complex arrays are not supported.
+       - Note: The transposes use `.T`, which reverses all axes, so only 2-d input is handled correctly.
     */
     public static func polar_right(_ mfarray: MfArray) throws -> (u: MfArray, p: MfArray){
         let shape = mfarray.shape
@@ -245,12 +279,17 @@ extension Matft.linalg{
     
     
     /**
-       Calculate lp norm along given axis. Note that ord = Float.infinity and -Float.infinity are also available.
-       - parameters:
-            - mfarray: mfarray
-            - ord: (Optional) Order of the norm
-            - axis: (Optional) axis, if not given, get mean for all elements
-            - keepDims: (Optional) whether to keep original dimension, default is true
+       Compute the vector p-norm along the given axis.
+
+       Equivalent to `numpy.linalg.norm(x, ord, axis)` for vectors: `sum(|x|^ord)^(1/ord)`. `ord = Float.infinity` gives `max(|x|)`, `ord = -Float.infinity` gives `min(|x|)` and `ord = 0` counts the non-zero elements.
+
+       - Parameters:
+            - mfarray: The input array.
+            - ord: The order of the norm. Default is 2 (Euclidean norm).
+            - axis: The axis along which to compute the norm. Default is -1 (the last axis). Unlike Numpy, `nil` (all elements) is not accepted.
+            - keepDims: If `true`, the reduced axis is kept with size 1. Default is `false`.
+       - Returns: The norm. The result is `.Double` for `.Double` input and `.Float` otherwise. For `ord = 0`, the count has the same `mftype` as `mfarray`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func normlp_vec(_ mfarray: MfArray, ord: Float = 2, axis: Int = -1, keepDims: Bool = false) -> MfArray{
         /*
@@ -278,9 +317,24 @@ extension Matft.linalg{
     }
     
     /**
-       Calculate norm for matrix. When ord is 2, same as frobenius norm.
-       - parameters:
-           - mfarray: mfarray
+       Compute a matrix norm over the two given axes.
+
+       Equivalent to `numpy.linalg.norm(x, ord, axis=(row, col))` for matrices. The supported orders are
+       - `2`: the largest singular value (spectral norm),
+       - `-2`: the smallest singular value,
+       - `1` / `-1`: the maximum / minimum absolute sum along `row`,
+       - `Float.infinity` / `-Float.infinity`: the maximum / minimum absolute sum along `col`.
+
+       Use `normfro_mat(_:axes:keepDims:)` for the Frobenius norm and `normnuc_mat(_:axes:keepDims:)` for the nuclear norm.
+
+       - Parameters:
+            - mfarray: The input array with at least 2 dimensions.
+            - ord: The order of the norm. Default is 2. `nil` computes the Frobenius norm like Numpy.
+            - axes: The `(row, col)` axes that hold the matrices. Default is `(-2, -1)` like Numpy.
+            - keepDims: If `true`, the two reduced axes are kept with size 1. Default is `false`.
+       - Returns: The norms with the two axes removed. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Precondition: `axes.row` and `axes.col` must differ, and `ord` must be one of the supported values. Complex arrays are not supported.
+       - Note: `axes` is `(row, col)`, where `row` is the axis reduced first for `ord = 1 / -1` and `col` is reduced first for `ord = inf / -inf`, matching Numpy's `axis=(row, col)`.
     */
     public static func normlp_mat(_ mfarray: MfArray, ord: Float? = 2, axes: (row: Int, col: Int) = (-2, -1), keepDims: Bool = false) -> MfArray{
         // ord=None is the frobenius norm like numpy
@@ -338,9 +392,16 @@ extension Matft.linalg{
     }
     
     /**
-       Calculate frobenius norm for matrix.
-       - parameters:
-           - mfarray: mfarray
+       Compute the Frobenius norm of matrices over the two given axes.
+
+       Equivalent to `numpy.linalg.norm(x, "fro", axis=(row, col))`, i.e. `sqrt(sum(|x|^2))` over the two axes.
+
+       - Parameters:
+            - mfarray: The input array with at least 2 dimensions.
+            - axes: The `(row, col)` axes that hold the matrices. Default is `(-2, -1)`; the result does not depend on the order.
+            - keepDims: If `true`, the two reduced axes are kept with size 1. Default is `false`.
+       - Returns: The norms with the two axes removed. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Precondition: `axes.row` and `axes.col` must differ. Complex arrays are not supported.
     */
     public static func normfro_mat(_ mfarray: MfArray, axes: (row: Int, col: Int) = (-2, -1), keepDims: Bool = false) -> MfArray{
         let axes: (row: Int, col: Int) = (get_positive_axis(axes.row, ndim: mfarray.ndim), get_positive_axis(axes.col, ndim: mfarray.ndim))
@@ -363,9 +424,16 @@ extension Matft.linalg{
     }
     
     /**
-       Calculate nuclear norm for matrix.
-       - parameters:
-           - mfarray: mfarray
+       Compute the nuclear norm (the sum of the singular values) of matrices over the two given axes.
+
+       Equivalent to `numpy.linalg.norm(x, "nuc", axis=(row, col))`.
+
+       - Parameters:
+            - mfarray: The input array with at least 2 dimensions.
+            - axes: The `(row, col)` axes that hold the matrices. Default is `(-2, -1)`; the result does not depend on the order.
+            - keepDims: If `true`, the two reduced axes are kept with size 1. Default is `false`.
+       - Returns: The norms with the two axes removed. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Precondition: `axes.row` and `axes.col` must differ. Complex arrays are not supported.
     */
     public static func normnuc_mat(_ mfarray: MfArray, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray{
         var axes: (row: Int, col: Int) = (get_positive_axis(axes.row, ndim: mfarray.ndim), get_positive_axis(axes.col, ndim: mfarray.ndim))

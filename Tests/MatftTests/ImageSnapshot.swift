@@ -2,7 +2,6 @@
 import Foundation
 import CoreGraphics
 import ImageIO
-import UniformTypeIdentifiers
 
 @testable import Matft
 
@@ -57,7 +56,8 @@ enum ImageSnapshot {
         let dir = imagesDir.appendingPathComponent("matft")
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         let url = dir.appendingPathComponent("\(name).png")
-        guard let dest = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) else {
+        // "public.png" is UTType.png.identifier, which needs iOS 14
+        guard let dest = CGImageDestinationCreateWithURL(url as CFURL, "public.png" as CFString, 1, nil) else {
             preconditionFailure("Couldn't create PNG destination: \(url.path)")
         }
         CGImageDestinationAddImage(dest, rendered, nil)

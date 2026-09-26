@@ -9,18 +9,21 @@ import Foundation
 
 extension Matft.linalg{
     /**
-       Return the least-squares solution to a linear matrix equation. Same as `np.linalg.lstsq` (SVD based)
-       - parameters:
-            - a: The coefficient matrix (M, N)
-            - b: The ordinate values (M,) or (M, K)
-            - rcond: (Optional) Cut-off ratio for small singular values. By default, the machine precision times max(M, N)
-       - Returns:
-            - x: The least-squares solution (N,) or (N, K). The minimum norm solution for the rank deficient matrix
-            - residuals: The sums of squared residuals (1,) or (K,). Empty if rank < N or M <= N
-            - rank: The rank of a
-            - s: The singular values of a
-       - Note: Float for Float and integer types, Double for Double
-       - throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge`
+       Return the least-squares solution to a linear matrix equation `a * x = b`.
+
+       Equivalent to `numpy.linalg.lstsq` (SVD based). The returned tuple has the same order as Numpy's.
+
+       - Parameters:
+            - a: The coefficient matrix of shape `(M, N)`.
+            - b: The ordinate values of shape `(M,)` or `(M, K)`.
+            - rcond: The cutoff ratio for small singular values: singular values not larger than `rcond * max(s)` are treated as zero. If `nil` (default), the machine epsilon (of `Float`, or `Double` if either input is `.Double`) times `max(M, N)` is used.
+       - Returns: A tuple of the following values. The arrays are `.Double` if either `a` or `b` is stored as `Double` and `.Float` otherwise (the computation itself is done in `Double`):
+            - `x`: The least-squares solution of shape `(N,)` or `(N, K)`. For a rank-deficient `a`, the minimum-norm solution.
+            - `residuals`: The sums of squared residuals of shape `(1,)` or `(K,)`. Empty if `rank < N` or `M <= N`.
+            - `rank`: The effective rank of `a`.
+            - `s`: The singular values of `a`.
+       - Throws: `MfError.LinAlgError.factorizationError` or `MfError.LinAlgError.notConverge` if the underlying SVD fails.
+       - Precondition: `a` must be 2-d, `b` must be 1-d or 2-d, and `a.shape[0] == b.shape[0]`. Complex arrays are not supported.
     */
     public static func lstsq(_ a: MfArray, _ b: MfArray, rcond: Double? = nil) throws -> (x: MfArray, residuals: MfArray, rank: Int, s: MfArray){
         precondition(a.ndim == 2, "a must be 2d")
@@ -57,12 +60,16 @@ extension Matft.linalg{
     }
 
     /**
-       Return the rank of the matrix using SVD. Same as `np.linalg.matrix_rank`
-       - parameters:
-            - a: The 1d or 2d mfarray
-            - tol: (Optional) The threshold below which the singular values are considered as zero. By default, S.max() * max(M, N) * eps
-       - Returns: The rank
-       - throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge`
+       Return the rank of a matrix computed from its singular values.
+
+       Equivalent to `numpy.linalg.matrix_rank`.
+
+       - Parameters:
+            - a: A 1-d or 2-d array. A 1-d array has rank 1 unless all its elements are zero.
+            - tol: The threshold below which singular values are considered zero. If `nil` (default), `max(s) * max(M, N) * eps` is used, where `eps` is the machine epsilon of `Float` (`Double` for `.Double` input).
+       - Returns: The rank of `a`.
+       - Throws: `MfError.LinAlgError.factorizationError` or `MfError.LinAlgError.notConverge` if the underlying SVD fails.
+       - Precondition: `a` must be 1-d or 2-d. Complex arrays are not supported.
     */
     public static func matrix_rank(_ a: MfArray, tol: Double? = nil) throws -> Int{
         precondition(a.ndim == 1 || a.ndim == 2, "a must be 1d or 2d")
@@ -79,13 +86,17 @@ extension Matft.linalg{
 
 extension Matft{
     /**
-       Least squares polynomial fit. Same as `np.polyfit`
-       - parameters:
-            - x: The 1d x-coordinates
-            - y: The y-coordinates (M,) or (M, K)
-            - deg: The degree of the polynomial
-       - Returns: The polynomial coefficients, highest power first. (deg + 1,) or (deg + 1, K)
-       - throws: An error of type `MfError.LinAlg.FactorizationError` and `MfError.LinAlgError.notConverge`
+       Fit a polynomial of the given degree to points `(x, y)` by least squares.
+
+       Equivalent to `numpy.polyfit` (without the optional outputs). As in Numpy, the columns of the Vandermonde matrix are scaled to improve the condition number.
+
+       - Parameters:
+            - x: The 1-d, non-empty x-coordinates of the sample points.
+            - y: The y-coordinates of shape `(M,)`, or `(M, K)` to fit `K` data sets at once.
+            - deg: The degree of the polynomial (at least 0).
+       - Returns: The polynomial coefficients, highest power first, of shape `(deg + 1,)` or `(deg + 1, K)`. The result is `.Double` if either input is stored as `Double`, and `.Float` otherwise.
+       - Throws: `MfError.LinAlgError.factorizationError` or `MfError.LinAlgError.notConverge` if the underlying SVD fails.
+       - Precondition: `deg >= 0`, `x` must be 1-d and non-empty, and `y.shape[0]` must equal the size of `x`.
     */
     public static func polyfit(_ x: MfArray, _ y: MfArray, deg: Int) throws -> MfArray{
         precondition(deg >= 0, "expected deg >= 0")
@@ -125,11 +136,15 @@ extension Matft{
     }
 
     /**
-       Evaluate the polynomial at the values. Same as `np.polyval`
-       - parameters:
-            - p: The 1d polynomial coefficients, highest power first
-            - x: The values
-       - Returns: The values of the polynomial with the same shape as x
+       Evaluate a polynomial at the given values.
+
+       Equivalent to `numpy.polyval`. It is computed with Horner's method in `Double`.
+
+       - Parameters:
+            - p: The 1-d polynomial coefficients, highest power first.
+            - x: The values at which to evaluate the polynomial. Any shape.
+       - Returns: The values of the polynomial with the same shape as `x`. Its `mftype` is the promoted type of `p` and `x`.
+       - Precondition: `p` must be 1-d.
     */
     public static func polyval(_ p: MfArray, _ x: MfArray) -> MfArray{
         precondition(p.ndim == 1, "p must be 1d")
@@ -147,14 +162,18 @@ extension Matft{
 
 extension Matft.stats{
     /**
-       Estimate the covariance matrix. Same as `np.cov`
-       - parameters:
-            - m: The 1d or 2d mfarray. Each row is a variable and each column is an observation if rowvar is true
-            - y: (Optional) The additional variables with the same form as m
-            - rowvar: (Optional) If true (default), each row represents a variable. Otherwise, each column represents a variable
-            - bias: (Optional) If true, the normalization is by N. Otherwise by N - 1 (default)
-            - ddof: (Optional) If given, the normalization is by N - ddof, overriding bias
-       - Returns: The covariance matrix. [1] for a single variable. Float for Float and integer types, Double for Double
+       Estimate the covariance matrix.
+
+       Equivalent to `numpy.cov` (without `fweights` / `aweights`).
+
+       - Parameters:
+            - m: A 1-d or 2-d array. If `rowvar` is `true`, each row is a variable and each column is an observation.
+            - y: An optional additional set of variables with the same form as `m`, stacked below `m`.
+            - rowvar: If `true` (default), each row represents a variable. Otherwise, each column represents a variable.
+            - bias: If `true`, the normalization is by `N`. Otherwise (default) it is by `N - 1`.
+            - ddof: If given, the normalization is by `N - ddof`, overriding `bias`.
+       - Returns: The covariance matrix of the variables. Unlike Numpy's 0-d result, a single variable gives shape `[1]`. The result is `.Double` if `m` or `y` is stored as `Double`, and `.Float` otherwise.
+       - Precondition: `m` must have at most 2 dimensions. Complex arrays are not supported.
     */
     public static func cov(_ m: MfArray, y: MfArray? = nil, rowvar: Bool = true, bias: Bool = false, ddof: Int? = nil) -> MfArray{
         precondition(m.ndim <= 2, "m has more than 2 dimensions")
@@ -181,12 +200,16 @@ extension Matft.stats{
     }
 
     /**
-       Return the Pearson correlation coefficients. Same as `np.corrcoef`
-       - parameters:
-            - x: The 1d or 2d mfarray. Each row is a variable and each column is an observation if rowvar is true
-            - y: (Optional) The additional variables with the same form as x
-            - rowvar: (Optional) If true (default), each row represents a variable. Otherwise, each column represents a variable
-       - Returns: The correlation coefficient matrix, clipped to [-1, 1]
+       Return the Pearson product-moment correlation coefficients.
+
+       Equivalent to `numpy.corrcoef`. The coefficients are computed from `cov(_:y:rowvar:bias:ddof:)` and clipped to [-1, 1].
+
+       - Parameters:
+            - x: A 1-d or 2-d array. If `rowvar` is `true`, each row is a variable and each column is an observation.
+            - y: An optional additional set of variables with the same form as `x`.
+            - rowvar: If `true` (default), each row represents a variable. Otherwise, each column represents a variable.
+       - Returns: The correlation coefficient matrix. The result is `.Double` if `x` or `y` is stored as `Double`, and `.Float` otherwise. For a single variable it is `[1.0]` with shape `[1]` and is always `.Double`.
+       - Precondition: `x` must have at most 2 dimensions. Complex arrays are not supported.
     */
     public static func corrcoef(_ x: MfArray, y: MfArray? = nil, rowvar: Bool = true) -> MfArray{
         let c = Matft.stats.cov(x, y: y, rowvar: rowvar).astype(.Double)
