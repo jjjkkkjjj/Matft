@@ -39,7 +39,62 @@ class Case(NamedTuple):
 # `op` must do the same conversion as the Matft test with OpenCV, e.g.
 #   "resize_300x300": Case("rena.png", lambda x: cv2.resize(x, (300, 300), interpolation=cv2.INTER_LINEAR),
 #                          "Matft.image.resize(width: 300, height: 300) vs cv2.resize"),
+def _alpha_ramp(x: np.ndarray) -> np.ndarray:
+    """Same as `withAlphaRamp` in ImageTest.swift: alpha[y, x] = x / (w - 1) (uint8)."""
+    x = x.copy()
+    w = x.shape[1]
+    x[:, :, 3] = np.rint(np.arange(w) / (w - 1) * 255).astype(np.uint8)[None, :]
+    return x
+
+
+def _composite_white(x: np.ndarray) -> np.ndarray:
+    """RGBA uint8 -> RGB float in [0, 255] composited on white."""
+    a = x[:, :, 3:4].astype(np.float64) / 255
+    return x[:, :, :3].astype(np.float64) * a + 255 * (1 - a)
+
+
+def _rgb2gray(rgb: np.ndarray) -> np.ndarray:
+    return np.rint(rgb @ np.array([0.299, 0.587, 0.114])).astype(np.uint8)
+
+
+def _rotation30(x: np.ndarray) -> np.ndarray:
+    return cv2.getRotationMatrix2D((112, 112), 30, 1)
+
+
 CASES: Dict[str, Case] = {
+    # resize: vImage uses Lanczos (kvImageHighQualityResampling)
+    "resize_300x150": Case("rena.png",
+                           lambda x: cv2.resize(x, (300, 150), interpolation=cv2.INTER_LANCZOS4),
+                           "Matft.image.resize(width: 300, height: 150) vs cv2.resize(LANCZOS4)"),
+    "resize_gray_300x150": Case("rena.png",
+                                lambda x: cv2.resize(cv2.cvtColor(x, cv2.COLOR_RGBA2GRAY), (300, 150), interpolation=cv2.INTER_LANCZOS4),
+                                "resize(gray) vs cv2.resize(cvtColor(RGBA2GRAY), LANCZOS4)"),
+    "resize_colmajor_300x150": Case("rena.png",
+                                    lambda x: cv2.resize(x, (300, 150), interpolation=cv2.INTER_LANCZOS4),
+                                    "resize(column major RGBA) vs cv2.resize(LANCZOS4)"),
+    # warpAffine: the matrix has the same meaning as cv2
+    "warpAffine_translate": Case("rena.png",
+                                 lambda x: cv2.warpAffine(x, np.float32([[1, 0, 20], [0, 1, 10]]), (225, 225),
+                                                          flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0)),
+                                 "warpAffine(tx=20, ty=10) vs cv2.warpAffine(LINEAR, CONSTANT)"),
+    "warpAffine_rotate30_colorFill": Case("rena.png",
+                                          lambda x: cv2.warpAffine(x, _rotation30(x), (225, 225), flags=cv2.INTER_LINEAR,
+                                                                   borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 255)),
+                                          "warpAffine(getRotationMatrix2D((112,112), 30, 1), .ColorFill) vs cv2(LINEAR, CONSTANT)"),
+    "warpAffine_rotate30_edgeExtend": Case("rena.png",
+                                           lambda x: cv2.warpAffine(x, _rotation30(x), (225, 225), flags=cv2.INTER_LINEAR,
+                                                                    borderMode=cv2.BORDER_REPLICATE),
+                                           "warpAffine(getRotationMatrix2D((112,112), 30, 1), .EdgeExtend) vs cv2(LINEAR, REPLICATE)"),
+    # color
+    "color_rgba2gray": Case("rena.png",
+                            lambda x: cv2.cvtColor(x, cv2.COLOR_RGBA2GRAY),
+                            "color(.RGBA2GRAY) vs cv2.cvtColor(RGBA2GRAY)"),
+    "color_rgba2gray_alpha_white": Case("rena.png",
+                                        lambda x: _rgb2gray(_composite_white(_alpha_ramp(x))),
+                                        "color(.RGBA2GRAY, exclude_alpha: false) with alpha ramp vs composite on white + gray"),
+    "color_rgba2rgb_uint8": Case("rena.png",
+                                 lambda x: cv2.cvtColor(np.rint(_composite_white(_alpha_ramp(x))).astype(np.uint8), cv2.COLOR_RGB2RGBA),
+                                 "color(.RGBA2RGB) -> (.RGB2RGBA) on UInt8 with alpha ramp vs composite on white"),
 }
 
 

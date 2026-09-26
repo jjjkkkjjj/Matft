@@ -48,13 +48,13 @@ extension Matft.image{
         unsupport_complex(image)
         unsupport_imagetype(image)
         
-        let background: [Float]? = exclude_alpha ? nil : [1, 1, 1]
-        
         switch conversion{
         case .RGBA2GRAY:
-            return c4toc1_by_vImage(image, pre_bias: [0, 0, 0, 0], coef: [0.299, 0.587, 0.114, 0], post_bias: 0, background: background)
+            // composite on white background before conversion
+            let image = exclude_alpha ? image : rgba2rgb_image(image, keepAlpha: true, background: [1, 1, 1])
+            return c4toc1_by_vImage(image, pre_bias: [0, 0, 0, 0], coef: [0.299, 0.587, 0.114, 0], post_bias: 0)
         case .RGBA2RGB:
-            return rgba2rgb_image(image, isCopy: true, keepAlpha: false, background: [1, 1, 1])
+            return rgba2rgb_image(image, keepAlpha: false, background: [1, 1, 1])
         case .RGB2RGBA:
             return rgb2rgba_image(image)
         }
@@ -86,21 +86,21 @@ extension Matft.image{
     */
     public static func resize(_ image: MfArray, factor_x: Float, factor_y: Float) -> MfArray{
         precondition(0 < factor_x && 0 < factor_y, "New size must be positive")
-        
+
         let height = Float(image.shape[0])
         let width = Float(image.shape[1])
-        
-        return resize_by_vImage(image, dstWidth: Int(width*factor_x), dstHeight: Int(height*factor_y))
+
+        return Matft.image.resize(image, width: Int(width*factor_x), height: Int(height*factor_y))
     }
     
     /**
-       Apply affine  transformation
+       Apply affine  transformation. Same as `cv2.warpAffine`, i.e., dst(x', y') = src(x, y) where (x', y') = matrix * (x, y, 1)
        - parameters:
             - image: An image mfarray
-            - matrix: The transform matrix (shape=(2,3))
+            - matrix: The transform matrix (shape=(2,3)) mapping the source coordinate into the destination one. The origin is top-left and y axis points down as OpenCV
             - width: The destination width
             - height: The destination height
-            - mode: The pixel extrapolation mode
+            - mode: The pixel extrapolation mode. Note that `.EdgeExtend` is vImage's edge extension, so the region outside the source may differ from `cv2.BORDER_REPLICATE`
             - borderValue: The border value. Count must be 1 or 4
        - Returns: MfArray
     */
@@ -110,7 +110,10 @@ extension Matft.image{
             borderValue = Array(repeating: borderValue[0], count: 4)
         }
         precondition(borderValue.count == 4, "borderValue must have 1 or 4 element")
-        
+        unsupport_complex(image)
+        unsupport_imagetype(image)
+        precondition(0 < width && 0 < height, "New size must be positive")
+
         return affine_by_vImage(image, dstHeight: height, dstWidth: width, matrix: matrix, mode: mode, borderValue: borderValue)
     }
 }
