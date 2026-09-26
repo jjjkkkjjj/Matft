@@ -43,6 +43,7 @@ python3 scripts/benchmark.py [--baseline /tmp/matft-bench-baseline.json] [--filt
 - `--skip-swift` / `--skip-numpy`：前回の JSON を再利用する。例えば Numpy だけ測り直すとき。
 - `--warmup` / `--sample-time`：Matft 側のウォームアップ秒数と，1 サンプルの目標秒数。
 - `--repeat` / `--number`：Numpy の timeit のサンプル数と，1 サンプルあたりの呼び出し回数。
+- `--configuration debug`：Matft を debug ビルドで測る。SwiftPM は依存パッケージをアプリと同じ構成でビルドするため，最適化なしでビルドしたアプリでの速度になる。`initialize(repeating:)` のようなジェネリックなループは -Onone で桁違いに遅くなるので，割り当てや要素ごとのループを変えたときは release と両方測る。`--update-readme` とは併用できない。
 
 ### 最適化の効果を測るとき（A/B 比較）
 

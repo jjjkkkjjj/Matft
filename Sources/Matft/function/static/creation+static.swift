@@ -69,7 +69,7 @@ extension Matft{
         let size = shape2size(&shape)
         
         let retmftype = mftype ?? MfType.mftype(value: T.zero)
-        let newdata = MfData(size: size, mftype: retmftype)
+        let newdata = MfData(uninitializedSize: size, mftype: retmftype)
         func _create<U: MfStorable>(_ converted_value: U){
             var arr = Array(repeating: converted_value, count: size)
 
@@ -166,7 +166,7 @@ extension Matft{
         let retmftype = mftype ?? v.mftype
         let shape = [dim, dim]
         
-        let newdata = MfData(size: size, mftype: retmftype)
+        let newdata = MfData(uninitializedSize: size, mftype: retmftype)
         func _create<T: MfStorable>(_ type: T.Type){
             var d = Array(repeating: T.zero, count: size)
             v.withUnsafeMutableStartPointer(datatype: T.self){

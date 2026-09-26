@@ -28,14 +28,13 @@ extension MfArray{
             - isplace: Whether to operate in-place
     */
     internal func to_complex(_ inplace: Bool = true) -> MfArray{
-        precondition(!self.mfdata._fromOtherDataSource, "Other data source couldn't be converted into Complex.")
-        
         if self.isComplex{
             return self
         }
         
         let mfarray: MfArray
         if inplace{
+            precondition(!self.mfdata._fromOtherDataSource, "Other data source couldn't be converted into Complex.")
             mfarray = self
         }
         else{
@@ -44,11 +43,11 @@ extension MfArray{
         
         switch mfarray.storedType{
         case .Float:
-            let ptri = allocate_unsafeMRPtr(type: Float.self, count: mfarray.storedSize)
+            let ptri = allocate_unsafeMRPtr(type: Float.self, count: mfarray.storedSize, zeroed: true) // the imaginary part of a real number is 0
             mfarray.mfdata_base.data_imag = ptri
             mfarray.mfdata.data_imag = ptri
         case .Double:
-            let ptri = allocate_unsafeMRPtr(type: Double.self, count: mfarray.storedSize)
+            let ptri = allocate_unsafeMRPtr(type: Double.self, count: mfarray.storedSize, zeroed: true) // the imaginary part of a real number is 0
             mfarray.mfdata_base.data_imag = ptri
             mfarray.mfdata.data_imag = ptri
         }
@@ -122,11 +121,11 @@ extension MfArray{
     public func toMLMultiArray() throws -> MLMultiArray {
         switch self.storedType {
         case .Float:
-            let ptrF = allocate_unsafeMRPtr(type: Float.self, count: self.storedSize)
+            let ptrF = allocate_unsafeMRPtr(type: Float.self, count: self.storedSize, zeroed: false)
             memcpy(ptrF, self.mfdata.data_real, self.storedByteSize)
             return try MLMultiArray(dataPointer: ptrF, shape: self.shape.map{ NSNumber(value: $0) } , dataType: MLMultiArrayDataType.float32, strides: self.strides.map{ NSNumber(value: $0) }, deallocator: _deallocator_MLMultiArray_pointer)
         case .Double:
-            let ptrD = allocate_unsafeMRPtr(type: Double.self, count: self.storedSize)
+            let ptrD = allocate_unsafeMRPtr(type: Double.self, count: self.storedSize, zeroed: false)
             memcpy(ptrD, self.mfdata.data_real, self.storedByteSize)
             return try MLMultiArray(dataPointer: ptrD, shape: self.shape.map{ NSNumber(value: $0) } , dataType: MLMultiArrayDataType.double, strides: self.strides.map{ NSNumber(value: $0) }, deallocator: _deallocator_MLMultiArray_pointer)
         }

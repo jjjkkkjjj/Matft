@@ -1026,7 +1026,7 @@ internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func_lu:
     precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
     precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
 
-    let newdata = MfData(size: mfarray.size, mftype: mfarray.storedType.to_mftype())
+    let newdata = MfData(uninitializedSize: mfarray.size, mftype: mfarray.storedType.to_mftype())
     try newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         try mfarray.withMNStackedMajorPointer(datatype: T.self, mforder: .Row){
@@ -1062,7 +1062,7 @@ internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func: la
     
     let ret_size = mfarray.size / (shape[mfarray.ndim - 1] * shape[mfarray.ndim - 1])
     
-    let newdata = MfData(size: ret_size, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: ret_size, mftype: mfarray.mftype)
     var dst_offset = 0
     
     try newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -1120,16 +1120,16 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func: 
     
     // create mfarraies
     //eigenvectors
-    let lvecRe_data = MfData(size: eigenvec_size, mftype: retMfType)
-    let lvecIm_data = MfData(size: eigenvec_size, mftype: retMfType)
-    let rvecRe_data = MfData(size: eigenvec_size, mftype: retMfType)
-    let rvecIm_data = MfData(size: eigenvec_size, mftype: retMfType)
+    let lvecRe_data = MfData(uninitializedSize: eigenvec_size, mftype: retMfType)
+    let lvecIm_data = MfData(uninitializedSize: eigenvec_size, mftype: retMfType)
+    let rvecRe_data = MfData(uninitializedSize: eigenvec_size, mftype: retMfType)
+    let rvecIm_data = MfData(uninitializedSize: eigenvec_size, mftype: retMfType)
     
     //eigenvalues
-    let eigenval_shape = Array(shape.prefix(mfarray.ndim - 1))
-    //let eigenval_size = shape2size(&eigenval_shape)
-    let valRe_data = MfData(size: eigenvec_size, mftype: retMfType)
-    let valIm_data = MfData(size: eigenvec_size, mftype: retMfType)
+    var eigenval_shape = Array(shape.prefix(mfarray.ndim - 1))
+    let eigenval_size = shape2size(&eigenval_shape)
+    let valRe_data = MfData(uninitializedSize: eigenval_size, mftype: retMfType)
+    let valIm_data = MfData(uninitializedSize: eigenval_size, mftype: retMfType)
     //offset for calculation
     var vec_offset = 0
     var val_offset = 0
@@ -1139,8 +1139,8 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func: 
     let lvecIm_ptr = lvecIm_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
     let rvecRe_ptr = rvecRe_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
     let rvecIm_ptr = rvecIm_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
-    let valRe_ptr = valRe_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
-    let valIm_ptr = valIm_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
+    let valRe_ptr = valRe_data.data_real.bindMemory(to: T.self, capacity: eigenval_size)
+    let valIm_ptr = valIm_data.data_real.bindMemory(to: T.self, capacity: eigenval_size)
     
     try mfarray.withMNStackedMajorPointer(datatype: T.self, mforder: .Column){
         srcptr, row, col, offset in
@@ -1150,7 +1150,7 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func: 
         
         //calculate offset
         val_offset += square_num
-        vec_offset += offset
+        vec_offset += square_num*square_num
     }
     
     
@@ -1185,9 +1185,9 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ full_matrices: 
         v_shape = stacked_shape + [M, M]
         s_shape = stacked_shape + [ssize]
         rt_shape = stacked_shape + [N, N]
-        v_data = MfData(size: shape2size(&v_shape), mftype: ret_mftype)
-        s_data = MfData(size: shape2size(&s_shape), mftype: ret_mftype)
-        rt_data = MfData(size: shape2size(&rt_shape), mftype: ret_mftype)
+        v_data = MfData(uninitializedSize: shape2size(&v_shape), mftype: ret_mftype)
+        s_data = MfData(uninitializedSize: shape2size(&s_shape), mftype: ret_mftype)
+        rt_data = MfData(uninitializedSize: shape2size(&rt_shape), mftype: ret_mftype)
         
         vcol = M
         rtrow = N
@@ -1196,9 +1196,9 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ full_matrices: 
         v_shape = stacked_shape + [ssize, M]
         s_shape = stacked_shape + [ssize]
         rt_shape = stacked_shape + [N, ssize]
-        v_data = MfData(size: shape2size(&v_shape), mftype: ret_mftype) // returned shape = (..., M, ssize)
-        s_data = MfData(size: shape2size(&s_shape), mftype: ret_mftype)
-        rt_data = MfData(size: shape2size(&rt_shape), mftype: ret_mftype) // returned shape = (..., ssize, N)
+        v_data = MfData(uninitializedSize: shape2size(&v_shape), mftype: ret_mftype) // returned shape = (..., M, ssize)
+        s_data = MfData(uninitializedSize: shape2size(&s_shape), mftype: ret_mftype)
+        rt_data = MfData(uninitializedSize: shape2size(&rt_shape), mftype: ret_mftype) // returned shape = (..., ssize, N)
         
         vcol = ssize
         rtrow = ssize
@@ -1734,7 +1734,7 @@ internal func inv_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func_lu:
     precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
     precondition(shape[mfarray.ndim - 1] == shape[mfarray.ndim - 2], "Last 2 dimensions of the mfarray must be square")
 
-    let newdata = MfData(size: mfarray.size, mftype: mfarray.storedType.to_mftype())
+    let newdata = MfData(uninitializedSize: mfarray.size, mftype: mfarray.storedType.to_mftype())
     try newdata.withUnsafeMutableStartPointer(datatype: T.self) {
         dstptrT in
         try mfarray.withMNStackedMajorPointer(datatype: T.self, mforder: .Row) {
@@ -1757,7 +1757,7 @@ internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func: la
 
     let ret_size = mfarray.size / (shape[mfarray.ndim - 1] * shape[mfarray.ndim - 1])
 
-    let newdata = MfData(size: ret_size, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: ret_size, mftype: mfarray.mftype)
     var dst_offset = 0
 
     try newdata.withUnsafeMutableStartPointer(datatype: T.self) {
@@ -1794,14 +1794,15 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func: 
     let retMfType = mfarray.storedType.to_mftype()
     let eigenvec_size = shape2size(&shape)
 
-    let lvecRe_data = MfData(size: eigenvec_size, mftype: retMfType)
-    let lvecIm_data = MfData(size: eigenvec_size, mftype: retMfType)
-    let rvecRe_data = MfData(size: eigenvec_size, mftype: retMfType)
-    let rvecIm_data = MfData(size: eigenvec_size, mftype: retMfType)
+    let lvecRe_data = MfData(uninitializedSize: eigenvec_size, mftype: retMfType)
+    let lvecIm_data = MfData(uninitializedSize: eigenvec_size, mftype: retMfType)
+    let rvecRe_data = MfData(uninitializedSize: eigenvec_size, mftype: retMfType)
+    let rvecIm_data = MfData(uninitializedSize: eigenvec_size, mftype: retMfType)
 
-    let eigenval_shape = Array(shape.prefix(mfarray.ndim - 1))
-    let valRe_data = MfData(size: eigenvec_size, mftype: retMfType)
-    let valIm_data = MfData(size: eigenvec_size, mftype: retMfType)
+    var eigenval_shape = Array(shape.prefix(mfarray.ndim - 1))
+    let eigenval_size = shape2size(&eigenval_shape)
+    let valRe_data = MfData(uninitializedSize: eigenval_size, mftype: retMfType)
+    let valIm_data = MfData(uninitializedSize: eigenval_size, mftype: retMfType)
     var vec_offset = 0
     var val_offset = 0
 
@@ -1809,15 +1810,15 @@ internal func eigen_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func: 
     let lvecIm_ptr = lvecIm_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
     let rvecRe_ptr = rvecRe_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
     let rvecIm_ptr = rvecIm_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
-    let valRe_ptr = valRe_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
-    let valIm_ptr = valIm_data.data_real.bindMemory(to: T.self, capacity: eigenvec_size)
+    let valRe_ptr = valRe_data.data_real.bindMemory(to: T.self, capacity: eigenval_size)
+    let valIm_ptr = valIm_data.data_real.bindMemory(to: T.self, capacity: eigenval_size)
 
     try mfarray.withMNStackedMajorPointer(datatype: T.self, mforder: .Column) {
         srcptr, row, col, offset in
         let square_num = row
         try wrap_lapack_eigen(square_num, srcptr, lvecRe_ptr + vec_offset, lvecIm_ptr + vec_offset, rvecRe_ptr + vec_offset, rvecIm_ptr + vec_offset, valRe_ptr + val_offset, valIm_ptr + val_offset, lapack_func: lapack_func)
         val_offset += square_num
-        vec_offset += offset
+        vec_offset += square_num*square_num
     }
 
     return (MfArray(mfdata: valRe_data, mfstructure: MfStructure(shape: eigenval_shape, mforder: .Row)),
@@ -1843,9 +1844,9 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ full_matrices: 
         v_shape = stacked_shape + [M, M]
         s_shape = stacked_shape + [ssize]
         rt_shape = stacked_shape + [N, N]
-        v_data = MfData(size: shape2size(&v_shape), mftype: ret_mftype)
-        s_data = MfData(size: shape2size(&s_shape), mftype: ret_mftype)
-        rt_data = MfData(size: shape2size(&rt_shape), mftype: ret_mftype)
+        v_data = MfData(uninitializedSize: shape2size(&v_shape), mftype: ret_mftype)
+        s_data = MfData(uninitializedSize: shape2size(&s_shape), mftype: ret_mftype)
+        rt_data = MfData(uninitializedSize: shape2size(&rt_shape), mftype: ret_mftype)
         vcol = M
         rtrow = N
     }
@@ -1853,9 +1854,9 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ full_matrices: 
         v_shape = stacked_shape + [ssize, M]
         s_shape = stacked_shape + [ssize]
         rt_shape = stacked_shape + [N, ssize]
-        v_data = MfData(size: shape2size(&v_shape), mftype: ret_mftype)
-        s_data = MfData(size: shape2size(&s_shape), mftype: ret_mftype)
-        rt_data = MfData(size: shape2size(&rt_shape), mftype: ret_mftype)
+        v_data = MfData(uninitializedSize: shape2size(&v_shape), mftype: ret_mftype)
+        s_data = MfData(uninitializedSize: shape2size(&s_shape), mftype: ret_mftype)
+        rt_data = MfData(uninitializedSize: shape2size(&rt_shape), mftype: ret_mftype)
         vcol = ssize
         rtrow = ssize
     }

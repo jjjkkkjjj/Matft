@@ -265,7 +265,7 @@ internal func contiguous_by_cblas<T: MfStorable>(_ src_mfarray: MfArray, cblas_f
 /// - Returns: The destination mfarray with same size as an internal stored data size
 internal func samesize_by_cblas<T: MfStorable>(_ src_mfarray: MfArray, cblas_func: cblas_copy_func<T>, mforder: MfOrder) -> MfArray{
     let newsize = src_mfarray.size
-    let newdata: MfData = MfData(size: newsize, mftype: src_mfarray.mftype)
+    let newdata: MfData = MfData(uninitializedSize: newsize, mftype: src_mfarray.mftype)
     let newstructure = MfStructure(shape: src_mfarray.shape, mforder: mforder)
     let dst_mfarray = MfArray(mfdata: newdata, mfstructure: newstructure)
     
@@ -313,7 +313,7 @@ internal func shift_by_cblas<T: MfStorable>(_ mfarray: MfArray, shift: Int, axis
         src_mfarray = check_contiguous(mfarray, .Row)
     }
     
-    let newdata = MfData(size: src_mfarray.size, mftype: src_mfarray.mftype)
+    let newdata = MfData(uninitializedSize: src_mfarray.size, mftype: src_mfarray.mftype)
     
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
@@ -356,7 +356,7 @@ internal func stack_by_cblas<T: MfStorable>(_ mfarrays: [MfArray], ret_shape: [I
     let majorArrays = mfarrays.map{ $0.astype(ret_mftype, mforder: mforder) }
     let ret_size = shape2size(&ret_shape)
     
-    let newdata: MfData = MfData(size: ret_size, mftype: ret_mftype)
+    let newdata: MfData = MfData(uninitializedSize: ret_size, mftype: ret_mftype)
 
     var offset = 0
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -399,7 +399,7 @@ internal func concat_by_cblas<T: MfStorable>(_ mfarrays: [MfArray], ret_shape: [
     let majorArrays = mfarrays.map{ Matft.astype($0, mftype: ret_mftype, mforder: faster_order) }
     let ret_size = shape2size(&ret_shape)
     
-    let newdata = MfData(size: ret_size, mftype: ret_mftype)
+    let newdata = MfData(uninitializedSize: ret_size, mftype: ret_mftype)
     var offset = 0
     
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -446,7 +446,7 @@ internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarr
     let r_matNum = rshape[retndim - 2] * rshape[retndim - 1]
     let iterNum = newsize / matNum
     
-    let newdata = MfData(size: newsize, mftype: lmfarray.mftype)
+    let newdata = MfData(uninitializedSize: newsize, mftype: lmfarray.mftype)
 
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
@@ -520,7 +520,7 @@ internal func fancyndget_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: 
     let workSize = shape2size(&workShape)
     
     if mfarray.isReal{
-        let newdata = MfData(size: retSize, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: retSize, mftype: mfarray.mftype)
 
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptrT in
@@ -541,7 +541,7 @@ internal func fancyndget_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: 
         return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     else{
-        let newdata = MfData(size: retSize, mftype: mfarray.mftype, complex: true)
+        let newdata = MfData(uninitializedSize: retSize, mftype: mfarray.mftype, complex: true)
 
         newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPComplexType.self){
             dstptrT in
@@ -605,7 +605,7 @@ internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
      */
     
     if mfarray.isReal{
-        let newdata = MfData(size: retSize, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: retSize, mftype: mfarray.mftype)
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptrT in
             var dstptrT = dstptrT
@@ -624,7 +624,7 @@ internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
         return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     else{
-        let newdata = MfData(size: retSize, mftype: mfarray.mftype, complex: true)
+        let newdata = MfData(uninitializedSize: retSize, mftype: mfarray.mftype, complex: true)
 
         newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPComplexType.self){
             dstptrT in
@@ -972,7 +972,7 @@ internal func contiguous_by_cblas<T: MfStorable>(_ src_mfarray: MfArray, cblas_f
 
 internal func samesize_by_cblas<T: MfStorable>(_ src_mfarray: MfArray, cblas_func: cblas_copy_func<T>, mforder: MfOrder) -> MfArray{
     let newsize = src_mfarray.size
-    let newdata: MfData = MfData(size: newsize, mftype: src_mfarray.mftype)
+    let newdata: MfData = MfData(uninitializedSize: newsize, mftype: src_mfarray.mftype)
     let newstructure = MfStructure(shape: src_mfarray.shape, mforder: mforder)
     let dst_mfarray = MfArray(mfdata: newdata, mfstructure: newstructure)
 
@@ -1016,7 +1016,7 @@ internal func shift_by_cblas<T: MfStorable>(_ mfarray: MfArray, shift: Int, axis
         src_mfarray = check_contiguous(mfarray, .Row)
     }
 
-    let newdata = MfData(size: src_mfarray.size, mftype: src_mfarray.mftype)
+    let newdata = MfData(uninitializedSize: src_mfarray.size, mftype: src_mfarray.mftype)
 
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
@@ -1049,7 +1049,7 @@ internal func stack_by_cblas<T: MfStorable>(_ mfarrays: [MfArray], ret_shape: [I
     let majorArrays = mfarrays.map{ $0.astype(ret_mftype, mforder: mforder) }
     let ret_size = shape2size(&ret_shape)
 
-    let newdata: MfData = MfData(size: ret_size, mftype: ret_mftype)
+    let newdata: MfData = MfData(uninitializedSize: ret_size, mftype: ret_mftype)
 
     var offset = 0
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -1084,7 +1084,7 @@ internal func concat_by_cblas<T: MfStorable>(_ mfarrays: [MfArray], ret_shape: [
     let majorArrays = mfarrays.map{ Matft.astype($0, mftype: ret_mftype, mforder: faster_order) }
     let ret_size = shape2size(&ret_shape)
 
-    let newdata = MfData(size: ret_size, mftype: ret_mftype)
+    let newdata = MfData(uninitializedSize: ret_size, mftype: ret_mftype)
     var offset = 0
 
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -1123,7 +1123,7 @@ internal func matmul_by_cblas<T: MfStorable>(_ lmfarray: inout MfArray, _ rmfarr
     let r_matNum = rshape[retndim - 2] * rshape[retndim - 1]
     let iterNum = newsize / matNum
 
-    let newdata = MfData(size: newsize, mftype: lmfarray.mftype)
+    let newdata = MfData(size: newsize, mftype: lmfarray.mftype) // the fallback gemm reads C (beta * C)
 
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
@@ -1164,7 +1164,7 @@ internal func fancyndget_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: 
     let workSize = shape2size(&workShape)
 
     if mfarray.isReal{
-        let newdata = MfData(size: retSize, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: retSize, mftype: mfarray.mftype)
 
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptrT in
@@ -1203,7 +1203,7 @@ internal func fancygetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
     let workSize = workShape.count > 0 ? shape2size(&workShape) : 1
 
     if mfarray.isReal{
-        let newdata = MfData(size: retSize, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: retSize, mftype: mfarray.mftype)
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptrT in
             var dstptrT = dstptrT

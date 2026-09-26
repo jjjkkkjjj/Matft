@@ -52,4 +52,25 @@ final class BoolPefTests: XCTestCase {
             let _ = a === b
         }
     }
+    
+    func testPeformanceEqual3() {
+        let a = PerfFixtures.a
+        self.measureWithWarmup {
+            let _ = a === 5
+        }
+    }
+    
+    func testPeformanceNotEqual1() {
+        let a = PerfFixtures.a
+        self.measureWithWarmup {
+            let _ = a !== 0
+        }
+    }
+    
+    func testPeformanceLogicalNot1() {
+        let posb = PerfFixtures.a > 0
+        self.measureWithWarmup {
+            let _ = Matft.logical_not(posb)
+        }
+    }
 }

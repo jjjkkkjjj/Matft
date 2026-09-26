@@ -26,7 +26,7 @@ internal func image2floats(_ image: MfArray) -> [Float]{
 ///     - mftype: The mftype whose stored type is Float
 /// - Returns: The row contiguous mfarray
 internal func floats2image(_ data: [Float], shape: [Int], mftype: MfType) -> MfArray{
-    let newdata = MfData(size: data.count, mftype: mftype)
+    let newdata = MfData(uninitializedSize: data.count, mftype: mftype)
     newdata.withUnsafeMutableStartPointer(datatype: Float.self){
         dstptr in
         data.withUnsafeBufferPointer{ dstptr.update(from: $0.baseAddress!, count: data.count) }

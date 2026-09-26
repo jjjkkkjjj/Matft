@@ -130,7 +130,7 @@ internal func bool_broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
     var newerShape = Array(shape[mfarray.ndim..<new_ndim])
     let offset = shape2size(&newerShape)
     
-    let newdata = MfData(size: retSize, mftype: .Bool)
+    let newdata = MfData(uninitializedSize: retSize, mftype: .Bool)
 
     newdata.withUnsafeMutableStartPointer(datatype: Float.self){
         dstptrF in

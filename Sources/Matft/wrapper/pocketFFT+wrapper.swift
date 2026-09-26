@@ -124,7 +124,7 @@ internal func execute_real_forward(_ mfarray: MfArray, axis: Int, norm: Double) 
         }
     }
     
-    let newdata = MfData(size: retSize, mftype: .Double, complex: true)
+    let newdata = MfData(uninitializedSize: retSize, mftype: .Double, complex: true)
     newdata.withUnsafeMutableStartPointer(datatype: Double.self){
         dstptr in
         dstarr.withUnsafeMutableBufferPointer{
@@ -190,7 +190,7 @@ internal func execute_real_backward(_ mfarray: MfArray, axis: Int, norm: Double)
         }
     }
     
-    let newdata = MfData(size: retSize, mftype: .Double)
+    let newdata = MfData(uninitializedSize: retSize, mftype: .Double)
     newdata.withUnsafeMutableStartPointer(datatype: Double.self){
         _dstptr in
         var dstptr = _dstptr

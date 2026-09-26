@@ -127,5 +127,28 @@ class RenderTest(unittest.TestCase):
         self.assertIn("n/a", md)
 
 
+class ConfigurationTest(unittest.TestCase):
+    def test_swift_test_command_release_by_default(self):
+        cases = [benchmark.Case("BoolPefTests.testPeformanceGreater1", "Bool", "let _ = a > 0", "a > 0")]
+        cmd = benchmark.swift_test_command(cases)
+        self.assertEqual(cmd[:4], ["swift", "test", "-c", "release"])
+        self.assertEqual(cmd[-1], "^PerformanceTests\\.(BoolPefTests/testPeformanceGreater1)$")
+
+    def test_swift_test_command_debug(self):
+        cases = [benchmark.Case("X.testY", "Math", "let _ = y", "y")]
+        self.assertEqual(benchmark.swift_test_command(cases, "debug")[:4], ["swift", "test", "-c", "debug"])
+
+    def test_report_mentions_configuration(self):
+        cases = [benchmark.Case("X.testY", "Math", "let _ = y", "y")]
+        env = {"cpu": "c", "macos": "m", "swift": "s", "python": "p", "numpy": "n", "commit": "x", "date": "d"}
+        self.assertIn("release build (`swift test -c release`)", benchmark.render_report(cases, {"swift": {}, "numpy": {}}, env))
+        env["configuration"] = "debug"
+        self.assertIn("debug build (`swift test -c debug`)", benchmark.render_report(cases, {"swift": {}, "numpy": {}}, env))
+
+    def test_update_readme_requires_release(self):
+        with self.assertRaises(SystemExit):
+            benchmark.main(["--configuration", "debug", "--update-readme", "--skip-swift", "--skip-numpy"])
+
+
 if __name__ == "__main__":
     unittest.main()

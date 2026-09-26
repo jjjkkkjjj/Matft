@@ -584,7 +584,7 @@ fileprivate func _unique<T: MfStorable>(_ flattendata: inout [T], restShape: ino
     }
     
     let newsize = uniquearray.count
-    let newdata = MfData(size: newsize, mftype: mftype)
+    let newdata = MfData(uninitializedSize: newsize, mftype: mftype)
 
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
