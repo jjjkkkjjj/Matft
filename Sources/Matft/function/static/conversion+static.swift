@@ -715,16 +715,14 @@ fileprivate func _unique<T: MfStorable>(_ flattendata: inout [T], restShape: ino
 // MARK: - WASI Fallbacks for complex array operations
 #if !canImport(Accelerate)
 
-/// Fallback for zcontiguous_and_astype_by_vDSP on WASI
-/// Complex array type conversion is not supported on WASI
+/// Fallback for zcontiguous_and_astype_by_vDSP on WASI. The real and imaginary parts are converted separately
 internal func _zcontiguous_and_astype_fallback(_ mfarray: MfArray, mftype: MfType, mforder: MfOrder) -> MfArray {
-    fatalError("Complex array type conversion is not supported on this platform (requires Accelerate framework)")
+    return MfArray(real: mfarray.real.astype(mftype, mforder: mforder), imag: mfarray.imag!.astype(mftype, mforder: mforder))
 }
 
-/// Fallback for zcontiguous_by_vDSP on WASI
-/// Complex array contiguous conversion is not supported on WASI
+/// Fallback for zcontiguous_by_vDSP on WASI. The real and imaginary parts are converted separately
 internal func _zcontiguous_fallback(_ mfarray: MfArray, mforder: MfOrder) -> MfArray {
-    fatalError("Complex array operations are not supported on this platform (requires Accelerate framework)")
+    return MfArray(real: mfarray.real.to_contiguous(mforder: mforder), imag: mfarray.imag!.to_contiguous(mforder: mforder))
 }
 
 #endif
