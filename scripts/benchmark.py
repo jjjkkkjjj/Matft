@@ -68,6 +68,8 @@ CASES = [
     Case("BoolPefTests.testPeformanceGreater2", "Bool", "let _ = a > b", "a > b"),
     Case("BoolPefTests.testPeformanceEqual1", "Bool", "let _ = a === 0", "a == 0"),
     Case("BoolPefTests.testPeformanceEqual2", "Bool", "let _ = a === b", "a == b"),
+    Case("ConversionPefTests.testPeformanceAstype1", "Conversion", "let _ = a.astype(.Double)", "a.astype(np.float64)"),
+    Case("ConversionPefTests.testPeformanceDeepcopy1", "Conversion", "let _ = Matft.deepcopy(a)", "a.copy()"),
     Case("IndexingPefTests.testPeformanceBooleanIndexing1", "Indexing", "let _ = a[posb]", "a[posb]"),
     Case("IndexingPefTests.testPeformanceBooleanIndexing2", "Indexing", "let _ = a[a > 0]", "a[a > 0]"),
     Case("IndexingPefTests.testPeformanceBooleanIndexing3", "Indexing", "let _ = aT[aT > 0]", "aT[aT > 0]"),
@@ -191,11 +193,12 @@ def render_env(env):
 
 
 def render_report(cases, results, env, baseline=None):
+    configuration = env.get("configuration", "release")
     return "\n".join([
         render_tables(cases, results, baseline),
         render_env(env),
         "",
-        "Matft: median of XCTest `measure {}` in release build (`swift test -c release`), "
+        f"Matft: median of XCTest `measure {{}}` in {configuration} build (`swift test -c {configuration}`), "
         "after a warm-up and with several calls per sample (like `timeit`). "
         "Numpy: median of `timeit`. Ratios > 1 (Matft slower) are shown in bold.",
         "",
@@ -228,10 +231,14 @@ def collect_env():
     }
 
 
-def run_swift(cases, warmup, sample_time):
+def swift_test_command(cases, configuration="release"):
     # SwiftPM matches --filter against "<Target>.<Class>/<method>"
     ids = "|".join(re.escape(c.id).replace("\\.", "/") for c in cases)
-    cmd = ["swift", "test", "-c", "release", "--filter", f"^PerformanceTests\\.({ids})$"]
+    return ["swift", "test", "-c", configuration, "--filter", f"^PerformanceTests\\.({ids})$"]
+
+
+def run_swift(cases, warmup, sample_time, configuration="release"):
+    cmd = swift_test_command(cases, configuration)
     print("$ " + " ".join(cmd), file=sys.stderr)
     proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
                           env=swift_test_env(warmup, sample_time))
@@ -267,7 +274,11 @@ def main(argv=None):
     p.add_argument("--sample-time", type=float, default=0.02, help="Matft: target seconds per sample")
     p.add_argument("--repeat", type=int, default=10, help="Numpy: number of samples")
     p.add_argument("--number", type=int, default=10, help="Numpy: calls per sample")
+    p.add_argument("--configuration", choices=["release", "debug"], default="release",
+                   help="Matft: build configuration (debug shows what apps built without optimization see)")
     args = p.parse_args(argv)
+    if args.update_readme and args.configuration != "release":
+        raise SystemExit("--update-readme requires --configuration release")
 
     cases = [c for c in CASES if not args.filter or re.search(args.filter, c.id)]
     if not cases:
@@ -281,7 +292,7 @@ def main(argv=None):
             previous = json.load(f)
 
     results = {
-        "swift": previous["results"]["swift"] if args.skip_swift else run_swift(cases, args.warmup, args.sample_time),
+        "swift": previous["results"]["swift"] if args.skip_swift else run_swift(cases, args.warmup, args.sample_time, args.configuration),
         "numpy": previous["results"]["numpy"] if args.skip_numpy else run_numpy(cases, args.repeat, args.number),
     }
     baseline = None
@@ -290,7 +301,7 @@ def main(argv=None):
             baseline = json.load(f)["results"]
 
     # Nothing was re-measured: keep the environment the results were actually measured in.
-    env = previous["env"] if args.skip_swift and args.skip_numpy else collect_env()
+    env = previous["env"] if args.skip_swift and args.skip_numpy else {**collect_env(), "configuration": args.configuration}
     report = render_report(cases, results, env, baseline)
     print(report)
 

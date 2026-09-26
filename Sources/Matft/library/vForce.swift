@@ -25,7 +25,7 @@ internal func math_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: v
     let mfarray = check_dense(mfarray)
     var ret_size = Int32(mfarray.size)
     
-    let newdata = MfData(size: mfarray.size, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: mfarray.size, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -47,7 +47,7 @@ internal func mathf_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: 
     var mfarray = mfarray
     mfarray = check_dense(mfarray)
     
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -72,7 +72,7 @@ internal func math_biop_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarr
     let r_mfarray = r_mfarray.to_contiguous(mforder: .Row)
     
     var storedSize = Int32(l_mfarray.storedSize)
-    let newdata = MfData(size: l_mfarray.storedSize, mftype: l_mfarray.mftype)
+    let newdata = MfData(uninitializedSize: l_mfarray.storedSize, mftype: l_mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -538,7 +538,7 @@ internal func math_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: v
     let mfarray = check_dense(mfarray)
     var ret_size = Int32(mfarray.size)
 
-    let newdata = MfData(size: mfarray.size, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: mfarray.size, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -555,7 +555,7 @@ internal func mathf_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: 
     var mfarray = mfarray
     mfarray = check_dense(mfarray)
 
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -574,7 +574,7 @@ internal func math_biop_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarr
     let r_mfarray = r_mfarray.to_contiguous(mforder: .Row)
 
     var storedSize = Int32(l_mfarray.storedSize)
-    let newdata = MfData(size: l_mfarray.storedSize, mftype: l_mfarray.mftype)
+    let newdata = MfData(uninitializedSize: l_mfarray.storedSize, mftype: l_mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){

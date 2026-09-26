@@ -411,7 +411,7 @@ internal func contiguous_and_astype_by_vDSP<T: MfStorable, U: MfStorable>(_ src_
     var ret_shape = src_mfarray.shape
     let ret_strides = shape2strides(&ret_shape, mforder: mforder)
     
-    let newdata = MfData(size: src_mfarray.size, mftype: mftype)
+    let newdata = MfData(uninitializedSize: src_mfarray.size, mftype: mftype)
     
     newdata.withUnsafeMutableStartPointer(datatype: U.self){
         dstptrU in
@@ -442,7 +442,7 @@ internal func zcontiguous_and_astype_by_vDSP<T: vDSP_ComplexTypable, U: vDSP_Com
     var ret_shape = src_mfarray.shape
     let ret_strides = shape2strides(&ret_shape, mforder: mforder)
     
-    let newdata = MfData(size: src_mfarray.size, mftype: mftype, complex: true)
+    let newdata = MfData(uninitializedSize: src_mfarray.size, mftype: mftype, complex: true)
     
     newdata.withUnsafeMutablevDSPComplexPointer(datatype: U.self){
         dstptrU in
@@ -475,7 +475,7 @@ internal func zcontiguous_and_astype_by_vDSP<T: vDSP_ComplexTypable, U: vDSP_Com
 internal func zcontiguous_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vDSP_func: vDSP_convertz_func<T, T>, mforder: MfOrder) -> MfArray{
     let shape = mfarray.shape
     
-    let newdata = MfData(size: mfarray.size, mftype: mfarray.mftype, complex: true)
+    let newdata = MfData(uninitializedSize: mfarray.size, mftype: mfarray.mftype, complex: true)
     let newstructure = MfStructure(shape: shape, mforder: mforder)
 
     let bigger_strides = newstructure.strides
@@ -509,7 +509,7 @@ internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP
     //print(mfarray)
     //print(mfarray.strides)
     
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -536,7 +536,7 @@ internal func zpreop_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vDSP_
     //print(mfarray)
     //print(mfarray.strides)
     
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
     newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
@@ -563,7 +563,7 @@ internal func z2r_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vDSP_fun
     //print(mfarray)
     //print(mfarray.strides)
     
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: false)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype, complex: false)
     newdata.withUnsafeMutableStartPointer(datatype: T.T.self){
         dstptrT in
         mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
@@ -590,7 +590,7 @@ internal func conjugate_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ vD
     //print(mfarray)
     //print(mfarray.strides)
     
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
     newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
@@ -625,7 +625,7 @@ internal func biopvs_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T,
     
     mfarray = check_dense(mfarray)
     
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -650,7 +650,7 @@ internal func biopzvs_by_vDSP<T: vDSP_ComplexTypable>(_ l_mfarray: MfArray, _ r_
     
     mfarray = check_dense(mfarray)
     
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
     newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
@@ -676,7 +676,7 @@ internal func biopsv_by_vDSP<T: MfStorable>(_ l_scalar: T, _ r_mfarray: MfArray,
     
     mfarray = check_dense(mfarray)
     
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -701,7 +701,7 @@ internal func biopzsv_by_vDSP<T: vDSP_ComplexTypable>(_ l_scalar: T.T, _ r_mfarr
     
     mfarray = check_dense(mfarray)
     
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype, complex: true)
     newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
@@ -747,7 +747,7 @@ internal func biopvv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: M
     let (l_contiguous, r_contiguous, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
     let (l_mfarray, r_mfarray) = align_biop_layout(l_contiguous, r_contiguous, biggerL)
     
-    let newdata = MfData(size: retsize, mftype: l_mfarray.mftype)
+    let newdata = MfData(uninitializedSize: retsize, mftype: l_mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -800,7 +800,7 @@ internal func biopzvv_by_vDSP<T: vDSP_ComplexTypable>(_ l_mfarray: MfArray, _ r_
     //return mfarray must be either row or column major
     let (l_mfarray, r_mfarray, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
 
-    let newdata = MfData(size: retsize, mftype: l_mfarray.mftype, complex: true)
+    let newdata = MfData(uninitializedSize: retsize, mftype: l_mfarray.mftype, complex: true)
     newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
         dstptrT in
         l_mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
@@ -860,7 +860,7 @@ internal func stats_by_vDSP<T: MfStorable>(_ typedMfarray: MfArray, axis: Int?, 
         
         let ret_size = shape2size(&ret_shape)
         
-        let newdata = MfData(size: ret_size, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: ret_size, mftype: mfarray.mftype)
         var dst_offset = 0
         
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -879,7 +879,7 @@ internal func stats_by_vDSP<T: MfStorable>(_ typedMfarray: MfArray, axis: Int?, 
         return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
     }
     else{
-        let newdata = MfData(size: 1, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: 1, mftype: mfarray.mftype)
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptrT in
             mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -915,7 +915,7 @@ internal func stats_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int?,
         
         let ret_size = shape2size(&ret_shape)
         
-        let newdata = MfData(size: ret_size, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: ret_size, mftype: mfarray.mftype)
         var dst_offset = 0
         
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -937,7 +937,7 @@ internal func stats_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int?,
         return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
     }
     else{
-        let newdata = MfData(size: 1, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: 1, mftype: mfarray.mftype)
         var uival = UInt.zero
         
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -1004,7 +1004,7 @@ internal func argsort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ 
     var offset = 0
 
     let retSize = shape2size(&retShape)
-    let newdata = MfData(size: retSize, mftype: .Int)
+    let newdata = MfData(uninitializedSize: retSize, mftype: .Int)
     newdata.withUnsafeMutableStartPointer(datatype: Float.self){
         dstptrF in
         srcmfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -1056,7 +1056,7 @@ internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ minval: T, _ max
     //print(mfarray)
     //print(mfarray.strides)
     
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -1080,7 +1080,7 @@ internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_vthrsc_func
     let mfarray = check_dense(mfarray)
         
     let size = mfarray.storedSize
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -1107,7 +1107,7 @@ internal func compare_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ op: MfCompare
     let mfarray = check_dense(mfarray)
     
     let size = mfarray.storedSize
-    let newdata = MfData(size: size, mftype: .Bool)
+    let newdata = MfData(uninitializedSize: size, mftype: .Bool)
     newdata.withUnsafeMutableStartPointer(datatype: Float.self){
         dstptrF in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -1210,7 +1210,7 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
     let retSize = shape2size(&retShape)
     
     if mfarray.isReal{
-        let newdata = MfData(size: retSize, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: retSize, mftype: mfarray.mftype)
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptrT in
             indicesT.withUnsafeMutableStartPointer(datatype: T.self){
@@ -1232,7 +1232,7 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
         return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     else{
-        let newdata = MfData(size: retSize, mftype: mfarray.mftype, complex: true)
+        let newdata = MfData(uninitializedSize: retSize, mftype: mfarray.mftype, complex: true)
         newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPComplexType.self){
             dstptrT in
             indicesT.withUnsafeMutableStartPointer(datatype: T.self){
@@ -1299,7 +1299,7 @@ internal func fancy1dgetcol_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices
      //[0.0, 0.0, 3.0]
      */
     if mfarray.isReal{
-        let newdata = MfData(size: indices.size, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: indices.size, mftype: mfarray.mftype)
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptrT in
             let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -1313,7 +1313,7 @@ internal func fancy1dgetcol_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices
         return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     else{
-        let newdata = MfData(size: indices.size, mftype: mfarray.mftype, complex: true)
+        let newdata = MfData(uninitializedSize: indices.size, mftype: mfarray.mftype, complex: true)
         newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPComplexType.self){
             dstptrT in
             let _ = mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.vDSPComplexType.self){
@@ -1377,7 +1377,7 @@ internal func dotpr_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: Mf
     let r_rest_size = shape2size(&r_rest_shape)
     let ret_size = shape2size(&ret_shape)
     
-    let newdata = MfData(size: ret_size, mftype: l_mfarray.mftype)
+    let newdata = MfData(uninitializedSize: ret_size, mftype: l_mfarray.mftype)
     
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptr in
@@ -1441,14 +1441,15 @@ internal func fft_zr_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ numbe
     }
     
     // to complex and contiguous
-    src_mfarray = check_contiguous(src_mfarray.moveaxis(src: axis, dst: -1), .Row).to_complex()
+    // not in place: check_contiguous may return the caller's signal itself
+    src_mfarray = check_contiguous(src_mfarray.moveaxis(src: axis, dst: -1), .Row).to_complex(false)
     
     assert(process_number % 2 == 0, "Bug was occurred")
     let blocksize_dst = process_number/2 + 1
     var retShape = mfarray.shape
     retShape[retShape.count - 1] = blocksize_dst
     
-    let newdata = MfData(size: shape2size(&retShape), mftype: mftype, complex: true)
+    let newdata = MfData(size: shape2size(&retShape), mftype: mftype, complex: true) // vDSP_fft_zrop does not write the last imaginary bin
     
     var restShape = Array(retShape.prefix(retShape.count-1))
     let loopnum = shape2size(&restShape)
@@ -1564,7 +1565,7 @@ internal func cgimage2mfarray_by_vDSP<T: MfStorable>(_ cgimage: CGImage, mftype:
     let colorSpace: CGColorSpace
     
     let size = width*height*channel
-    let newdata = MfData(size: size, mftype: srcmftype)
+    let newdata = MfData(size: size, mftype: srcmftype) // CGContext.draw blends onto the existing contents
     let newstructure = MfStructure(shape: [height, width, channel], mforder: .Row)
     
     if srcmftype == .Float{
@@ -1669,7 +1670,7 @@ internal func compare_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ op: MfCompare
     let mfarray = check_dense(mfarray)
     
     let size = mfarray.storedSize
-    let newdata = MfData(size: size, mftype: .Bool)
+    let newdata = MfData(uninitializedSize: size, mftype: .Bool)
     newdata.withUnsafeMutableStartPointer(datatype: Float.self){
         dstptr in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2590,7 +2591,7 @@ internal func contiguous_and_astype_by_vDSP<T: MfStorable, U: MfStorable>(_ src_
     var ret_shape = src_mfarray.shape
     let ret_strides = shape2strides(&ret_shape, mforder: mforder)
 
-    let newdata = MfData(size: src_mfarray.size, mftype: mftype)
+    let newdata = MfData(uninitializedSize: src_mfarray.size, mftype: mftype)
 
     newdata.withUnsafeMutableStartPointer(datatype: U.self){
         dstptrU in
@@ -2614,7 +2615,7 @@ internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP
     var mfarray = mfarray
     mfarray = check_dense(mfarray)
 
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2637,7 +2638,7 @@ internal func biopvs_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T,
 
     mfarray = check_dense(mfarray)
 
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2656,7 +2657,7 @@ internal func biopsv_by_vDSP<T: MfStorable>(_ l_scalar: T, _ r_mfarray: MfArray,
 
     mfarray = check_dense(mfarray)
 
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2672,7 +2673,7 @@ internal func biopsv_by_vDSP<T: MfStorable>(_ l_scalar: T, _ r_mfarray: MfArray,
 internal func biopvv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, vDSP_func: vDSP_biopvv_func<T>) -> MfArray{
     let (l_mfarray, r_mfarray, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
 
-    let newdata = MfData(size: retsize, mftype: l_mfarray.mftype)
+    let newdata = MfData(uninitializedSize: retsize, mftype: l_mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2717,7 +2718,7 @@ internal func stats_by_vDSP<T: MfStorable>(_ typedMfarray: MfArray, axis: Int?, 
 
         let ret_size = shape2size(&ret_shape)
 
-        let newdata = MfData(size: ret_size, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: ret_size, mftype: mfarray.mftype)
         var dst_offset = 0
 
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2736,7 +2737,7 @@ internal func stats_by_vDSP<T: MfStorable>(_ typedMfarray: MfArray, axis: Int?, 
         return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
     }
     else{
-        let newdata = MfData(size: 1, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: 1, mftype: mfarray.mftype)
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptrT in
             mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2764,7 +2765,7 @@ internal func stats_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int?,
 
         let ret_size = shape2size(&ret_shape)
 
-        let newdata = MfData(size: ret_size, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: ret_size, mftype: mfarray.mftype)
         var dst_offset = 0
 
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2786,7 +2787,7 @@ internal func stats_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int?,
         return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
     }
     else{
-        let newdata = MfData(size: 1, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: 1, mftype: mfarray.mftype)
         var uival = UInt.zero
 
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2834,7 +2835,7 @@ internal func argsort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ 
     var offset = 0
 
     let retSize = shape2size(&retShape)
-    let newdata = MfData(size: retSize, mftype: .Int)
+    let newdata = MfData(uninitializedSize: retSize, mftype: .Int)
     newdata.withUnsafeMutableStartPointer(datatype: Float.self){
         dstptrF in
         srcmfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2870,7 +2871,7 @@ internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ minval: T, _ max
 
     mfarray = check_dense(mfarray)
 
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2907,7 +2908,7 @@ internal func boolget_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices: MfAr
     let retSize = shape2size(&retShape)
 
     if mfarray.isReal{
-        let newdata = MfData(size: retSize, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: retSize, mftype: mfarray.mftype)
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptrT in
             indicesT.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2935,7 +2936,7 @@ internal func fancy1dgetcol_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices
     assert(mfarray.ndim == 1, "must be 1d")
 
     if mfarray.isReal{
-        let newdata = MfData(size: indices.size, mftype: mfarray.mftype)
+        let newdata = MfData(uninitializedSize: indices.size, mftype: mfarray.mftype)
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptrT in
             let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2971,7 +2972,7 @@ internal func dotpr_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: Mf
     let r_rest_size = shape2size(&r_rest_shape)
     let ret_size = shape2size(&ret_shape)
 
-    let newdata = MfData(size: ret_size, mftype: l_mfarray.mftype)
+    let newdata = MfData(uninitializedSize: ret_size, mftype: l_mfarray.mftype)
 
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptr in
@@ -3000,7 +3001,7 @@ internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ type: T.Type) ->
     let mfarray = check_dense(mfarray)
 
     let size = mfarray.storedSize
-    let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
+    let newdata = MfData(uninitializedSize: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptr in
         mfarray.withUnsafeMutableStartPointer(datatype: T.self){

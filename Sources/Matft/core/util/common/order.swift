@@ -16,7 +16,7 @@ internal func copy_all_mfarray(_ src_mfarray: MfArray) -> MfArray{
     assert(src_mfarray.mfstructure.row_contiguous || src_mfarray.mfstructure.column_contiguous, "To call copyAll function, passed mfarray must be contiguous")
     
     let newsize = src_mfarray.size
-    let newdata = MfData(size: newsize, mftype: src_mfarray.mftype, complex: src_mfarray.isComplex)
+    let newdata = MfData(uninitializedSize: newsize, mftype: src_mfarray.mftype, complex: src_mfarray.isComplex)
     let newstructure = MfStructure(shape: src_mfarray.shape, strides: src_mfarray.strides)
     let dst_mfarray = MfArray(mfdata: newdata, mfstructure: newstructure)
     

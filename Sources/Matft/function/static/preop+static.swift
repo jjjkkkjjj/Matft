@@ -32,7 +32,7 @@ extension Matft{
         #else
         // Pure Swift fallback for abs(ret - 1)
         let size = ret.storedSize
-        let newdata = MfData(size: size, mftype: .Bool)
+        let newdata = MfData(uninitializedSize: size, mftype: .Bool)
         newdata.withUnsafeMutableStartPointer(datatype: Float.self) { dstptr in
             ret.withUnsafeMutableStartPointer(datatype: Float.self) { srcptr in
                 for i in 0..<size {
@@ -77,7 +77,7 @@ fileprivate func _prefix_operation(_ mfarray: MfArray, _ preop: PreOp) -> MfArra
 fileprivate func _prefix_operation(_ mfarray: MfArray, _ preop: PreOp) -> MfArray{
     let mfarray = check_dense(mfarray)
     let size = mfarray.storedSize
-    let newdata = MfData(size: size, mftype: mfarray.mftype, complex: mfarray.isComplex)
+    let newdata = MfData(uninitializedSize: size, mftype: mfarray.mftype, complex: mfarray.isComplex)
 
     switch preop {
     case .neg:
