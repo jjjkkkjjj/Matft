@@ -25,13 +25,15 @@ internal func data2flattenArray(_ ptr: UnsafeMutableRawPointer, mftype: MfType, 
             
             return ret
         case .UInt8:
-            let ptrui8 = allocate_unsafeMPtrT(type: UInt8.self, count: size, zeroed: false)
-            wrap_vDSP_convert(size, ptrF, 1, ptrui8, 1, vDSP_vfixru8)
-            let ret = Array(UnsafeMutableBufferPointer(start: ptrui8, count: size)) as [Any]
+            // vDSP_vfixru8 turns negative values into 0 while wrapping the others around.
+            // Convert into Int8, which wraps around both, and reinterpret the bits (e.g. -5 -> 251 like numpy)
+            let ptri8 = allocate_unsafeMPtrT(type: Int8.self, count: size, zeroed: false)
+            wrap_vDSP_convert(size, ptrF, 1, ptri8, 1, vDSP_vfixr8)
+            let ret = UnsafeMutableBufferPointer(start: ptri8, count: size).map{ UInt8(bitPattern: $0) } as [Any]
             
             //free
-            ptrui8.deinitialize(count: size)
-            ptrui8.deallocate()
+            ptri8.deinitialize(count: size)
+            ptri8.deallocate()
 
             return ret
         case .UInt16:

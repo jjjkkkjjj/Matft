@@ -366,7 +366,7 @@ final class ImageTest: XCTestCase {
         // cv2.blur(u, (3, 3), borderType=cv2.BORDER_REPLICATE)
         XCTAssertEqual(Matft.image.blur(ramp8, ksize: (3, 3)),
                        MfArray([[26, 35, 48, 61, 69], [69, 78, 91, 104, 113], [134, 143, 156, 169, 178], [178, 186, 199, 212, 221]] as [[UInt8]]))
-        // cv2.blur(u, (4, 2), borderType=cv2.BORDER_REPLICATE)
+        // cv2.blur(u, (4, 2), borderType=cv2.BORDER_REPLICATE). [0, 3] is exactly 32.5, which OpenCV's UInt8 box filter rounds up
         XCTAssertEqual(Matft.image.blur(ramp8, ksize: (4, 2)),
                        MfArray([[3, 10, 20, 33, 42], [36, 42, 52, 65, 75], [101, 107, 117, 130, 140], [166, 172, 182, 195, 205]] as [[UInt8]]))
         // cv2.boxFilter(a, -1, (3, 3), normalize=False, borderType=cv2.BORDER_CONSTANT)

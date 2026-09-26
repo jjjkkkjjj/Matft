@@ -2499,45 +2499,53 @@ internal func vDSP_vfixu32D(_ src: UnsafePointer<Double>, _ srcStride: Int, _ ds
 
 // MARK: - vDSP Rounded Conversion Functions (Float to Integer with rounding)
 
+/// Round to the nearest (even) and wrap around out of range values like vDSP, e.g. -5 -> 251 for UInt8. Non-finite values become 0
+@inline(__always)
+fileprivate func _wrapping_round<T: FixedWidthInteger>(_ value: Float, to type: T.Type) -> T{
+    let rounded = value.rounded(.toNearestOrEven)
+    guard rounded.isFinite && Swift.abs(rounded) < 9.2e18 else { return 0 }
+    return T(truncatingIfNeeded: Int64(rounded))
+}
+
 @inline(__always)
 internal func vDSP_vfixr8(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int8>, _ dstStride: Int, _ count: Int) {
     for i in 0..<count {
-        dst[i * dstStride] = Int8(clamping: Int(src[i * srcStride].rounded()))
+        dst[i * dstStride] = _wrapping_round(src[i * srcStride], to: Int8.self)
     }
 }
 
 @inline(__always)
 internal func vDSP_vfixr16(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int16>, _ dstStride: Int, _ count: Int) {
     for i in 0..<count {
-        dst[i * dstStride] = Int16(clamping: Int(src[i * srcStride].rounded()))
+        dst[i * dstStride] = _wrapping_round(src[i * srcStride], to: Int16.self)
     }
 }
 
 @inline(__always)
 internal func vDSP_vfixr32(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Int32>, _ dstStride: Int, _ count: Int) {
     for i in 0..<count {
-        dst[i * dstStride] = Int32(clamping: Int64(src[i * srcStride].rounded()))
+        dst[i * dstStride] = _wrapping_round(src[i * srcStride], to: Int32.self)
     }
 }
 
 @inline(__always)
 internal func vDSP_vfixru8(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt8>, _ dstStride: Int, _ count: Int) {
     for i in 0..<count {
-        dst[i * dstStride] = UInt8(truncatingIfNeeded: Int(src[i * srcStride].rounded()))
+        dst[i * dstStride] = _wrapping_round(src[i * srcStride], to: UInt8.self)
     }
 }
 
 @inline(__always)
 internal func vDSP_vfixru16(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt16>, _ dstStride: Int, _ count: Int) {
     for i in 0..<count {
-        dst[i * dstStride] = UInt16(clamping: Int(src[i * srcStride].rounded()))
+        dst[i * dstStride] = _wrapping_round(src[i * srcStride], to: UInt16.self)
     }
 }
 
 @inline(__always)
 internal func vDSP_vfixru32(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<UInt32>, _ dstStride: Int, _ count: Int) {
     for i in 0..<count {
-        dst[i * dstStride] = UInt32(clamping: Int64(src[i * srcStride].rounded()))
+        dst[i * dstStride] = _wrapping_round(src[i * srcStride], to: UInt32.self)
     }
 }
 
