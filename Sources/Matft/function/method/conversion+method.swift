@@ -119,15 +119,17 @@ extension MfArray{
     @available(macOS 12.0, *)
     @available(iOS 14.0, *)
     public func toMLMultiArray() throws -> MLMultiArray {
-        switch self.storedType {
+        // copy the stored data linearly, so views (offsets, negative strides, ...) must be made dense
+        let x = check_dense(self)
+        switch x.storedType {
         case .Float:
-            let ptrF = allocate_unsafeMRPtr(type: Float.self, count: self.storedSize, zeroed: false)
-            memcpy(ptrF, self.mfdata.data_real, self.storedByteSize)
-            return try MLMultiArray(dataPointer: ptrF, shape: self.shape.map{ NSNumber(value: $0) } , dataType: MLMultiArrayDataType.float32, strides: self.strides.map{ NSNumber(value: $0) }, deallocator: _deallocator_MLMultiArray_pointer)
+            let ptrF = allocate_unsafeMRPtr(type: Float.self, count: x.storedSize, zeroed: false)
+            memcpy(ptrF, x.mfdata.data_real, x.storedByteSize)
+            return try MLMultiArray(dataPointer: ptrF, shape: x.shape.map{ NSNumber(value: $0) } , dataType: MLMultiArrayDataType.float32, strides: x.strides.map{ NSNumber(value: $0) }, deallocator: _deallocator_MLMultiArray_pointer)
         case .Double:
-            let ptrD = allocate_unsafeMRPtr(type: Double.self, count: self.storedSize, zeroed: false)
-            memcpy(ptrD, self.mfdata.data_real, self.storedByteSize)
-            return try MLMultiArray(dataPointer: ptrD, shape: self.shape.map{ NSNumber(value: $0) } , dataType: MLMultiArrayDataType.double, strides: self.strides.map{ NSNumber(value: $0) }, deallocator: _deallocator_MLMultiArray_pointer)
+            let ptrD = allocate_unsafeMRPtr(type: Double.self, count: x.storedSize, zeroed: false)
+            memcpy(ptrD, x.mfdata.data_real, x.storedByteSize)
+            return try MLMultiArray(dataPointer: ptrD, shape: x.shape.map{ NSNumber(value: $0) } , dataType: MLMultiArrayDataType.double, strides: x.strides.map{ NSNumber(value: $0) }, deallocator: _deallocator_MLMultiArray_pointer)
         }
     }
     #endif

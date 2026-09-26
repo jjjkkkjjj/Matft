@@ -660,5 +660,27 @@ final class ConversionTests: XCTestCase {
             XCTAssertEqual(try a.T.toMLMultiArray(), mlmularr)
         }
     }
+
+    func testToMLMultiArrayLayouts() throws {
+        /// Values in row major order read by the logical indices
+        func values(_ m: MLMultiArray) -> [Double] {
+            let shape = m.shape.map{ $0.intValue }
+            return (0..<shape.reduce(1, *)).map{ i in
+                var idx = [Int](repeating: 0, count: shape.count)
+                var r = i
+                for k in (0..<shape.count).reversed(){ idx[k] = r % shape[k]; r /= shape[k] }
+                return m[idx.map{ NSNumber(value: $0) }].doubleValue
+            }
+        }
+        let base = MfArray([[1, -2, 3], [4, 5, -6]] as [[Float]])
+        for dtype in [MfType.Float, .Double, .Int]{
+            for (name, x) in layoutVariants(base.astype(dtype)){
+                let m = try x.toMLMultiArray()
+                XCTAssertEqual(m.shape.map{ $0.intValue }, [2, 3], "\(dtype) \(name)")
+                XCTAssertEqual(m.dataType, dtype == .Double ? .double : .float32, "\(dtype) \(name)")
+                XCTAssertEqual(values(m), [1, -2, 3, 4, 5, -6], "\(dtype) \(name)")
+            }
+        }
+    }
     #endif
 }
