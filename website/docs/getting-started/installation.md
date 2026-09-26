@@ -66,5 +66,6 @@ pod install
 
 ## Requirements
 
-- **iOS / macOS:** Swift 6.1 or later
+- **iOS / macOS:** Swift 6.1 or later, macOS 10.13+ / iOS 12+ (`platforms` in `Package.swift`)
+- **tvOS / watchOS / visionOS:** SwiftPM's default minimum versions apply, but they are not tested
 - **WebAssembly:** see [Contributing](../contributing.md#webassembly-build--test)

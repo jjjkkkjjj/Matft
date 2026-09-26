@@ -1,0 +1,23 @@
+name: iOS
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    # Compile the library and the tests for the minimum iOS in Package.swift,
+    # so that an API newer than it without `@available` is caught
+    - name: Build for testing (iOS Simulator)
+      run: |
+        xcodebuild build-for-testing \
+          -workspace .swiftpm/xcode/package.xcworkspace \
+          -scheme Matft \
+          -destination 'generic/platform=iOS Simulator' \
+          -quiet
