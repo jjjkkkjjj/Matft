@@ -124,17 +124,5 @@ final class OrderStatsTests: XCTestCase {
 
 /// |actual - expected| <= atol + rtol * |expected|, and NaN must be at the same positions
 fileprivate func _assertClose(_ actual: MfArray, _ expected: MfArray, rtol: Double = 1e-7, atol: Double = 1e-10, file: StaticString = #filePath, line: UInt = #line) {
-    XCTAssertEqual(actual.shape, expected.shape, "shape mismatch", file: file, line: line)
-    guard actual.shape == expected.shape else { return }
-    XCTAssertEqual(actual.mftype, expected.mftype, "type mismatch", file: file, line: line)
-
-    let a = actual.astype(.Double).flatten().data as! [Double]
-    let e = expected.astype(.Double).flatten().data as! [Double]
-    for i in 0..<a.count {
-        let ok = a[i].isNaN || e[i].isNaN ? a[i].isNaN && e[i].isNaN : abs(a[i] - e[i]) <= atol + rtol * abs(e[i])
-        if !ok {
-            XCTFail("not close at flatten index \(i): actual=\(a[i]), expected=\(e[i])", file: file, line: line)
-            return
-        }
-    }
+    XCTAssertClose(actual, expected, rtol: rtol, atol: atol, checkType: true, file: file, line: line)
 }

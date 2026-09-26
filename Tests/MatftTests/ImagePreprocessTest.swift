@@ -172,16 +172,7 @@ fileprivate func _load(_ name: String, shape: [Int]) -> MfArray {
     return Matft.file.loadtxt(url: url, delimiter: ",", mftype: .Double)!.reshape(shape)
 }
 
-/// Same as `np.testing.assert_allclose`: |actual - expected| <= atol + rtol * |expected|
 fileprivate func _assertClose(_ actual: MfArray, _ expected: MfArray, rtol: Double = 1e-6, atol: Double = 1e-8, file: StaticString = #filePath, line: UInt = #line) {
-    XCTAssertEqual(actual.shape, expected.shape, "shape mismatch", file: file, line: line)
-    guard actual.shape == expected.shape else { return }
-
-    let a = actual.astype(.Double).flatten().data as! [Double]
-    let e = expected.astype(.Double).flatten().data as! [Double]
-    for i in 0..<a.count where !(abs(a[i] - e[i]) <= atol + rtol * abs(e[i])) {
-        XCTFail("not close at flatten index \(i): actual=\(a[i]), expected=\(e[i])", file: file, line: line)
-        return
-    }
+    XCTAssertClose(actual, expected, rtol: rtol, atol: atol, checkType: false, file: file, line: line)
 }
 #endif

@@ -5,10 +5,6 @@ import XCTest
 /// Operations whose algorithms were replaced must keep values, shapes and types
 final class AlgorithmicTests: XCTestCase {
 
-    private func rowValues(_ x: MfArray) -> [Double]{
-        x.astype(.Double).to_contiguous(mforder: .Row).data.map{ $0 as! Double }
-    }
-
     /// Values of `f` over row major indices of `shape`
     private func expected(_ shape: [Int], _ f: ([Int]) -> Double) -> [Double]{
         var ret: [Double] = []
@@ -25,11 +21,7 @@ final class AlgorithmicTests: XCTestCase {
         // values: (i*7 + 3) % 11 - 5 in row major order of the logical shape [2, 3, 4]
         let values = (0..<24).map{ Float(($0 * 7 + 3) % 11 - 5) }
         let a = MfArray(values, shape: [2, 3, 4])
-        return [
-            ("contiguous", a),
-            ("column", a.to_contiguous(mforder: .Column)),
-            ("transposed", a.T.to_contiguous(mforder: .Row).T),
-            ("view", MfArray([Float](repeating: 99, count: 12) + values + [Float](repeating: 99, count: 12), shape: [4, 3, 4])[1~<3]),
+        return layoutVariants(a).map{ ($0.name, $0.array) } + [
             ("double", a.astype(.Double)),
             ("int", a.astype(.Int)),
         ]
