@@ -310,7 +310,286 @@ final class ComplexTests: XCTestCase {
             b = a[indices, indices]
             XCTAssertEqual(b.real, real[indices, indices])
             XCTAssertEqual(b.imag!, imag[indices, indices])
+
+            // getter -> setter round trip
+            let c = Matft.arange(start: 0, to: 16, by: 1).reshape([2,2,4])
+            c[real > 5] = a[real > 5]
+            XCTAssertEqual(c.real[real > 5], real[real > 5])
+            XCTAssertEqual(c.imag![real > 5], imag[real > 5])
+
+            c[indices] = a[indices]
+            XCTAssertEqual(c.real[indices], real[indices])
+            XCTAssertEqual(c.imag![indices], imag[indices])
+
+            c[indices, indices] = a[indices, indices]
+            XCTAssertEqual(c.real[indices, indices], real[indices, indices])
+            XCTAssertEqual(c.imag![indices, indices], imag[indices, indices])
         }
+    }
+
+    func testBasicIndexingSet(){
+        do{
+            let real = Matft.arange(start: 0, to: 16, by: 1).reshape([2,4,2])
+            let imag = Matft.arange(start: 0, to: -16, by: -1).reshape([2,4,2])
+            let a = MfArray(real: real, imag: imag)
+
+            // complex <- complex
+            a[Matft.all, 2, Matft.all] = MfArray(real: MfArray([3]), imag: MfArray([-1]))
+            // complex <- real
+            a[0, 1, Matft.all] = MfArray([7])
+            // complex <- complex scalar
+            a[1, 0, 0] = MfArray(real: MfArray([100]), imag: MfArray([200]))
+            // complex <- real scalar
+            a[1, 0, 1] = 5
+
+            _assertComplexEqual(a,
+                                real: MfArray([[[  0,   1],
+                                                [  7,   7],
+                                                [  3,   3],
+                                                [  6,   7]],
+                                               [[100,   5],
+                                                [ 10,  11],
+                                                [  3,   3],
+                                                [ 14,  15]]]),
+                                imag: MfArray([[[  0,  -1],
+                                                [  0,   0],
+                                                [ -1,  -1],
+                                                [ -6,  -7]],
+                                               [[200,   0],
+                                                [-10, -11],
+                                                [ -1,  -1],
+                                                [-14, -15]]]))
+        }
+    }
+
+    func testBooleanIndexingSet(){
+        // complex <- complex
+        do{
+            let real = Matft.arange(start: 0, to: 8, by: 1).reshape([2,4])
+            let imag = Matft.arange(start: 0, to: -8, by: -1).reshape([2,4])
+            let a = MfArray(real: real, imag: imag)
+
+            a[real > 3] = MfArray(real: MfArray([100]), imag: MfArray([-100]))
+            _assertComplexEqual(a,
+                                real: MfArray([[  0,   1,   2,   3],
+                                               [100, 100, 100, 100]]),
+                                imag: MfArray([[   0,   -1,   -2,   -3],
+                                               [-100, -100, -100, -100]]))
+        }
+
+        // complex <- complex with lower dimensional indices
+        do{
+            let real = Matft.arange(start: 0, to: 12, by: 1).reshape([3,2,2])
+            let imag = Matft.arange(start: 0, to: -12, by: -1).reshape([3,2,2])
+            let a = MfArray(real: real, imag: imag)
+
+            a[MfArray([true, false, true])] = MfArray(real: Matft.arange(start: 100, to: 108, by: 1).reshape([2,2,2]),
+                                                      imag: Matft.arange(start: -100, to: -108, by: -1).reshape([2,2,2]))
+            _assertComplexEqual(a,
+                                real: MfArray([[[100, 101],
+                                                [102, 103]],
+                                               [[  4,   5],
+                                                [  6,   7]],
+                                               [[104, 105],
+                                                [106, 107]]]),
+                                imag: MfArray([[[-100, -101],
+                                                [-102, -103]],
+                                               [[  -4,   -5],
+                                                [  -6,   -7]],
+                                               [[-104, -105],
+                                                [-106, -107]]]))
+        }
+
+        // real <- complex
+        do{
+            let a = Matft.arange(start: 0, to: 6, by: 1).reshape([2,3])
+
+            a[MfArray([[false, true, false],
+                       [true, false, true]])] = MfArray(real: MfArray([7]), imag: MfArray([1]))
+            _assertComplexEqual(a,
+                                real: MfArray([[0, 7, 2],
+                                               [7, 4, 7]]),
+                                imag: MfArray([[0, 1, 0],
+                                               [1, 0, 1]]))
+        }
+
+        // complex <- real
+        do{
+            let real = Matft.arange(start: 0, to: 6, by: 1).reshape([2,3])
+            let imag = Matft.arange(start: 10, to: 16, by: 1).reshape([2,3])
+            let a = MfArray(real: real, imag: imag)
+
+            a[MfArray([[true, false, false],
+                       [false, false, true]])] = MfArray([-1])
+            _assertComplexEqual(a,
+                                real: MfArray([[-1, 1, 2],
+                                               [ 3, 4, -1]]),
+                                imag: MfArray([[ 0, 11, 12],
+                                               [13, 14,  0]]))
+        }
+    }
+
+    func testFancyIndexingSet(){
+        // 1d complex <- complex
+        do{
+            let real = Matft.arange(start: 0, to: 6, by: 1)
+            let imag = Matft.arange(start: 0, to: -6, by: -1)
+            let a = MfArray(real: real, imag: imag)
+
+            a[MfArray([3, -1, 0])] = MfArray(real: MfArray([10, 20, 30]), imag: MfArray([-10, -20, -30]))
+            _assertComplexEqual(a,
+                                real: MfArray([ 30,  1,  2,  10,  4,  20]),
+                                imag: MfArray([-30, -1, -2, -10, -4, -20]))
+        }
+
+        // nd complex <- complex with broadcasting
+        do{
+            let real = Matft.arange(start: 0, to: 12, by: 1).reshape([3,2,2])
+            let imag = Matft.arange(start: 0, to: -12, by: -1).reshape([3,2,2])
+            let a = MfArray(real: real, imag: imag)
+
+            a[MfArray([2, 0])] = MfArray(real: Matft.arange(start: 100, to: 104, by: 1).reshape([2,2]),
+                                         imag: Matft.arange(start: -100, to: -104, by: -1).reshape([2,2]))
+            _assertComplexEqual(a,
+                                real: MfArray([[[100, 101],
+                                                [102, 103]],
+                                               [[  4,   5],
+                                                [  6,   7]],
+                                               [[100, 101],
+                                                [102, 103]]]),
+                                imag: MfArray([[[-100, -101],
+                                                [-102, -103]],
+                                               [[  -4,   -5],
+                                                [  -6,   -7]],
+                                               [[-100, -101],
+                                                [-102, -103]]]))
+        }
+
+        // transposed view
+        do{
+            let real = Matft.arange(start: 0, to: 6, by: 1).reshape([2,3])
+            let imag = Matft.arange(start: 10, to: 16, by: 1).reshape([2,3])
+            let a = MfArray(real: real, imag: imag)
+
+            a.T[MfArray([1])] = MfArray(real: MfArray([-1]), imag: MfArray([-2]))
+            _assertComplexEqual(a,
+                                real: MfArray([[ 0, -1,  2],
+                                               [ 3, -1,  5]]),
+                                imag: MfArray([[10, -2, 12],
+                                               [13, -2, 15]]))
+        }
+
+        // real <- complex
+        do{
+            let a = Matft.arange(start: 0, to: 4, by: 1)
+
+            a[MfArray([1])] = MfArray(real: MfArray([5]), imag: MfArray([6]))
+            _assertComplexEqual(a,
+                                real: MfArray([0, 5, 2, 3]),
+                                imag: MfArray([0, 6, 0, 0]))
+        }
+
+        // complex <- real
+        do{
+            let real = Matft.arange(start: 0, to: 4, by: 1).reshape([2,2])
+            let imag = Matft.arange(start: 4, to: 8, by: 1).reshape([2,2])
+            let a = MfArray(real: real, imag: imag)
+
+            a[MfArray([0])] = MfArray([9])
+            _assertComplexEqual(a,
+                                real: MfArray([[9, 9],
+                                               [2, 3]]),
+                                imag: MfArray([[0, 0],
+                                               [6, 7]]))
+        }
+    }
+
+    func testFancyIndexingSetAll(){
+        // complex <- complex
+        do{
+            let real = Matft.arange(start: 0, to: 27, by: 1).reshape([3,3,3])
+            let imag = Matft.arange(start: 0, to: -27, by: -1).reshape([3,3,3])
+            let a = MfArray(real: real, imag: imag)
+
+            a[MfArray([-2, 1, 0]), MfArray([0, 1, 0])] = MfArray(real: MfArray([999]), imag: MfArray([-999]))
+            _assertComplexEqual(a,
+                                real: MfArray([[[999, 999, 999],
+                                                [  3,   4,   5],
+                                                [  6,   7,   8]],
+                                               [[999, 999, 999],
+                                                [999, 999, 999],
+                                                [ 15,  16,  17]],
+                                               [[ 18,  19,  20],
+                                                [ 21,  22,  23],
+                                                [ 24,  25,  26]]]),
+                                imag: MfArray([[[-999, -999, -999],
+                                                [  -3,   -4,   -5],
+                                                [  -6,   -7,   -8]],
+                                               [[-999, -999, -999],
+                                                [-999, -999, -999],
+                                                [ -15,  -16,  -17]],
+                                               [[ -18,  -19,  -20],
+                                                [ -21,  -22,  -23],
+                                                [ -24,  -25,  -26]]]))
+        }
+
+        // all axes are indexed, and transposed view
+        do{
+            let real = MfArray([[1, 2], [3, 4], [5, 6]])
+            let imag = MfArray([[10, 20], [30, 40], [50, 60]])
+            let a = MfArray(real: real, imag: imag)
+
+            a[MfArray([0, 1, 2]), MfArray([0, -1, 0])] = MfArray(real: MfArray([999, 888, 777]), imag: MfArray([-9, -8, -7]))
+            _assertComplexEqual(a,
+                                real: MfArray([[999,   2],
+                                               [  3, 888],
+                                               [777,   6]]),
+                                imag: MfArray([[-9, 20],
+                                               [30, -8],
+                                               [-7, 60]]))
+
+            a.T[MfArray([0, 1, -1]), MfArray([0, 1, 0])] = MfArray(real: MfArray([-999, -888, -777]), imag: MfArray([1, 2, 3]))
+            _assertComplexEqual(a,
+                                real: MfArray([[-999, -777],
+                                               [   3, -888],
+                                               [ 777,    6]]),
+                                imag: MfArray([[ 1,  3],
+                                               [30,  2],
+                                               [-7, 60]]))
+        }
+
+        // real <- complex
+        do{
+            let a = Matft.arange(start: 0, to: 4, by: 1).reshape([2,2])
+
+            a[MfArray([0, 1]), MfArray([1, 0])] = MfArray(real: MfArray([7]), imag: MfArray([8]))
+            _assertComplexEqual(a,
+                                real: MfArray([[0, 7],
+                                               [7, 3]]),
+                                imag: MfArray([[0, 8],
+                                               [8, 0]]))
+        }
+
+        // complex <- real
+        do{
+            let real = Matft.arange(start: 0, to: 4, by: 1).reshape([2,2])
+            let imag = Matft.arange(start: 4, to: 8, by: 1).reshape([2,2])
+            let a = MfArray(real: real, imag: imag)
+
+            a[MfArray([1]), MfArray([1])] = MfArray([-1])
+            _assertComplexEqual(a,
+                                real: MfArray([[0,  1],
+                                               [2, -1]]),
+                                imag: MfArray([[4,  5],
+                                               [6,  0]]))
+        }
+    }
+
+    private func _assertComplexEqual(_ mfarray: MfArray, real: MfArray, imag: MfArray, file: StaticString = #filePath, line: UInt = #line){
+        XCTAssertTrue(mfarray.isComplex, "must be complex", file: file, line: line)
+        XCTAssertEqual(mfarray.real, real, file: file, line: line)
+        guard let mfimag = mfarray.imag else { return }
+        XCTAssertEqual(mfimag, imag, file: file, line: line)
     }
 }
 #endif
