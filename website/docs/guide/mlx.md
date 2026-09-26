@@ -16,7 +16,7 @@ Use Matft for exact, CPU-side pre / post processing and numerical work, and MLX 
 | Hardware | Apple silicon and Intel Mac [^intel] | Apple silicon ([README](https://github.com/ml-explore/mlx-swift#readme), [#133](https://github.com/ml-explore/mlx-swift/issues/133)) |
 | iOS Simulator | ✅ [^simulator] | ❌ ([Running on iOS](https://github.com/ml-explore/mlx-swift/blob/main/Source/MLX/Documentation.docc/Articles/running-on-ios.md)) |
 | WebAssembly | ✅ ([build script](../contributing.md#webassembly-build--test)) | |
-| Minimum OS | No restriction in `Package.swift` | macOS 14 / iOS 17 |
+| Minimum OS | macOS 10.13 / iOS 12 | macOS 14 / iOS 17 |
 | float64 | ✅ | CPU stream only ("float64 is not supported on the GPU") |
 | complex128 | ✅ | ❌ (complex64 only) |
 | Writing to a slice | Updates the original array like a NumPy [view](./views.md) | The slice is an independent array |
@@ -27,7 +27,7 @@ Use Matft for exact, CPU-side pre / post processing and numerical work, and MLX 
 | Autograd / NN layers / GPU training | ❌ | ✅ |
 
 [^intel]: The tests are run on x86_64 under Rosetta. 3 tests (the integer overflow wrap-around of `Int16` and the `NaN` comparison in `==`) currently fail on x86_64.
-[^simulator]: All the 310 tests of `MatftTests` pass on the iOS Simulator (iPhone 16 Pro, iOS 18.6).
+[^simulator]: All the tests of `MatftTests` pass on the iOS Simulator (iPhone 16 Pro, iOS 18.6).
 
 ```swift
 import Matft

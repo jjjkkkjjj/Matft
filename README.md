@@ -60,7 +60,7 @@ dependencies: [
 In Xcode: File > Add Package Dependencies... and enter `https://github.com/jjjkkkjjj/Matft`.
 Carthage and CocoaPods are outdated; see [Installation](https://jjjkkkjjj.github.io/Matft/docs/getting-started/installation).
 
-Requirements: Swift 6.1 or later (iOS / macOS). WebAssembly is also supported.
+Requirements: Swift 6.1 or later, macOS 10.13+ / iOS 12+. WebAssembly is also supported.
 
 ## Development
 
