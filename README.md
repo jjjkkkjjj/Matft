@@ -546,6 +546,31 @@ For more complex conversion, see OpenCV [code](https://github.com/opencv/opencv/
 
 <img width="513" alt="Screen Shot 2022-07-19 at 21 09 02" src="https://user-images.githubusercontent.com/16914891/179746856-c4e8048d-3e7c-4835-b39c-ddf6af5b5fd7.png">
 
+#### Visual check against OpenCV
+
+Each image function is tested in [ImageTest.swift](./Tests/MatftTests/ImageTest.swift), and its output is compared with OpenCV's one (input | Matft | OpenCV | |diff| x8) by [scripts/image_compare.py](./scripts/image_compare.py).
+
+```sh
+MATFT_IMAGE_SNAPSHOT=1 swift test --filter MatftTests.ImageTest
+python3 scripts/image_compare.py
+```
+
+> [!NOTE]
+> `Matft.image.warpAffine`'s matrix has the same meaning as `cv2.warpAffine`'s one after v0.3.3 (v0.3.3 and earlier swapped the off-diagonal elements and used a bottom-left origin).
+> Interpolations differ from OpenCV's ones (vImage), so the small differences along the edges are expected.
+
+| Function | Comparison |
+| --- | --- |
+| `resize(width: 300, height: 150)` | ![resize](./Tests/MatftTests/files/images/compare/resize_300x150.png) |
+| `resize` (gray) | ![resize gray](./Tests/MatftTests/files/images/compare/resize_gray_300x150.png) |
+| `resize` (column major) | ![resize column major](./Tests/MatftTests/files/images/compare/resize_colmajor_300x150.png) |
+| `warpAffine` (translation) | ![warpAffine translate](./Tests/MatftTests/files/images/compare/warpAffine_translate.png) |
+| `warpAffine` (rotation, `.ColorFill`) | ![warpAffine rotate colorFill](./Tests/MatftTests/files/images/compare/warpAffine_rotate30_colorFill.png) |
+| `warpAffine` (rotation, `.EdgeExtend`) | ![warpAffine rotate edgeExtend](./Tests/MatftTests/files/images/compare/warpAffine_rotate30_edgeExtend.png) |
+| `color(.RGBA2GRAY)` | ![RGBA2GRAY](./Tests/MatftTests/files/images/compare/color_rgba2gray.png) |
+| `color(.RGBA2GRAY, exclude_alpha: false)` | ![RGBA2GRAY alpha](./Tests/MatftTests/files/images/compare/color_rgba2gray_alpha_white.png) |
+| `color(.RGBA2RGB)` (UInt8) | ![RGBA2RGB UInt8](./Tests/MatftTests/files/images/compare/color_rgba2rgb_uint8.png) |
+
 ## Function List
 
 Below is Matft's function list. As I mentioned above, almost functions are similar to Numpy. Also, these function use Accelerate framework inside, the perfomance may keep high.

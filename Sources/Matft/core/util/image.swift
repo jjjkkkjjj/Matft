@@ -54,27 +54,34 @@ internal func floatXui8_image(_ image: MfArray) -> MfArray{
 }
 
 
-/// Convert RGBA into RGB
+/// Round and clip Float values into [0, 255], and label them as UInt8.
 /// - Parameters:
-///     - image: An image mfarray
-///     - isCopy: Whether to copy or not
-///     - keepAlpha: Whether to keep the alpha channel
-///     - background: The background array
-/// - Returns: Converted mfarray
-internal func rgba2rgb_image(_ image: MfArray, isCopy: Bool, keepAlpha: Bool, background: [Float]) -> MfArray{
-    assert(background.count == 3)
-    let image = isCopy ? image.deepcopy(.Row) : image
+///     - image: A source mfarray whose values are in [0, 255]
+/// - Returns: UInt8 mfarray
+@inlinable
+internal func saturate_ui8_image(_ image: MfArray) -> MfArray{
+    return Matft.math.round(image.astype(.Float)).clip(min: Float(0), max: Float(255)).astype(.UInt8)
+}
 
-    let alpha = image[Matft.all, Matft.all, 3~<4]
-    let new = image[Matft.all, Matft.all, 0~<3]*alpha + (1 - alpha) * MfArray(background, mftype: image.mftype)
-    
+/// Convert RGBA into RGB by compositing on the background.
+/// - Parameters:
+///     - image: An image mfarray (UInt8 or Float)
+///     - keepAlpha: Whether to keep the alpha channel
+///     - background: The background color in [0, 1]
+/// - Returns: Converted mfarray. The mftype is same as the input one.
+internal func rgba2rgb_image(_ image: MfArray, keepAlpha: Bool, background: [Float]) -> MfArray{
+    assert(background.count == 3)
+    let isUInt8 = image.mftype == .UInt8
+    let maxval: Float = isUInt8 ? 255 : 1
+
+    let imageF = image.astype(.Float)
+    let alpha = imageF[Matft.all, Matft.all, 3~<4] / maxval
+    var new = imageF[Matft.all, Matft.all, 0~<3]*alpha + (Float(1) - alpha) * (MfArray(background, mftype: .Float) * maxval)
     if keepAlpha{
-        image[Matft.all, Matft.all, 0~<3] = new
-        return image
+        new = Matft.concatenate([new, imageF[Matft.all, Matft.all, 3~<4]], axis: 2)
     }
-    else{
-        return new
-    }
+    
+    return isUInt8 ? saturate_ui8_image(new) : new.to_contiguous(mforder: .Row)
 }
 
 /// Convert RGB into RGBA
@@ -82,6 +89,7 @@ internal func rgba2rgb_image(_ image: MfArray, isCopy: Bool, keepAlpha: Bool, ba
 ///     - image: An image mfarray
 /// - Returns: Converted mfarray
 internal func rgb2rgba_image(_ image: MfArray) -> MfArray{
-    let alpha = Matft.nums(Float(1), shape: [image.shape[0], image.shape[1], 1])
-    return Matft.hstack([image, alpha])
+    let maxval: Float = image.mftype == .UInt8 ? 255 : 1
+    let alpha = Matft.nums(maxval, shape: [image.shape[0], image.shape[1], 1]).astype(image.mftype)
+    return Matft.concatenate([image, alpha], axis: 2)
 }
