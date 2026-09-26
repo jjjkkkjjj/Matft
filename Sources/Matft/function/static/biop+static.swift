@@ -25,9 +25,9 @@ extension Matft{
         if isReal{
             switch MfType.storedType(rettype){
             case .Float:
-                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd)
+                return wrap_integer_overflow(biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vadd))
             case .Double:
-                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD)
+                return wrap_integer_overflow(biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vaddD))
             }
         }
         else{
@@ -62,9 +62,9 @@ extension Matft{
         if l_mfarray.isReal{
             switch MfType.storedType(retmftype) {
             case .Float:
-                return biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsadd)
+                return wrap_integer_overflow(biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsadd))
             case .Double:
-                return biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsaddD)
+                return wrap_integer_overflow(biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsaddD))
             }
         }
         else{
@@ -98,9 +98,9 @@ extension Matft{
         if r_mfarray.isReal{
             switch MfType.storedType(retmftype) {
             case .Float:
-                return biopvs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsadd)
+                return wrap_integer_overflow(biopvs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsadd))
             case .Double:
-                return biopvs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_vsaddD)
+                return wrap_integer_overflow(biopvs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_vsaddD))
             }
         }
         else{
@@ -128,9 +128,9 @@ extension Matft{
         if isReal{
             switch MfType.storedType(rettype){
             case .Float:
-                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
+                return wrap_integer_overflow(biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub))
             case .Double:
-                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD)
+                return wrap_integer_overflow(biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD))
             }
         }
         else{
@@ -164,9 +164,9 @@ extension Matft{
         if l_mfarray.isReal{
             switch MfType.storedType(retmftype) {
             case .Float:
-                return biopvs_by_vDSP(l_mfarray, -Float.from(r_scalar), vDSP_vsadd)
+                return wrap_integer_overflow(biopvs_by_vDSP(l_mfarray, -Float.from(r_scalar), vDSP_vsadd))
             case .Double:
-                return biopvs_by_vDSP(l_mfarray, -Double.from(r_scalar), vDSP_vsaddD)
+                return wrap_integer_overflow(biopvs_by_vDSP(l_mfarray, -Double.from(r_scalar), vDSP_vsaddD))
             }
         }
         else{
@@ -200,9 +200,9 @@ extension Matft{
         if r_mfarray.isReal{
             switch MfType.storedType(retmftype) {
             case .Float:
-                return biopvs_by_vDSP(-r_mfarray, Float.from(l_scalar), vDSP_vsadd)
+                return wrap_integer_overflow(biopvs_by_vDSP(-r_mfarray, Float.from(l_scalar), vDSP_vsadd))
             case .Double:
-                return biopvs_by_vDSP(-r_mfarray, Double.from(l_scalar), vDSP_vsaddD)
+                return wrap_integer_overflow(biopvs_by_vDSP(-r_mfarray, Double.from(l_scalar), vDSP_vsaddD))
             }
         }
         else{
@@ -230,9 +230,9 @@ extension Matft{
         if isReal{
             switch MfType.storedType(rettype){
             case .Float:
-                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul)
+                return wrap_integer_overflow(biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmul))
             case .Double:
-                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmulD)
+                return wrap_integer_overflow(biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmulD))
             }
         }
         else{
@@ -266,9 +266,9 @@ extension Matft{
         if l_mfarray.isReal{
             switch MfType.storedType(retmftype) {
             case .Float:
-                return biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsmul)
+                return wrap_integer_overflow(biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsmul))
             case .Double:
-                return biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsmulD)
+                return wrap_integer_overflow(biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsmulD))
             }
         }
         else{
@@ -302,9 +302,9 @@ extension Matft{
         if r_mfarray.isReal{
             switch MfType.storedType(retmftype) {
             case .Float:
-                return biopvs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsmul)
+                return wrap_integer_overflow(biopvs_by_vDSP(r_mfarray, Float.from(l_scalar), vDSP_vsmul))
             case .Double:
-                return biopvs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_vsmulD)
+                return wrap_integer_overflow(biopvs_by_vDSP(r_mfarray, Double.from(l_scalar), vDSP_vsmulD))
             }
         }
         else{
@@ -889,7 +889,17 @@ fileprivate func _inner_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
 /// Compare two mfarrays in element-wise by comparing `l - r` with 0.
 /// Note that `inf` vs `inf` gives `inf - inf = NaN`, so `==`, `>=` and `<=` return false for it.
 fileprivate func _compare_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ op: MfCompareOp) -> MfArray{
-    return compare_mfarray(l_mfarray - r_mfarray, op, 0)
+    let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
+    guard isReal else {
+        return compare_mfarray(l_mfarray - r_mfarray, op, 0)
+    }
+    // the difference must not wrap around (e.g. UInt8: 0 - 1 is -1, not 255)
+    switch MfType.storedType(rettype){
+    case .Float:
+        return compare_mfarray(biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub), op, 0)
+    case .Double:
+        return compare_mfarray(biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD), op, 0)
+    }
 }
 
 fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> Bool{

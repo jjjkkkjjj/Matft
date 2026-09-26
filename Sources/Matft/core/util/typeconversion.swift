@@ -287,3 +287,38 @@ fileprivate func _array2ptrU<T: MfTypable, U: MfStorable>(_ flattenArray: inout 
     return UnsafeMutableRawPointer(ptrU)
 }
 
+
+/// Wrap around the out of range values of 8/16 bit integer mfarray in place like numpy's fixed width integers (e.g. UInt8: -5 -> 251).
+/// Call this only on a newly created result. Wider integers are left as they are because Float can't hold their wrapped values exactly
+/// - Parameter mfarray: The result mfarray
+/// - Returns: The same mfarray
+@discardableResult
+internal func wrap_integer_overflow(_ mfarray: MfArray) -> MfArray{
+    switch mfarray.mftype {
+    case .UInt8:
+        _wrap_integer_overflow(mfarray, Int8.self, UInt8.self, vDSP_vfixr8, vDSP_vfltu8)
+    case .Int8:
+        _wrap_integer_overflow(mfarray, Int8.self, Int8.self, vDSP_vfixr8, vDSP_vflt8)
+    case .UInt16:
+        _wrap_integer_overflow(mfarray, Int16.self, UInt16.self, vDSP_vfixr16, vDSP_vfltu16)
+    case .Int16:
+        _wrap_integer_overflow(mfarray, Int16.self, Int16.self, vDSP_vfixr16, vDSP_vflt16)
+    default:
+        break
+    }
+    return mfarray
+}
+
+/// Convert Float into the signed integer T, which wraps around both sides, and read its bits back as U (the same width)
+fileprivate func _wrap_integer_overflow<T, U>(_ mfarray: MfArray, _: T.Type, _: U.Type, _ fix_func: vDSP_convert_func<Float, T>, _ flt_func: vDSP_convert_func<U, Float>){
+    precondition(MemoryLayout<T>.size == MemoryLayout<U>.size)
+    let size = mfarray.storedSize
+    let tmpptr = UnsafeMutableRawPointer.allocate(byteCount: size * MemoryLayout<T>.stride, alignment: MemoryLayout<T>.alignment)
+    defer { tmpptr.deallocate() }
+
+    mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
+        ptrF in
+        wrap_vDSP_convert(size, ptrF, 1, tmpptr.bindMemory(to: T.self, capacity: size), 1, fix_func)
+        wrap_vDSP_convert(size, tmpptr.bindMemory(to: U.self, capacity: size), 1, ptrF, 1, flt_func)
+    }
+}
