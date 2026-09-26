@@ -1,0 +1,32 @@
+/**
+ * Global styles. Infima is bundled by the classic theme.
+ * The primary color is based on Swift's orange.
+ */
+
+:root {
+  --ifm-color-primary: #d4411f;
+  --ifm-color-primary-dark: #bf3b1c;
+  --ifm-color-primary-darker: #b4381a;
+  --ifm-color-primary-darkest: #942e16;
+  --ifm-color-primary-light: #dd5332;
+  --ifm-color-primary-lighter: #df5c3d;
+  --ifm-color-primary-lightest: #e5775d;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #ff7a59;
+  --ifm-color-primary-dark: #ff5f39;
+  --ifm-color-primary-darker: #ff5229;
+  --ifm-color-primary-darkest: #f73300;
+  --ifm-color-primary-light: #ff9579;
+  --ifm-color-primary-lighter: #ffa289;
+  --ifm-color-primary-lightest: #ffc9b9;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* The comparison images in the image guide are wide; keep them inside the table cell. */
+.markdown table img {
+  max-width: 100%;
+}
