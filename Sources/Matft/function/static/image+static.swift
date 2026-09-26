@@ -136,7 +136,7 @@ extension Matft.image{
        Resizes an image by scale factors.
 
        Equivalent to `cv2.resize` with `dsize=None, fx=factor_x, fy=factor_y`. The destination size is
-       `Int(width * factor_x)` by `Int(height * factor_y)`, i.e. truncated toward zero (OpenCV rounds it).
+       `width * factor_x` by `height * factor_y` rounded to the nearest integer (half to even) like OpenCV.
        See `resize(_:width:height:interpolation:)` for the details.
 
        - Parameters:
@@ -150,10 +150,21 @@ extension Matft.image{
     public static func resize(_ image: MfArray, factor_x: Float, factor_y: Float, interpolation: MfInterpolation = .Lanczos) -> MfArray{
         precondition(0 < factor_x && 0 < factor_y, "New size must be positive")
 
-        let height = Float(image.shape[0])
-        let width = Float(image.shape[1])
+        let height = Double(image.shape[0])
+        let width = Double(image.shape[1])
+        let dstWidth = Int((width*Double(factor_x)).rounded(.toNearestOrEven))
+        let dstHeight = Int((height*Double(factor_y)).rounded(.toNearestOrEven))
 
-        return Matft.image.resize(image, width: Int(width*factor_x), height: Int(height*factor_y), interpolation: interpolation)
+        switch interpolation{
+        case .Lanczos:
+            return Matft.image.resize(image, width: dstWidth, height: dstHeight, interpolation: interpolation)
+        case .Linear, .Nearest:
+            unsupport_complex(image)
+            unsupport_imagetype(image)
+            precondition(0 < dstWidth && 0 < dstHeight, "New size must be positive")
+            // OpenCV maps the coordinates by the factors, not by the rounded size
+            return resize_by_remap(image, dstWidth: dstWidth, dstHeight: dstHeight, interpolation: interpolation, scale: (1 / Double(factor_x), 1 / Double(factor_y)))
+        }
     }
     
     /**

@@ -216,9 +216,17 @@ extension Matft.image{
         precondition([3, 5, 7].contains(apertureSize), "apertureSize must be 3, 5 or 7")
         let (height, width) = (image.shape[0], image.shape[1])
 
-        let dx = image2floats(Matft.image.Sobel(image, ddepth: .Float, dx: 1, dy: 0, ksize: apertureSize, borderType: .Replicate))
-        let dy = image2floats(Matft.image.Sobel(image, ddepth: .Float, dx: 0, dy: 1, ksize: apertureSize, borderType: .Replicate))
-        let edges = canny_edges(dx: dx, dy: dy, height: height, width: width, threshold1: Double(threshold1), threshold2: Double(threshold2), L2gradient: L2gradient)
+        var dx = image2floats(Matft.image.Sobel(image, ddepth: .Float, dx: 1, dy: 0, ksize: apertureSize, borderType: .Replicate))
+        var dy = image2floats(Matft.image.Sobel(image, ddepth: .Float, dx: 0, dy: 1, ksize: apertureSize, borderType: .Replicate))
+        var (threshold1, threshold2) = (Double(threshold1), Double(threshold2))
+        if apertureSize == 7{
+            // OpenCV scales the 7x7 derivatives by 1/16 (rounded into Int16) and the thresholds too
+            dx = dx.map{ ($0 / 16).rounded(.toNearestOrEven) }
+            dy = dy.map{ ($0 / 16).rounded(.toNearestOrEven) }
+            threshold1 /= 16
+            threshold2 /= 16
+        }
+        let edges = canny_edges(dx: dx, dy: dy, height: height, width: width, threshold1: threshold1, threshold2: threshold2, L2gradient: L2gradient)
         return floats2image(edges, shape: image.shape, mftype: .UInt8)
     }
 }

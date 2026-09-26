@@ -248,10 +248,11 @@ internal func remap_image(_ image: MfArray, mapx: [Float], mapy: [Float], dstHei
 ///     - dstHeight: The destination height
 ///     - interpolation: Linear or Nearest
 /// - Returns: The row contiguous resized image
-internal func resize_by_remap(_ image: MfArray, dstWidth: Int, dstHeight: Int, interpolation: MfInterpolation) -> MfArray{
+internal func resize_by_remap(_ image: MfArray, dstWidth: Int, dstHeight: Int, interpolation: MfInterpolation, scale: (x: Double, y: Double)? = nil) -> MfArray{
     let (height, width) = (image.shape[0], image.shape[1])
-    let scaleX = Double(width)/Double(dstWidth)
-    let scaleY = Double(height)/Double(dstHeight)
+    // the source distance per destination pixel. Given scale factors (fx, fy) are used as they are like OpenCV (1 / fx)
+    let scaleX = scale?.x ?? Double(width)/Double(dstWidth)
+    let scaleY = scale?.y ?? Double(height)/Double(dstHeight)
 
     func coords(_ count: Int, _ scale: Double, _ size: Int) -> [Float]{
         return (0..<count).map{ i -> Float in
@@ -344,7 +345,8 @@ internal func morph_by_loop(_ src: UnsafePointer<Float>, _ dst: UnsafeMutablePoi
     let offsets = (0..<kh*kw).filter{ mask[$0] }.map{ ($0/kw - cy, $0%kw - cx) }
     for y in 0..<height{
         for x in 0..<width{
-            var val: Float = isDilate ? -Float.greatestFiniteMagnitude : Float.greatestFiniteMagnitude
+            // no pixels inside the image gives the border value of OpenCV (-inf for dilate, +inf for erode)
+            var val: Float = isDilate ? -Float.infinity : Float.infinity
             for (dy, dx) in offsets{
                 let (yy, xx) = (y + dy, x + dx)
                 if 0 <= yy && yy < height && 0 <= xx && xx < width{
