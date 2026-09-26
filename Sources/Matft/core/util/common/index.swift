@@ -158,11 +158,12 @@ internal func biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (
     var r_mfarray = r_mfarray
     
     // convert type
-    let rettype = MfType.priority(l_mfarray.mftype, r_mfarray.mftype)
+    let rettype = MfType.result_type(l_mfarray.mftype, r_mfarray.mftype)
+    // both can differ from rettype, e.g. UInt8 and Int8 -> Int16
     if l_mfarray.mftype != rettype{
         l_mfarray = astype_or_view(l_mfarray, rettype)
     }
-    else if r_mfarray.mftype != rettype{
+    if r_mfarray.mftype != rettype{
         r_mfarray = astype_or_view(r_mfarray, rettype)
     }
     if l_mfarray.isReal != r_mfarray.isReal{

@@ -89,4 +89,47 @@ final class IntegerWrapTests: XCTestCase {
         XCTAssertEqual((a * b).data as! [UInt8], [0, 1, 32])
         XCTAssertEqual(((a * b) > 30).data as! [Bool], [false, false, true])
     }
+
+    func testResultTypeIntegers(){
+        // np.result_type(a, b) for the integer and bool types
+        let types: [MfType] = [.Bool, .UInt8, .UInt16, .UInt32, .UInt64, .Int8, .Int16, .Int32, .Int64]
+        let expected: [[MfType]] = [
+            [.Bool, .UInt8, .UInt16, .UInt32, .UInt64, .Int8, .Int16, .Int32, .Int64],
+            [.UInt8, .UInt8, .UInt16, .UInt32, .UInt64, .Int16, .Int16, .Int32, .Int64],
+            [.UInt16, .UInt16, .UInt16, .UInt32, .UInt64, .Int32, .Int32, .Int32, .Int64],
+            [.UInt32, .UInt32, .UInt32, .UInt32, .UInt64, .Int64, .Int64, .Int64, .Int64],
+            [.UInt64, .UInt64, .UInt64, .UInt64, .UInt64, .Double, .Double, .Double, .Double],
+            [.Int8, .Int16, .Int32, .Int64, .Double, .Int8, .Int16, .Int32, .Int64],
+            [.Int16, .Int16, .Int32, .Int64, .Double, .Int16, .Int16, .Int32, .Int64],
+            [.Int32, .Int32, .Int32, .Int64, .Double, .Int32, .Int32, .Int32, .Int64],
+            [.Int64, .Int64, .Int64, .Int64, .Double, .Int64, .Int64, .Int64, .Int64],
+        ]
+        for (i, a) in types.enumerated(){
+            for (j, b) in types.enumerated(){
+                XCTAssertEqual(MfType.result_type(a, b), expected[i][j], "\(a), \(b)")
+            }
+        }
+        // integers stored as Float don't get wider by a Float (Matft specific)
+        XCTAssertEqual(MfType.result_type(.Int, .Float), .Float)
+        XCTAssertEqual(MfType.result_type(.UInt8, .Double), .Double)
+        XCTAssertEqual(MfType.result_type(.Float, .ComplexDouble), .ComplexDouble)
+    }
+
+    func testMixedIntegerArrays(){
+        let a = MfArray([200, 1], mftype: .UInt8)
+        let b = MfArray([1, -1], mftype: .Int8)
+        // numpy: a + b -> int16 [201, 0], a - b -> [199, 2], a * b -> [200, -1], a > b -> [True, True]
+        XCTAssertEqual((a + b).mftype, .Int16)
+        XCTAssertEqual((a + b).data as! [Int16], [201, 0])
+        XCTAssertEqual((b + a).data as! [Int16], [201, 0])
+        XCTAssertEqual((a - b).data as! [Int16], [199, 2])
+        XCTAssertEqual((a * b).data as! [Int16], [200, -1])
+        XCTAssertEqual((a > b).data as! [Bool], [true, true])
+
+        let c = MfArray([60000, 1], mftype: .UInt16)
+        let d = MfArray([30000, -1], mftype: .Int16)
+        // numpy: c + d -> int32 [90000, 0]
+        XCTAssertEqual((c + d).mftype, .Int32)
+        XCTAssertEqual((c + d).data as! [Int32], [90000, 0])
+    }
 }
