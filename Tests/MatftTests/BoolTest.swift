@@ -199,6 +199,70 @@ final class BoolTests: XCTestCase {
         }
     }
     
+    // == / != with a non-zero scalar: only the exact value matches (the neighbors of 5 do not)
+    func testEqualNonZeroScalar(){
+        let T = true, F = false
+        do{
+            let x = MfArray([Float.nan, -Float.infinity, Float(5).nextDown, 5, Float(5).nextUp, -5, Float.infinity] as [Float])
+            XCTAssertEqual(x === 5, MfArray([F, F, F, T, F, F, F]))
+            XCTAssertEqual(x !== 5, MfArray([T, T, T, F, T, T, T]))
+            XCTAssertEqual(5 === x, MfArray([F, F, F, T, F, F, F]))
+            XCTAssertEqual(x === -5, MfArray([F, F, F, F, F, T, F]))
+        }
+        do{
+            let x = MfArray([Double.nan, -Double.infinity, Double(5).nextDown, 5, Double(5).nextUp, -5, Double.infinity] as [Double])
+            XCTAssertEqual(x === 5, MfArray([F, F, F, T, F, F, F]))
+            XCTAssertEqual(x !== 5, MfArray([T, T, T, F, T, T, T]))
+            XCTAssertEqual(x === -5, MfArray([F, F, F, F, F, T, F]))
+        }
+        do{
+            // Int: values are stored as Float
+            let x = Matft.arange(start: -3, to: 4, by: 1)
+            XCTAssertEqual(x === 2, MfArray([F, F, F, F, F, T, F]))
+            XCTAssertEqual(x !== 2, MfArray([T, T, T, T, T, F, T]))
+        }
+    }
+    
+    // array vs array comparisons over layouts must keep values, shape and the operands
+    func testCompareArraysLayouts(){
+        for mftype in [MfType.Float, .Double, .Int]{
+            let a = Matft.arange(start: -12, to: 12, by: 1, shape: [2, 3, 4], mftype: mftype)
+            let b = Matft.math.abs(a) - 6 // equal where a == -3
+            let ac = a.to_contiguous(mforder: .Row), bc = b.to_contiguous(mforder: .Row)
+            let cases: [(String, MfArray, MfArray)] = [("same", a, b), ("transposed", a.T, b.T), ("mixed", a, b.T.to_contiguous(mforder: .Row).T),
+                                 ("view", a[1~<2], b[0~<1]), ("broadcast", a, b[0, 0])]
+            for (name, l, r) in cases{
+                let lc = l.to_contiguous(mforder: .Row), rc = r.to_contiguous(mforder: .Row)
+                let lvals = lc.data.map{ "\($0)" }, rvals = rc.data.map{ "\($0)" }
+                let expected: [(MfArray, MfArray) -> MfArray] = [{ $0 > $1 }, { $0 >= $1 }, { $0 < $1 }, { $0 <= $1 }, { $0 === $1 }, { $0 !== $1 }]
+                let ops: [(Float, Float) -> Bool] = [{ $0 > $1 }, { $0 >= $1 }, { $0 < $1 }, { $0 <= $1 }, { $0 == $1 }, { $0 != $1 }]
+                let rb = rc.broadcast_to(shape: lc.shape).to_contiguous(mforder: .Row)
+                let lf = lc.astype(.Float).data.map{ $0 as! Float }, rf = rb.astype(.Float).data.map{ $0 as! Float }
+                for (i, (f, op)) in zip(expected, ops).enumerated(){
+                    let ret = f(l, r)
+                    XCTAssertEqual(ret.mftype, .Bool, "\(mftype) \(name) \(i)")
+                    XCTAssertEqual(ret.shape, lc.shape, "\(mftype) \(name) \(i)")
+                    XCTAssertEqual(ret.to_contiguous(mforder: .Row).data.map{ $0 as! Bool }, zip(lf, rf).map{ op($0, $1) }, "\(mftype) \(name) \(i)")
+                }
+                // operands are not modified
+                XCTAssertEqual(l.to_contiguous(mforder: .Row).data.map{ "\($0)" }, lvals, "\(mftype) \(name)")
+                XCTAssertEqual(r.to_contiguous(mforder: .Row).data.map{ "\($0)" }, rvals, "\(mftype) \(name)")
+            }
+            XCTAssertEqual(a, ac)
+            XCTAssertEqual(b, bc)
+        }
+    }
+    
+    func testLogicalNotTypes(){
+        let T = true, F = false
+        XCTAssertEqual(Matft.logical_not(MfArray([-1, 0, 2])), MfArray([F, T, F]))
+        XCTAssertEqual(Matft.logical_not(MfArray([T, F, T])), MfArray([F, T, F]))
+        XCTAssertEqual(Matft.logical_not(MfArray([Float.nan, 0, -0.0, 0.5] as [Float])), MfArray([F, T, T, F]))
+        let x = Matft.arange(start: 0, to: 6, by: 1, shape: [2, 3])
+        XCTAssertEqual(Matft.logical_not(x.T), MfArray([[T, F], [F, F], [F, F]]))
+        XCTAssertEqual(Matft.logical_not(x).mftype, .Bool)
+    }
+    
     func testLess(){
         do{
             let a = MfArray([[24, 15,  8, 65, 82],

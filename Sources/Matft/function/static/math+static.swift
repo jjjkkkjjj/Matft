@@ -1012,7 +1012,7 @@ extension Matft.math {
 
         switch y.storedType {
         case .Float:
-            let newdata = MfData(size: y.size, mftype: .Float)
+            let newdata = MfData(uninitializedSize: y.size, mftype: .Float)
             newdata.withUnsafeMutableStartPointer(datatype: Float.self) { dstptr in
                 yData.withUnsafeMutableStartPointer(datatype: Float.self) { yptr in
                     xData.withUnsafeMutableStartPointer(datatype: Float.self) { xptr in
@@ -1024,7 +1024,7 @@ extension Matft.math {
             }
             return MfArray(mfdata: newdata, mfstructure: MfStructure(shape: y.shape, mforder: .Row))
         case .Double:
-            let newdata = MfData(size: y.size, mftype: .Double)
+            let newdata = MfData(uninitializedSize: y.size, mftype: .Double)
             newdata.withUnsafeMutableStartPointer(datatype: Double.self) { dstptr in
                 yData.withUnsafeMutableStartPointer(datatype: Double.self) { yptr in
                     xData.withUnsafeMutableStartPointer(datatype: Double.self) { xptr in

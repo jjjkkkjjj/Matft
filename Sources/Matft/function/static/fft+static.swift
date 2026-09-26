@@ -31,12 +31,7 @@ extension Matft.fft{
         let number = number ?? signal.shape[get_positive_axis(axis, ndim: signal.ndim)]
         #if canImport(Accelerate)
         if vDSP{
-            switch signal.storedType {
-            case .Float:
-                return fft_zr_by_vDSP(signal, number, axis, true, vDSP_func: vDSP_fft_zrop)
-            case .Double:
-                return fft_zr_by_vDSP(signal, number, axis, true, vDSP_func: vDSP_fft_zropD)
-            }
+            return rfft_by_vDSP(signal, number: number, axis: axis, norm: norm)
         }
         else{
             return fft_by_pocketFFT(signal, number: number, axis: axis, isReal: true, isForward: true, norm: norm)

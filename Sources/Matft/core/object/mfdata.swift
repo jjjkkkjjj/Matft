@@ -100,22 +100,22 @@ public class MfData: MfDataProtocol{
         else{
             switch MfType.storedType(mftype) {
             case .Float:
-                self.data_real = allocate_unsafeMRPtr(type: Float.self, count: storedSize)
+                self.data_real = allocate_unsafeMRPtr(type: Float.self, count: storedSize, zeroed: false)
                 memcpy(self.data_real, data_real_ptr, self.storedByteSize)
                 
                 if let data_imag_ptr = data_imag_ptr{
-                    self.data_imag = allocate_unsafeMRPtr(type: Float.self, count: storedSize)
+                    self.data_imag = allocate_unsafeMRPtr(type: Float.self, count: storedSize, zeroed: false)
                     memcpy(self.data_imag!, data_imag_ptr, self.storedByteSize)
                 }
                 else{
                     self.data_imag = nil
                 }
             case .Double:
-                self.data_real = allocate_unsafeMRPtr(type: Double.self, count: storedSize)
+                self.data_real = allocate_unsafeMRPtr(type: Double.self, count: storedSize, zeroed: false)
                 memcpy(self.data_real, data_real_ptr, self.storedByteSize)
 
                 if let data_imag_ptr = data_imag_ptr{
-                    self.data_imag = allocate_unsafeMRPtr(type: Double.self, count: storedSize)
+                    self.data_imag = allocate_unsafeMRPtr(type: Double.self, count: storedSize, zeroed: false)
                     memcpy(self.data_imag!, data_imag_ptr, self.storedByteSize)
                 }
                 else{
@@ -127,29 +127,40 @@ public class MfData: MfDataProtocol{
         
     }
 
+    #if DEBUG
+    /// Fill buffers allocated by `init(uninitializedSize:)` with NaN to detect elements that a kernel never writes. For tests only
+    internal static var _poisonUninitialized = false
+    #endif
+    
     /// Create a zero padded MfData
     /// - Parameters:
     ///    - size: A size
     ///    - mftype: Type
-    public init(size: Int, mftype: MfType, complex: Bool = false){
+    public convenience init(size: Int, mftype: MfType, complex: Bool = false){
+        self.init(size: size, mftype: mftype, complex: complex, zeroed: true)
+    }
+    
+    /// Create a MfData without initializing its elements. The caller must write every element
+    /// - Parameters:
+    ///    - uninitializedSize: A size
+    ///    - mftype: Type
+    internal convenience init(uninitializedSize size: Int, mftype: MfType, complex: Bool = false){
+        self.init(size: size, mftype: mftype, complex: complex, zeroed: false)
+    }
+    
+    private init(size: Int, mftype: MfType, complex: Bool, zeroed: Bool){
         // dynamic allocation
         switch MfType.storedType(mftype){
         case .Float:
-            let ptrF = allocate_unsafeMPtrT(type: Float.self, count: size)
-            self.data_real = UnsafeMutableRawPointer(ptrF)
-            
+            self.data_real = allocate_unsafeMRPtr(type: Float.self, count: size, zeroed: zeroed)
             if complex{
-                let ptriF = allocate_unsafeMPtrT(type: Float.self, count: size)
-                self.data_imag = UnsafeMutableRawPointer(ptriF)
+                self.data_imag = allocate_unsafeMRPtr(type: Float.self, count: size, zeroed: zeroed)
             }
             
         case .Double:
-            let ptrD = allocate_unsafeMPtrT(type: Double.self, count: size)
-            self.data_real = UnsafeMutableRawPointer(ptrD)
-            
+            self.data_real = allocate_unsafeMRPtr(type: Double.self, count: size, zeroed: zeroed)
             if complex{
-                let ptriD = allocate_unsafeMPtrT(type: Double.self, count: size)
-                self.data_imag = UnsafeMutableRawPointer(ptriD)
+                self.data_imag = allocate_unsafeMRPtr(type: Double.self, count: size, zeroed: zeroed)
             }
         }
         
@@ -186,12 +197,12 @@ public class MfData: MfDataProtocol{
         let datarptr, dataiptr: UnsafeMutableRawPointer
         switch ref_realdata.storedType{
         case .Float:
-            datarptr = allocate_unsafeMRPtr(type: Float.self, count: size)
-            dataiptr = allocate_unsafeMRPtr(type: Float.self, count: size)
+            datarptr = allocate_unsafeMRPtr(type: Float.self, count: size, zeroed: false)
+            dataiptr = allocate_unsafeMRPtr(type: Float.self, count: size, zeroed: false)
             
         case .Double:
-            datarptr = allocate_unsafeMRPtr(type: Double.self, count: size)
-            dataiptr = allocate_unsafeMRPtr(type: Double.self, count: size)
+            datarptr = allocate_unsafeMRPtr(type: Double.self, count: size, zeroed: false)
+            dataiptr = allocate_unsafeMRPtr(type: Double.self, count: size, zeroed: false)
         }
         
         memcpy(datarptr, ref_realdata.data_real + ref_realdata.byteOffset, bytesize)

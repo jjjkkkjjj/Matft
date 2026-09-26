@@ -109,7 +109,7 @@ internal func apply_by_vImage(_ image: MfArray, dstHeight: Int, dstWidth: Int, a
     let is2d = image.ndim == 2
     let (image, srcHeight, srcWidth, channel) = check_and_convert_image_dim(image)
     let dstShape = is2d ? [dstHeight, dstWidth] : [dstHeight, dstWidth, channel]
-    let newdata = MfData(size: dstHeight*dstWidth*channel, mftype: image.mftype)
+    let newdata = MfData(uninitializedSize: dstHeight*dstWidth*channel, mftype: image.mftype)
 
     if channel == 4, let argb_func = argb_func{
         let image = check_contiguous(image, .Row)
@@ -165,7 +165,7 @@ internal func c4toc1_by_vImage(_ image: MfArray, pre_bias: [Float], coef: [Float
 
     image = check_contiguous(image, .Row)
 
-    let newdata = MfData(size: height*width, mftype: image.mftype)
+    let newdata = MfData(uninitializedSize: height*width, mftype: image.mftype)
     newdata.withUnsafeMutableStartRawPointer{
         dstptr in
         image.withUnsafeMutableStartRawPointer{
