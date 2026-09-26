@@ -31,13 +31,14 @@ extension XCTestCase {
     /// (e.g. 0.14ms operations were reported as ~0.5ms). The reported values are per sample, so the number of calls
     /// is printed as `MatftBench: <test name> number=<N>`; scripts/benchmark.py divides the values by it.
     func measureWithWarmup(_ block: () -> Void) {
-        let start = DispatchTime.now().uptimeNanoseconds
+        // ProcessInfo instead of DispatchTime, which is unavailable on WASI
+        let start = ProcessInfo.processInfo.systemUptime
         var iterations = 0
         var elapsed = 0.0
         repeat {
             block()
             iterations += 1
-            elapsed = Double(DispatchTime.now().uptimeNanoseconds - start) / 1e9
+            elapsed = ProcessInfo.processInfo.systemUptime - start
         } while iterations < PerfSettings.minWarmupIterations || elapsed < PerfSettings.warmup
         
         let perCall = elapsed / Double(iterations)
