@@ -115,10 +115,15 @@ extension Matft{
         precondition(mfarray.size == shape2size(&newshape), "new shape's size:\(shape2size(&newshape)) must be same as mfarray's size:\(mfarray.size)")
         
         let order = order ?? .Row
+        if mfarray.isComplex{
+            // reshape the real and imaginary parts separately because complex contiguous conversion is not supported on WASI
+            return MfArray(real: Matft.reshape(mfarray.real, newshape: newshape, order: order),
+                           imag: Matft.reshape(mfarray.imag!, newshape: newshape, order: order))
+        }
         // flatten always copies, so the copy can take the new shape as it is
         let ret = mfarray.flatten(order)
         ret.mfstructure = MfStructure(shape: newshape, mforder: order)
-        
+
         return ret
         
         /* i wanna implement no copy version

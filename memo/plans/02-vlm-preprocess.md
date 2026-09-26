@@ -1,5 +1,14 @@
 # Plan 2: VLM 画像前処理（PIL / transformers 互換）
 
+> **実装済み（branch `feature/image-preprocess`）**: `MfResample`（nearest/bilinear/bicubic/lanczos）と `Matft.image.resize(_:width:height:resample:)`，
+> `smart_resize`，`center_crop`，`rescale`，`normalize_meanstd`，`clip_preprocess`，`qwen2vl_patchify`，`qwen2vl_preprocess`，定数 `OPENAI_CLIP_MEAN` など．
+> - PIL 互換 resize は `MfInterpolation` にケースを足す代わりに，PIL の引数名に合わせた `resample:` ラベルのオーバーロードにした（`MfInterpolation` は cv2 準拠で warpPerspective/remap とも共有しているため）．
+> - UInt8 は Pillow 12.3 の `Resample.c`（22bit 固定小数点，水平→垂直の 2 パス，中間 uint8 丸め）と `Geometry.c`（NEAREST は座標の累積加算）を移植し，**PIL と画素完全一致**．Float は PIL の mode "F" と同じ倍精度累積．
+> - 参照値: `python/gen_image_preprocess_fixtures.py`（transformers 5.17 の `CLIPImageProcessorPil` / `Qwen2VLImageProcessorPil`）．
+> - 速度（1920x1080 入力，release, M系 Mac）: resize bicubic 10.3ms（PIL 9.0ms），CLIP 8.3ms（4.1ms），Qwen2-VL 18.5ms（19.9ms）．
+> - 付随修正: `Matft.reshape` が `data`（[Any]）経由で非常に遅く（2.9M 要素で 310ms），複素数の虚部も落としていたのを修正．
+> - 未対応: RGBA の premultiply（PIL は RGBa で resample する），BOX / HAMMING フィルタ，`reducing_gap`，transformers の torchvision backend（fast processor）との一致．
+
 ## 目的
 mlx-swift-lm は VLM 前処理を CoreImage（CIFilter の Lanczos/bicubic）と手書き Metal bicubic カーネルで実装しており，
 Python（PIL + transformers ImageProcessor）と **数値が一致しない**．Matft で「Python と同じ前処理を CPU で決定的に再現」できるようにする．

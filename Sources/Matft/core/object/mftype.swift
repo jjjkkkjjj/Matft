@@ -263,6 +263,14 @@ public enum MfMeshIndexing: Int{
     case ij
 }
 
+/// The resampling filter. Same as `PIL.Image.Resampling`
+public enum MfResample: Int{
+    case nearest
+    case bilinear
+    case bicubic
+    case lanczos
+}
+
 /// The window type. Same as `window` of `scipy.signal.get_window`
 public enum MfWindowType: Int{
     case hann

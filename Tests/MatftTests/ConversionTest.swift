@@ -339,11 +339,32 @@ final class ConversionTests: XCTestCase {
     func testReshape(){
         do{
             let a = MfArray([2.0, 1.1, 3.2, 2.5])
-            
+
             XCTAssertEqual(a.reshape([2, 2]), MfArray([[2.0, 1.1],
                                                        [3.2, 2.5]]))
         }
-        
+
+        do{
+            // keeps the type, the imaginary part and returns a copy
+            let a = MfArray(real: MfArray([1.0, 2.0, 3.0, 4.0], mftype: .Double), imag: MfArray([5.0, 6.0, 7.0, 8.0], mftype: .Double))
+            let b = a.reshape([2, 2])
+            XCTAssertEqual(b.mftype, .Double)
+            XCTAssertTrue(b.isComplex)
+            XCTAssertEqual(b.real, MfArray([[1.0, 2.0], [3.0, 4.0]], mftype: .Double))
+            XCTAssertEqual(b.imag!, MfArray([[5.0, 6.0], [7.0, 8.0]], mftype: .Double))
+
+            let c = MfArray([1, 2, 3, 4, 5, 6], mftype: .UInt8)
+            let d = c.reshape([3, 2])
+            XCTAssertEqual(d.mftype, .UInt8)
+            d[0, 0] = MfArray([100], mftype: .UInt8)
+            XCTAssertEqual(c, MfArray([1, 2, 3, 4, 5, 6], mftype: .UInt8))
+
+            // non-contiguous input and column order
+            let e = Matft.arange(start: 0, to: 6, by: 1, shape: [2, 3]).T
+            XCTAssertEqual(e.reshape([6]), MfArray([0, 3, 1, 4, 2, 5]))
+            XCTAssertEqual(Matft.reshape(e, newshape: [3, 2], order: .Column), MfArray([[0, 3], [1, 4], [2, 5]]))
+        }
+
         do{
             let a = Matft.arange(start: 0, to: 36, by: 1)
             

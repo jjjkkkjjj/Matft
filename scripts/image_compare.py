@@ -39,6 +39,14 @@ class Case(NamedTuple):
 # `op` must do the same conversion as the Matft test with OpenCV, e.g.
 #   "resize_300x300": Case("rena.png", lambda x: cv2.resize(x, (300, 300), interpolation=cv2.INTER_LINEAR),
 #                          "Matft.image.resize(width: 300, height: 300) vs cv2.resize"),
+def _pil_resize_rgb(x: np.ndarray, width: int, height: int) -> np.ndarray:
+    """Resize the RGB channels with PIL (BICUBIC) and restore the opaque alpha, same as ImagePreprocessTest.swift."""
+    from PIL import Image
+
+    rgb = np.array(Image.fromarray(np.ascontiguousarray(x[..., :3])).resize((width, height), Image.Resampling.BICUBIC))
+    return np.dstack([rgb, np.full(rgb.shape[:2], 255, np.uint8)])
+
+
 def _alpha_ramp(x: np.ndarray) -> np.ndarray:
     """Same as `withAlphaRamp` in ImageTest.swift: alpha[y, x] = x / (w - 1) (uint8)."""
     x = x.copy()
@@ -177,6 +185,13 @@ CASES: Dict[str, Case] = {
     "resize_nearest_100x60": Case("rena.png",
                                   lambda x: cv2.resize(x, (100, 60), interpolation=cv2.INTER_NEAREST),
                                   "resize(100x60, .Nearest) vs cv2.resize(INTER_NEAREST)"),
+    # PIL compatible resize (the reference is PIL, not OpenCV)
+    "resize_pil_bicubic_100x60": Case("rena.png",
+                                      lambda x: _pil_resize_rgb(x, 100, 60),
+                                      "resize(RGB, 100x60, resample: .bicubic) vs PIL.Image.resize(BICUBIC)"),
+    "resize_pil_bicubic_300x400": Case("rena.png",
+                                       lambda x: _pil_resize_rgb(x, 300, 400),
+                                       "resize(RGB, 300x400, resample: .bicubic) vs PIL.Image.resize(BICUBIC)"),
     # edge
     "Canny_100_200": Case("rena.png",
                           lambda x: cv2.Canny(_gray(x), 100, 200),
