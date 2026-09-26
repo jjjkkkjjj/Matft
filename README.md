@@ -729,11 +729,19 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 
 - Interpolation
 
-Matft supports only natural cubic spline. I'll implement other boundary condition later.
+`Matft.interp1d.cubicSpline` supports `natural`, `clamped`, `notAKnot` and `periodic` boundary conditions via `bc_type`.
+
+| Matft                            | Numpy              |
+| -------------------------------- | ----------------- |
+| Matft.interp                     | numpy.interp |
 
 | Matft                            | Scipy              |
 | -------------------------------- | ----------------- |
-| Matft.interp1d.cubicSpline       | scipy.interpolation.CubicSpline |
+| Matft.interp1d.cubicSpline       | scipy.interpolate.CubicSpline |
+| Matft.interp1d.linear            | scipy.interpolate.interp1d(kind='linear') |
+| Matft.interp1d.nearest           | scipy.interpolate.interp1d(kind='nearest') |
+| Matft.interp1d.previous          | scipy.interpolate.interp1d(kind='previous') |
+| Matft.interp1d.next              | scipy.interpolate.interp1d(kind='next') |
 
 - Image
 
