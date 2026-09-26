@@ -684,6 +684,17 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | ^MfArray.toFlattenArray | n/a |
 | ^MfArray.toMLMultiArray | n/a |
 | *Matft.orderedUnique | numpy.unique |
+| Matft.unique / unique_values | numpy.unique / numpy.unique_values |
+| Matft.unique_counts / unique_inverse / unique_all | numpy.unique_counts / unique_inverse / unique_all |
+| Matft.nonzero | numpy.nonzero |
+| Matft.argwhere | numpy.argwhere |
+| Matft.where | numpy.where |
+| Matft.searchsorted | numpy.searchsorted |
+| Matft.digitize | numpy.digitize |
+| Matft.bincount | numpy.bincount |
+| Matft.histogram | numpy.histogram |
+| Matft.isin | numpy.isin |
+| Matft.intersect1d / union1d / setdiff1d | numpy.intersect1d / union1d / setdiff1d |
 
 - File
 
