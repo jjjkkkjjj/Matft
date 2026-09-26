@@ -528,7 +528,7 @@ internal func fancyndget_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: 
             let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
                 [unowned mfarray](srcptr) in
                 
-                let offsets = (indices.data as! [Int]).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
+                let offsets = index_values(indices).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
                 for offset in offsets{
                     wrap_cblas_copy(workSize, srcptr + offset, 1, dstptrT, 1, cblas_func)
                     dstptrT += workSize
@@ -552,7 +552,7 @@ internal func fancyndget_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: 
                 let srcptrr = srcptr.pointee.realp as! UnsafeMutablePointer<T>
                 let srcptri = srcptr.pointee.imagp as! UnsafeMutablePointer<T>
                 
-                let offsets = (indices.data as! [Int]).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
+                let offsets = index_values(indices).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
                 for offset in offsets{
                     wrap_cblas_copy(workSize, srcptrr + offset, 1, dstptrTr, 1, cblas_func)
                     dstptrTr += workSize
@@ -665,9 +665,9 @@ internal func fancyset_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: Mf
     let retShape = indices.shape + workShape
     
     let indices = check_contiguous(indices, .Row)
-    let assignedMfarray = check_contiguous(assignedMfarray.broadcast_to(shape: retShape), .Row).astype(mfarray.mftype)
+    let assignedMfarray = astype_or_view(check_contiguous(assignedMfarray.broadcast_to(shape: retShape), .Row), mfarray.mftype)
     
-    let offsets = (indices.data as! [Int]).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
+    let offsets = index_values(indices).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
     
     if mfarray.ndim == 1{
 
@@ -725,7 +725,7 @@ internal func fancysetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
     let retShape = indShape + workShape
     let workSize = workShape.count > 0 ? shape2size(&workShape) : 1
     
-    let assignedMfarray = check_contiguous(assignedMfarray.broadcast_to(shape: retShape), .Row).astype(mfarray.mftype)
+    let assignedMfarray = astype_or_view(check_contiguous(assignedMfarray.broadcast_to(shape: retShape), .Row), mfarray.mftype)
     /*
      >>> a = np.arange(27).reshape(3,3,3)
      >>> a[[[-2,1,0]], [[0,1,0]]]
@@ -1172,7 +1172,7 @@ internal func fancyndget_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: 
             let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
                 [unowned mfarray](srcptr) in
 
-                let offsets = (indices.data as! [Int]).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
+                let offsets = index_values(indices).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
                 for offset in offsets{
                     wrap_cblas_copy(workSize, srcptr + offset, 1, dstptrT, 1, cblas_func)
                     dstptrT += workSize
@@ -1234,9 +1234,9 @@ internal func fancyset_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: Mf
     let retShape = indices.shape + workShape
 
     let indices = check_contiguous(indices, .Row)
-    let assignedMfarray = check_contiguous(assignedMfarray.broadcast_to(shape: retShape), .Row).astype(mfarray.mftype)
+    let assignedMfarray = astype_or_view(check_contiguous(assignedMfarray.broadcast_to(shape: retShape), .Row), mfarray.mftype)
 
-    let offsets = (indices.data as! [Int]).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
+    let offsets = index_values(indices).map{ get_positive_index($0, axissize: mfarray.shape[0], axis: 0) * mfarray.strides[0] }
 
     if mfarray.ndim == 1{
 
@@ -1280,7 +1280,7 @@ internal func fancysetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
     let retShape = indShape + workShape
     let workSize = workShape.count > 0 ? shape2size(&workShape) : 1
 
-    let assignedMfarray = check_contiguous(assignedMfarray.broadcast_to(shape: retShape), .Row).astype(mfarray.mftype)
+    let assignedMfarray = astype_or_view(check_contiguous(assignedMfarray.broadcast_to(shape: retShape), .Row), mfarray.mftype)
 
     let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
         [unowned mfarray](dstptr) in

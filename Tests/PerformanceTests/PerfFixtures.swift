@@ -8,6 +8,7 @@ enum PerfFixtures {
     static var a: MfArray { Matft.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10]) }
     static var ad: MfArray { a.astype(.Double) }
     static var aneg: MfArray { Matft.arange(start: 0, to: -10*10*10*10*10*10, by: -1, shape: [10,10,10,10,10,10]) }
+    static var idx: MfArray { MfArray([1, 3, 5, 7, 9]) }
     static var signal: MfArray { Matft.arange(start: 0, to: 1024*1024, by: 1, shape: [1024, 1024], mftype: .Float) }
 }
 

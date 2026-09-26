@@ -28,4 +28,12 @@ final class IndexingPefTests: XCTestCase {
             let _ = aT[aT > 0]
         }
     }
+    
+    func testPeformanceFancyIndexing1() {
+        let a = PerfFixtures.a
+        let idx = PerfFixtures.idx
+        self.measureWithWarmup {
+            let _ = a[idx]
+        }
+    }
 }

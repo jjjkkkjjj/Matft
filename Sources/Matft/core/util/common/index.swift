@@ -139,8 +139,8 @@ internal func get_offsets_from_indices(_ mfarray: MfArray, _ indices: inout [MfA
     var offsets = Array(repeating: 0, count: indSize)
     for (axis, inds) in indices.enumerated(){
         precondition(inds.mftype == .Int, "fancy indexing must be Int only, but got \(inds.mftype)")
-        let rowInd = inds.broadcast_to(shape: indShape).to_contiguous(mforder: .Row)
-        for (i, ind) in (rowInd.data as! [Int]).enumerated(){
+        let rowInd = check_contiguous(inds.broadcast_to(shape: indShape), .Row)
+        for (i, ind) in index_values(rowInd).enumerated(){
             offsets[i] += get_positive_index(ind, axissize: mfarray.shape[axis], axis: axis) * mfarray.strides[axis]
         }
     }
@@ -160,10 +160,10 @@ internal func biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (
     // convert type
     let rettype = MfType.priority(l_mfarray.mftype, r_mfarray.mftype)
     if l_mfarray.mftype != rettype{
-        l_mfarray = l_mfarray.astype(rettype)
+        l_mfarray = astype_or_view(l_mfarray, rettype)
     }
     else if r_mfarray.mftype != rettype{
-        r_mfarray = r_mfarray.astype(rettype)
+        r_mfarray = astype_or_view(r_mfarray, rettype)
     }
     if l_mfarray.isReal != r_mfarray.isReal{
         // not in place: the inputs belong to the caller
@@ -412,3 +412,26 @@ internal struct FlattenLOIndSequenceIterator: IteratorProtocol{
             
         }
 }
+
+
+/// Integer indices in row major order, read directly from the stored values
+/// - Parameter indices: An Int mfarray
+/// - Returns: The indices
+internal func index_values(_ indices: MfArray) -> [Int]{
+    // a row contiguous view is read from its own start pointer, unlike `data` which returns the base's data
+    let indices = check_contiguous(indices, .Row)
+    let size = indices.size
+    switch indices.storedType{
+    case .Float:
+        return indices.withUnsafeMutableStartPointer(datatype: Float.self){
+            ptr in
+            (0..<size).map{ Int(ptr[$0]) }
+        }
+    case .Double:
+        return indices.withUnsafeMutableStartPointer(datatype: Double.self){
+            ptr in
+            (0..<size).map{ Int(ptr[$0]) }
+        }
+    }
+}
+

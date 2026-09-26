@@ -68,11 +68,10 @@ internal func mathf_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: 
 ///   - vForce_func: The vForce math function
 /// - Returns: The math-operated mfarray
 internal func math_biop_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ vForce_func: vForce_math_biop_func<T>) -> MfArray{
-    let l_mfarray = l_mfarray.to_contiguous(mforder: .Row)
-    let r_mfarray = r_mfarray.to_contiguous(mforder: .Row)
+    let (l_mfarray, r_mfarray) = check_same_dense_layout(l_mfarray, r_mfarray)
     
-    var storedSize = Int32(l_mfarray.storedSize)
-    let newdata = MfData(uninitializedSize: l_mfarray.storedSize, mftype: l_mfarray.mftype)
+    var storedSize = Int32(l_mfarray.size)
+    let newdata = MfData(uninitializedSize: l_mfarray.size, mftype: l_mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -87,6 +86,51 @@ internal func math_biop_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarr
     let newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
+/// Power with a scalar exponent: x^exponent. The result is Float or Double according to the stored type
+/// - Parameters:
+///   - mfarray: The bases mfarray (real)
+///   - exponent: The exponent
+/// - Returns: The powered mfarray
+internal func pows_by_vForce(_ mfarray: MfArray, _ exponent: Float) -> MfArray{
+    let mfarray = check_dense(mfarray)
+    let size = mfarray.size
+    var n = Int32(size)
+    let newdata: MfData
+    switch mfarray.storedType{
+    case .Float:
+        newdata = MfData(uninitializedSize: size, mftype: .Float)
+        newdata.withUnsafeMutableStartPointer(datatype: Float.self){
+            dstptr in
+            mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
+                srcptr in
+                if exponent == 2{
+                    vDSP_vsq(srcptr, 1, dstptr, 1, vDSP_Length(size))
+                }
+                else{
+                    var exponent = exponent
+                    vvpowsf(dstptr, &exponent, srcptr, &n)
+                }
+            }
+        }
+    case .Double:
+        newdata = MfData(uninitializedSize: size, mftype: .Double)
+        newdata.withUnsafeMutableStartPointer(datatype: Double.self){
+            dstptr in
+            mfarray.withUnsafeMutableStartPointer(datatype: Double.self){
+                srcptr in
+                if exponent == 2{
+                    vDSP_vsqD(srcptr, 1, dstptr, 1, vDSP_Length(size))
+                }
+                else{
+                    var exponent = Double(exponent)
+                    vvpows(dstptr, &exponent, srcptr, &n)
+                }
+            }
+        }
+    }
+    return MfArray(mfdata: newdata, mfstructure: MfStructure(shape: mfarray.shape, strides: mfarray.strides))
+}
+
 #else
 // MARK: - WASI Fallback Implementations for vForce
 
@@ -570,11 +614,10 @@ internal func mathf_by_vForce<T: MfStorable>(_ mfarray: MfArray, _ vForce_func: 
 }
 
 internal func math_biop_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ vForce_func: vForce_math_biop_func<T>) -> MfArray{
-    let l_mfarray = l_mfarray.to_contiguous(mforder: .Row)
-    let r_mfarray = r_mfarray.to_contiguous(mforder: .Row)
+    let (l_mfarray, r_mfarray) = check_same_dense_layout(l_mfarray, r_mfarray)
 
-    var storedSize = Int32(l_mfarray.storedSize)
-    let newdata = MfData(uninitializedSize: l_mfarray.storedSize, mftype: l_mfarray.mftype)
+    var storedSize = Int32(l_mfarray.size)
+    let newdata = MfData(uninitializedSize: l_mfarray.size, mftype: l_mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
         l_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
@@ -588,6 +631,67 @@ internal func math_biop_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarr
 
     let newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
+/// Power with a scalar exponent: x^exponent. The result is Float or Double according to the stored type
+/// - Parameters:
+///   - mfarray: The bases mfarray (real)
+///   - exponent: The exponent
+/// - Returns: The powered mfarray
+internal func pows_by_vForce(_ mfarray: MfArray, _ exponent: Float) -> MfArray{
+    let mfarray = check_dense(mfarray)
+    let size = mfarray.size
+    var n = Int32(size)
+    let newdata: MfData
+    switch mfarray.storedType{
+    case .Float:
+        newdata = MfData(uninitializedSize: size, mftype: .Float)
+        newdata.withUnsafeMutableStartPointer(datatype: Float.self){
+            dstptr in
+            mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
+                srcptr in
+                if exponent == 2{
+                    vDSP_vsq(srcptr, 1, dstptr, 1, size)
+                }
+                else{
+                    var exponent = exponent
+                    vvpowsf(dstptr, &exponent, srcptr, &n)
+                }
+            }
+        }
+    case .Double:
+        newdata = MfData(uninitializedSize: size, mftype: .Double)
+        newdata.withUnsafeMutableStartPointer(datatype: Double.self){
+            dstptr in
+            mfarray.withUnsafeMutableStartPointer(datatype: Double.self){
+                srcptr in
+                if exponent == 2{
+                    vDSP_vsqD(srcptr, 1, dstptr, 1, size)
+                }
+                else{
+                    var exponent = Double(exponent)
+                    vvpows(dstptr, &exponent, srcptr, &n)
+                }
+            }
+        }
+    }
+    return MfArray(mfdata: newdata, mfstructure: MfStructure(shape: mfarray.shape, strides: mfarray.strides))
+}
+
+@inline(__always)
+internal func vvpowsf(_ dst: UnsafeMutablePointer<Float>, _ exp: UnsafePointer<Float>, _ base: UnsafePointer<Float>, _ count: UnsafePointer<Int32>) {
+    let n = Int(count.pointee)
+    for i in 0..<n {
+        dst[i] = powf(base[i], exp.pointee)
+    }
+}
+
+@inline(__always)
+internal func vvpows(_ dst: UnsafeMutablePointer<Double>, _ exp: UnsafePointer<Double>, _ base: UnsafePointer<Double>, _ count: UnsafePointer<Int32>) {
+    let n = Int(count.pointee)
+    for i in 0..<n {
+        dst[i] = pow(base[i], exp.pointee)
+    }
 }
 
 #endif // canImport(Accelerate)
