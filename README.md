@@ -791,6 +791,8 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.stats.nanmedian | numpy.nanmedian |
 | Matft.stats.nanpercentile | numpy.nanpercentile |
 | Matft.stats.nanquantile | numpy.nanquantile |
+| Matft.stats.cov | numpy.cov |
+| Matft.stats.corrcoef | numpy.corrcoef |
 
 - Random function
 
@@ -809,6 +811,8 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft.linalg.eigen       | numpy.linalg.eig   |
 | Matft.linalg.svd         | numpy.linalg.svd   |
 | Matft.linalg.pinv | numpy.linalg.pinv |
+| Matft.linalg.lstsq | numpy.linalg.lstsq |
+| Matft.linalg.matrix_rank | numpy.linalg.matrix_rank |
 | Matft.linalg.polar_left  | scipy.linalg.polar |
 | Matft.linalg.polar_right | scipy.linalg.polar |
 | Matft.linalg.normlp_vec | scipy.linalg.norm |
@@ -850,6 +854,8 @@ Below is Matft's function list. As I mentioned above, almost functions are simil
 | Matft                            | Numpy              |
 | -------------------------------- | ----------------- |
 | Matft.interp                     | numpy.interp |
+| Matft.polyfit                    | numpy.polyfit |
+| Matft.polyval                    | numpy.polyval |
 
 | Matft                            | Scipy              |
 | -------------------------------- | ----------------- |

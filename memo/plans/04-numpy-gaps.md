@@ -43,6 +43,9 @@ mlx-swift に存在しない（特に「出力 shape がデータ依存」「nan
 | set 系: `isin, intersect1d, union1d, setdiff1d` | 優先度低 |
 
 ### 4-D: 数値計算（LAPACK/補間）
+> **実装済み（branch `feature/numpy-gaps-linalg`）**: `Matft.linalg.lstsq`（戻り値 `(x, residuals, rank, s)`），`Matft.linalg.matrix_rank`，`Matft.polyfit`（NumPy と同じく Vandermonde 列をスケーリング），`Matft.polyval`（Horner 法），`Matft.stats.cov/corrcoef`．
+> テスト: `LinAlgFitTest.swift`．lstsq/matrix_rank は WASI 用の LAPACK 代替実装を増やさないよう，`dgelsd` ではなく既存の `Matft.linalg.svd` 上に実装（NumPy の gelsd も SVD ベース）．SVD 依存のテストは既存の SVD テストと同じく WASI では除外．
+> 未実装（優先度低）: `expm`（行列指数関数），`interp` の `period`，set 系の `setxor1d`．
 | 関数 | 要点 |
 |---|---|
 | ~~`Matft.interp`~~ | **既存（`interpolation+static.swift`）**．`period` 引数のみ未対応 |
