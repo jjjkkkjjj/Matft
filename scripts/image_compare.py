@@ -57,6 +57,10 @@ def _rgb2gray(rgb: np.ndarray) -> np.ndarray:
     return np.rint(rgb @ np.array([0.299, 0.587, 0.114])).astype(np.uint8)
 
 
+def _gray(x: np.ndarray) -> np.ndarray:
+    return cv2.cvtColor(x, cv2.COLOR_RGBA2GRAY)
+
+
 def _rotation30(x: np.ndarray) -> np.ndarray:
     return cv2.getRotationMatrix2D((112, 112), 30, 1)
 
@@ -95,6 +99,26 @@ CASES: Dict[str, Case] = {
     "color_rgba2rgb_uint8": Case("rena.png",
                                  lambda x: cv2.cvtColor(np.rint(_composite_white(_alpha_ramp(x))).astype(np.uint8), cv2.COLOR_RGB2RGBA),
                                  "color(.RGBA2RGB) -> (.RGB2RGBA) on UInt8 with alpha ramp vs composite on white"),
+    # cvtColor
+    "cvtColor_rgba2bgra": Case("rena.png",
+                               lambda x: cv2.cvtColor(x, cv2.COLOR_RGBA2BGRA),
+                               "cvtColor(.RGBA2BGRA) vs cv2.cvtColor(RGBA2BGRA)"),
+    "cvtColor_rgb2hsv_h": Case("rena.png",
+                               lambda x: cv2.cvtColor(np.ascontiguousarray(x[:, :, :3]), cv2.COLOR_RGB2HSV)[:, :, 0],
+                               "cvtColor(.RGB2HSV)[H] (UInt8, H in [0, 180)) vs cv2.cvtColor(RGB2HSV)"),
+    # threshold / histogram
+    "threshold_binary_127": Case("rena.png",
+                                 lambda x: cv2.threshold(_gray(x), 127, 255, cv2.THRESH_BINARY)[1],
+                                 "threshold(127, 255, .Binary) vs cv2.threshold(THRESH_BINARY)"),
+    "threshold_otsu": Case("rena.png",
+                           lambda x: cv2.threshold(_gray(x), 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1],
+                           "threshold(.Binary, otsu: true) vs cv2.threshold(THRESH_BINARY + THRESH_OTSU)"),
+    "equalizeHist": Case("rena.png",
+                         lambda x: cv2.equalizeHist(_gray(x)),
+                         "equalizeHist vs cv2.equalizeHist"),
+    "LUT_gamma05": Case("rena.png",
+                        lambda x: cv2.LUT(x, np.rint(np.sqrt(np.arange(256) / 255) * 255).astype(np.uint8)),
+                        "LUT(gamma 0.5) vs cv2.LUT"),
 }
 
 

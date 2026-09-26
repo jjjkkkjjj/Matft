@@ -48,16 +48,9 @@ extension Matft.image{
         unsupport_complex(image)
         unsupport_imagetype(image)
         
-        switch conversion{
-        case .RGBA2GRAY:
-            // composite on white background before conversion
-            let image = exclude_alpha ? image : rgba2rgb_image(image, keepAlpha: true, background: [1, 1, 1])
-            return c4toc1_by_vImage(image, pre_bias: [0, 0, 0, 0], coef: [0.299, 0.587, 0.114, 0], post_bias: 0)
-        case .RGBA2RGB:
-            return rgba2rgb_image(image, keepAlpha: false, background: [1, 1, 1])
-        case .RGB2RGBA:
-            return rgb2rgba_image(image)
-        }
+        // composite on white background before conversion
+        let image = (conversion == .RGBA2GRAY || conversion == .BGRA2GRAY) && !exclude_alpha ? rgba2rgb_image(image, keepAlpha: true, background: [1, 1, 1]) : image
+        return Matft.image.cvtColor(image, code: conversion)
     }
     
     /**
