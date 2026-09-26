@@ -26,6 +26,7 @@ The second line of each cell is the infix (prefix) operator.
 | `Matft.greater_equal`<br />`>=` | `numpy.greater_equal`<br />`>=` |  |  |
 | `Matft.allEqual`<br />`==` | `numpy.array_equal`<br />n/a |  | ✓ |
 | `Matft.neg`<br />`-` | `numpy.negative`<br />`-` |  | ✓ |
+| `Matft.logical_not`<br />`!` | `numpy.logical_not`<br />n/a |  |  |
 
 ## Universal function reduction
 

@@ -8,6 +8,7 @@ title: Conversion and Search
 | --- | --- | :---: | :---: |
 | `Matft.astype` | `numpy.astype` | ✓ | ✓ |
 | `Matft.transpose` | `numpy.transpose` | ✓ | ✓ |
+| `Matft.reshape` | `numpy.reshape` | ✓ | ✓ |
 | `Matft.expand_dims` | `numpy.expand_dims` | ✓ | ✓ |
 | `Matft.squeeze` | `numpy.squeeze` | ✓ | ✓ |
 | `Matft.broadcast_to` | `numpy.broadcast_to` | ✓ | ✓ |

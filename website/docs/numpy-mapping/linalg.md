@@ -17,5 +17,6 @@ title: Linear Algebra
 | `Matft.linalg.polar_left` | `scipy.linalg.polar` |  |  |
 | `Matft.linalg.polar_right` | `scipy.linalg.polar` |  |  |
 | `Matft.linalg.normlp_vec` | `scipy.linalg.norm` |  |  |
+| `Matft.linalg.normlp_mat` | `scipy.linalg.norm` |  |  |
 | `Matft.linalg.normfro_mat` | `scipy.linalg.norm` |  |  |
 | `Matft.linalg.normnuc_mat` | `scipy.linalg.norm` |  |  |

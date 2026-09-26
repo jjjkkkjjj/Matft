@@ -45,6 +45,7 @@ title: Math
 
 | Matft | Numpy | Method | Complex |
 | --- | --- | :---: | :---: |
-| `Matft.complex.angle` | `numpy.angle` |  |  |
-| `Matft.complex.conjugate` | `numpy.conj / numpy.conjugate` |  |  |
-| `Matft.complex.abs` | `numpy.abs / numpy.absolute` |  |  |
+| `Matft.complex.angle` | `numpy.angle` |  | ✓ |
+| `Matft.complex.conjugate` | `numpy.conj / numpy.conjugate` |  | ✓ |
+| `Matft.complex.abs` | `numpy.abs / numpy.absolute` |  | ✓ |
+| `Matft.complex.absarg` | n/a (`numpy.abs` and `numpy.angle` at once) |  | ✓ |
