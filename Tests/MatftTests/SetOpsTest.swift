@@ -39,10 +39,16 @@ final class SetOpsTests: XCTestCase {
 
     func test_unique_large() {
         // large input uses the radix sort: negative values, duplicates, -0.0, infinity and NaN
-        var values: [Double] = (0..<5000).map{ Double(($0 * 7919) % 1237) * ($0 % 3 == 0 ? -0.25 : 1.5) }
+        var values: [Double] = []
+        for i in 0..<5000 {
+            let sign: Double = i % 3 == 0 ? -0.25 : 1.5
+            values.append(Double((i * 7919) % 1237) * sign)
+        }
         values += [-0.0, 0.0, Double.infinity, -Double.infinity, -1e300, 1e-300, nan, nan]
         let ret = Matft.unique(MfArray(values, mftype: .Double))
-        let expected = Array(Set(values.filter{ !$0.isNaN }.map{ $0 == 0 ? 0.0 : $0 })).sorted()
+        // -0.0 and 0.0 are the same value
+        let nonNaN: [Double] = values.filter{ !$0.isNaN }.map{ $0 == 0 ? 0.0 : $0 }
+        let expected: [Double] = Array(Set(nonNaN)).sorted()
         XCTAssertEqual(ret.shape, [expected.count + 1])
         // compare as Swift arrays, because Matft's == can't compare infinity (inf - inf = NaN)
         let actual = ret.data as! [Double]
