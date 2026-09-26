@@ -981,17 +981,18 @@ To build and test Matft for WebAssembly:
 ```
 
 This script will:
-- 📦 Check and install the Swift WASM SDK if needed
+- 🧰 Check and install the required Swift development toolchain (`DEVELOPMENT-SNAPSHOT-2025-11-03-a`, ~1.8GB) into `~/Library/Developer/Toolchains` on macOS if needed (no sudo required)
+- 📦 Check and install the matching Swift WASM SDK (`wasm32-unknown-wasip1-threads`) if needed
 - 🔧 Check and install wasmtime runtime if needed
 - 🔨 Build the project for WebAssembly
 - 🧪 Build and run tests using wasmtime
 
-**Note:** The WASM script automatically handles SDK and runtime installation, so you can run it on a fresh machine without any prior setup!
+**Note:** The WASM script automatically handles toolchain, SDK and runtime installation, so you can run it on a fresh machine without any prior setup!
 
 ### Requirements
 
 - **iOS/macOS:** Swift 6.1 or later
-- **WebAssembly:** Swift 6.1 or later (SDK will be automatically installed)
+- **WebAssembly:** Swift `DEVELOPMENT-SNAPSHOT-2025-11-03-a` toolchain (toolchain, SDK and wasmtime will be automatically installed)
 
 ## Contact
 

@@ -197,5 +197,43 @@ extension Matft.stats{
             return mfarray.flatten().ufuncAccumulate(Matft.add)
         }
     }
+
+    /**
+       Calculate variance along axis. Same as `np.var`
+       - parameters:
+            - mfarray: mfarray
+            - axis: (Optional) axis, if not given, get variance for all elements
+            - keepDims: (Optional) whether to keep original dimension, default is false
+            - ddof: (Optional) Delta degrees of freedom. The divisor is `N - ddof`, by default 0
+    */
+    public static func `var`(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false, ddof: Int = 0) -> MfArray{
+        unsupport_complex(mfarray)
+
+        let count = axis == nil ? mfarray.size : mfarray.shape[get_positive_axis(axis!, ndim: mfarray.ndim)]
+        let divisor = Swift.max(count - ddof, 0)
+
+        switch mfarray.storedType {
+        case .Float:
+            let x = mfarray.astype(.Float)
+            let dev = x - Matft.stats.mean(x, axis: axis, keepDims: true)
+            return Matft.stats.squaresum(dev, axis: axis, keepDims: keepDims) / Float(divisor)
+        case .Double:
+            let x = mfarray.astype(.Double)
+            let dev = x - Matft.stats.mean(x, axis: axis, keepDims: true)
+            return Matft.stats.squaresum(dev, axis: axis, keepDims: keepDims) / Double(divisor)
+        }
+    }
+
+    /**
+       Calculate standard deviation along axis. Same as `np.std`
+       - parameters:
+            - mfarray: mfarray
+            - axis: (Optional) axis, if not given, get standard deviation for all elements
+            - keepDims: (Optional) whether to keep original dimension, default is false
+            - ddof: (Optional) Delta degrees of freedom. The divisor is `N - ddof`, by default 0
+    */
+    public static func std(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false, ddof: Int = 0) -> MfArray{
+        return Matft.math.sqrt(Matft.stats.var(mfarray, axis: axis, keepDims: keepDims, ddof: ddof))
+    }
 }
 

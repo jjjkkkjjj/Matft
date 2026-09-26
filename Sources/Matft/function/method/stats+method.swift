@@ -89,4 +89,26 @@ extension MfArray{
     public func cumsum(axis: Int? = nil) -> MfArray{
         return Matft.stats.cumsum(self, axis: axis)
     }
+
+    /**
+       Calculate variance along axis. Same as `np.var`
+       - parameters:
+            - axis: (Optional) axis, if not given, get variance for all elements
+            - keepDims: (Optional) whether to keep original dimension, default is false
+            - ddof: (Optional) Delta degrees of freedom. The divisor is `N - ddof`, by default 0
+    */
+    public func `var`(axis: Int? = nil, keepDims: Bool = false, ddof: Int = 0) -> MfArray{
+        return Matft.stats.var(self, axis: axis, keepDims: keepDims, ddof: ddof)
+    }
+
+    /**
+       Calculate standard deviation along axis. Same as `np.std`
+       - parameters:
+            - axis: (Optional) axis, if not given, get standard deviation for all elements
+            - keepDims: (Optional) whether to keep original dimension, default is false
+            - ddof: (Optional) Delta degrees of freedom. The divisor is `N - ddof`, by default 0
+    */
+    public func std(axis: Int? = nil, keepDims: Bool = false, ddof: Int = 0) -> MfArray{
+        return Matft.stats.std(self, axis: axis, keepDims: keepDims, ddof: ddof)
+    }
 }

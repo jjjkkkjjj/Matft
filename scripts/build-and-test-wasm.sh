@@ -9,6 +9,10 @@ echo ""
 # Required toolchain version for WASM builds
 # This ensures consistent builds across all environments
 REQUIRED_TOOLCHAIN_VERSION="DEVELOPMENT-SNAPSHOT-2025-11-03-a"
+# Checksum for the WASM SDK matching REQUIRED_TOOLCHAIN_VERSION (from SwiftWasm release page)
+# Must match SWIFT_WASM_SDK_CHECKSUM in .github/workflows/wasm.yml
+REQUIRED_SDK_CHECKSUM="879c08f24c36e20e0b3d1fadc37f4c34c089c72caa018aec726d9e0bf84ea6ff"
+REQUIRED_SDK_URL="https://github.com/swiftwasm/swift/releases/download/swift-wasm-${REQUIRED_TOOLCHAIN_VERSION}/swift-wasm-${REQUIRED_TOOLCHAIN_VERSION}-wasm32-unknown-wasip1-threads.artifactbundle.zip"
 
 # SDK info for different Swift versions (SDK must match Swift compiler version)
 get_sdk_info() {
@@ -34,6 +38,21 @@ get_sdk_info() {
 
 SWIFT_CMD=""
 SWIFT_SDK_NAME=""
+TOOLCHAIN_INSTALL_ATTEMPTED=""
+
+# Download the required development toolchain from swift.org and install it
+# into ~/Library/Developer/Toolchains (no sudo required)
+install_macos_toolchain() {
+    local PKG_URL="https://download.swift.org/development/xcode/swift-${REQUIRED_TOOLCHAIN_VERSION}/swift-${REQUIRED_TOOLCHAIN_VERSION}-osx.pkg"
+    local PKG_PATH="$(mktemp -d)/swift-${REQUIRED_TOOLCHAIN_VERSION}-osx.pkg"
+
+    echo "⬇️  Installing Swift toolchain ${REQUIRED_TOOLCHAIN_VERSION} (~1.8GB)..."
+    echo "   Downloading from: $PKG_URL"
+    curl -fL -o "$PKG_PATH" "$PKG_URL"
+    installer -pkg "$PKG_PATH" -target CurrentUserHomeDirectory
+    rm -f "$PKG_PATH"
+    echo ""
+}
 SWIFT_VERSION=""
 
 # Setup Swift command and detect version
@@ -76,6 +95,14 @@ setup_swift() {
         fi
     fi
 
+    # Install automatically on macOS, then retry once
+    if [ "$(uname -s)" = "Darwin" ] && [ -z "$TOOLCHAIN_INSTALL_ATTEMPTED" ]; then
+        TOOLCHAIN_INSTALL_ATTEMPTED=1
+        install_macos_toolchain
+        setup_swift
+        return 0
+    fi
+
     # No matching toolchain found
     echo "❌ Required Swift toolchain not found: $REQUIRED_TOOLCHAIN_VERSION"
     echo ""
@@ -115,13 +142,20 @@ setup_wasm_sdk() {
             return 0
         fi
 
-        echo "❌ No SDK found matching required version: $REQUIRED_TOOLCHAIN_VERSION"
-        echo "   Available SDKs:"
-        echo "$INSTALLED_SDKS" | sed 's/^/   - /'
+        echo "⬇️  Installing WASM SDK for ${REQUIRED_TOOLCHAIN_VERSION}..."
+        $SWIFT_CMD sdk install "$REQUIRED_SDK_URL" --checksum "$REQUIRED_SDK_CHECKSUM"
+
+        INSTALLED_SDKS=$($SWIFT_CMD sdk list 2>/dev/null || echo "")
+        SWIFT_SDK_NAME=$(echo "$INSTALLED_SDKS" | grep "$REQUIRED_TOOLCHAIN_VERSION" | grep "wasm32-unknown-wasip1-threads$" | grep -v "embedded" | head -1)
+        if [ -z "$SWIFT_SDK_NAME" ]; then
+            echo "❌ Failed to install SDK"
+            echo "   Available SDKs:"
+            echo "$INSTALLED_SDKS" | sed 's/^/   - /'
+            exit 1
+        fi
+        echo "✅ SDK installed: $SWIFT_SDK_NAME"
         echo ""
-        echo "   Please install the required SDK:"
-        echo "   swift sdk install <sdk-url-for-$REQUIRED_TOOLCHAIN_VERSION>"
-        exit 1
+        return 0
     fi
 
     # Get SDK info for the detected Swift version
@@ -160,6 +194,10 @@ setup_wasm_sdk() {
 # Check if wasmtime is installed
 install_wasmtime() {
     echo "🔧 Checking wasmtime..."
+    # Reuse a previous install by this script
+    if [ -x "$HOME/.wasmtime/bin/wasmtime" ]; then
+        export PATH="$HOME/.wasmtime/bin:$PATH"
+    fi
     if command -v wasmtime &> /dev/null; then
         echo "✅ wasmtime already installed: $(wasmtime --version)"
         return 0
@@ -195,7 +233,8 @@ install_wasmtime() {
 
     echo "   Downloading from: $WASMTIME_URL"
     mkdir -p "$WASMTIME_DIR/bin"
-    curl -L "$WASMTIME_URL" | tar -xJ --strip-components=1 -C "$WASMTIME_DIR"
+    # The release archive has no bin/ directory, so extract straight into bin/
+    curl -L "$WASMTIME_URL" | tar -xJ --strip-components=1 -C "$WASMTIME_DIR/bin"
     export PATH="$WASMTIME_DIR/bin:$PATH"
 
     if command -v wasmtime &> /dev/null; then
