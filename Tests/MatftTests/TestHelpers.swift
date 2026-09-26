@@ -5,11 +5,12 @@ import Matft
 /// Same as `np.testing.assert_allclose`: |actual - expected| <= atol + rtol * |expected|, and NaN only matches NaN
 /// - Parameters:
 ///   - checkType: Whether the mftypes must be the same too
-func XCTAssertClose(_ actual: MfArray, _ expected: MfArray, rtol: Double = 1e-7, atol: Double = 1e-10, checkType: Bool = false, file: StaticString = #filePath, line: UInt = #line) {
-    XCTAssertEqual(actual.shape, expected.shape, "shape mismatch", file: file, line: line)
+func XCTAssertClose(_ actual: MfArray, _ expected: MfArray, rtol: Double = 1e-7, atol: Double = 1e-10, checkType: Bool = false, _ message: @autoclosure () -> String = "", file: StaticString = #filePath, line: UInt = #line) {
+    let message = message().isEmpty ? "" : " (\(message()))"
+    XCTAssertEqual(actual.shape, expected.shape, "shape mismatch" + message, file: file, line: line)
     guard actual.shape == expected.shape else { return }
     if checkType {
-        XCTAssertEqual(actual.mftype, expected.mftype, "type mismatch", file: file, line: line)
+        XCTAssertEqual(actual.mftype, expected.mftype, "type mismatch" + message, file: file, line: line)
     }
 
     let a = rowValues(actual)
@@ -18,7 +19,7 @@ func XCTAssertClose(_ actual: MfArray, _ expected: MfArray, rtol: Double = 1e-7,
     var worstIndex = -1
     for i in 0..<a.count {
         if a[i].isNaN || e[i].isNaN {
-            XCTAssertEqual(a[i].isNaN, e[i].isNaN, "NaN mismatch at flatten index \(i)", file: file, line: line)
+            XCTAssertEqual(a[i].isNaN, e[i].isNaN, "NaN mismatch at flatten index \(i)" + message, file: file, line: line)
             continue
         }
         // inf must match exactly
@@ -29,7 +30,7 @@ func XCTAssertClose(_ actual: MfArray, _ expected: MfArray, rtol: Double = 1e-7,
         }
     }
     if worstIndex >= 0 {
-        XCTFail("not close at flatten index \(worstIndex): actual=\(a[worstIndex]), expected=\(e[worstIndex])", file: file, line: line)
+        XCTFail("not close at flatten index \(worstIndex): actual=\(a[worstIndex]), expected=\(e[worstIndex])" + message, file: file, line: line)
     }
 }
 
