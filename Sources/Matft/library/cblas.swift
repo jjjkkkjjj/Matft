@@ -110,6 +110,74 @@ internal func copy_mfarray<T: MfStorable>(_ mfarray: MfArray, dsttmpMfarray: MfA
     return dsttmpMfarray
 }
 
+/// Blocks smaller than this are copied by `copy2d_by_vDSP`, since each cblas/vDSP call has an overhead of a few ns
+internal let copy2dThreshold = 64
+
+@inline(__always)
+fileprivate func _mmov<T: MfStorable>(_ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ m: Int, _ n: Int, _ ta: Int, _ tc: Int){
+    // MfStorable is either Float or Double
+    if T.self == Float.self{
+        vDSP_mmov(UnsafeRawPointer(srcptr).assumingMemoryBound(to: Float.self), UnsafeMutableRawPointer(dstptr).assumingMemoryBound(to: Float.self), vDSP_Length(m), vDSP_Length(n), vDSP_Length(ta), vDSP_Length(tc))
+    }
+    else{
+        vDSP_mmovD(UnsafeRawPointer(srcptr).assumingMemoryBound(to: Double.self), UnsafeMutableRawPointer(dstptr).assumingMemoryBound(to: Double.self), vDSP_Length(m), vDSP_Length(n), vDSP_Length(ta), vDSP_Length(tc))
+    }
+}
+
+/// Copy elements in 2D blocks by vDSP_mmov. The columns are the axes contiguous on both sides and the rows are another axis.
+/// - Parameters:
+///   - srcptr: A source pointer
+///   - s_strides: The source strides
+///   - dstptr: A destination pointer
+///   - d_strides: The destination strides
+///   - shape: The common shape
+/// - Returns: false when it is not applicable (no common unit stride axis, negative strides, ...). Nothing is copied then.
+internal func copy2d_by_vDSP<T: MfStorable>(_ srcptr: UnsafePointer<T>, _ s_strides: [Int], _ dstptr: UnsafeMutablePointer<T>, _ d_strides: [Int], _ shape: [Int]) -> Bool{
+    let ndim = shape.count
+    guard !shape.contains(0), s_strides.allSatisfy({ $0 >= 0 }), d_strides.allSatisfy({ $0 >= 0 }) else { return false }
+    let axes = (0..<ndim).filter{ shape[$0] > 1 }
+    
+    // columns: a unit stride axis and the axes contiguous to it on both sides
+    guard let c0 = axes.first(where: { s_strides[$0] == 1 && d_strides[$0] == 1 }) else { return false }
+    var colAxes = [c0]
+    var m = shape[c0]
+    while let axis = axes.first(where: { !colAxes.contains($0) && s_strides[$0] == m && d_strides[$0] == m }){
+        colAxes.append(axis)
+        m *= shape[axis]
+    }
+    
+    // rows: the longest remaining axis
+    let rest = axes.filter{ !colAxes.contains($0) }
+    guard let r = rest.filter({ s_strides[$0] >= m && d_strides[$0] >= m }).max(by: { shape[$0] < shape[$1] }) else { return false }
+    let n = shape[r]
+    
+    // iterate over the other axes
+    let outer = rest.filter{ $0 != r }
+    var indices = [Int](repeating: 0, count: outer.count)
+    var s_offset = 0, d_offset = 0
+    while true{
+        _mmov(srcptr + s_offset, dstptr + d_offset, m, n, s_strides[r], d_strides[r])
+        
+        var k = outer.count - 1
+        while k >= 0{
+            let axis = outer[k]
+            indices[k] += 1
+            s_offset += s_strides[axis]
+            d_offset += d_strides[axis]
+            if indices[k] < shape[axis]{
+                break
+            }
+            s_offset -= s_strides[axis] * shape[axis]
+            d_offset -= d_strides[axis] * shape[axis]
+            indices[k] = 0
+            k -= 1
+        }
+        if k < 0{
+            return true
+        }
+    }
+}
+
 /// Copy mfarray by cblas
 /// - Parameters:
 ///   - src_mfarray: The source mfarray
@@ -125,6 +193,11 @@ internal func copy_by_cblas<T: MfStorable>(_ src_mfarray: MfArray, _ dst_mfarray
         dstptr in
         src_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
             srcptr in
+            // Many small blocks (e.g. a transposed array): copy 2D blocks at once instead
+            let blocksize = OptOffsetParamsSequence(shape: shape, bigger_strides: bigger_strides, smaller_strides: smaller_strides).makeIterator().blocksize
+            if blocksize < copy2dThreshold && copy2d_by_vDSP(srcptr, smaller_strides, dstptr, bigger_strides, shape){
+                return
+            }
             /*
             var b = [5,6,7,2.0]
             var c = [0,0,0,0.0]

@@ -505,7 +505,7 @@ internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP
     //return mfarray must be either row or column major
     var mfarray = mfarray
     //print(mfarray)
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
     //print(mfarray)
     //print(mfarray.strides)
     
@@ -623,7 +623,7 @@ internal func biopvs_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T,
     var mfarray = l_mfarray
     var r_scalar = r_scalar
     
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -674,7 +674,7 @@ internal func biopsv_by_vDSP<T: MfStorable>(_ l_scalar: T, _ r_mfarray: MfArray,
     var mfarray = r_mfarray
     var l_scalar = l_scalar
     
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -721,10 +721,31 @@ internal func biopzsv_by_vDSP<T: vDSP_ComplexTypable>(_ l_scalar: T.T, _ r_mfarr
 ///   - r_mfarray: The right mfarray
 ///   - vDSP_func: The vDSP biop function
 /// - Returns: The result mfarray
+/// Convert the smaller mfarray into the bigger one's layout when their common contiguous block is small.
+/// e.g. `a - a.transpose(axes: [0,3,4,2,1,5])` would need 100k vDSP calls of 10 elements,
+/// while a 2D block copy and a single vDSP call are several times faster.
+/// - Parameters:
+///   - l_mfarray: The left mfarray
+///   - r_mfarray: The right mfarray
+///   - biggerL: Whether the left is bigger (i.e. row or column contiguous)
+/// - Returns: The left and right mfarrays
+internal func align_biop_layout(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ biggerL: Bool) -> (l: MfArray, r: MfArray){
+    let (b_mfarray, s_mfarray) = biggerL ? (l_mfarray, r_mfarray) : (r_mfarray, l_mfarray)
+    guard b_mfarray.mfstructure.row_contiguous || b_mfarray.mfstructure.column_contiguous else { return (l_mfarray, r_mfarray) }
+    
+    let iterator = OptOffsetParamsSequence(shape: b_mfarray.shape, bigger_strides: b_mfarray.strides, smaller_strides: s_mfarray.strides).makeIterator()
+    // copy2d_by_vDSP needs a unit stride block on both sides
+    guard iterator.blocksize < copy2dThreshold && iterator.stride.b == 1 && iterator.stride.s == 1 else { return (l_mfarray, r_mfarray) }
+    
+    let aligned = s_mfarray.to_contiguous(mforder: b_mfarray.mfstructure.row_contiguous ? .Row : .Column)
+    return biggerL ? (l_mfarray, aligned) : (aligned, r_mfarray)
+}
+
 internal func biopvv_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, vDSP_func: vDSP_biopvv_func<T>) -> MfArray{
     // biggerL: flag whether l is bigger than r
     //return mfarray must be either row or column major
-    let (l_mfarray, r_mfarray, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
+    let (l_contiguous, r_contiguous, biggerL, retsize) = check_biop_contiguous(l_mfarray, r_mfarray, .Row, convertL: true)
+    let (l_mfarray, r_mfarray) = align_biop_layout(l_contiguous, r_contiguous, biggerL)
     
     let newdata = MfData(size: retsize, mftype: l_mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -1031,7 +1052,7 @@ internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ minval: T, _ max
     var maxval = maxval
     
     //print(mfarray)
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
     //print(mfarray)
     //print(mfarray.strides)
     
@@ -1056,7 +1077,7 @@ internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ minval: T, _ max
 ///    - vDSP_sve_func: vDSP_sve function
 /// - Returns: Converted mfarray
 internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_vthrsc_func: vDSP_vthrsc_func<T>, _ vDSP_vadd_func: vDSP_biopvv_func<T>, _ vDSP_sve_func: vDSP_stats_func<T>) -> MfArray{
-    let mfarray = check_contiguous(mfarray)
+    let mfarray = check_dense(mfarray)
         
     let size = mfarray.storedSize
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
@@ -1083,7 +1104,7 @@ internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_vthrsc_func
 ///   - vDSP_toFloat_func: The vDSP conversion function into Float. nil when T is Float
 /// - Returns: Bool mfarray
 internal func compare_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ op: MfCompareOp, _ scalar: T, _ vDSP_vthrsc_func: vDSP_vthrsc_func<T>, _ vDSP_vneg_func: vDSP_math_func<T, T>, _ vDSP_vsadd_func: vDSP_biopvs_func<T>, _ vDSP_vnabs_func: vDSP_math_func<T, T>, _ vDSP_toFloat_func: vDSP_convert_func<T, Float>?) -> MfArray{
-    let mfarray = check_contiguous(mfarray)
+    let mfarray = check_dense(mfarray)
     
     let size = mfarray.storedSize
     let newdata = MfData(size: size, mftype: .Bool)
@@ -1648,7 +1669,7 @@ internal typealias vDSP_dotpr_func<T> = (UnsafePointer<T>, Int, UnsafePointer<T>
 
 /// Pure Swift fallback for compare_by_vDSP
 internal func compare_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ op: MfCompareOp, _ scalar: T) -> MfArray{
-    let mfarray = check_contiguous(mfarray)
+    let mfarray = check_dense(mfarray)
     
     let size = mfarray.storedSize
     let newdata = MfData(size: size, mftype: .Bool)
@@ -2594,7 +2615,7 @@ internal func contiguous_and_astype_by_vDSP<T: MfStorable, U: MfStorable>(_ src_
 
 internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP_convert_func<T, T>) -> MfArray{
     var mfarray = mfarray
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
 
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2617,7 +2638,7 @@ internal func biopvs_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T,
     var mfarray = l_mfarray
     var r_scalar = r_scalar
 
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
 
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2636,7 +2657,7 @@ internal func biopsv_by_vDSP<T: MfStorable>(_ l_scalar: T, _ r_mfarray: MfArray,
     var mfarray = r_mfarray
     var l_scalar = l_scalar
 
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
 
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2850,7 +2871,7 @@ internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ minval: T, _ max
     var minval = minval
     var maxval = maxval
 
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
 
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2978,7 +2999,7 @@ internal func dotpr_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: Mf
 
 /// Pure Swift fallback for sign_by_vDSP (numpy semantics: sign(NaN) = NaN, sign(-0.0) = +0.0)
 internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ type: T.Type) -> MfArray{
-    let mfarray = check_contiguous(mfarray)
+    let mfarray = check_dense(mfarray)
 
     let size = mfarray.storedSize
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
