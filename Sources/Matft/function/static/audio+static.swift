@@ -92,8 +92,10 @@ extension Matft.audio{
         // (n_frames, n_fft)
         let frames = Matft.audio.frame(y, frame_length: n_fft, hop_length: hop_length).T * win
         // (n_frames, 1 + n_fft/2) -> (1 + n_fft/2, n_frames)
-        // pocketFFT returns Double, so cast back to the input type (as librosa returns complex64 for float32)
-        return Matft.fft.rfft(frames, axis: -1).T.astype(y.mftype, mforder: .Row)
+        // pocketFFT returns Double, so cast back to the input type (as librosa returns complex64 for float32).
+        // The real and imaginary parts are converted separately because complex type conversion is not supported on WASI
+        let spec = Matft.fft.rfft(frames, axis: -1).T
+        return MfArray(real: spec.real.astype(y.mftype, mforder: .Row), imag: spec.imag!.astype(y.mftype, mforder: .Row))
     }
 
     /**

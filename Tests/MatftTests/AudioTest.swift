@@ -1,5 +1,3 @@
-// Execution disabled for WASI until we support complex operations
-#if !os(WASI)
 import XCTest
 //@testable import Matft
 import Matft
@@ -54,6 +52,30 @@ final class AudioTests: XCTestCase {
                                 [2.0, 10.0, 18.0]], mftype: .Double))
     }
 
+    func test_stft_small() {
+        // runs on all platforms (no fixture files)
+        // Expected values are np.fft.rfft of np.pad(y, 2, 'reflect') framed and windowed, same as torch.stft.
+        // Note that librosa>=0.10 differs at the last frame when the tail is shorter than the padding,
+        // because it pads only the tail part of the signal.
+        let y = MfArray([0.0, 1.0, 0.5, -1.0, 2.0, 0.0, -0.5, 1.5, 1.0, -2.0] as [Float], mftype: .Float)
+        let s = Matft.audio.stft(y, n_fft: 4, hop_length: 2, pad_mode: .reflect)
+        XCTAssertEqual(s.shape, [3, 6])
+        XCTAssertEqual(s.mftype, .Float)
+        XCTAssertTrue(s.isComplex)
+        XCTAssertClose(s.real, MfArray([[1.0, 0.5, 1.5, 0.25, 0.75, 0.75],
+                                        [0.0, -0.5, -2.0, 0.5, -1.0, -1.0],
+                                        [-1.0, 0.5, 2.5, -1.25, 1.25, 1.25]], mftype: .Double), rtol: 1e-5, atol: 1e-6)
+        XCTAssertClose(s.imag!, MfArray([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                                         [0.0, -1.0, 0.5, 0.75, -1.75, 1.75],
+                                         [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]], mftype: .Double), rtol: 1e-5, atol: 1e-6)
+
+        let mel = Matft.audio.melspectrogram(y.astype(.Double), sr: 8, n_fft: 4, hop_length: 2, pad_mode: .reflect, n_mels: 2)
+        XCTAssertClose(mel, MfArray([[0.0, 0.46875, 1.59375, 0.3046875, 1.5234375, 1.5234375],
+                                     [0.0, 0.46875, 1.59375, 0.3046875, 1.5234375, 1.5234375]], mftype: .Double))
+    }
+
+    // Fixture files can't be read on WASI
+    #if !os(WASI)
     func test_stft() {
         let y = _test_signal(1000, sr: 8000)
 
@@ -118,6 +140,7 @@ final class AudioTests: XCTestCase {
         XCTAssertEqual(Matft.audio.pad_or_trim(MfArray([1.0, 2.0, 3.0], mftype: .Double), length: 2), MfArray([1.0, 2.0], mftype: .Double))
         XCTAssertEqual(Matft.audio.pad_or_trim(audio).shape, [480000])
     }
+    #endif
 }
 
 /// Same as `test_signal` in python/gen_audio_fixtures.py
@@ -162,4 +185,3 @@ fileprivate func XCTAssertClose(_ actual: MfArray, _ expected: MfArray, rtol: Do
         XCTFail("not close at flatten index \(worstIndex): actual=\(a[worstIndex]), expected=\(e[worstIndex])", file: file, line: line)
     }
 }
-#endif
