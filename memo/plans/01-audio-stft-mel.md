@@ -64,7 +64,10 @@ log_spec = (log_spec + 4.0) / 4.0
 - README に使用例（Plan 5）．
 - WASI ビルドで少なくとも pocketFFT 経路が動く．
 
+## 決定事項（2026-09-27）
+- namespace は **`Matft.audio`**（librosa の命名・引数に寄せる）．窓関数（`hanning` 等）は NumPy に倣い `Matft` 直下．
+- 前提の `Matft.pad`（reflect）は 4-A で実装済み（`feature/numpy-gaps-basic`）．
+
 ## 未決事項
-- `Matft.audio` という namespace 名（代案 `Matft.signal`）．librosa 互換を優先するなら `audio` を推奨．
 - STFT の出力軸順: librosa `(freq, time)` を採用（torch も同じ）．
 - `istft`・リサンプリング（`librosa.resample`）を今回スコープに含めるか → 含めない（後続）．

@@ -13,7 +13,16 @@
 - `MLXArray.asData(access: .noCopy)` は内部で `eval()` を呼ぶ．非連続なら `.noCopyIfContiguous` がコピーにフォールバック．
 - Matft の view（非連続，offset あり）→ MLX に渡す前に `to_contiguous` が必要な場合あり（MLX 側 strides 指定での受け取りが可能かも要検証）．
 
-## 配置（推奨: 同一リポジトリ内のサブパッケージ）
+## なぜ本体と別パッケージにするのか
+SwiftPM はパッケージが宣言した依存を，利用者がその product を使うか否かに関わらず解決・取得する．本体に mlx-swift を足すと MLX を使わない利用者にも以下が波及する:
+- **swift-tools-version**: mlx-swift は 6.3 を要求 → 古い Swift ツールチェーンの Matft 利用者が依存解決で失敗する可能性が高い．
+- **取得コスト**: mlx / mlx-c サブモジュールを含む巨大リポジトリを全員が clone．
+- **OS 要件**: MLX 依存 target は macOS 14 / iOS 17 以上前提．同居させると `platforms` 管理が複雑化．
+- **テスト運用**: SwiftPM CLI は MLX の Metal shader をビルドできない．本体の `swift test` 運用を守るため分離．
+「別パッケージ」= 別リポジトリではなく，同一リポジトリ内に独自 `Package.swift` を持つサブディレクトリ．
+package traits（Swift 6.1+）で optional 依存にする案は，trait 無効時も依存が解決対象になるか未確認．
+
+## 配置（決定: 同一リポジトリ内のサブパッケージ）
 ```
 Extensions/MatftMLX/
   Package.swift         // platforms: macOS 14, iOS 17; deps: Matft(path: "../.."), mlx-swift
