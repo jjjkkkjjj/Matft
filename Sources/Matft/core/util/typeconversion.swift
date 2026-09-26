@@ -296,29 +296,49 @@ fileprivate func _array2ptrU<T: MfTypable, U: MfStorable>(_ flattenArray: inout 
 internal func wrap_integer_overflow(_ mfarray: MfArray) -> MfArray{
     switch mfarray.mftype {
     case .UInt8:
-        _wrap_integer_overflow(mfarray, Int8.self, UInt8.self, vDSP_vfixr8, vDSP_vfltu8)
+        _wrap_integer_overflow(mfarray, bits: 8, signed: false)
     case .Int8:
-        _wrap_integer_overflow(mfarray, Int8.self, Int8.self, vDSP_vfixr8, vDSP_vflt8)
+        _wrap_integer_overflow(mfarray, bits: 8, signed: true)
     case .UInt16:
-        _wrap_integer_overflow(mfarray, Int16.self, UInt16.self, vDSP_vfixr16, vDSP_vfltu16)
+        _wrap_integer_overflow(mfarray, bits: 16, signed: false)
     case .Int16:
-        _wrap_integer_overflow(mfarray, Int16.self, Int16.self, vDSP_vfixr16, vDSP_vflt16)
+        _wrap_integer_overflow(mfarray, bits: 16, signed: true)
     default:
         break
     }
     return mfarray
 }
 
-/// Convert Float into the signed integer T, which wraps around both sides, and read its bits back as U (the same width)
-fileprivate func _wrap_integer_overflow<T, U>(_ mfarray: MfArray, _: T.Type, _: U.Type, _ fix_func: vDSP_convert_func<Float, T>, _ flt_func: vDSP_convert_func<U, Float>){
-    precondition(MemoryLayout<T>.size == MemoryLayout<U>.size)
+/// Wrap x into the range of the `bits` width integer by x - 2^bits * floor((x + offset) / 2^bits), where offset is 2^(bits-1) for signed and 0 for unsigned.
+/// x must be an integer (the results of add, sub, mul and neg of integers), and every step is exact in Float for |x| < 2^24.
+/// vDSP's conversion into 8/16 bit integers can't be used, because its result for out of range values is undefined (wrapped on arm64, saturated on x86_64)
+fileprivate func _wrap_integer_overflow(_ mfarray: MfArray, bits: Int, signed: Bool){
     let size = mfarray.storedSize
-    let tmpptr = UnsafeMutableRawPointer.allocate(byteCount: size * MemoryLayout<T>.stride, alignment: MemoryLayout<T>.alignment)
-    defer { tmpptr.deallocate() }
+    guard size > 0 else { return }
+    var negModulus = -Float(1 << bits)
+    var inverse = 1 / Float(1 << bits)
+    var offset: Float = signed ? 0.5 : 0 // 2^(bits-1) / 2^bits
+
+    // process by blocks so that the temporary quotients stay in the cache
+    let block = 1024
+    let quotptr = allocate_unsafeMPtrT(type: Float.self, count: Swift.min(size, block), zeroed: false)
+    defer { quotptr.deallocate() }
 
     mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
         ptrF in
-        wrap_vDSP_convert(size, ptrF, 1, tmpptr.bindMemory(to: T.self, capacity: size), 1, fix_func)
-        wrap_vDSP_convert(size, tmpptr.bindMemory(to: U.self, capacity: size), 1, ptrF, 1, flt_func)
+        for start in Swift.stride(from: 0, to: size, by: block){
+            let n = Swift.min(block, size - start)
+            var count = Int32(n)
+            #if canImport(Accelerate)
+            let length = vDSP_Length(n)
+            #else
+            let length = n // the fallbacks in vDSP.swift take Int
+            #endif
+            // floor(x / 2^bits + offset)
+            vDSP_vsmsa(ptrF + start, 1, &inverse, &offset, quotptr, 1, length)
+            vvfloorf(quotptr, quotptr, &count)
+            // x - 2^bits * that
+            vDSP_vsma(quotptr, 1, &negModulus, ptrF + start, 1, ptrF + start, 1, length)
+        }
     }
 }

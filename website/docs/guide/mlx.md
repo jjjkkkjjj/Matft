@@ -26,7 +26,7 @@ Use Matft for exact, CPU-side pre / post processing and numerical work, and MLX 
 | Audio features (STFT, mel, Whisper log-mel) | ✅ ([Audio](./audio.md)) | FFT only |
 | Autograd / NN layers / GPU training | ❌ | ✅ |
 
-[^intel]: The tests are run on x86_64 under Rosetta. 3 tests (the integer overflow wrap-around of `Int16` and the `NaN` comparison in `==`) currently fail on x86_64.
+[^intel]: All the tests pass on x86_64 under Rosetta.
 [^simulator]: All the tests of `MatftTests` pass on the iOS Simulator (iPhone 16 Pro, iOS 18.6).
 
 ```swift
