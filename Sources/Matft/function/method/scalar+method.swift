@@ -13,12 +13,8 @@ extension MfArray{
         if self.size == 0{
             return nil
         }
-        let strides = self.strides
-        let shape = self.shape
-        var flattenIndex = 0
-        for axis in 0..<ndim{
-            flattenIndex += strides[axis] >= 0 ? 0 : -strides[axis]*shape[axis] + strides[axis]
-        }
+        // the start pointer (offset) points to the first element in the logical order even for negative strides
+        let flattenIndex = 0
         
         func _T2U2Any<T: BinaryFloatingPoint>(_ type: T.Type) -> AnyObject{
             let valueT = self.withUnsafeMutableStartPointer(datatype: T.self){
@@ -50,6 +46,8 @@ extension MfArray{
                     return Float(exactly: valueT) as AnyObject
                 case .Double:
                     return Double(exactly: valueT) as AnyObject
+                case .Bool:
+                    return (valueT != 0) as AnyObject
                 default:
                     fatalError("Unexpected type was detected")
             }

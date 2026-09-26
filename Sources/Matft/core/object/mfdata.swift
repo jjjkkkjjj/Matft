@@ -205,14 +205,15 @@ public class MfData: MfDataProtocol{
             dataiptr = allocate_unsafeMRPtr(type: Double.self, count: size, zeroed: false)
         }
         
-        memcpy(datarptr, ref_realdata.data_real + ref_realdata.byteOffset, bytesize)
-        memcpy(dataiptr, ref_imagdata.data_real + ref_imagdata.byteOffset, bytesize)
+        // copy the whole stored data and keep the offset. Copying `storedSize` elements from the offset would run past the end
+        memcpy(datarptr, ref_realdata.data_real, bytesize)
+        memcpy(dataiptr, ref_imagdata.data_real, bytesize)
         
         self.data_real = datarptr
         self.data_imag = dataiptr
         self.storedSize = size
         self.mftype = ref_realdata.mftype
-        self.offset = 0
+        self.offset = offset
     }
     
     deinit {
