@@ -1,0 +1,12 @@
+.features {
+  padding: 2rem 0 4rem;
+  width: 100%;
+}
+
+.feature {
+  margin-bottom: 2rem;
+}
+
+.feature a {
+  font-weight: 600;
+}
