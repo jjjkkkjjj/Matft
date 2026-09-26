@@ -178,26 +178,46 @@ internal func wrap_vDSP_biopzsv<T: vDSP_ComplexTypable>(_ size: Int, _ scalar: U
     vDSP_func(&arrscalar, srcptr, dstptr, vDSP_Length(size))
 }
 
-/// Wrapper of vDSP comparison function. `dstptr` receives +1 where the comparison holds, otherwise -1 (NaN always yields -1 except for `.notEqual`).
+/// The values written by `wrap_vDSP_compare`
+internal enum CompareOutput{
+    /// +1 where the comparison holds, otherwise -1
+    case plusMinusOne
+    /// 1 where the comparison holds, otherwise 0
+    case oneZero
+    /// 0 where the comparison holds, otherwise 1
+    case zeroOne
+    
+    /// (a, b) of `a*x + b` converting the output into 1/0
+    var toBool: (Float, Float)?{
+        switch self {
+        case .plusMinusOne: return (0.5, 0.5)
+        case .oneZero: return nil
+        case .zeroOne: return (-1, 1)
+        }
+    }
+}
+
+/// Wrapper of vDSP comparison function. NaN never satisfies the comparison except for `.notEqual`.
 /// - Parameters:
 ///   - size: A size to be compared
 ///   - srcptr: A source pointer
 ///   - op: The comparison operator
 ///   - scalar: The right-hand scalar
-///   - dstptr: A destination pointer (may be used as a work buffer)
+///   - dstptr: A destination pointer (may be used as a work buffer). Must not be srcptr: `vDSP_vnabs` in place is about 4x slower
 ///   - vDSP_vthrsc_func: The vDSP vthrsc function
 ///   - vDSP_vneg_func: The vDSP vneg function
-///   - vDSP_vsadd_func: The vDSP vsadd function
+///   - vDSP_vadd_func: The vDSP vadd function
 ///   - vDSP_vnabs_func: The vDSP vnabs function
+/// - Returns: The form of the values written into dstptr
 @inline(__always)
-internal func wrap_vDSP_compare<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ op: MfCompareOp, _ scalar: T, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_vthrsc_func: vDSP_vthrsc_func<T>, _ vDSP_vneg_func: vDSP_math_func<T, T>, _ vDSP_vsadd_func: vDSP_biopvs_func<T>, _ vDSP_vnabs_func: vDSP_math_func<T, T>){
+internal func wrap_vDSP_compare<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ op: MfCompareOp, _ scalar: T, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_vthrsc_func: vDSP_vthrsc_func<T>, _ vDSP_vneg_func: vDSP_math_func<T, T>, _ vDSP_vadd_func: vDSP_biopvv_func<T>, _ vDSP_vnabs_func: vDSP_math_func<T, T>) -> CompareOutput{
     let n = vDSP_Length(size)
     // vthrsc: dst = threshold <= src ? +c : -c
     // Every comparison is rewritten into the form `x >= threshold` so that NaN yields -c.
-    func thrsc(_ src: UnsafePointer<T>, _ threshold: T, _ c: T){
+    func thrsc(_ src: UnsafePointer<T>, _ threshold: T, _ c: T, _ dst: UnsafeMutablePointer<T>){
         var threshold = threshold
         var c = c
-        vDSP_vthrsc_func(src, vDSP_Stride(1), &threshold, &c, dstptr, vDSP_Stride(1), n)
+        vDSP_vthrsc_func(src, vDSP_Stride(1), &threshold, &c, dst, vDSP_Stride(1), n)
     }
     func neg(){
         vDSP_vneg_func(srcptr, vDSP_Stride(1), dstptr, vDSP_Stride(1), n)
@@ -205,40 +225,45 @@ internal func wrap_vDSP_compare<T: MfStorable>(_ size: Int, _ srcptr: UnsafePoin
     
     switch op {
     case .greater: // x >= nextUp(s)
-        thrsc(srcptr, scalar.nextUp, T.from(1))
+        thrsc(srcptr, scalar.nextUp, T.from(1), dstptr)
     case .greaterEqual: // x >= s
-        thrsc(srcptr, scalar, T.from(1))
+        thrsc(srcptr, scalar, T.from(1), dstptr)
     case .less: // -x >= nextUp(-s)
         neg()
-        thrsc(dstptr, (-scalar).nextUp, T.from(1))
+        thrsc(dstptr, (-scalar).nextUp, T.from(1), dstptr)
     case .lessEqual: // -x >= -s
         neg()
-        thrsc(dstptr, -scalar, T.from(1))
+        thrsc(dstptr, -scalar, T.from(1), dstptr)
     case .equal, .notEqual:
         let c = op == .equal ? T.from(1) : T.from(-1)
         if scalar.isInfinite{
             // x - inf is NaN, so compare x >= inf or -x >= inf instead
             if scalar > 0{
-                thrsc(srcptr, scalar, c)
+                thrsc(srcptr, scalar, c, dstptr)
             }
             else{
                 neg()
-                thrsc(dstptr, -scalar, c)
+                thrsc(dstptr, -scalar, c, dstptr)
             }
+        }
+        else if scalar.isZero{
+            // -|x| >= 0
+            vDSP_vnabs_func(srcptr, vDSP_Stride(1), dstptr, vDSP_Stride(1), n)
+            thrsc(dstptr, T.zero, c, dstptr)
         }
         else{
-            // -|x - s| >= 0
-            if scalar.isZero{
-                vDSP_vnabs_func(srcptr, vDSP_Stride(1), dstptr, vDSP_Stride(1), n)
-            }
-            else{
-                var negscalar = -scalar
-                vDSP_vsadd_func(srcptr, vDSP_Stride(1), &negscalar, dstptr, vDSP_Stride(1), n)
-                vDSP_vnabs_func(dstptr, vDSP_Stride(1), dstptr, vDSP_Stride(1), n)
-            }
-            thrsc(dstptr, T.zero, c)
+            // (x >= s ? 0.5 : -0.5) + (x >= nextUp(s) ? -0.5 : 0.5) is 1 only where x == s, and 0 for NaN.
+            // 3 passes instead of vsadd, vnabs, vthrsc (and the conversion into 1/0)
+            let tmpptr = UnsafeMutablePointer<T>.allocate(capacity: size)
+            defer { tmpptr.deallocate() }
+            // read srcptr into tmpptr first since dstptr may be srcptr
+            thrsc(srcptr, scalar.nextUp, T.from(-0.5), tmpptr)
+            thrsc(srcptr, scalar, T.from(0.5), dstptr)
+            vDSP_vadd_func(dstptr, vDSP_Stride(1), tmpptr, vDSP_Stride(1), dstptr, vDSP_Stride(1), n)
+            return op == .equal ? .oneZero : .zeroOne
         }
     }
+    return .plusMinusOne
 }
 
 /// Wrapper of vDSP sign generation function
@@ -1080,46 +1105,53 @@ internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_vthrsc_func
 ///   - scalar: The right-hand scalar
 ///   - vDSP_vthrsc_func: The vDSP vthrsc function
 ///   - vDSP_vneg_func: The vDSP vneg function
-///   - vDSP_vsadd_func: The vDSP vsadd function
+///   - vDSP_vadd_func: The vDSP vadd function
 ///   - vDSP_vnabs_func: The vDSP vnabs function
 ///   - vDSP_toFloat_func: The vDSP conversion function into Float. nil when T is Float
 /// - Returns: Bool mfarray
-internal func compare_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ op: MfCompareOp, _ scalar: T, _ vDSP_vthrsc_func: vDSP_vthrsc_func<T>, _ vDSP_vneg_func: vDSP_math_func<T, T>, _ vDSP_vsadd_func: vDSP_biopvs_func<T>, _ vDSP_vnabs_func: vDSP_math_func<T, T>, _ vDSP_toFloat_func: vDSP_convert_func<T, Float>?) -> MfArray{
+internal func compare_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ op: MfCompareOp, _ scalar: T, _ vDSP_vthrsc_func: vDSP_vthrsc_func<T>, _ vDSP_vneg_func: vDSP_math_func<T, T>, _ vDSP_vadd_func: vDSP_biopvv_func<T>, _ vDSP_vnabs_func: vDSP_math_func<T, T>, _ vDSP_toFloat_func: vDSP_convert_func<T, Float>?) -> MfArray{
     let mfarray = check_dense(mfarray)
     
     let size = mfarray.storedSize
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    
     let newdata = MfData(uninitializedSize: size, mftype: .Bool)
     newdata.withUnsafeMutableStartPointer(datatype: Float.self){
         dstptrF in
-        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-            srcptr in
+        let output = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            srcptr -> CompareOutput in
             if let vDSP_toFloat_func = vDSP_toFloat_func{
                 let workptr = UnsafeMutablePointer<T>.allocate(capacity: size)
                 defer { workptr.deallocate() }
-                wrap_vDSP_compare(size, srcptr, op, scalar, workptr, vDSP_vthrsc_func, vDSP_vneg_func, vDSP_vsadd_func, vDSP_vnabs_func)
+                let output = wrap_vDSP_compare(size, srcptr, op, scalar, workptr, vDSP_vthrsc_func, vDSP_vneg_func, vDSP_vadd_func, vDSP_vnabs_func)
                 vDSP_toFloat_func(workptr, vDSP_Stride(1), dstptrF, vDSP_Stride(1), vDSP_Length(size))
+                return output
             }
             else{
-                dstptrF.withMemoryRebound(to: T.self, capacity: size){
-                    wrap_vDSP_compare(size, srcptr, op, scalar, $0, vDSP_vthrsc_func, vDSP_vneg_func, vDSP_vsadd_func, vDSP_vnabs_func)
+                return dstptrF.withMemoryRebound(to: T.self, capacity: size){
+                    wrap_vDSP_compare(size, srcptr, op, scalar, $0, vDSP_vthrsc_func, vDSP_vneg_func, vDSP_vadd_func, vDSP_vnabs_func)
                 }
             }
         }
-        // +1/-1 => 1/0
-        var half = Float(0.5)
-        vDSP_vsmsa(dstptrF, vDSP_Stride(1), &half, &half, dstptrF, vDSP_Stride(1), vDSP_Length(size))
+        _to_bool(dstptrF, size, output)
     }
     
-    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
 internal func compare_by_vDSP(_ mfarray: MfArray, _ op: MfCompareOp, _ scalar: Float) -> MfArray{
-    return compare_by_vDSP(mfarray, op, scalar, vDSP_vthrsc, vDSP_vneg, vDSP_vsadd, vDSP_vnabs, nil)
+    return compare_by_vDSP(mfarray, op, scalar, vDSP_vthrsc, vDSP_vneg, vDSP_vadd, vDSP_vnabs, nil)
+}
+
+/// Convert the output of `wrap_vDSP_compare` into 1/0 in place
+@inline(__always)
+fileprivate func _to_bool(_ ptr: UnsafeMutablePointer<Float>, _ size: Int, _ output: CompareOutput){
+    guard var (a, b) = output.toBool else { return }
+    vDSP_vsmsa(ptr, vDSP_Stride(1), &a, &b, ptr, vDSP_Stride(1), vDSP_Length(size))
 }
 
 internal func compare_by_vDSP(_ mfarray: MfArray, _ op: MfCompareOp, _ scalar: Double) -> MfArray{
-    return compare_by_vDSP(mfarray, op, scalar, vDSP_vthrscD, vDSP_vnegD, vDSP_vsaddD, vDSP_vnabsD, vDSP_vdpsp)
+    return compare_by_vDSP(mfarray, op, scalar, vDSP_vthrscD, vDSP_vnegD, vDSP_vaddD, vDSP_vnabsD, vDSP_vdpsp)
 }
 
 // generate(arange)
