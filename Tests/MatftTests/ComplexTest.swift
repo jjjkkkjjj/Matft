@@ -14,6 +14,26 @@ import Matft
 import Accelerate
 
 final class ComplexTests: XCTestCase {
+    func testMathFunctions(){
+        // z = np.array([0.5+0.3j, -1.2+0.8j, 2-1j])
+        let z = MfArray(real: MfArray([0.5, -1.2, 2] as [Double]), imag: MfArray([0.3, 0.8, -1] as [Double]))
+        let expected: [(String, (MfArray) -> MfArray, [Double], [Double])] = [
+            ("sin", Matft.math.sin, [0.50116198, -1.24654164, 1.40311925], [0.2672417, 0.32181209, 0.48905626]),
+            ("cos", Matft.math.cos, [0.91737085, 0.48462992, -0.64214812], [-0.14599481, 0.82774949, 1.06860742]),
+            ("tan", Matft.math.tan, [0.48759232, -0.36708544, -0.2434582], [0.3689104, 1.29101989, -1.16673626]),
+            ("exp", Matft.math.exp, [1.57508359, 0.20984403, 3.99232405], [0.48723045, 0.2160635, -6.21767631]),
+            ("log", Matft.math.log, [-0.53940483, 0.36618395, 0.80471896], [0.5404195, 2.55359005, -0.46364761]),
+        ]
+        for (name, f, re, im) in expected{
+            for mftype in [MfType.Float, .Double]{
+                let ret = f(z.astype(mftype))
+                XCTAssertTrue(ret.isComplex, name)
+                XCTAssertClose(ret.real, MfArray(re), rtol: 1e-6, atol: 1e-7)
+                XCTAssertClose(ret.imag!, MfArray(im), rtol: 1e-6, atol: 1e-7)
+            }
+        }
+    }
+
     func testSetterIntoViews(){
         for mftype in [MfType.Float, .Double]{
             // z = (np.arange(6) + 1j*np.arange(6)[::-1]).reshape(2, 3)

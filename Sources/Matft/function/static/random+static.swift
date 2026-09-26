@@ -36,10 +36,10 @@ extension Matft.random{
     /**
        Return random integers drawn uniformly from `[low, high)`.
 
-       Similar to `numpy.random.randint`, but when `high` is `nil` the range is `[low, max)` where `max` is the maximum value of `mftype` (Numpy uses `[0, low)` instead).
+       Same as `numpy.random.randint`: when `high` is `nil` the range is `[0, low)`.
        - Parameters:
             - low: The lowest value (included).
-            - high: (Optional) The upper bound (excluded). If `nil`, the maximum value of `mftype` is used.
+            - high: (Optional) The upper bound (excluded). If `nil`, the range is `[0, low)`.
             - shape: The shape of the result.
             - mftype: (Optional) An integer type, by default `.Int`.
        - Returns: The array of random integers.
@@ -52,53 +52,53 @@ extension Matft.random{
         
         switch mftype {
         case .UInt8:
-            let l = UInt8(low)
-            let h = high == nil ? UInt8.max : UInt8(high!)
+            let l = UInt8(high == nil ? 0 : low)
+            let h = UInt8(high ?? low)
             let array = (0..<size).map{ _ in UInt8.random(in: l..<h) }
             return MfArray(array, shape: shape)
         case .UInt16:
-            let l = UInt16(low)
-            let h = high == nil ? UInt16.max : UInt16(high!)
+            let l = UInt16(high == nil ? 0 : low)
+            let h = UInt16(high ?? low)
             let array = (0..<size).map{ _ in UInt16.random(in: l..<h) }
             return MfArray(array, shape: shape)
         case .UInt32:
-            let l = UInt32(low)
-            let h = high == nil ? UInt32.max : UInt32(high!)
+            let l = UInt32(high == nil ? 0 : low)
+            let h = UInt32(high ?? low)
             let array = (0..<size).map{ _ in UInt32.random(in: l..<h) }
             return MfArray(array, shape: shape)
         case .UInt64:
-            let l = UInt64(low)
-            let h = high == nil ? UInt64.max : UInt64(high!)
+            let l = UInt64(high == nil ? 0 : low)
+            let h = UInt64(high ?? low)
             let array = (0..<size).map{ _ in UInt64.random(in: l..<h) }
             return MfArray(array, shape: shape)
         case .UInt:
-            let l = UInt(low)
-            let h = high == nil ? UInt.max : UInt(high!)
+            let l = UInt(high == nil ? 0 : low)
+            let h = UInt(high ?? low)
             let array = (0..<size).map{ _ in UInt.random(in: l..<h) }
             return MfArray(array, shape: shape)
         case .Int8:
-            let l = Int8(low)
-            let h = high == nil ? Int8.max : Int8(high!)
+            let l = Int8(high == nil ? 0 : low)
+            let h = Int8(high ?? low)
             let array = (0..<size).map{ _ in Int8.random(in: l..<h) }
             return MfArray(array, shape: shape)
         case .Int16:
-            let l = Int16(low)
-            let h = high == nil ? Int16.max : Int16(high!)
+            let l = Int16(high == nil ? 0 : low)
+            let h = Int16(high ?? low)
             let array = (0..<size).map{ _ in Int16.random(in: l..<h) }
             return MfArray(array, shape: shape)
         case .Int32:
-            let l = Int32(low)
-            let h = high == nil ? Int32.max : Int32(high!)
+            let l = Int32(high == nil ? 0 : low)
+            let h = Int32(high ?? low)
             let array = (0..<size).map{ _ in Int32.random(in: l..<h) }
             return MfArray(array, shape: shape)
         case .Int64:
-            let l = Int64(low)
-            let h = high == nil ? Int64.max : Int64(high!)
+            let l = Int64(high == nil ? 0 : low)
+            let h = Int64(high ?? low)
             let array = (0..<size).map{ _ in Int64.random(in: l..<h) }
             return MfArray(array, shape: shape)
         case .Int:
-            let l = Int(low)
-            let h = high == nil ? Int.max : Int(high!)
+            let l = Int(high == nil ? 0 : low)
+            let h = Int(high ?? low)
             let array = (0..<size).map{ _ in Int.random(in: l..<h) }
             return MfArray(array, shape: shape)
         default:

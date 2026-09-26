@@ -205,6 +205,7 @@ public struct Interp1d: MfInterpProtocol{
     
     internal mutating func fit() -> Interp1d {
         precondition(self.orig_x.size >= 2, "x must have at least 2 points")
+        precondition(self.orig_y.ndim == 1, "Only 1d y is supported yet, but got \(self.orig_y.ndim)d")
         self.params = Interp1dParams(x: self.orig_x.toArray() as! [Float], y: self.orig_y.toArray() as! [Float])
         return self
     }
@@ -325,6 +326,7 @@ public struct CubicSpline: MfInterpProtocol{
         // shape=(N+1,)
         let N = self.orig_x.size - 1
         precondition(N >= 1, "x must have at least 2 points")
+        precondition(self.orig_y.ndim == 1, "Only 1d y is supported yet, but got \(self.orig_y.ndim)d")
         let xs = self.orig_x.toArray() as! [Float]
         let ys = self.orig_y.toArray() as! [Float]
         // shape=(N,)
@@ -473,7 +475,7 @@ fileprivate func _preprocessing_interp(_ orig_x: MfArray, _ orig_y: MfArray, _ a
     if !assume_sorted{
         let inds = orig_x.argsort()
         x = orig_x[inds].astype(.Float)
-        y = Matft.take(orig_y, indices: inds).astype(.Float)
+        y = Matft.take(orig_y, indices: inds, axis: axis).astype(.Float)
     }
     else{
         x = orig_x.astype(.Float)

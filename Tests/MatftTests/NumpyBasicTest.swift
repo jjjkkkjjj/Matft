@@ -3,6 +3,20 @@ import XCTest
 import Matft
 
 final class NumpyBasicTests: XCTestCase {
+    func testScalarFirst(){
+        // numpy: np.array([True]).item() -> True
+        XCTAssertEqual(MfArray([true]).scalar as? Bool, true)
+        XCTAssertEqual(MfArray([false, true]).scalarFirst as? Bool, false)
+        // the first element in the logical order like a.flat[0]
+        let a = Matft.arange(start: 0, to: 6, by: 1, shape: [2, 3])
+        // numpy: a[::-1].flat[0] -> 3, a[:, ::-1].flat[0] -> 2, a[1:].flat[0] -> 3, a.T[::-1].flat[0] -> 2
+        XCTAssertEqual(a[Matft.reverse].scalarFirst as? Int, 3)
+        XCTAssertEqual(a[Matft.all, Matft.reverse].scalarFirst as? Int, 2)
+        XCTAssertEqual(a[1~<].scalarFirst as? Int, 3)
+        XCTAssertEqual(a.T[Matft.reverse].scalarFirst as? Int, 2)
+        XCTAssertEqual(MfArray([false, true])[Matft.reverse].scalarFirst as? Bool, true)
+    }
+
 
     func test_var_std() {
         let a = MfArray([[1.0, 2.0, 4.0],

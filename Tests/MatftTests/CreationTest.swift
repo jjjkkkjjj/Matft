@@ -6,6 +6,44 @@ import CoreML
 #endif
 
 final class CreationTests: XCTestCase {
+    func testTakeFlatten(){
+        // b = np.arange(6).reshape(2, 3)
+        let b = Matft.arange(start: 0, to: 6, by: 1, shape: [2, 3])
+        // numpy: np.take(b, [0, 4]) -> [0, 4], np.take(b, [[1, 5]]) -> [[1, 5]], np.take(b, [-1]) -> [5]
+        XCTAssertEqual(Matft.take(b, indices: MfArray([0, 4])), MfArray([0, 4]))
+        XCTAssertEqual(Matft.take(b, indices: MfArray([[1, 5]])), MfArray([[1, 5]]))
+        XCTAssertEqual(Matft.take(b, indices: MfArray([-1])), MfArray([5]))
+        // numpy: np.take(b, [1, 0], axis=1) -> [[1, 0], [4, 3]]
+        XCTAssertEqual(Matft.take(b, indices: MfArray([1, 0]), axis: 1), MfArray([[1, 0], [4, 3]]))
+        XCTAssertEqual(Matft.take(b.T, indices: MfArray([1, 2])), MfArray([3, 1]))
+    }
+
+    func testInsertIndices(){
+        let a = Matft.arange(start: 0, to: 4, by: 1, shape: [4])
+        // numpy: np.insert(a, [1, 1], 9) -> [0, 9, 9, 1, 2, 3]
+        XCTAssertEqual(Matft.insert(a, indices: [1, 1], value: 9), MfArray([0, 9, 9, 1, 2, 3]))
+        // numpy: np.insert(a, [1, 3], [8, 9]) -> [0, 8, 1, 2, 9, 3]
+        XCTAssertEqual(Matft.insert(a, indices: [1, 3], values: MfArray([8, 9])), MfArray([0, 8, 1, 2, 9, 3]))
+        // numpy: np.insert(a, [3, 1], [8, 9]) -> [0, 9, 1, 2, 8, 3]
+        XCTAssertEqual(Matft.insert(a, indices: [3, 1], values: MfArray([8, 9])), MfArray([0, 9, 1, 2, 8, 3]))
+        // numpy: np.insert(a, [1, 1, 4], [7, 8, 9]) -> [0, 7, 8, 1, 2, 3, 9]
+        XCTAssertEqual(Matft.insert(a, indices: [1, 1, 4], values: MfArray([7, 8, 9])), MfArray([0, 7, 8, 1, 2, 3, 9]))
+        // numpy: np.insert(a, [-1], 5) -> [0, 1, 2, 5, 3]
+        XCTAssertEqual(Matft.insert(a, indices: [-1], value: 5), MfArray([0, 1, 2, 5, 3]))
+
+        let b = Matft.arange(start: 0, to: 6, by: 1, shape: [2, 3])
+        // numpy: np.insert(b, [1, 1], 9, axis=1) -> [[0, 9, 9, 1, 2], [3, 9, 9, 4, 5]]
+        XCTAssertEqual(Matft.insert(b, indices: [1, 1], value: 9, axis: 1), MfArray([[0, 9, 9, 1, 2], [3, 9, 9, 4, 5]]))
+        // numpy: np.insert(b, [0, 2], [8, 9], axis=1) -> [[8, 0, 1, 9, 2], [8, 3, 4, 9, 5]]
+        XCTAssertEqual(Matft.insert(b, indices: [0, 2], values: MfArray([8, 9]), axis: 1), MfArray([[8, 0, 1, 9, 2], [8, 3, 4, 9, 5]]))
+        // numpy: np.insert(b, [1], [8, 9, 7], axis=0) -> [[0, 1, 2], [8, 9, 7], [3, 4, 5]]
+        XCTAssertEqual(Matft.insert(b, indices: [1], values: MfArray([8, 9, 7]), axis: 0), MfArray([[0, 1, 2], [8, 9, 7], [3, 4, 5]]))
+        // numpy: np.insert(b, [1], [[8], [9]], axis=1) -> [[0, 8, 1, 2], [3, 9, 4, 5]]
+        XCTAssertEqual(Matft.insert(b, indices: [1], values: MfArray([[8], [9]]), axis: 1), MfArray([[0, 8, 1, 2], [3, 9, 4, 5]]))
+        // numpy: np.insert(b, [1, 1], 9) -> [0, 9, 9, 1, 2, 3, 4, 5]
+        XCTAssertEqual(Matft.insert(b, indices: [1, 1], value: 9), MfArray([0, 9, 9, 1, 2, 3, 4, 5]))
+    }
+
     
     #if canImport(CoreML)
     @available(macOS 12.0, *)
@@ -77,7 +115,9 @@ final class CreationTests: XCTestCase {
             let a = Matft.arange(start: 0, to: 20, by: 1, shape: [2,2,5])
             let b = MfArray([1,0])
             
-            XCTAssertEqual(Matft.take(a, indices: b), MfArray([[[10, 11, 12, 13, 14],
+            // numpy: np.take(a, [1, 0]) takes from the flattened array
+            XCTAssertEqual(Matft.take(a, indices: b), MfArray([1, 0]))
+            XCTAssertEqual(Matft.take(a, indices: b, axis: 0), MfArray([[[10, 11, 12, 13, 14],
                                                          [15, 16, 17, 18, 19]],
 
                                                         [[ 0,  1,  2,  3,  4],
@@ -117,9 +157,10 @@ final class CreationTests: XCTestCase {
                                                                                                             [3, 5, 3]]))
             
             
-            XCTAssertEqual(Matft.insert(a, indices: [1], values: MfArray([1,2,3]), axis: 1), MfArray([[1, 1, 1],
-            [2, 2, 2],
-            [3, 3, 3]]))
+            // numpy: np.insert(a, [1], [1, 2, 3], axis=1) inserts 3 columns (np.insert(a, 1, ...) with a scalar index inserts 1)
+            XCTAssertEqual(Matft.insert(a, indices: [1], values: MfArray([1,2,3]), axis: 1), MfArray([[1, 1, 2, 3, 1],
+                                                                                                     [2, 1, 2, 3, 2],
+                                                                                                     [3, 1, 2, 3, 3]]))
             
             XCTAssertEqual(Matft.insert(a, indices: [1], values: MfArray([[1],[2],[3]]), axis: 1), MfArray([[1, 1, 1],
                                                                                                                     [2, 2, 2],

@@ -329,14 +329,18 @@ extension Matft.linalg{
 
        - Parameters:
             - mfarray: The input array with at least 2 dimensions.
-            - ord: The order of the norm. Default is 2. Unlike Numpy, `nil` (Frobenius) is not supported and traps.
-            - axes: The `(row, col)` axes that hold the matrices. Default is `(-1, -2)`.
+            - ord: The order of the norm. Default is 2. `nil` computes the Frobenius norm like Numpy.
+            - axes: The `(row, col)` axes that hold the matrices. Default is `(-2, -1)` like Numpy.
             - keepDims: If `true`, the two reduced axes are kept with size 1. Default is `false`.
        - Returns: The norms with the two axes removed. The result is `.Double` for `.Double` input and `.Float` otherwise.
        - Precondition: `axes.row` and `axes.col` must differ, and `ord` must be one of the supported values. Complex arrays are not supported.
-       - Note: `axes` is `(row, col)`, where `row` is the axis reduced first for `ord = 1 / -1` and `col` is reduced first for `ord = inf / -inf`, matching Numpy's `axis=(row, col)`. The default `(-1, -2)` is the transpose of Numpy's default `axis=(-2, -1)`, so for `ord = 1, -1, inf, -inf` the default computes the norm of the transposed matrices (e.g. `ord: 1` gives Numpy's `ord=inf` result).
+       - Note: `axes` is `(row, col)`, where `row` is the axis reduced first for `ord = 1 / -1` and `col` is reduced first for `ord = inf / -inf`, matching Numpy's `axis=(row, col)`.
     */
-    public static func normlp_mat(_ mfarray: MfArray, ord: Float? = 2, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray{
+    public static func normlp_mat(_ mfarray: MfArray, ord: Float? = 2, axes: (row: Int, col: Int) = (-2, -1), keepDims: Bool = false) -> MfArray{
+        // ord=None is the frobenius norm like numpy
+        guard let ord = ord else {
+            return Matft.linalg.normfro_mat(mfarray, axes: axes, keepDims: keepDims)
+        }
         var axes: (row: Int, col: Int) = (get_positive_axis(axes.row, ndim: mfarray.ndim), get_positive_axis(axes.col, ndim: mfarray.ndim))
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
@@ -394,12 +398,12 @@ extension Matft.linalg{
 
        - Parameters:
             - mfarray: The input array with at least 2 dimensions.
-            - axes: The `(row, col)` axes that hold the matrices. Default is `(-1, -2)`; the result does not depend on the order.
+            - axes: The `(row, col)` axes that hold the matrices. Default is `(-2, -1)`; the result does not depend on the order.
             - keepDims: If `true`, the two reduced axes are kept with size 1. Default is `false`.
        - Returns: The norms with the two axes removed. The result is `.Double` for `.Double` input and `.Float` otherwise.
        - Precondition: `axes.row` and `axes.col` must differ. Complex arrays are not supported.
     */
-    public static func normfro_mat(_ mfarray: MfArray, axes: (row: Int, col: Int) = (-1, -2), keepDims: Bool = false) -> MfArray{
+    public static func normfro_mat(_ mfarray: MfArray, axes: (row: Int, col: Int) = (-2, -1), keepDims: Bool = false) -> MfArray{
         let axes: (row: Int, col: Int) = (get_positive_axis(axes.row, ndim: mfarray.ndim), get_positive_axis(axes.col, ndim: mfarray.ndim))
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
@@ -426,7 +430,7 @@ extension Matft.linalg{
 
        - Parameters:
             - mfarray: The input array with at least 2 dimensions.
-            - axes: The `(row, col)` axes that hold the matrices. Default is `(-1, -2)`; the result does not depend on the order.
+            - axes: The `(row, col)` axes that hold the matrices. Default is `(-2, -1)`; the result does not depend on the order.
             - keepDims: If `true`, the two reduced axes are kept with size 1. Default is `false`.
        - Returns: The norms with the two axes removed. The result is `.Double` for `.Double` input and `.Float` otherwise.
        - Precondition: `axes.row` and `axes.col` must differ. Complex arrays are not supported.

@@ -20,9 +20,9 @@ extension Matft.image{
        append an alpha channel first, e.g. with `cvtColor(_:code:)` and `.RGB2RGBA`.
 
        - UInt8 values are expected in `0...255` and are written as 8-bit components.
-         An RGBA image is written with non-premultiplied alpha.
        - Float values are expected in `0...1` and are written as 32-bit float components.
-         An RGBA image is written with premultiplied alpha.
+
+       An RGBA image is written with straight (non-premultiplied) alpha in both cases.
 
        ```swift
        let rgba = Matft.image.cgimage2mfarray(cgimage, mftype: .UInt8) // (h, w, 4)
@@ -45,11 +45,12 @@ extension Matft.image{
     /**
        Converts a `CGImage` into an image mfarray.
 
-       The image is drawn into a CoreGraphics bitmap context, so the result is always row-major:
+       The image is decoded by vImage keeping the stored values like PIL (`np.asarray(Image.open(...))`) and
+       OpenCV (`cv2.imread(..., IMREAD_UNCHANGED)`). The result is always row-major:
 
        - A grayscale (monochrome) image becomes `(height, width)`.
-       - Any other color image becomes `(height, width, 4)` in RGBA order. The bitmap context uses
-         premultiplied alpha, so the RGB values of semi-transparent pixels are premultiplied by alpha.
+       - Any other color image becomes `(height, width, 4)` in RGBA order with straight (non-premultiplied) alpha.
+         An image without alpha (e.g. 24-bit RGB) gets an opaque alpha channel.
 
        With `.UInt8` the values are in `0...255`; with `.Float` (the default) they are in `0...1`.
 
@@ -63,10 +64,9 @@ extension Matft.image{
             - mftype: The mftype of the returned mfarray, `.Float` (default) or `.UInt8`.
        - Returns: The image mfarray.
        - Precondition: `mftype` must be UInt8 or Float.
-       - Note: Dimensions of size 1 are squeezed, so a 1-pixel-high or 1-pixel-wide image loses that axis.
     */
     public static func cgimage2mfarray(_ cgimage: CGImage, mftype: MfType = .Float) -> MfArray{
-        return cgimage2mfarray_by_vDSP(cgimage, mftype: mftype, vDSP_func: vDSP_vfltu8)
+        return cgimage2mfarray_by_vImage(cgimage, mftype: mftype)
     }
     
     /**
@@ -175,19 +175,24 @@ extension Matft.image{
             - mode: How to fill the pixels mapped from outside the source, by default `.ColorFill` (fill with
               `borderValue`). `.EdgeExtend` is vImage's edge extension, so it may differ from `cv2.BORDER_REPLICATE`.
             - borderValue: The fill value for `.ColorFill`, by default `[0]`. Pass one value for all channels
-              or 4 values (one per channel).
+              4 values, or one value per channel.
        - Returns: The transformed mfarray of `(height, width)` or `(height, width, channels)`.
        - Precondition: The mftype must be UInt8 or Float, `matrix` must be `(2, 3)`, the size must be positive,
-         and `borderValue` must have 1 or 4 elements.
+         and `borderValue` must have 1, 4 or the channel number of elements.
        - Note: Since v0.3.3 the matrix has the same meaning as OpenCV's one. Earlier versions swapped the
          off-diagonal elements and used a bottom-left origin.
     */
     public static func warpAffine(_ image: MfArray, matrix: MfArray, width: Int, height: Int, mode: MfAffineMode = .ColorFill, borderValue: [Float] = [0]) -> MfArray{
+        // one value for each channel (at least 4 for the ARGB path)
+        let channel = image.ndim == 3 ? image.shape[2] : 1
         var borderValue = borderValue
         if borderValue.count == 1{
-            borderValue = Array(repeating: borderValue[0], count: 4)
+            borderValue = Array(repeating: borderValue[0], count: Swift.max(channel, 4))
         }
-        precondition(borderValue.count == 4, "borderValue must have 1 or 4 element")
+        else if borderValue.count == channel && channel < 4{
+            borderValue += Array(repeating: 0, count: 4 - channel)
+        }
+        precondition(borderValue.count >= Swift.max(channel, 4), "borderValue must have 1, 4 or the channel number of elements, but got \(borderValue.count) for \(channel) channels")
         unsupport_complex(image)
         unsupport_imagetype(image)
         precondition(0 < width && 0 < height, "New size must be positive")

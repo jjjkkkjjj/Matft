@@ -231,7 +231,6 @@ extension Matft.math{//use math_vv_by_vecLib
        - Parameters:
             - mfarray: The input array of angles in radians.
        - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`). Complex input is supported and returns a complex array.
-       - Note: For complex input `x + iy`, the current implementation computes the imaginary part as `cosh(x) * sinh(y) / (cos(x)^2 + sinh(y)^2)`, whereas the mathematical definition uses `sinh(y) * cosh(y)`. Complex results may therefore differ from `numpy.tan`.
     */
     public static func tan(_ mfarray: MfArray) -> MfArray{
         if mfarray.isReal{
@@ -252,7 +251,8 @@ extension Matft.math{//use math_vv_by_vecLib
             let cosx = Matft.math.cos(x)
             let sinhy = Matft.math.sinh(y)
             let denomitar = cosx*cosx + sinhy*sinhy
-            return MfArray(real: Matft.math.sin(x)*cosx/denomitar, imag: Matft.math.cosh(x)*sinhy/denomitar)
+            // tan(x + iy) = (sin(x)cos(x) + i sinh(y)cosh(y)) / (cos(x)^2 + sinh(y)^2)
+            return MfArray(real: Matft.math.sin(x)*cosx/denomitar, imag: Matft.math.cosh(y)*sinhy/denomitar)
         }
     }
     /**
@@ -408,6 +408,72 @@ extension Matft.math{//use math_vv_by_vecLib
             let expx = Matft.math.exp(x)
             
             return MfArray(real: expx*Matft.math.cos(y), imag: expx*Matft.math.sin(y))
+        }
+    }
+    /**
+       Compute `2**x` element-wise.
+
+       Equivalent to `numpy.exp2`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise.
+    */
+    public static func exp2(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvexp2f)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvexp2)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+    /**
+       Compute `exp(x) - 1` element-wise, accurately for small `x`.
+
+       Equivalent to `numpy.expm1`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise.
+    */
+    public static func expm1(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvexpm1f)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvexpm1)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+    /**
+       Compute `log(1 + x)` element-wise, accurately for small `x`.
+
+       Equivalent to `numpy.log1p`.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise.
+    */
+    public static func log1p(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvlog1pf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvlog1p)
+            ret.mfdata.mftype = .Double
+            return ret
         }
     }
     /**
@@ -1057,7 +1123,7 @@ extension Matft.math {
         }
     }
 
-    /// Compute `2^x` element-wise (WASI fallback only; not available on Apple platforms).
+    /// Compute `2^x` element-wise.
     public static func exp2(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -1072,7 +1138,7 @@ extension Matft.math {
         }
     }
 
-    /// Compute `exp(x) - 1` element-wise (WASI fallback only; not available on Apple platforms).
+    /// Compute `exp(x) - 1` element-wise.
     public static func expm1(_ mfarray: MfArray) -> MfArray {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
@@ -1132,10 +1198,30 @@ extension Matft.math {
         }
     }
 
-    /// Compute `log(1 + x)` element-wise (WASI fallback only; not available on Apple platforms).
+    /// Compute `log(1 + x)` element-wise.
     public static func log1p(_ mfarray: MfArray) -> MfArray {
-        // log1p is not in vForce, implement using log(1+x)
-        return Matft.math.log(mfarray + 1)
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvlog1pf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvlog1p)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    /// Compute `x * x` element-wise.
+    public static func square(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            return math_by_vDSP(mfarray, vDSP_vsq)
+        case .Double:
+            return math_by_vDSP(mfarray, vDSP_vsqD)
+        }
     }
 
     /// Compute the absolute value element-wise (WASI fallback; complex input is not supported).

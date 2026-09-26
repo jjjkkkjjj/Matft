@@ -1523,7 +1523,8 @@ internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDS
         }
         else if channel == 4{
             colorSpace = CGColorSpaceCreateDeviceRGB()
-            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue | CGImageByteOrderInfo.order32Little.rawValue | CGBitmapInfo.floatComponents.rawValue)
+            // straight alpha like UInt8
+            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.last.rawValue | CGImageByteOrderInfo.order32Little.rawValue | CGBitmapInfo.floatComponents.rawValue)
         }
         else{
             preconditionFailure("Unsupported channel number: \(mfarray.shape[2])")
@@ -1570,92 +1571,6 @@ internal func mfarray2cgimage_by_vDSP<T: MfStorable>(_ src_mfarray: MfArray, vDS
     }
 }
 
-/// Convert mfarray into CGImage
-/// - Parameters:
-///   - src_mfarray: An input mfarray
-///   - vDSP_func: vDSP_convert_func
-/// - Returns: CGImage
-/// OpenCV: https://github.com/opencv/opencv/blob/ed69bcae2d171d9426cd3688a8b0ee14b8a140cd/modules/imgcodecs/src/apple_conversions.mm#L47
-internal func cgimage2mfarray_by_vDSP<T: MfStorable>(_ cgimage: CGImage, mftype: MfType, vDSP_func: vDSP_convert_func<UInt8, T>) -> MfArray{
-    precondition(mftype == .Float || mftype == .UInt8, "mftype must be Float or UInt8, but got \(mftype)")
-    
-    let width = Int(cgimage.width)
-    let height = Int(cgimage.height)
-    let byteNumber = Int(cgimage.bitsPerComponent/8)
-    let channel = Int(cgimage.bitsPerPixel/cgimage.bitsPerComponent)
-    let srcmftype: MfType = byteNumber == 1 ? .UInt8 : .Float
-    
-    let colorModel: CGColorSpaceModel = cgimage.colorSpace!.model
-    let bitmapInfo: CGBitmapInfo
-    let colorSpace: CGColorSpace
-    
-    let size = width*height*channel
-    let newdata = MfData(size: size, mftype: srcmftype) // CGContext.draw blends onto the existing contents
-    let newstructure = MfStructure(shape: [height, width, channel], mforder: .Row)
-    
-    if srcmftype == .Float{
-        
-        //====== cgimage to Float ======//
-        if (colorModel == CGColorSpaceModel.monochrome){
-            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGImageByteOrderInfo.order32Little.rawValue | CGBitmapInfo.floatComponents.rawValue)
-            colorSpace = CGColorSpaceCreateDeviceGray()
-        }
-        else if (colorModel == CGColorSpaceModel.indexed){
-            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue | CGImageByteOrderInfo.order32Little.rawValue | CGBitmapInfo.floatComponents.rawValue)
-            colorSpace = CGColorSpaceCreateDeviceRGB()
-        }
-        else{
-            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue | CGImageByteOrderInfo.order32Little.rawValue | CGBitmapInfo.floatComponents.rawValue)
-            colorSpace = cgimage.colorSpace!
-        }
-        
-        // NOTE: Force cast to UInt8 = raw pointer
-        newdata.withUnsafeMutableStartPointer(datatype: UInt8.self){
-            _cgimage2rawptr($0, cgimage, bitmapInfo: bitmapInfo, colorSpace: colorSpace, byteNumber: byteNumber, width: width, height: height, channel: channel)
-        }
-    }
-    else{
-        
-        //====== cgimage to UInt8 ======//
-        if (colorModel == CGColorSpaceModel.monochrome){
-            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
-            colorSpace = CGColorSpaceCreateDeviceGray()
-        }
-        else if (colorModel == CGColorSpaceModel.indexed){
-            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
-            colorSpace = CGColorSpaceCreateDeviceRGB()
-        }
-        else{
-            bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue | CGImageByteOrderInfo.orderDefault.rawValue)
-            colorSpace = cgimage.colorSpace!
-        }
-        
-        // tmp UInt8 array
-        var arr = Array<UInt8>(repeating: UInt8.zero, count: size)
-
-        _cgimage2rawptr(&arr, cgimage, bitmapInfo: bitmapInfo, colorSpace: colorSpace, byteNumber: byteNumber, width: width, height: height, channel: channel)
-        newdata.withUnsafeMutableStartPointer(datatype: T.self){
-            dstptr in
-            wrap_vDSP_convert(size, &arr, 1, dstptr, 1, vDSP_func)
-        }
-    }
-    
-    var ret = MfArray(mfdata: newdata, mfstructure: newstructure).squeeze()
-    if srcmftype != mftype{
-        if mftype == .Float{
-            ret = ui8Xfloat_image(ret)
-        }
-        else{
-            ret = floatXui8_image(ret)
-        }
-        return ret.astype(mftype)
-    }
-    else{
-        return ret
-    }
-}
-
-
 fileprivate func _rawptr2cgimage(_ srcrawptr: UnsafeMutablePointer<UInt8>, bitmapInfo: CGBitmapInfo, colorSpace: CGColorSpace, byteNumber: Int, width: Int, height: Int, channel: Int) -> CGImage{
     let provider = CGDataProvider(data: CFDataCreate(kCFAllocatorDefault, srcrawptr, width*height*channel*byteNumber))
     let cgimage =  CGImage(width: width, height: height, bitsPerComponent: 8*byteNumber, bitsPerPixel: 8*channel*byteNumber, bytesPerRow: width*channel*byteNumber, space: colorSpace, bitmapInfo: bitmapInfo, provider: provider!, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)!
@@ -1663,13 +1578,6 @@ fileprivate func _rawptr2cgimage(_ srcrawptr: UnsafeMutablePointer<UInt8>, bitma
     return cgimage
 }
 
-///
-//@inline(__always)
-fileprivate func _cgimage2rawptr(_ dstrawptr: UnsafeMutablePointer<UInt8>, _ cgimage: CGImage, bitmapInfo: CGBitmapInfo, colorSpace: CGColorSpace, byteNumber: Int, width: Int, height: Int, channel: Int){
-
-    let contextRef = CGContext(data: dstrawptr, width: width, height: height, bitsPerComponent: 8*byteNumber, bytesPerRow: width*channel*byteNumber, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
-    contextRef?.draw(cgimage, in: CGRect(x: 0, y: 0, width: width, height: height))
-}
 /// The largest absolute value over the real and imaginary parts. NaN if any element is NaN
 /// - Parameter mfarray: An input mfarray
 /// - Returns: The largest absolute value. 0 for an empty mfarray

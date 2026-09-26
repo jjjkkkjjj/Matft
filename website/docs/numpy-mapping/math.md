@@ -23,9 +23,12 @@ title: Math
 | `Matft.math.sqrt` | `numpy.sqrt` |  |  |
 | `Matft.math.rsqrt` | `1 / numpy.sqrt` |  |  |
 | `Matft.math.exp` | `numpy.exp` |  | ✓ |
+| `Matft.math.exp2` | `numpy.exp2` |  |  |
+| `Matft.math.expm1` | `numpy.expm1` |  |  |
 | `Matft.math.log` | `numpy.log` |  | ✓ |
 | `Matft.math.log2` | `numpy.log2` |  |  |
 | `Matft.math.log10` | `numpy.log10` |  |  |
+| `Matft.math.log1p` | `numpy.log1p` |  |  |
 | `Matft.math.ceil` | `numpy.ceil` | ✓ |  |
 | `Matft.math.floor` | `numpy.floor` | ✓ |  |
 | `Matft.math.trunc` | `numpy.trunc` | ✓ |  |

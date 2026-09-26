@@ -10,6 +10,16 @@ import XCTest
 @testable import Matft
 
 final class RandomTests: XCTestCase {
+    func testRandintWithoutHigh(){
+        // numpy: np.random.randint(5, size=...) draws from [0, 5)
+        for mftype in [MfType.Int, .UInt8, .Int16]{
+            let a = Matft.random.randint(low: 5, shape: [2000], mftype: mftype)
+            XCTAssertEqual(a.mftype, mftype)
+            let values = Set(rowValues(a))
+            XCTAssertEqual(values, [0, 1, 2, 3, 4], "\(mftype)")
+        }
+    }
+
     func testRand() {
         // Use smaller array size on WASM to avoid memory pressure
         // 100x100x100 = 1M elements = 4MB per array, too much for WASM

@@ -1093,7 +1093,8 @@ internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func: la
             //ref: https://stackoverflow.com/questions/47315471/compute-determinant-from-lu-decomposition-in-lapack
             var det = T.from(1)
             for i in 0..<square_num{
-                det *= IPIV[i] != __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*square_num).pointee : -(srcptr.advanced(by: i + i*square_num).pointee)
+                // each row interchange (IPIV[i] != i+1, 1-based) flips the sign
+                det *= IPIV[i] == __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*square_num).pointee : -(srcptr.advanced(by: i + i*square_num).pointee)
             }
             
             //assign
@@ -1792,7 +1793,8 @@ internal func det_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ lapack_func: la
             let IPIV = try wrap_lapack_LU(row, col, srcptr, lapack_func: lapack_func)
             var det = T.from(1)
             for i in 0..<square_num {
-                det *= IPIV[i] != __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*square_num).pointee : -(srcptr.advanced(by: i + i*square_num).pointee)
+                // each row interchange (IPIV[i] != i+1, 1-based) flips the sign
+                det *= IPIV[i] == __CLPK_integer(i+1) ? srcptr.advanced(by: i + i*square_num).pointee : -(srcptr.advanced(by: i + i*square_num).pointee)
             }
             (dstptrT + dst_offset).update(from: &det, count: 1)
             dst_offset += 1

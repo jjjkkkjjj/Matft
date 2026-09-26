@@ -3,6 +3,20 @@ import XCTest
 @testable import Matft
 
 final class DenseLayoutTests: XCTestCase {
+    func testMfDataRefOffset(){
+        // real and imag views with an offset (a[1:3] of a (3, 2) array)
+        let real = Matft.arange(start: 0, to: 6, by: 1, shape: [3, 2], mftype: .Float)
+        let imag = real * 10
+        let rv = real[1~<3], iv = imag[1~<3]
+        let data = MfData(ref_realdata: rv.mfdata, ref_imagdata: iv.mfdata, offset: rv.mfdata.offset)
+        // the offset is kept and the data are copied from the beginning, not from the offset
+        XCTAssertEqual(data.offset, rv.mfdata.offset)
+        XCTAssertEqual(data.storedSize, 6)
+        let z = MfArray(mfdata: data, mfstructure: MfStructure(shape: rv.shape, strides: rv.strides))
+        XCTAssertEqual(z.real, MfArray([[2, 3], [4, 5]], mftype: .Float))
+        XCTAssertEqual(z.imag!, MfArray([[20, 30], [40, 50]], mftype: .Float))
+    }
+
     
     func testCheckDense(){
         let a = Matft.arange(start: 0, to: 24, by: 1, shape: [2, 3, 4])

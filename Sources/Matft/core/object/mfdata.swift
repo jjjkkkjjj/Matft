@@ -197,11 +197,11 @@ public class MfData: MfDataProtocol{
     /// Creates complex data by COPYING the real parts from one `MfData` and the imaginary parts from another.
     ///
     /// Despite the `ref_` labels, the result does not share memory: new buffers are allocated and
-    /// `storedSize` elements are copied from each source starting at its own offset. The resulting offset is always 0.
+    /// the whole stored data (`storedSize` elements from the beginning) of each source is copied.
     /// - Parameters:
     ///   - ref_realdata: The data providing the real parts (its real buffer is used).
     ///   - ref_imagdata: The data providing the imaginary parts (its real buffer is used).
-    ///   - offset: Unused; the sources' own offsets are used instead.
+    ///   - offset: The offset of the result, usually `ref_realdata.offset`.
     /// - Precondition: Both sources must have the same stored size, offset and `mftype` (checked only in debug builds).
     public init(ref_realdata: MfData, ref_imagdata: MfData, offset: Int) {
         assert(ref_realdata.storedSize == ref_imagdata.storedSize, "Must have same size!")
@@ -221,14 +221,15 @@ public class MfData: MfDataProtocol{
             dataiptr = allocate_unsafeMRPtr(type: Double.self, count: size, zeroed: false)
         }
         
-        memcpy(datarptr, ref_realdata.data_real + ref_realdata.byteOffset, bytesize)
-        memcpy(dataiptr, ref_imagdata.data_real + ref_imagdata.byteOffset, bytesize)
+        // copy the whole stored data and keep the offset. Copying `storedSize` elements from the offset would run past the end
+        memcpy(datarptr, ref_realdata.data_real, bytesize)
+        memcpy(dataiptr, ref_imagdata.data_real, bytesize)
         
         self.data_real = datarptr
         self.data_imag = dataiptr
         self.storedSize = size
         self.mftype = ref_realdata.mftype
-        self.offset = 0
+        self.offset = offset
     }
     
     deinit {
