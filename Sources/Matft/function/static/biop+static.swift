@@ -518,7 +518,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func equal(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        return _equal_operation(l_mfarray, r_mfarray)
+        return _compare_operation(l_mfarray, r_mfarray, .equal)
     }
     /**
         Check equality in element-wise. Returned mfarray's type will be bool.
@@ -527,7 +527,7 @@ extension Matft{
            - r_scalar: right scalar conformed to MfTypable
     */
     public static func equal<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
-        return _equal_operation(l_mfarray, Matft.nums(r_scalar, shape: [1]))
+        return compare_mfarray(l_mfarray, .equal, r_scalar)
     }
     /**
         Check equality in element-wise. Returned mfarray's type will be bool.
@@ -536,7 +536,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func equal<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
-        return _equal_operation(Matft.nums(l_scalar, shape: [1]), r_mfarray)
+        return compare_mfarray(r_mfarray, .equal.flipped, l_scalar)
     }
     
     /**
@@ -546,7 +546,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func not_equal(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        return Matft.logical_not(_equal_operation(l_mfarray, r_mfarray))
+        return _compare_operation(l_mfarray, r_mfarray, .notEqual)
     }
     /**
         Check equality in element-wise. Returned mfarray's type will be bool.
@@ -555,7 +555,7 @@ extension Matft{
            - r_scalar: right scalar conformed to MfTypable
     */
     public static func not_equal<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
-        return Matft.logical_not(_equal_operation(l_mfarray, Matft.nums(r_scalar, shape: [1])))
+        return compare_mfarray(l_mfarray, .notEqual, r_scalar)
     }
     /**
         Check equality in element-wise. Returned mfarray's type will be bool.
@@ -564,7 +564,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func not_equal<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
-        return Matft.logical_not(_equal_operation(Matft.nums(l_scalar, shape: [1]), r_mfarray))
+        return compare_mfarray(r_mfarray, .notEqual.flipped, l_scalar)
     }
     
     /**
@@ -574,8 +574,7 @@ extension Matft{
             - r_mfarray: right mfarray
      */
     public static func less(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let diff = r_mfarray - l_mfarray
-        return to_Bool(diff.clip(min: 0, max: nil))
+        return _compare_operation(l_mfarray, r_mfarray, .less)
     }
     /**
         Check left mfarray's elements are less than right scalar in element-wise. Returned mfarray's type will be bool.
@@ -584,8 +583,7 @@ extension Matft{
            - r_scalar: right scalar conformed to MfTypable
     */
     public static func less<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
-        let diff = r_scalar - l_mfarray
-        return to_Bool(diff.clip(min: 0, max: nil))
+        return compare_mfarray(l_mfarray, .less, r_scalar)
     }
     /**
         Check left scalar is less than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
@@ -594,8 +592,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func less<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
-        let diff = r_mfarray - l_scalar
-        return to_Bool(diff.clip(min: 0, max: nil))
+        return compare_mfarray(r_mfarray, .less.flipped, l_scalar)
     }
     /**
         Check left mfarray's elements are less equal than right ones in element-wise. Returned mfarray's type will be bool.
@@ -604,8 +601,7 @@ extension Matft{
             - r_mfarray: right mfarray
      */
     public static func less_equal(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let diff = r_mfarray - l_mfarray
-        return to_Bool(diff.sign() + Float(1))
+        return _compare_operation(l_mfarray, r_mfarray, .lessEqual)
     }
     /**
         Check left mfarray's elements are less equal than right scalar in element-wise. Returned mfarray's type will be bool.
@@ -614,8 +610,7 @@ extension Matft{
            - r_scalar: right scalar conformed to MfTypable
     */
     public static func less_equal<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
-        let diff = r_scalar - l_mfarray
-        return to_Bool(diff.sign() + Float(1))
+        return compare_mfarray(l_mfarray, .lessEqual, r_scalar)
     }
     /**
         Check left scalar is less equal than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
@@ -624,8 +619,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func less_equal<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
-        let diff = r_mfarray - l_scalar
-        return to_Bool(diff.sign() + Float(1))
+        return compare_mfarray(r_mfarray, .lessEqual.flipped, l_scalar)
     }
     
     /**
@@ -635,8 +629,7 @@ extension Matft{
             - r_mfarray: right mfarray
      */
     public static func greater(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let diff = l_mfarray - r_mfarray
-        return to_Bool(diff.clip(min: 0, max: nil))
+        return _compare_operation(l_mfarray, r_mfarray, .greater)
     }
     /**
         Check left scalar is greater than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
@@ -645,8 +638,7 @@ extension Matft{
            - r_scalar: right scalar conformed to MfTypable
     */
     public static func greater<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
-        let diff = l_mfarray - r_scalar
-        return to_Bool(diff.clip(min: 0, max: nil))
+        return compare_mfarray(l_mfarray, .greater, r_scalar)
     }
     /**
         Check left scalar is greater than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
@@ -655,8 +647,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func greater<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
-        let diff = l_scalar - r_mfarray
-        return to_Bool(diff.clip(min: 0, max: nil))
+        return compare_mfarray(r_mfarray, .greater.flipped, l_scalar)
     }
     /**
         Check left mfarray's elements are greater equal than right ones in element-wise. Returned mfarray's type will be bool.
@@ -665,8 +656,7 @@ extension Matft{
             - r_mfarray: right mfarray
      */
     public static func greater_equal(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let diff = l_mfarray - r_mfarray
-        return to_Bool(diff.sign() + Float(1))
+        return _compare_operation(l_mfarray, r_mfarray, .greaterEqual)
     }
     /**
         Check left scalar is greater equal than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
@@ -675,8 +665,7 @@ extension Matft{
            - r_scalar: right scalar conformed to MfTypable
     */
     public static func greater_equal<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
-        let diff = l_mfarray - r_scalar
-        return to_Bool(diff.sign() + Float(1))
+        return compare_mfarray(l_mfarray, .greaterEqual, r_scalar)
     }
     /**
         Check left scalar is greater equal than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
@@ -685,8 +674,7 @@ extension Matft{
            - r_mfarray: right mfarray
     */
     public static func greater_equal<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
-        let diff = l_scalar - r_mfarray
-        return to_Bool(diff.sign() + Float(1))
+        return compare_mfarray(r_mfarray, .greaterEqual.flipped, l_scalar)
     }
     
     /**
@@ -898,22 +886,10 @@ fileprivate func _inner_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
 
 
 
-fileprivate func _equal_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray{
-    let diff = l_mfarray - r_mfarray
-    //print(diff)
-    
-    /*
-    let diff = l_mfarray - r_mfarray
-    print(diff)
-    diff.withDataUnsafeMRPtr{
-        dataptr in
-        var bytes = UnsafeMutableRawBufferPointer(start: dataptr, count: diff.storedByteSize).map{ ~<$0 }
-        bytes.withUnsafeMutableBufferPointer{
-            dataptr.copyMemory(from: $0.baseAddress!, byteCount: diff.storedByteSize)
-        }
-    }
-    print(diff)*/
-    return to_IBool(diff, thresholdF: thresholdF, thresholdD: thresholdD)
+/// Compare two mfarrays in element-wise by comparing `l - r` with 0.
+/// Note that `inf` vs `inf` gives `inf - inf = NaN`, so `==`, `>=` and `<=` return false for it.
+fileprivate func _compare_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ op: MfCompareOp) -> MfArray{
+    return compare_mfarray(l_mfarray - r_mfarray, op, 0)
 }
 
 fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> Bool{

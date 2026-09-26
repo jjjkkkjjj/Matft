@@ -155,6 +155,50 @@ final class BoolTests: XCTestCase {
         }
     }
     
+    // Expected values are taken from numpy (#18)
+    func testCompareEdgeCases(){
+        let T = true, F = false
+        do{
+            // [nan, -inf, -1, -0, 0, 5e-324, 1e-50, 1, 1e38, inf]
+            let x = MfArray([Double.nan, -Double.infinity, -1.0, -0.0, 0.0, 5e-324, 1e-50, 1.0, 1e38, Double.infinity], mftype: .Double)
+            
+            XCTAssertEqual(x > 0, MfArray([F, F, F, F, F, T, T, T, T, T]))
+            XCTAssertEqual(x >= 0, MfArray([F, F, F, T, T, T, T, T, T, T]))
+            XCTAssertEqual(x < 0, MfArray([F, T, T, F, F, F, F, F, F, F]))
+            XCTAssertEqual(x <= 0, MfArray([F, T, T, T, T, F, F, F, F, F]))
+            XCTAssertEqual(x === 0, MfArray([F, F, F, T, T, F, F, F, F, F]))
+            XCTAssertEqual(x !== 0, MfArray([T, T, T, F, F, T, T, T, T, T]))
+            XCTAssertEqual(0 < x, MfArray([F, F, F, F, F, T, T, T, T, T]))
+            XCTAssertEqual(0 >= x, MfArray([F, T, T, T, T, F, F, F, F, F]))
+            XCTAssertEqual(x === Double.infinity, MfArray([F, F, F, F, F, F, F, F, F, T]))
+            XCTAssertEqual(x === -Double.infinity, MfArray([F, T, F, F, F, F, F, F, F, F]))
+            XCTAssertEqual(x > 1e38, MfArray([F, F, F, F, F, F, F, F, F, T]))
+            XCTAssertEqual(x.astype(.Bool), MfArray([T, T, T, F, F, T, T, T, T, T]))
+            XCTAssertEqual(Matft.logical_not(x), MfArray([F, F, F, T, T, F, F, F, F, F]))
+        }
+        
+        do{
+            // [nan, -inf, -1, -0, 0, min subnormal, 1, 1e38, inf]
+            let x = MfArray([Float.nan, -Float.infinity, -1, -0.0, 0, Float.leastNonzeroMagnitude, 1, 1e38, Float.infinity] as [Float])
+            
+            XCTAssertEqual(x > 0, MfArray([F, F, F, F, F, T, T, T, T]))
+            XCTAssertEqual(x <= 0, MfArray([F, T, T, T, T, F, F, F, F]))
+            XCTAssertEqual(x === 0, MfArray([F, F, F, T, T, F, F, F, F]))
+            XCTAssertEqual(x !== 0, MfArray([T, T, T, F, F, T, T, T, T]))
+            XCTAssertEqual(x.astype(.Bool), MfArray([T, T, T, F, F, T, T, T, T]))
+        }
+        
+        do{
+            let y = MfArray([Double.nan, 1.0, -2.0, 1e-50], mftype: .Double)
+            let z = MfArray([Double.nan, 1.0, 1e-50, 0.0], mftype: .Double)
+            
+            XCTAssertEqual(y > z, MfArray([F, F, F, T]))
+            XCTAssertEqual(y <= z, MfArray([F, T, T, F]))
+            XCTAssertEqual(y === z, MfArray([F, T, F, F]))
+            XCTAssertEqual(y !== z, MfArray([T, F, T, T]))
+        }
+    }
+    
     func testLess(){
         do{
             let a = MfArray([[24, 15,  8, 65, 82],
