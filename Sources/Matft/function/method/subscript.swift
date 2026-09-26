@@ -12,6 +12,20 @@ import Accelerate
 #endif
 
 extension MfArray: MfSubscriptable{
+    /// Access an element or a sub-array by integer indices.
+    ///
+    /// Like `a[1, 2]` in Numpy. Missing trailing indices select the whole axis, and negative indices count from the end.
+    ///
+    /// ```swift
+    /// let a = MfArray([[1, 2, 3], [4, 5, 6]])
+    /// let v = a[1, 2] as! Int      // a scalar when all axes are indexed
+    /// let row = a[0] as! MfArray   // otherwise a view of the sub-array
+    /// a[0, 0] = 10
+    /// ```
+    /// - Parameters:
+    ///   - indices: One integer per axis (at most `ndim`).
+    /// - Returns: A Swift scalar (boxed in `Any`) when the result has a single element, otherwise an `MfArray` view that shares memory with the original array.
+    ///   When setting, a scalar or an `MfArray` broadcastable to the selected region can be assigned.
     public subscript(indices: Int...) -> Any{
         get {
             var indices: [Any] = indices
@@ -35,6 +49,13 @@ extension MfArray: MfSubscriptable{
             }
         }
     }
+    /// Access a sub-array by slices.
+    ///
+    /// Like `a[1:, ::2]` in Numpy. Slices are usually written with the `~<` operator (e.g. `a[1~<, 0~<3]`) or with `MfSlice(start:to:by:)`.
+    /// Missing trailing slices select the whole axis.
+    /// - Parameters:
+    ///   - indices: One slice per axis (at most `ndim`).
+    /// - Returns: A view that shares memory with the original array. When setting, the assigned `MfArray` is broadcast to the selected region.
     public subscript(indices: MfSlice...) -> MfArray{
         get{
             var indices: [Any] = indices
@@ -46,6 +67,16 @@ extension MfArray: MfSubscriptable{
         }
     }
     
+    /// Access elements by a boolean mask or by integer (fancy) indices.
+    ///
+    /// Like `a[mask]` or `a[[0, 2]]` in Numpy.
+    /// - A `.Bool` array selects the elements where the mask is `true`.
+    /// - An `.Int` array selects entries along the first axis.
+    ///
+    /// Float and complex index arrays are not allowed.
+    /// - Parameters:
+    ///   - indices: A `.Bool` mask or an `.Int` index array.
+    /// - Returns: A new array (a copy) of the selected elements. When setting, the assigned values are written to the selected positions of this array.
     public subscript(indices: MfArray) -> MfArray{
         get{
             return self._get_mfarray(indices: indices)
@@ -57,6 +88,12 @@ extension MfArray: MfSubscriptable{
     
     
     // for fancy indexing
+    /// Access elements by integer (fancy) index arrays, one per axis.
+    ///
+    /// Like `a[[0, 1], [2, 0]]` in Numpy: the index arrays are broadcast together and each combination selects one element.
+    /// - Parameters:
+    ///   - indices: `.Int` index arrays for the leading axes. Complex index arrays are not allowed.
+    /// - Returns: A new array (a copy) of the selected elements. When setting, the assigned values are written to the selected positions of this array.
     public subscript(indices: MfArray...) -> MfArray {
         get{
             var indices = indices
@@ -69,6 +106,21 @@ extension MfArray: MfSubscriptable{
     }
     
     //public subscript<T: MfSlicable>(indices: T...) -> MfArray{
+    /// Access a sub-array by a mix of integers, slices, `.Int` index arrays and special indices.
+    ///
+    /// Each element of `indices` may be an `Int`, an `MfSlice` (e.g. `1~<`), an `MfArray` of `.Int` indices,
+    /// or one of `Matft.all`, `Matft.reverse` and `Matft.newaxis` (the last one is not allowed when setting).
+    /// Missing trailing indices select the whole axis.
+    ///
+    /// ```swift
+    /// let a = Matft.arange(start: 0, to: 24, by: 1, shape: [2, 3, 4])
+    /// let b = a[0, 1~<, Matft.reverse]
+    /// let c = a[Matft.newaxis, Matft.all, 0]
+    /// ```
+    /// - Parameters:
+    ///   - indices: The indices, at most one per axis (plus any `Matft.newaxis`).
+    /// - Returns: A view that shares memory with the original array, or a copy if an index array is included.
+    ///   When setting, the assigned `MfArray` is broadcast to the selected region.
     public subscript(indices: Any...) -> MfArray{
         get{
             var indices = indices

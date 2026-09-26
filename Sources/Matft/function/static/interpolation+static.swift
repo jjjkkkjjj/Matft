@@ -9,13 +9,26 @@ import Foundation
 
 extension Matft{
     /**
-        One-dimensional linear interpolation like numpy.interp. Returned mfarray's type is float and its shape is same as x.
-       - parameters:
-            - x: mfarray. The x-coordinates at which to evaluate the interpolated values.
-            - xp: mfarray. The x-coordinates of the data points. Must be 1d and increasing.
-            - fp: mfarray. The y-coordinates of the data points. Must be 1d and same size as xp.
-            - left: (Optional) Float. Value to return for x < xp[0]. Default is fp[0].
-            - right: (Optional) Float. Value to return for x > xp[-1]. Default is fp[-1].
+       One-dimensional piecewise linear interpolation.
+
+       Equivalent to `numpy.interp`. The computation is done in `Float`.
+
+       ```swift
+       let xp = MfArray([-1, 2, 4, 5, 7])
+       let fp = MfArray([0.2, -2.0, 9.1, 10.2, 6.4])
+       let x = MfArray([6.0, 0.5, -3.0, 8.0, 3.0, 1.9])
+       Matft.interp(x, xp: xp, fp: fp)
+       // MfArray([8.3, -0.9, 0.2, 6.4, 3.55, -1.92666662], mftype: .Float)
+       ```
+
+       - Parameters:
+            - x: The x-coordinates at which to evaluate the interpolated values. Any shape.
+            - xp: The 1-d x-coordinates of the data points. Must be increasing.
+            - fp: The 1-d y-coordinates of the data points, with the same size as `xp`.
+            - left: The value to return for `x < xp[0]`. Default is `fp[0]`.
+            - right: The value to return for `x > xp[-1]`. Default is `fp[-1]`.
+       - Returns: A `.Float` array with the same shape as `x` (Numpy returns float64).
+       - Precondition: `xp` and `fp` must be 1-d, non-empty and of the same size. Complex arrays are not supported.
     */
     public static func interp(_ x: MfArray, xp: MfArray, fp: MfArray, left: Float? = nil, right: Float? = nil) -> MfArray{
         unsupport_complex(x)
@@ -48,13 +61,26 @@ extension Matft{
 
 extension Matft.interp1d{
     /**
-        Return CubicSpline instance. The instance can interpolate by 'interpolate' method.
-       - parameters:
-            - x: mfarray
-            - y: mfarray
-            - axis: Int. Default is -1.
-            - assume_sorted: Bool
-            - bc_type: Boundary condition type. natural, clamped, notAKnot and periodic are supported. Default is natural. Note that scipy's default is not-a-knot.
+       Create a cubic spline interpolator.
+
+       Similar to `scipy.interpolate.CubicSpline`, but the default boundary condition is `.natural` (scipy's default is not-a-knot) and there is no extrapolation. Call `interpolate(_:)` on the returned value to evaluate it.
+
+       ```swift
+       let x = Matft.arange(start: 1, to: 5.5, by: 0.5)
+       let y = MfArray([1.0, 2.25, 4.0, 6.25, 9.0, 12.25, 16.0, 20.25, 25.0])
+       let spline = Matft.interp1d.cubicSpline(x: x, y: y, bc_type: .natural)
+       spline.interpolate(MfArray([1.2, 3.3, 4.2, 4.8]))
+       // MfArray([1.46449485, 10.88962887, 17.63480412, 23.06449485], mftype: .Float)
+       ```
+
+       - Parameters:
+            - x: The 1-d x-coordinates of the data points (at least 2 points).
+            - y: The y-coordinates of the data points, with the same length as `x`.
+            - axis: The axis of `y` along which to interpolate. Default is -1. Only 1-d `y` is currently supported, so this is effectively the only axis.
+            - assume_sorted: If `true` (default), `x` is assumed to be sorted in increasing order. If `false`, `x` and `y` are sorted by `x` first.
+            - bc_type: The boundary condition: `.natural` (default), `.clamped`, `.notAKnot` or `.periodic`.
+       - Returns: A fitted `CubicSpline`. The coefficients are computed in `Float`.
+       - Precondition: `x` must be 1-d with at least 2 points and `y.shape[axis]` must equal the size of `x`. For `.periodic`, the first and last `y` must be equal. Complex arrays are not supported.
     */
     public static func cubicSpline(x: MfArray, y: MfArray, axis: Int = -1, assume_sorted: Bool = true, bc_type: CubicSpline.BoundaryCondition = .natural) -> CubicSpline{
         unsupport_complex(x)
@@ -68,48 +94,70 @@ extension Matft.interp1d{
 
 extension Matft.interp1d{
     /**
-        Return Interp1d instance for linear interpolation. The instance can interpolate by 'interpolate' method.
-       - parameters:
-            - x: mfarray
-            - y: mfarray
-            - axis: Int. Default is -1.
-            - assume_sorted: Bool
+       Create a linear interpolator.
+
+       Equivalent to `scipy.interpolate.interp1d(x, y, kind="linear")` without extrapolation. Call `interpolate(_:)` on the returned value to evaluate it.
+
+       - Parameters:
+            - x: The 1-d x-coordinates of the data points (at least 2 points).
+            - y: The y-coordinates of the data points, with the same length as `x`.
+            - axis: The axis of `y` along which to interpolate. Default is -1. Only 1-d `y` is currently supported, so this is effectively the only axis.
+            - assume_sorted: If `true` (default), `x` is assumed to be sorted in increasing order. If `false`, `x` and `y` are sorted by `x` first.
+       - Returns: A fitted `Interp1d`.
+       - Precondition: `x` must be 1-d with at least 2 points and `y.shape[axis]` must equal the size of `x`. Complex arrays are not supported.
     */
     public static func linear(x: MfArray, y: MfArray, axis: Int = -1, assume_sorted: Bool = true) -> Interp1d{
         return _interp1d(x, y, axis, assume_sorted, .linear)
     }
     
     /**
-        Return Interp1d instance for nearest interpolation. Note that the midpoint of the interval returns the left point's value. The instance can interpolate by 'interpolate' method.
-       - parameters:
-            - x: mfarray
-            - y: mfarray
-            - axis: Int. Default is -1.
-            - assume_sorted: Bool
+       Create a nearest-neighbor interpolator.
+
+       Equivalent to `scipy.interpolate.interp1d(x, y, kind="nearest")` without extrapolation. Call `interpolate(_:)` on the returned value to evaluate it.
+
+       At the exact midpoint of an interval, the value of the left point is returned.
+
+       - Parameters:
+            - x: The 1-d x-coordinates of the data points (at least 2 points).
+            - y: The y-coordinates of the data points, with the same length as `x`.
+            - axis: The axis of `y` along which to interpolate. Default is -1. Only 1-d `y` is currently supported, so this is effectively the only axis.
+            - assume_sorted: If `true` (default), `x` is assumed to be sorted in increasing order. If `false`, `x` and `y` are sorted by `x` first.
+       - Returns: A fitted `Interp1d`.
+       - Precondition: `x` must be 1-d with at least 2 points and `y.shape[axis]` must equal the size of `x`. Complex arrays are not supported.
     */
     public static func nearest(x: MfArray, y: MfArray, axis: Int = -1, assume_sorted: Bool = true) -> Interp1d{
         return _interp1d(x, y, axis, assume_sorted, .nearest)
     }
     
     /**
-        Return Interp1d instance for previous interpolation, which returns the previous point's value. The instance can interpolate by 'interpolate' method.
-       - parameters:
-            - x: mfarray
-            - y: mfarray
-            - axis: Int. Default is -1.
-            - assume_sorted: Bool
+       Create an interpolator that returns the value of the previous data point.
+
+       Equivalent to `scipy.interpolate.interp1d(x, y, kind="previous")` without extrapolation. Call `interpolate(_:)` on the returned value to evaluate it.
+
+       - Parameters:
+            - x: The 1-d x-coordinates of the data points (at least 2 points).
+            - y: The y-coordinates of the data points, with the same length as `x`.
+            - axis: The axis of `y` along which to interpolate. Default is -1. Only 1-d `y` is currently supported, so this is effectively the only axis.
+            - assume_sorted: If `true` (default), `x` is assumed to be sorted in increasing order. If `false`, `x` and `y` are sorted by `x` first.
+       - Returns: A fitted `Interp1d`.
+       - Precondition: `x` must be 1-d with at least 2 points and `y.shape[axis]` must equal the size of `x`. Complex arrays are not supported.
     */
     public static func previous(x: MfArray, y: MfArray, axis: Int = -1, assume_sorted: Bool = true) -> Interp1d{
         return _interp1d(x, y, axis, assume_sorted, .previous)
     }
     
     /**
-        Return Interp1d instance for next interpolation, which returns the next point's value. The instance can interpolate by 'interpolate' method.
-       - parameters:
-            - x: mfarray
-            - y: mfarray
-            - axis: Int. Default is -1.
-            - assume_sorted: Bool
+       Create an interpolator that returns the value of the next data point.
+
+       Equivalent to `scipy.interpolate.interp1d(x, y, kind="next")` without extrapolation. Call `interpolate(_:)` on the returned value to evaluate it.
+
+       - Parameters:
+            - x: The 1-d x-coordinates of the data points (at least 2 points).
+            - y: The y-coordinates of the data points, with the same length as `x`.
+            - axis: The axis of `y` along which to interpolate. Default is -1. Only 1-d `y` is currently supported, so this is effectively the only axis.
+            - assume_sorted: If `true` (default), `x` is assumed to be sorted in increasing order. If `false`, `x` and `y` are sorted by `x` first.
+       - Returns: A fitted `Interp1d`.
+       - Precondition: `x` must be 1-d with at least 2 points and `y.shape[axis]` must equal the size of `x`. Complex arrays are not supported.
     */
     public static func next(x: MfArray, y: MfArray, axis: Int = -1, assume_sorted: Bool = true) -> Interp1d{
         return _interp1d(x, y, axis, assume_sorted, .next)
@@ -125,8 +173,10 @@ extension Matft.interp1d{
     }
 }
 
+/// A fitted one-dimensional interpolator created by `Matft.interp1d.linear`, `nearest`, `previous` or `next`.
 public struct Interp1d: MfInterpProtocol{
     typealias ParamsType = Interp1dParams
+    /// The fitted parameters (the sorted data points). `nil` before fitting.
     public var params: Interp1dParams?
     
     internal var orig_x: MfArray
@@ -135,15 +185,21 @@ public struct Interp1d: MfInterpProtocol{
     internal var assume_sorted: Bool
     internal var kind: Kind
     
+    /// The data points used by `Interp1d`, stored as `Float`.
     public struct Interp1dParams: MfInterpParamsProtocol{
         let x: [Float]
         let y: [Float]
     }
     
+    /// The interpolation kind of `Interp1d`.
     public enum Kind: Int{
+        /// Linear interpolation between the neighboring data points.
         case linear
+        /// The value of the nearest data point (the left one at the exact midpoint).
         case nearest
+        /// The value of the previous data point.
         case previous
+        /// The value of the next data point.
         case next
     }
     
@@ -153,6 +209,10 @@ public struct Interp1d: MfInterpProtocol{
         return self
     }
     
+    /// Evaluate the interpolator at new x-coordinates.
+    /// - Parameter newx: The 1-d x-coordinates to evaluate. Every value must be within `[x.first, x.last]` of the data points.
+    /// - Returns: A 1-d `.Float` array of the interpolated values.
+    /// - Precondition: `newx` must be 1-d and within the data range (no extrapolation).
     public func interpolate(_ newx: MfArray) -> MfArray {
         precondition(newx.ndim == 1, "new x must be 1d")
         let newx = newx.astype(.Float).toArray() as! [Float]
@@ -175,8 +235,10 @@ public struct Interp1d: MfInterpProtocol{
     }
 }
 
+/// A fitted cubic spline created by `Matft.interp1d.cubicSpline(x:y:axis:assume_sorted:bc_type:)`.
 public struct CubicSpline: MfInterpProtocol{
     typealias ParamsType = CubicSplineParams
+    /// The fitted piecewise polynomial coefficients. `nil` before fitting.
     public var params: CubicSplineParams?
     
     internal var orig_x: MfArray
@@ -185,12 +247,20 @@ public struct CubicSpline: MfInterpProtocol{
     internal var assume_sorted: Bool
     internal var bc_type: BoundaryCondition
     
+    /// The coefficients of the piecewise cubic polynomials `a*(x-x_j)^3 + b*(x-x_j)^2 + c*(x-x_j) + d` for each interval `j`.
     public struct CubicSplineParams: MfInterpParamsProtocol{
         let a: [Float]
         let b: [Float]
         let c: [Float]
         let d: [Float]
         
+        /// Create the coefficients of the piecewise cubic polynomials.
+        /// - Parameters:
+        ///   - a: The cubic coefficients, one per interval.
+        ///   - b: The quadratic coefficients, one per interval.
+        ///   - c: The linear coefficients, one per interval.
+        ///   - d: The constant terms, one per interval.
+        /// - Precondition: All arrays must have the same count (checked with `assert`).
         public init(a: [Float], b: [Float], c: [Float], d: [Float]){
             assert((a.count == b.count) && (b.count == c.count) && (c.count == d.count), "All input mfarray must be same size")
             self.a = a
@@ -200,6 +270,7 @@ public struct CubicSpline: MfInterpProtocol{
         }
     }
     
+    /// The boundary condition of `CubicSpline`. Same as `bc_type` of `scipy.interpolate.CubicSpline`.
     public enum BoundaryCondition: Int{
         /// The second derivative at both ends is zero
         case natural
@@ -339,6 +410,10 @@ public struct CubicSpline: MfInterpProtocol{
         return a*powf(x_xj, 3)+b*powf(x_xj, 2)+c*x_xj+d
     }
 
+    /// Evaluate the cubic spline at new x-coordinates.
+    /// - Parameter newx: The 1-d x-coordinates to evaluate. Every value must be within `[x.first, x.last]` of the data points.
+    /// - Returns: A 1-d `.Float` array of the interpolated values.
+    /// - Precondition: `newx` must be 1-d and within the data range (no extrapolation).
     public func interpolate(_ newx: MfArray) -> MfArray {
         precondition(newx.ndim == 1, "new x must be 1d")
         let newx = newx.astype(.Float).toArray() as! [Float]

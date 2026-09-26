@@ -10,6 +10,7 @@ import Foundation
 import CoreML
 #endif
 
+/// A type that can own the memory shared by an `MfData` (an `MfData` itself, or an `MLMultiArray`).
 public protocol MfDataBasable {}
 
 extension MfData: MfDataBasable{}

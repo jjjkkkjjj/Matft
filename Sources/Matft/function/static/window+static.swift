@@ -7,40 +7,60 @@ import Foundation
 
 extension Matft{
     /**
-       Return the (symmetric) Hanning window. Same as `np.hanning`
-       - parameters:
-            - M: Number of points in the output window
-       - Returns: The window (Double)
+       Return the Hanning window.
+
+       Equivalent to `numpy.hanning`.
+
+       The symmetric window `0.5 - 0.5 * cos(2 * pi * n / (M - 1))`.
+
+       - Parameters:
+            - M: The number of points in the output window. `M < 1` returns an empty array and `M == 1` returns `[1]`.
+       - Returns: A 1-d `.Double` array of length `M`, with the maximum value normalized to 1 (the value 1 only appears if `M` is odd).
     */
     public static func hanning(_ M: Int) -> MfArray{
         return _cosine_window(M, coefs: [0.5, 0.5])
     }
 
     /**
-       Return the (symmetric) Hamming window. Same as `np.hamming`
-       - parameters:
-            - M: Number of points in the output window
-       - Returns: The window (Double)
+       Return the Hamming window.
+
+       Equivalent to `numpy.hamming`.
+
+       The symmetric window `0.54 - 0.46 * cos(2 * pi * n / (M - 1))`.
+
+       - Parameters:
+            - M: The number of points in the output window. `M < 1` returns an empty array and `M == 1` returns `[1]`.
+       - Returns: A 1-d `.Double` array of length `M`, with the maximum value normalized to 1 (the value 1 only appears if `M` is odd).
     */
     public static func hamming(_ M: Int) -> MfArray{
         return _cosine_window(M, coefs: [0.54, 0.46])
     }
 
     /**
-       Return the (symmetric) Blackman window. Same as `np.blackman`
-       - parameters:
-            - M: Number of points in the output window
-       - Returns: The window (Double)
+       Return the Blackman window.
+
+       Equivalent to `numpy.blackman`.
+
+       The symmetric window `0.42 - 0.5 * cos(2 * pi * n / (M - 1)) + 0.08 * cos(4 * pi * n / (M - 1))`.
+
+       - Parameters:
+            - M: The number of points in the output window. `M < 1` returns an empty array and `M == 1` returns `[1]`.
+       - Returns: A 1-d `.Double` array of length `M`, with the maximum value normalized to 1 (the value 1 only appears if `M` is odd).
     */
     public static func blackman(_ M: Int) -> MfArray{
         return _cosine_window(M, coefs: [0.42, 0.5, 0.08])
     }
 
     /**
-       Return the (symmetric) Bartlett window. Same as `np.bartlett`
-       - parameters:
-            - M: Number of points in the output window
-       - Returns: The window (Double)
+       Return the Bartlett (triangular) window.
+
+       Equivalent to `numpy.bartlett`.
+
+       The symmetric triangular window with zero-valued end points.
+
+       - Parameters:
+            - M: The number of points in the output window. `M < 1` returns an empty array and `M == 1` returns `[1]`.
+       - Returns: A 1-d `.Double` array of length `M`, with the maximum value normalized to 1 (the value 1 only appears if `M` is odd).
     */
     public static func bartlett(_ M: Int) -> MfArray{
         return _window(M){
@@ -51,11 +71,16 @@ extension Matft{
     }
 
     /**
-       Return the Kaiser window. Same as `np.kaiser`
-       - parameters:
-            - M: Number of points in the output window
-            - beta: Shape parameter for window
-       - Returns: The window (Double)
+       Return the Kaiser window.
+
+       Equivalent to `numpy.kaiser`.
+
+       The window `I0(beta * sqrt(1 - (2n / (M - 1) - 1)^2)) / I0(beta)`, where `I0` is the modified Bessel function of the first kind of order 0.
+
+       - Parameters:
+            - M: The number of points in the output window. `M < 1` returns an empty array and `M == 1` returns `[1]`.
+            - beta: The shape parameter of the window. Larger values give a narrower main lobe (0 gives a rectangular window).
+       - Returns: A 1-d `.Double` array of length `M`, with the maximum value normalized to 1 (the value 1 only appears if `M` is odd).
     */
     public static func kaiser(_ M: Int, beta: Double) -> MfArray{
         return _window(M){

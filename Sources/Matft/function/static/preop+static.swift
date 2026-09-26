@@ -12,18 +12,26 @@ import Accelerate
 
 extension Matft{
     /**
-       Element-wise negativity
-       - parameters:
-           - mfarray: mfarray
+       Numerical negative, element-wise.
+
+       Complex arrays are supported. This is what the prefix operator `-a` calls.
+       Equivalent to `numpy.negative`.
+       - Parameters:
+           - mfarray: The source array.
+       - Returns: A new array of `-mfarray` with the same `mftype`.
     */
     public static func neg(_ mfarray: MfArray) -> MfArray{
         return wrap_integer_overflow(_prefix_operation(mfarray, .neg))
     }
     
     /**
-       Element-wise Not mfarray. Returned mfarray will be bool
-       - parameters:
-           - mfarray: mfarray
+       Compute the truth value of NOT x, element-wise.
+
+       Non-zero values become `false` and zeros become `true`.
+       Equivalent to `numpy.logical_not`.
+       - Parameters:
+           - mfarray: The source array.
+       - Returns: A new `.Bool` array.
     */
     public static func logical_not(_ mfarray: MfArray) -> MfArray{
         #if canImport(Accelerate)

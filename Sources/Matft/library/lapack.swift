@@ -428,19 +428,21 @@ internal func _eigenComputeEigenvectors(_ t: [Double], _ z: [Double], _ n: Int, 
     }
 }
 
-/// Pure Swift implementation of eigenvalue decomposition using the QR algorithm.
-/// This is used on WASI and can be tested on other platforms.
+/// Computes the eigenvalues and eigenvectors of a general real square matrix in pure Swift using the QR algorithm.
+///
+/// This is used on platforms without LAPACK (e.g. WASI) and can be tested on other platforms.
 ///
 /// - Parameters:
-///   - n: Matrix dimension
-///   - a: Input matrix (column-major, n x n) - will be modified
-///   - wr: Output array for real parts of eigenvalues (size n)
-///   - wi: Output array for imaginary parts of eigenvalues (size n)
-///   - vl: Output array for left eigenvectors (size n x n, column-major)
-///   - vr: Output array for right eigenvectors (size n x n, column-major)
-///   - computeLeft: Whether to compute left eigenvectors
-///   - computeRight: Whether to compute right eigenvectors
-/// - Returns: 0 on success, positive value if failed to converge
+///   - n: The matrix dimension.
+///   - a: The input matrix (column-major, n x n). It is not modified by this function.
+///   - wr: Output array for the real parts of the eigenvalues (size n).
+///   - wi: Output array for the imaginary parts of the eigenvalues (size n).
+///   - vl: Output array for the left eigenvectors (size n x n, column-major).
+///   - vr: Output array for the right eigenvectors (size n x n, column-major).
+///   - computeLeft: Whether to compute the left eigenvectors.
+///   - computeRight: Whether to compute the right eigenvectors.
+/// - Returns: 0 on success, or a positive value if the QR iteration failed to converge.
+/// - Note: This is an implementation detail of Matft and may change.
 @inlinable
 public func swiftEigenDecomposition(_ n: Int, _ a: inout [Double], _ wr: inout [Double], _ wi: inout [Double],
                                     _ vl: inout [Double], _ vr: inout [Double],
@@ -528,20 +530,30 @@ public func swiftEigenDecomposition(_ n: Int, _ a: inout [Double], _ wr: inout [
 #if canImport(Accelerate)
 import Accelerate
 
+/// The signature of the LAPACK linear solver functions (`sgesv_` / `dgesv_`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias lapack_solve_func<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
+/// The signature of the LAPACK LU factorization functions (`sgetrf_` / `dgetrf_`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias lapack_LU_func<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
+/// The signature of the LAPACK inverse functions from an LU factorization (`sgetri_` / `dgetri_`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias lapack_inv_func<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
+/// The signature of the LAPACK general eigen decomposition functions (`sgeev_` / `dgeev_`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias lapack_eigen_func<T> = (UnsafeMutablePointer<Int8>, UnsafeMutablePointer<Int8>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
+/// The signature of the LAPACK singular value decomposition functions (`sgesdd_` / `dgesdd_`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias lapack_svd_func<T> = (UnsafeMutablePointer<Int8>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>,UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
-/// Wrapper of lapck solve function
+/// Wrapper of LAPACK solve function
 /// - Parameters:
 ///   - rownum: A destination row number
-///   - colnum: A dstination column number
+///   - colnum: A destination column number
 ///   - coef_ptr: A coef pointer
 ///   - dst_b_ptr: A destination and b pointer
 ///   - lapack_func: The lapack solve function
@@ -576,14 +588,14 @@ internal func wrap_lapack_solve<T: MfStorable>(_ rownum: Int, _ colnum: Int, _ c
     
 }
 
-/// Wrapper of lapck LU fractorization function
+/// Wrapper of LAPACK LU factorization function
 /// ref: http://www.netlib.org/lapack/explore-html/d8/ddc/group__real_g_ecomputational_ga8d99c11b94db3d5eac75cac46a0f2e17.html
 ///
 /// - Parameters:
 ///   - rownum: A destination row number
-///   - colnum: A dstination column number
+///   - colnum: A destination column number
 ///   - srcdstptr: A source and destination pointer
-///   - lapack_func: The lapack LU fractorization function
+///   - lapack_func: The lapack LU factorization function
 /// - Throws: An error of type `MfError.LinAlgError.singularMatrix`
 @inline(__always)
 internal func wrap_lapack_LU<T: MfStorable>(_ rownum: Int, _ colnum: Int, _ srcdstptr: UnsafeMutablePointer<T>, lapack_func: lapack_LU_func<T>) throws -> [__CLPK_integer] {
@@ -611,7 +623,7 @@ internal func wrap_lapack_LU<T: MfStorable>(_ rownum: Int, _ colnum: Int, _ srcd
     return IPIV
 }
 
-/// Wrapper of lapck inverse function
+/// Wrapper of LAPACK inverse function
 /// ref: http://www.netlib.org/lapack/explore-html/d8/ddc/group__real_g_ecomputational_ga1af62182327d0be67b1717db399d7d83.html
 /// Note that
 /// The pivot indices from SGETRF; for 1<=i<=N, row i of the
@@ -620,7 +632,7 @@ internal func wrap_lapack_LU<T: MfStorable>(_ rownum: Int, _ colnum: Int, _ srcd
 /// - Parameters:
 ///   - rowcolnum: A destination row and column number
 ///   - srcdstptr: A source and destination pointer
-///   - lapack_func: The lapack LU fractorization function
+///   - lapack_func: The lapack LU factorization function
 /// - Throws: An error of type `MfError.LinAlgError.singularMatrix`
 @inline(__always)
 internal func wrap_lapack_inv<T: MfStorable>(_ rowcolnum: Int, _ srcdstptr: UnsafeMutablePointer<T>, _ IPIV: UnsafeMutablePointer<__CLPK_integer>, lapack_func: lapack_inv_func<T>) throws{
@@ -647,13 +659,13 @@ internal func wrap_lapack_inv<T: MfStorable>(_ rowcolnum: Int, _ srcdstptr: Unsa
     }
 }
 
-/// Wrapper of lapck eigen function
+/// Wrapper of LAPACK eigen function
 /// ref: http://www.netlib.org/lapack/explore-html/d3/dfb/group__real_g_eeigen_ga104525b749278774f7b7f57195aa6798.html
 /// ref: https://stackoverflow.com/questions/27887215/trouble-with-the-accelerate-framework-in-swift
 /// - Parameters:
 ///   - rowcolnum: A destination row and column number
 ///   - srcdstptr: A source and destination pointer
-///   - lapack_func: The lapack LU fractorization function
+///   - lapack_func: The lapack LU factorization function
 /// - Throws: An error of type `MfError.LinAlgError.singularMatrix`
 @inline(__always)
 internal func wrap_lapack_eigen<T: MfStorable>(_ rowcolnum: Int, _ srcptr: UnsafeMutablePointer<T>, _ dstLVecRePtr: UnsafeMutablePointer<T>, _ dstLVecImPtr: UnsafeMutablePointer<T>, _ dstRVecRePtr: UnsafeMutablePointer<T>, _ dstRVecImPtr: UnsafeMutablePointer<T>, _ dstValRePtr: UnsafeMutablePointer<T>, _ dstValImPtr: UnsafeMutablePointer<T>, lapack_func: lapack_eigen_func<T>) throws {
@@ -836,7 +848,7 @@ internal func wrap_lapack_eigen<T: MfStorable>(_ rowcolnum: Int, _ srcptr: Unsaf
 ///   - sptr: A source pointer
 ///   - rtptr: A source pointer
 ///   - full_matrices: if true returned v and rt have the shapes (..., M, M) and (..., N, N) respectively. Otherwise, the shapes are (..., M, K) and (..., K, N), respectively, where K = min(M, N).
-///   - lapack_func: The lapack SVD fractorization function
+///   - lapack_func: The lapack SVD factorization function
 /// - Throws: An error of type `MfError.LinAlgError.singularMatrix`
 @inline(__always)
 internal func wrap_lapack_svd<T: MfStorable>(_ rownum: Int, _ colnum: Int, _ srcptr: UnsafeMutablePointer<T>, _ vptr: UnsafeMutablePointer<T>, _ sptr: UnsafeMutablePointer<T>, _ rtptr: UnsafeMutablePointer<T>, _ full_matrices: Bool, lapack_func: lapack_svd_func<T>) throws{
@@ -1233,16 +1245,28 @@ internal func svd_by_lapack<T: MfStorable>(_ mfarray: MfArray, _ full_matrices: 
 // MARK: - WASI Implementation (Pure Swift)
 // All LAPACK operations are implemented in pure Swift for WASI compatibility.
 
+/// The LAPACK integer type, defined for platforms without Accelerate.
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias __CLPK_integer = Int32
 
+/// The signature of the LAPACK linear solver functions (`sgesv_` / `dgesv_`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias lapack_solve_func<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
+/// The signature of the LAPACK LU factorization functions (`sgetrf_` / `dgetrf_`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias lapack_LU_func<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
+/// The signature of the LAPACK inverse functions from an LU factorization (`sgetri_` / `dgetri_`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias lapack_inv_func<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
+/// The signature of the LAPACK general eigen decomposition functions (`sgeev_` / `dgeev_`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias lapack_eigen_func<T> = (UnsafeMutablePointer<Int8>, UnsafeMutablePointer<Int8>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
+/// The signature of the LAPACK singular value decomposition functions (`sgesdd_` / `dgesdd_`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias lapack_svd_func<T> = (UnsafeMutablePointer<Int8>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>,UnsafeMutablePointer<__CLPK_integer>) -> Int32
 
 internal typealias lapack_LU<T> = (UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<T>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>, UnsafeMutablePointer<__CLPK_integer>) -> Int32

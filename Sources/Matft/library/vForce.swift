@@ -10,10 +10,16 @@ import Foundation
 #if canImport(Accelerate)
 import Accelerate
 
+/// The signature of the vForce copysign functions (`vvcopysignf` / `vvcopysign`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias vForce_copysign_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
 
+/// The signature of the unary vForce math functions (e.g. `vvsinf` / `vvsin`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias vForce_math_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
 
+/// The signature of the binary vForce math functions (e.g. `vvpowf` / `vvpow`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias vForce_math_biop_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
 
 /// Math operation by vDSP
@@ -134,10 +140,16 @@ internal func pows_by_vForce(_ mfarray: MfArray, _ exponent: Float) -> MfArray{
 #else
 // MARK: - WASI Fallback Implementations for vForce
 
+/// The signature of the vForce copysign functions (`vvcopysignf` / `vvcopysign`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias vForce_copysign_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
 
+/// The signature of the unary vForce math functions (e.g. `vvsinf` / `vvsin`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias vForce_math_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
 
+/// The signature of the binary vForce math functions (e.g. `vvpowf` / `vvpow`).
+/// - Note: This is an implementation detail of Matft and may change.
 public typealias vForce_math_biop_func<T> = (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void
 
 // MARK: - vForce Math Functions (Float)

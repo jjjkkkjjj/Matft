@@ -9,6 +9,7 @@
 import Foundation
 
 extension MfArray: CustomStringConvertible{
+    /// A textual representation of the array: its elements formatted as nested brackets, followed by `type=` and `shape=`.
     public var description: String{
         var desc = "mfarray = \n"
         if self.size == 0{
@@ -153,6 +154,7 @@ fileprivate func _clousure_number(shape: inout [Int], indices: inout [Int]) -> I
 }
 
 extension MfData: CustomStringConvertible{
+    /// A debugging representation of the data: the original and stored types, the raw buffers, view information and the offset.
     public var description: String{
         var ret = ""
         
@@ -198,6 +200,7 @@ extension MfData: CustomStringConvertible{
 }
 
 extension MfStructure: CustomStringConvertible{
+    /// A debugging representation of the structure: shape, strides and contiguity.
     public var description: String{
         var ret = ""
         ret += "shape\t: \(self.shape)\n"

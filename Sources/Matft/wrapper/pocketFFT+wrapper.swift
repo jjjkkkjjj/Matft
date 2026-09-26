@@ -14,14 +14,22 @@ internal typealias rfft_func = (rfft_plan, UnsafeMutablePointer<Double>, Double)
 internal typealias cfft_func = (cfft_plan, UnsafeMutablePointer<Double>, Double) -> Int32
 
 
-/// Run FFT by pocket FFT. Call c language codes.
+/// Runs a real FFT (`rfft`) or its inverse (`irfft`) along an axis with the bundled pocketFFT C library.
+///
+/// This is the backend of `Matft.fft.rfft` and `Matft.fft.irfft`; use those instead.
+/// The input is cropped or zero-padded to `number` along `axis` and always computed in `Double`.
 /// - Parameters:
-///   - mfarray: The source mfarray
-///   - number: The number to be processed
-///   - axis: The axis
-///   - isForward: Whether to be forward or backward
-///   - norm: The nomalization mode
-/// - Returns: The FFT mfarray
+///   - mfarray: The source array. Real for the forward transform, the complex half spectrum for the backward transform.
+///   - number: The number of points along `axis`. The input is cropped if longer or zero-padded if shorter.
+///     If `nil`, the length of `mfarray` along `axis` is used. Must be positive.
+///   - axis: The axis over which to compute the FFT. Negative values count from the last axis.
+///   - isReal: Must be `true`. The complex FFT (`false`) is not implemented and traps.
+///   - isForward: `true` for the forward transform (`rfft`), `false` for the backward transform (`irfft`).
+///   - norm: The normalization mode (`.backward`, `.ortho` or `.forward`), as in `numpy.fft`.
+/// - Returns: For the forward transform, a complex `.Double` array whose `axis` has length `number / 2 + 1`;
+///   for the backward transform, a real `.Double` array whose `axis` has length `number`.
+/// - Precondition: `number` must be positive and `isReal` must be `true`.
+/// - Note: This is an implementation detail of Matft and may change.
 public func fft_by_pocketFFT(_ mfarray: MfArray, number: Int?, axis: Int, isReal: Bool, isForward: Bool, norm: FFTNorm) -> MfArray {
     precondition(number ?? 1 > 0, "Must pass number greater than 0")
     let axis = get_positive_axis(axis, ndim: mfarray.ndim)

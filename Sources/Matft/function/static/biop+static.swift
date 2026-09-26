@@ -14,10 +14,14 @@ import Accelerate
 extension Matft{
     //infix
     /**
-       Element-wise addition of  two mfarray
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_mfarray: right mfarray
+       Add arguments element-wise.
+
+       The two arrays are broadcast together. The result type is the higher-priority `mftype` of the two, and complex arrays are supported. This is what `l + r` calls.
+       Equivalent to `numpy.add`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new array of the sum.
     */
     public static func add(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
@@ -45,10 +49,14 @@ extension Matft{
     }
 
     /**
-       Element-wise addition of  mfarray and scalar
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_scalar: right scalar conformed to MfTypable
+       Add an array and a scalar element-wise.
+
+       The result type is the higher-priority `mftype` of `l_mfarray` and the type of `r_scalar`, and complex arrays are supported. This is what `l + scalar` calls.
+       Equivalent to `numpy.add`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_scalar: The right operand.
+       - Returns: A new array of the sum.
     */
     public static func add<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         let r_mfype = MfType.mftype(value: r_scalar)
@@ -81,10 +89,14 @@ extension Matft{
         }
     }
     /**
-       Element-wise addition of  mfarray and scalar
-       - parameters:
-           - l_scalar: left scalar conformed to MfTypable
-           - r_mfarray: right mfarray
+       Add a scalar and an array element-wise.
+
+       The result type is the higher-priority `mftype` of the type of `l_scalar` and `r_mfarray`, and complex arrays are supported. This is what `scalar + r` calls.
+       Equivalent to `numpy.add`.
+       - Parameters:
+           - l_scalar: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new array of the sum.
     */
     public static func add<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
         let l_mfype = MfType.mftype(value: l_scalar)
@@ -117,10 +129,14 @@ extension Matft{
         }
     }
     /**
-       Element-wise subtraction right mfarray from left mfarray
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_mfarray: right mfarray
+       Subtract arguments element-wise.
+
+       The two arrays are broadcast together. The result type is the higher-priority `mftype` of the two, and complex arrays are supported. This is what `l - r` calls.
+       Equivalent to `numpy.subtract`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new array of the difference.
     */
     public static func sub(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
@@ -147,10 +163,14 @@ extension Matft{
         }
     }
     /**
-       Element-wise subtraction of  mfarray and scalar
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_scalar: right scalar conformed to MfTypable
+       Subtract an array and a scalar element-wise.
+
+       The result type is the higher-priority `mftype` of `l_mfarray` and the type of `r_scalar`, and complex arrays are supported. This is what `l - scalar` calls.
+       Equivalent to `numpy.subtract`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_scalar: The right operand.
+       - Returns: A new array of the difference.
     */
     public static func sub<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         let r_mfype = MfType.mftype(value: r_scalar)
@@ -183,10 +203,14 @@ extension Matft{
         }
     }
     /**
-       Element-wise subtraction of  mfarray and scalar
-       - parameters:
-           - l_scalar: left scalar conformed to MfTypable
-           - r_mfarray: right mfarray
+       Subtract a scalar and an array element-wise.
+
+       The result type is the higher-priority `mftype` of the type of `l_scalar` and `r_mfarray`, and complex arrays are supported. This is what `scalar - r` calls.
+       Equivalent to `numpy.subtract`.
+       - Parameters:
+           - l_scalar: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new array of the difference.
     */
     public static func sub<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
         let l_mfype = MfType.mftype(value: l_scalar)
@@ -219,10 +243,14 @@ extension Matft{
         }
     }
     /**
-       Element-wise multiplication of two mfarray
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_mfarray: right mfarray
+       Multiply arguments element-wise.
+
+       The two arrays are broadcast together. The result type is the higher-priority `mftype` of the two, and complex arrays are supported. This is what `l * r` calls.
+       Equivalent to `numpy.multiply`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new array of the product.
     */
     public static func mul(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
@@ -249,10 +277,14 @@ extension Matft{
         }
     }
     /**
-       Element-wise multiplication of  mfarray and scalar
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_scalar: right scalar conformed to MfTypable
+       Multiply an array and a scalar element-wise.
+
+       The result type is the higher-priority `mftype` of `l_mfarray` and the type of `r_scalar`, and complex arrays are supported. This is what `l * scalar` calls.
+       Equivalent to `numpy.multiply`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_scalar: The right operand.
+       - Returns: A new array of the product.
     */
     public static func mul<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         let r_mfype = MfType.mftype(value: r_scalar)
@@ -285,10 +317,14 @@ extension Matft{
         }
     }
     /**
-       Element-wise multiplication of  mfarray and scalar
-       - parameters:
-           - l_scalar: left scalar conformed to MfTypable
-           - r_mfarray: right mfarray
+       Multiply a scalar and an array element-wise.
+
+       The result type is the higher-priority `mftype` of the type of `l_scalar` and `r_mfarray`, and complex arrays are supported. This is what `scalar * r` calls.
+       Equivalent to `numpy.multiply`.
+       - Parameters:
+           - l_scalar: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new array of the product.
     */
     public static func mul<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
         let l_mfype = MfType.mftype(value: l_scalar)
@@ -321,10 +357,15 @@ extension Matft{
         }
     }
     /**
-       Element-wise division left mfarray by right mfarray
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_mfarray: right mfarray
+       Divide arguments element-wise.
+
+       The two arrays are broadcast together, and complex arrays are supported. This is what `l / r` calls.
+       The result type is `.Float` when the higher-priority `mftype` of the two is stored as Float (e.g. `.Int / .Int` gives `.Float`), and `.Double` for Double-stored types.
+       Equivalent to `numpy.divide`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new array of the quotient.
     */
     public static func div(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
@@ -353,10 +394,15 @@ extension Matft{
         }
     }
     /**
-       Element-wise division of  mfarray and scalar
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_scalar: right scalar conformed to MfTypable
+       Divide an array and a scalar element-wise.
+
+       The result type is the higher-priority `mftype` of `l_mfarray` and the type of `r_scalar`, and complex arrays are supported. This is what `l / scalar` calls.
+       Note that, unlike the array-array version, the result keeps that type (e.g. dividing an `.Int` array by an `Int` gives an `.Int` array).
+       Equivalent to `numpy.divide`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_scalar: The right operand.
+       - Returns: A new array of the quotient.
     */
     public static func div<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         let r_mfype = MfType.mftype(value: r_scalar)
@@ -389,10 +435,15 @@ extension Matft{
         }
     }
     /**
-       Element-wise division of  mfarray and scalar
-       - parameters:
-           - l_scalar: left scalar conformed to MfTypable
-           - r_mfarray: right mfarray
+       Divide a scalar and an array element-wise.
+
+       The result type is the higher-priority `mftype` of the type of `l_scalar` and `r_mfarray`, and complex arrays are supported. This is what `scalar / r` calls.
+       Note that, unlike the array-array version, the result keeps that type (e.g. dividing an `Int` by an `.Int` array gives an `.Int` array).
+       Equivalent to `numpy.divide`.
+       - Parameters:
+           - l_scalar: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new array of the quotient.
     */
     public static func div<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
         let l_mfype = MfType.mftype(value: l_scalar)
@@ -419,25 +470,39 @@ extension Matft{
     }
     
     /**
-       Matrix multiplication
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_mfarray: right mfarray
+       Matrix product of two arrays.
+
+       Both arrays must have at least 2 dimensions; the last two axes are multiplied as matrices and the leading axes are broadcast (a stack of matrices).
+       The result type is the higher-priority `mftype` of the two. This is what `l *& r` calls.
+       Equivalent to `numpy.matmul` (1-D inputs are not supported).
+
+       ```swift
+       let a = MfArray([[1, 2], [3, 4]])
+       let b = MfArray([[5, 6], [7, 8]])
+       let c = Matft.matmul(a, b)   // same as a *& b
+       ```
+       - Parameters:
+           - l_mfarray: The left array of shape `(..., n, k)`.
+           - r_mfarray: The right array of shape `(..., k, m)`.
+       - Returns: A new array of shape `(..., n, m)`.
     */
     public static func matmul(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _matmul_operation(l_mfarray, r_mfarray)
     }
     
     /**
-       Dot product.
-        - If both a and b are 1-D arrays, it is inner product of vectors (without complex conjugation).
-        - If both a and b are 2-D arrays, it is matrix multiplication, but using matmul or `a *& b` is preferred.
-        - If a is an N-D array and b is a 1-D array, it is a sum product over the last axis of a and b.
-        - If a is an N-D array and b is an M-D array (where M>=2), it is a sum product over the last axis of a and the second-to-last axis of b:
-     
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_mfarray: right mfarray
+       Dot product of two arrays.
+
+       - If both arrays are 1-D, it is the inner product of vectors (without complex conjugation).
+       - If both arrays are 2-D, it is matrix multiplication, but using `matmul` or `a *& b` is preferred.
+       - If `r_mfarray` is 1-D, it is a sum product over the last axis of `l_mfarray` and `r_mfarray` (see `inner`).
+       - Otherwise, a sum product is computed by `vDSP_dotpr`; note that this case requires `l_mfarray.shape[0] == r_mfarray.shape[1]` and does not follow Numpy's rule (sum over the last axis of `l_mfarray` and the second-to-last axis of `r_mfarray`).
+
+       Similar to `numpy.dot`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: The dot product.
     */
     public static func dot(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
 
@@ -486,195 +551,283 @@ extension Matft{
     }
     
     /**
-       Inner product
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_mfarray: right mfarray
+       Inner product of two arrays: a sum product over their last axes.
+
+       The result shape is `l.shape[:-1] + r.shape[:-1]`, and `[1]` (not a scalar) when both inputs are 1-D. The result type is `l_mfarray.mftype`.
+       Equivalent to `numpy.inner`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_mfarray: The right operand. Its last dimension must equal that of `l_mfarray`.
+       - Returns: A new array of the inner products.
     */
     public static func inner(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _inner_operation(l_mfarray, r_mfarray)
     }
     /**
-       Cross product
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_mfarray: right mfarray
+       Cross product of two arrays of 2- or 3-element vectors.
+
+       The arrays are broadcast together, and the vectors are taken along the last axis. Complex arrays are not supported.
+       For 3-element vectors the result has the broadcast shape; for 2-element vectors the z-component `l[0]*r[1] - l[1]*r[0]` is returned as a 1-D array (one value per vector).
+       Equivalent to `numpy.cross`.
+       - Parameters:
+           - l_mfarray: The left operand. Its last dimension must be 2 or 3.
+           - r_mfarray: The right operand. Its last dimension must be 2 or 3.
+       - Returns: A new array of the cross products.
     */
     public static func cross(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _cross_operation(l_mfarray, r_mfarray)
     }
     
     /**
-        Check equality in element-wise. Returned mfarray's type will be bool.
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_mfarray: right mfarray
+       Return the truth value of `l == r`, element-wise.
+
+       The two arrays are broadcast together. This is what `l === r` calls.
+       Equivalent to `numpy.equal`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new `.Bool` array.
+       - Note: The comparison is computed from `l - r`, so comparing `inf` with `inf` gives `false`.
     */
     public static func equal(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _compare_operation(l_mfarray, r_mfarray, .equal)
     }
     /**
-        Check equality in element-wise. Returned mfarray's type will be bool.
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_scalar: right scalar conformed to MfTypable
+       Return the truth value of `l == r` for an array and a scalar, element-wise.
+
+       This is what `l === scalar` calls.
+       Equivalent to `numpy.equal`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_scalar: The right operand.
+       - Returns: A new `.Bool` array.
     */
     public static func equal<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         return compare_mfarray(l_mfarray, .equal, r_scalar)
     }
     /**
-        Check equality in element-wise. Returned mfarray's type will be bool.
-       - parameters:
-           - l_scalar: left scalar conformed to MfTypable
-           - r_mfarray: right mfarray
+       Return the truth value of `l == r` for a scalar and an array, element-wise.
+
+       This is what `scalar === r` calls.
+       Equivalent to `numpy.equal`.
+       - Parameters:
+           - l_scalar: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new `.Bool` array.
     */
     public static func equal<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
         return compare_mfarray(r_mfarray, .equal.flipped, l_scalar)
     }
     
     /**
-        Check NOT equality in element-wise. Returned mfarray's type will be bool.
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_mfarray: right mfarray
+       Return the truth value of `l != r`, element-wise.
+
+       The two arrays are broadcast together. This is what `l !== r` calls.
+       Equivalent to `numpy.not_equal`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new `.Bool` array.
     */
     public static func not_equal(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _compare_operation(l_mfarray, r_mfarray, .notEqual)
     }
     /**
-        Check equality in element-wise. Returned mfarray's type will be bool.
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_scalar: right scalar conformed to MfTypable
+       Return the truth value of `l != r` for an array and a scalar, element-wise.
+
+       This is what `l !== scalar` calls.
+       Equivalent to `numpy.not_equal`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_scalar: The right operand.
+       - Returns: A new `.Bool` array.
     */
     public static func not_equal<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         return compare_mfarray(l_mfarray, .notEqual, r_scalar)
     }
     /**
-        Check equality in element-wise. Returned mfarray's type will be bool.
-       - parameters:
-           - l_scalar: left scalar conformed to MfTypable
-           - r_mfarray: right mfarray
+       Return the truth value of `l != r` for a scalar and an array, element-wise.
+
+       This is what `scalar !== r` calls.
+       Equivalent to `numpy.not_equal`.
+       - Parameters:
+           - l_scalar: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new `.Bool` array.
     */
     public static func not_equal<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
         return compare_mfarray(r_mfarray, .notEqual.flipped, l_scalar)
     }
     
     /**
-        Check left mfarray's elements are less than right ones in element-wise. Returned mfarray's type will be bool.
-        - parameters:
-            - l_mfarray: left mfarray
-            - r_mfarray: right mfarray
-     */
+       Return the truth value of `l < r`, element-wise.
+
+       The two arrays are broadcast together. This is what `l < r` calls.
+       Equivalent to `numpy.less`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new `.Bool` array.
+    */
     public static func less(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _compare_operation(l_mfarray, r_mfarray, .less)
     }
     /**
-        Check left mfarray's elements are less than right scalar in element-wise. Returned mfarray's type will be bool.
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_scalar: right scalar conformed to MfTypable
+       Return the truth value of `l < r` for an array and a scalar, element-wise.
+
+       This is what `l < scalar` calls.
+       Equivalent to `numpy.less`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_scalar: The right operand.
+       - Returns: A new `.Bool` array.
     */
     public static func less<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         return compare_mfarray(l_mfarray, .less, r_scalar)
     }
     /**
-        Check left scalar is less than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
-       - parameters:
-           - l_scalar: left scalar conformed to MfTypable
-           - r_mfarray: right mfarray
+       Return the truth value of `l < r` for a scalar and an array, element-wise.
+
+       This is what `scalar < r` calls.
+       Equivalent to `numpy.less`.
+       - Parameters:
+           - l_scalar: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new `.Bool` array.
     */
     public static func less<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
         return compare_mfarray(r_mfarray, .less.flipped, l_scalar)
     }
     /**
-        Check left mfarray's elements are less equal than right ones in element-wise. Returned mfarray's type will be bool.
-        - parameters:
-            - l_mfarray: left mfarray
-            - r_mfarray: right mfarray
-     */
+       Return the truth value of `l <= r`, element-wise.
+
+       The two arrays are broadcast together. This is what `l <= r` calls.
+       Equivalent to `numpy.less_equal`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new `.Bool` array.
+       - Note: The comparison is computed from `l - r`, so comparing `inf` with `inf` gives `false`.
+    */
     public static func less_equal(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _compare_operation(l_mfarray, r_mfarray, .lessEqual)
     }
     /**
-        Check left mfarray's elements are less equal than right scalar in element-wise. Returned mfarray's type will be bool.
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_scalar: right scalar conformed to MfTypable
+       Return the truth value of `l <= r` for an array and a scalar, element-wise.
+
+       This is what `l <= scalar` calls.
+       Equivalent to `numpy.less_equal`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_scalar: The right operand.
+       - Returns: A new `.Bool` array.
     */
     public static func less_equal<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         return compare_mfarray(l_mfarray, .lessEqual, r_scalar)
     }
     /**
-        Check left scalar is less equal than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
-       - parameters:
-           - l_scalar: left scalar conformed to MfTypable
-           - r_mfarray: right mfarray
+       Return the truth value of `l <= r` for a scalar and an array, element-wise.
+
+       This is what `scalar <= r` calls.
+       Equivalent to `numpy.less_equal`.
+       - Parameters:
+           - l_scalar: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new `.Bool` array.
     */
     public static func less_equal<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
         return compare_mfarray(r_mfarray, .lessEqual.flipped, l_scalar)
     }
     
     /**
-        Check left mfarray's elements are greater than right ones in element-wise. Returned mfarray's type will be bool.
-        - parameters:
-            - l_mfarray: left mfarray
-            - r_mfarray: right mfarray
-     */
+       Return the truth value of `l > r`, element-wise.
+
+       The two arrays are broadcast together. This is what `l > r` calls.
+       Equivalent to `numpy.greater`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new `.Bool` array.
+    */
     public static func greater(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _compare_operation(l_mfarray, r_mfarray, .greater)
     }
     /**
-        Check left scalar is greater than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_scalar: right scalar conformed to MfTypable
+       Return the truth value of `l > r` for an array and a scalar, element-wise.
+
+       This is what `l > scalar` calls.
+       Equivalent to `numpy.greater`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_scalar: The right operand.
+       - Returns: A new `.Bool` array.
     */
     public static func greater<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         return compare_mfarray(l_mfarray, .greater, r_scalar)
     }
     /**
-        Check left scalar is greater than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
-       - parameters:
-           - l_scalar: left scalar conformed to MfTypable
-           - r_mfarray: right mfarray
+       Return the truth value of `l > r` for a scalar and an array, element-wise.
+
+       This is what `scalar > r` calls.
+       Equivalent to `numpy.greater`.
+       - Parameters:
+           - l_scalar: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new `.Bool` array.
     */
     public static func greater<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
         return compare_mfarray(r_mfarray, .greater.flipped, l_scalar)
     }
     /**
-        Check left mfarray's elements are greater equal than right ones in element-wise. Returned mfarray's type will be bool.
-        - parameters:
-            - l_mfarray: left mfarray
-            - r_mfarray: right mfarray
-     */
+       Return the truth value of `l >= r`, element-wise.
+
+       The two arrays are broadcast together. This is what `l >= r` calls.
+       Equivalent to `numpy.greater_equal`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new `.Bool` array.
+       - Note: The comparison is computed from `l - r`, so comparing `inf` with `inf` gives `false`.
+    */
     public static func greater_equal(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _compare_operation(l_mfarray, r_mfarray, .greaterEqual)
     }
     /**
-        Check left scalar is greater equal than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_scalar: right scalar conformed to MfTypable
+       Return the truth value of `l >= r` for an array and a scalar, element-wise.
+
+       This is what `l >= scalar` calls.
+       Equivalent to `numpy.greater_equal`.
+       - Parameters:
+           - l_mfarray: The left operand.
+           - r_scalar: The right operand.
+       - Returns: A new `.Bool` array.
     */
     public static func greater_equal<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         return compare_mfarray(l_mfarray, .greaterEqual, r_scalar)
     }
     /**
-        Check left scalar is greater equal than right mfarray's elements in element-wise. Returned mfarray's type will be bool.
-       - parameters:
-           - l_scalar: left scalar conformed to MfTypable
-           - r_mfarray: right mfarray
+       Return the truth value of `l >= r` for a scalar and an array, element-wise.
+
+       This is what `scalar >= r` calls.
+       Equivalent to `numpy.greater_equal`.
+       - Parameters:
+           - l_scalar: The left operand.
+           - r_mfarray: The right operand.
+       - Returns: A new `.Bool` array.
     */
     public static func greater_equal<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
         return compare_mfarray(r_mfarray, .greaterEqual.flipped, l_scalar)
     }
     
     /**
-        Check equality in element-wise, and then when all of elements are true, return true, otherwise false
-       - parameters:
-           - l_mfarray: left mfarray
-           - r_mfarray: right mfarray
+       Return whether two arrays have the same shape and equal elements.
+
+       Floating-point elements are compared with an absolute tolerance (`1e-5` for Float-stored and `1e-10` for Double-stored types), and NaN is never equal. This is what `l == r` calls.
+       Similar to `numpy.array_equal` (or `numpy.allclose` for floating-point types).
+       - Parameters:
+           - l_mfarray: The left array.
+           - r_mfarray: The right array.
+       - Returns: `true` if the shapes match and all elements are equal, otherwise `false`.
     */
     public static func allEqual(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> Bool{
         return _equalAll_operation(l_mfarray, r_mfarray)

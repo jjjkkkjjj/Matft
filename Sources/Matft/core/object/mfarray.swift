@@ -11,20 +11,50 @@ import Foundation
 import CoreML
 #endif
 
+/// A multi-dimensional array, the counterpart of Numpy's `ndarray`.
+///
+/// An `MfArray` consists of an `MfData` (the memory buffer) and an `MfStructure` (shape and strides).
+/// Slicing and some manipulation functions (e.g. `transpose`) return a *view* that shares the buffer
+/// with the original array; the original array is kept in `base`.
+///
+/// ```swift
+/// let a = MfArray([[[ -8,  -7,  -6,  -5],
+///                   [ -4,  -3,  -2,  -1]],
+///                  [[ 0,  1,  2,  3],
+///                   [ 4,  5,  6,  7]]])   // mftype is inferred as .Int, shape is [2, 2, 4]
+/// let f = MfArray([1, 2, 3], mftype: .Float)
+/// let b = a[0~<, 1]                        // a[:, 1] in Numpy (a view)
+/// let c = a + 1                            // element-wise arithmetic with broadcasting
+/// ```
 open class MfArray: MfArrayProtocol{
+    /// The data storage type of `MfArray`.
     public typealias MFDATA = MfData
+    /// The underlying data storage. For a view, it references the base array's buffer.
     public internal(set) var mfdata: MfData // Only setter is private
+    /// The shape and strides of this array.
     public internal(set) var mfstructure: MfStructure
 
+    /// The array this view was created from, or `nil` if this array owns its memory.
+    /// Equivalent to `numpy.ndarray.base`.
     public internal(set) var base: MfArray?
-    
-    
-    /// Create a mfarray from Swift Array
+
+
+    /// Creates an array from a (nested) Swift array. Equivalent to `numpy.array`.
+    ///
+    /// The data is always copied into a new buffer.
+    ///
+    /// ```swift
+    /// let a = MfArray([[1, 2], [3, 4], [5, 6]])            // mftype .Int, shape [3, 2]
+    /// let b = MfArray([1, 2, 3, 4], mftype: .Double, shape: [2, 2])
+    /// ```
     /// - Parameters:
-    ///    - array: A Swift Array
-    ///    - mftype: The Type
-    ///    - shape: The shape
-    ///    - mforder: The order
+    ///    - array: A (nested) Swift array of scalars. All inner arrays at the same depth must have the same length.
+    ///    - mftype: The element type. If `nil`, it is inferred from the elements (e.g. `Int` values give `.Int`).
+    ///      `.Object` and `.None` are not supported.
+    ///    - shape: The shape of the result. If `nil`, the shape of the nested array is used.
+    ///      The size must equal the number of elements.
+    ///    - mforder: The order in which the nested array is flattened and stored. Defaults to `.Row`.
+    /// - Precondition: The product of `shape` must equal the number of elements.
     public init (_ array: [Any], mftype: MfType? = nil, shape: [Int]? = nil, mforder: MfOrder = .Row) {
         
         var (flattenArray, shape_from_array) = array.withUnsafeBufferPointer{
@@ -47,12 +77,17 @@ open class MfArray: MfArrayProtocol{
         
     }
     
-    /// Create complex mfarray from MfArray. Either real or imag must be given.
+    /// Creates a complex array from real and imaginary parts. Either `real` or `imag` must be given.
+    ///
+    /// If only one part is given, the other part is filled with zeros.
+    /// If both are given, they are broadcast to the same shape and converted to a common type if needed.
     /// - Parameters:
-    ///    - real: A real MfArray
-    ///    - imag: A imag MfArray
-    ///    - mftype: The Type
-    ///    - mforder: The order
+    ///    - real: The real part, which must be a real array, or `nil` for zeros.
+    ///    - imag: The imaginary part, which must be a real array, or `nil` for zeros.
+    ///    - mftype: The element type when both parts are given. If `nil`, the higher-priority type of the two parts is used.
+    ///      Ignored when only one part is given.
+    ///    - mforder: Currently unused.
+    /// - Precondition: `real` and `imag` must be real arrays and at least one of them must be non-nil.
     public init(real: MfArray?, imag: MfArray?, mftype: MfType? = nil,  mforder: MfOrder = .Row){
         let realmfdata: MFDATA
         let imagmfdata: MFDATA
@@ -92,20 +127,20 @@ open class MfArray: MfArrayProtocol{
         self.mfstructure = MfStructure(shape: shape, strides: strides)
     }
     
-    /// Create mfarray from MfData and MfStructure
+    /// Creates an array directly from its data storage and structure. The data is not copied.
     /// - Parameters:
-    ///    - mfdata: MfData
-    ///    - mfstructure: MfStructure
+    ///    - mfdata: The data storage.
+    ///    - mfstructure: The shape and strides. They must be consistent with `mfdata`.
     public init (mfdata: MfData, mfstructure: MfStructure){
         self.mfdata = mfdata
         self.mfstructure = mfstructure
     }
     
-    /// Create a VIEW mfarray from MfArray
+    /// Creates a view of another array that shares its memory.
     /// - Parameters:
-    ///    - base: A base MfArray
-    ///    - mfstructure: MfStructure
-    ///    - offset: The offset index
+    ///    - base: The array whose memory is shared. It is stored in `base`.
+    ///    - mfstructure: The shape and strides of the view.
+    ///    - offset: The element offset of the view's first element within the base's buffer.
     public init (base: MfArray, mfstructure: MfStructure, offset: Int){
         self.base = base
         self.mfdata = MfData(refdata: base.mfdata, offset: offset)
@@ -113,10 +148,14 @@ open class MfArray: MfArrayProtocol{
     }
     
     #if canImport(CoreML)
-    /// Create a VIEW or Copy mfarray from MLShapedArray
+    /// Creates an array from a Core ML `MLMultiArray`, either sharing or copying its memory.
+    ///
+    /// The shape and strides of the `MLMultiArray` are kept. When sharing, the `MLMultiArray` is retained
+    /// by the returned array's data, but `base` stays `nil`.
     /// - Parameters:
-    ///    - base: A base MLShapedArray
-    ///    - share: Whether to share memories or not, by default to true
+    ///    - base: The source `MLMultiArray`. Its data type must be `.float` or `.double`.
+    ///    - share: Whether to share the memory (`true`, default) or copy it (`false`).
+    /// - Precondition: `base.dataType` must be `.float` or `.double` (in both share and copy modes).
     @available(macOS 12.0, *)
     @available(iOS 14.0, *)
     public init (base: inout MLMultiArray, share: Bool = true){
@@ -141,6 +180,10 @@ open class MfArray: MfArrayProtocol{
 extension MfArray{
     //mfdata getter
     //return base's data
+    /// The raw stored elements, converted to the Swift type of `mftype`.
+    ///
+    /// This returns the whole underlying buffer in storage order (for a view, the base array's buffer),
+    /// not the elements of this array in logical order. Use `toArray()` to get the logical elements.
     public var data: [Any]{
         if let base = self.base{
             return base.data
@@ -152,11 +195,13 @@ extension MfArray{
             }
         }
     }
-    /// Alias for data
+    /// The raw stored real parts. Alias for `data`.
     public var data_real: [Any]{
         return self.data
     }
-    /// imag data
+    /// The raw stored imaginary parts converted to the Swift type of `mftype`, or `nil` for a real array.
+    ///
+    /// Like `data`, this is the whole underlying buffer in storage order.
     public var data_imag: [Any]?{
         if self.mfdata._isReal{
             return nil
@@ -173,6 +218,9 @@ extension MfArray{
         }
     }
     
+    /// The raw stored real parts as `Float` or `Double` values (the stored type), without converting to `mftype`.
+    ///
+    /// Like `data`, this is the whole underlying buffer in storage order.
     public var storedData: [Any]{
         if let base = self.base{
             return base.storedData
@@ -191,6 +239,9 @@ extension MfArray{
         }
     }
     
+    /// The real part. Equivalent to `numpy.ndarray.real`.
+    ///
+    /// For a real array this returns `self`; for a complex array it returns a view that shares the real buffer.
     public var real: MfArray{
         if self.mfdata._isReal{
             return self
@@ -200,6 +251,9 @@ extension MfArray{
             return MfArray(mfdata: mfdata, mfstructure: self.mfstructure)
         }
     }
+    /// The imaginary part as a view that shares the imaginary buffer, or `nil` for a real array.
+    ///
+    /// Unlike `numpy.ndarray.imag`, a real array returns `nil` instead of zeros.
     public var imag: MfArray?{
         if self.mfdata._isReal{
             return nil
@@ -210,9 +264,11 @@ extension MfArray{
         }
     }
     
+    /// Whether the array has no imaginary part.
     public var isReal: Bool{
         return self.mfdata._isReal
     }
+    /// Whether the array has an imaginary part.
     public var isComplex: Bool{
         return !self.mfdata._isReal
     }
