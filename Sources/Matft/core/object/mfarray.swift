@@ -240,20 +240,21 @@ fileprivate func _check_same_structure(_ real: MfArray, _ imag: MfArray, mftype:
     }
     
     let rettype = mftype ?? MfType.priority(r.mftype, i.mftype)
-    
-    // check same strides and type
-    if (r.strides != i.strides) ||
-        (rettype != r.mftype) || (rettype != i.mftype) ||
-        (r.offsetIndex != i.offsetIndex){
-        // TODO: This code is redundant
-        r = r.astype(rettype, mforder: .Row)
-        i = i.astype(rettype, mforder: .Row)
+    if rettype != r.mftype{
+        r = r.astype(rettype)
+    }
+    if rettype != i.mftype{
+        i = i.astype(rettype)
     }
     
-    assert((real.shape == imag.shape) &&
-         (real.strides == imag.strides) &&
-         (real.mftype == imag.mftype) &&
-         (real.offsetIndex == imag.offsetIndex), "Not same structure")
+    // the stored data are copied from the offsets, so they must be dense (not views like `a[1~<2]` or `a[Matft.reverse]`) in the same layout
+    (r, i) = check_same_dense_layout(r, i)
+    
+    assert((r.shape == i.shape) &&
+         (r.strides == i.strides) &&
+         (r.mftype == i.mftype) &&
+         (r.storedSize == i.storedSize) &&
+         (r.offsetIndex == 0 && i.offsetIndex == 0), "Not same structure")
     
     return (r, i)
 }

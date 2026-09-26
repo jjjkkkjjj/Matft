@@ -412,16 +412,9 @@ extension Matft{
             }
         }
         else{
-            #if canImport(Accelerate)
-            switch MfType.storedType(retmftype) {
-            case .Float:
-                return biopzsv_by_vDSP(Float.from(l_scalar), r_mfarray, vDSP_ztrans)
-            case .Double:
-                return biopzsv_by_vDSP(Double.from(l_scalar), r_mfarray, vDSP_ztransD)
-            }
-            #else
-            fatalError("Complex array operations are not supported on this platform")
-            #endif
+            // vDSP_ztrans computes `complex / real`, so divide by the complex array of the scalar instead
+            let l_mfarray = MfArray(real: Matft.nums(l_scalar, shape: r_mfarray.shape, mftype: retmftype), imag: nil)
+            return Matft.div(l_mfarray, r_mfarray)
         }
     }
     

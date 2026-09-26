@@ -14,6 +14,26 @@ import Matft
 import Accelerate
 
 final class ComplexTests: XCTestCase {
+    func testDivide(){
+        for mftype in [MfType.Float, .Double]{
+            // z = np.array([1-1j, 2-2j, 4, -3+4j]), w = np.array([2+1j, 1j, -1, 1-1j])
+            let z = MfArray(real: MfArray([1, 2, 4, -3], mftype: mftype), imag: MfArray([-1, -2, 0, 4], mftype: mftype))
+            let w = MfArray(real: MfArray([2, 0, -1, 1], mftype: mftype), imag: MfArray([1, 1, 0, -1], mftype: mftype))
+            // numpy: 2 / z
+            var ret = 2 / z
+            XCTAssertClose(ret.real, MfArray([1, 0.5, 0.5, -0.24] as [Double]), rtol: 1e-6)
+            XCTAssertClose(ret.imag!, MfArray([1, 0.5, 0, -0.32] as [Double]), rtol: 1e-6)
+            // numpy: z / w
+            ret = z / w
+            XCTAssertClose(ret.real, MfArray([0.2, -2, -4, -3.5] as [Double]), rtol: 1e-6)
+            XCTAssertClose(ret.imag!, MfArray([-0.6, -2, 0, 0.5] as [Double]), rtol: 1e-6, atol: 1e-7)
+            // numpy: w / z
+            ret = w / z
+            XCTAssertClose(ret.real, MfArray([0.5, -0.25, -0.25, -0.28] as [Double]), rtol: 1e-6)
+            XCTAssertClose(ret.imag!, MfArray([1.5, 0.25, 0, -0.04] as [Double]), rtol: 1e-6, atol: 1e-7)
+        }
+    }
+
     
     func test_complex() {
         do {
