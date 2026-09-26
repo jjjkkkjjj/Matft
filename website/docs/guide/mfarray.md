@@ -61,7 +61,9 @@ public enum MfType: Int{
 
 :::note
 The stored data type is `Float` or `Double` only, even if you set `MfType.Int`.
-So a big number may overflow or give strange results in calculations (`+`, `-`, `*`, `/`, … etc.), though this is rarely a problem in practical use.
+The results of 8/16-bit integer arrays wrap around like Numpy's fixed-width integers (e.g. `UInt8`: -5 → 251),
+but big numbers of wider integer types may lose precision or give strange results in calculations (`+`, `-`, `*`, `/`, … etc.), though this is rarely a problem in practical use.
+Mixed integer types are promoted like `numpy.result_type` (e.g. `UInt8` + `Int8` → `Int16`).
 :::
 
 If `mftype` is not passed, `MfArray` infers it from the given values (`MfType.Int` in the example above).

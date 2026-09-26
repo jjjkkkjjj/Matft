@@ -39,11 +39,11 @@ mfarray =
 [[	1,		6],
 [	15,		28]], type=Int, shape=[2, 2]
 */
-print(a/b)
+print(a/b) // true division like Numpy: integer arrays give Float
 /*
 mfarray = 
-[[	1,		1],
-[	1,		1]], type=Int, shape=[2, 2]
+[[	1.0,		1.5],
+[	1.6666666,		1.75]], type=Float, shape=[2, 2]
 */
 ```
 
