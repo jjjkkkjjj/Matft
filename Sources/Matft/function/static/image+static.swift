@@ -101,15 +101,20 @@ extension Matft.image{
             - width: The destination width
             - height: The destination height
             - mode: The pixel extrapolation mode. Note that `.EdgeExtend` is vImage's edge extension, so the region outside the source may differ from `cv2.BORDER_REPLICATE`
-            - borderValue: The border value. Count must be 1 or 4
+            - borderValue: The border value. Count must be 1, 4 or the channel number
        - Returns: MfArray
     */
     public static func warpAffine(_ image: MfArray, matrix: MfArray, width: Int, height: Int, mode: MfAffineMode = .ColorFill, borderValue: [Float] = [0]) -> MfArray{
+        // one value for each channel (at least 4 for the ARGB path)
+        let channel = image.ndim == 3 ? image.shape[2] : 1
         var borderValue = borderValue
         if borderValue.count == 1{
-            borderValue = Array(repeating: borderValue[0], count: 4)
+            borderValue = Array(repeating: borderValue[0], count: Swift.max(channel, 4))
         }
-        precondition(borderValue.count == 4, "borderValue must have 1 or 4 element")
+        else if borderValue.count == channel && channel < 4{
+            borderValue += Array(repeating: 0, count: 4 - channel)
+        }
+        precondition(borderValue.count >= Swift.max(channel, 4), "borderValue must have 1, 4 or the channel number of elements, but got \(borderValue.count) for \(channel) channels")
         unsupport_complex(image)
         unsupport_imagetype(image)
         precondition(0 < width && 0 < height, "New size must be positive")
