@@ -273,10 +273,12 @@ fileprivate func _get_flatten_row_major(queue: inout [Any], shape: inout [Int]) 
     var cnt = 0 // count up the number that value is extracted from queue for while statement, reset 0 when iteration number reaches size
     var size = queue.count
     var axis = 0//the axis in searching
+    // the front of the queue. Advancing it instead of removeFirst keeps this O(n)
+    var head = 0
     
-    while queue.count > 0 {
+    while head < queue.count {
         //get first element
-        let elements = queue[0]
+        let elements = queue[head]
         
         if let elements = elements as? [Any]{
             queue += elements
@@ -296,7 +298,7 @@ fileprivate func _get_flatten_row_major(queue: inout [Any], shape: inout [Int]) 
             break
         }
         //remove first element from array
-        let _ = queue.removeFirst()
+        head += 1
         
         if cnt == size{//reset count and forward next axis
             cnt = 0
@@ -304,7 +306,7 @@ fileprivate func _get_flatten_row_major(queue: inout [Any], shape: inout [Int]) 
         }
     }
     
-    return queue
+    return Array(queue[head...])
 }
 
 /// Get a flatten array with column majar order from a given structured array. This function is a recurrsive function
@@ -321,9 +323,11 @@ fileprivate func _get_flatten_column_major(queue: inout [Any], shape: inout [Int
     var objectFlag = false
     
     var newqueue: [Any] = []
-    while queue.count > 0{
+    // the front of the queue. Advancing it instead of removeFirst keeps this O(n)
+    var head = 0
+    while head < queue.count{
         //get first element
-        let elements = queue[0]
+        let elements = queue[head]
         
         if var elements = elements as? [Any]{
             if cnt == 0{ //append next dim
@@ -347,10 +351,10 @@ fileprivate func _get_flatten_column_major(queue: inout [Any], shape: inout [Int
             
         }
         else{ // value was detected. this means queue in this case becomes flatten array
-            return queue
+            return Array(queue[head...])
         }
         
-        let _ = queue.removeFirst()
+        head += 1
     }
     
     if !objectFlag{

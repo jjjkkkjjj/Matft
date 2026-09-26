@@ -24,4 +24,11 @@ final class ConversionPefTests: XCTestCase {
             let _ = a.reshape([1000, 1000])
         }
     }
+    
+    func testPeformanceArgsort1() {
+        let aneg = PerfFixtures.aneg
+        self.measureWithWarmup {
+            let _ = aneg.argsort(axis: -1)
+        }
+    }
 }

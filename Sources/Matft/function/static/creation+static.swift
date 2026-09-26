@@ -70,22 +70,25 @@ extension Matft{
         
         let retmftype = mftype ?? MfType.mftype(value: T.zero)
         let newdata = MfData(uninitializedSize: size, mftype: retmftype)
-        func _create<U: MfStorable>(_ converted_value: U){
-            var arr = Array(repeating: converted_value, count: size)
-
-            newdata.withUnsafeMutableStartPointer(datatype: U.self){
-                ptrU in
-                arr.withUnsafeMutableBufferPointer{
-                    ptrU.moveUpdate(from: $0.baseAddress!, count: size)
-                }
-            }
-        }
-        
         switch MfType.storedType(retmftype){
         case .Float:
-            _create(Float.from(value))
+            var converted_value = Float.from(value)
+            newdata.withUnsafeMutableStartPointer(datatype: Float.self){
+                #if canImport(Accelerate)
+                vDSP_vfill(&converted_value, $0, 1, vDSP_Length(size))
+                #else
+                $0.update(repeating: converted_value, count: size)
+                #endif
+            }
         case .Double:
-            _create(Double.from(value))
+            var converted_value = Double.from(value)
+            newdata.withUnsafeMutableStartPointer(datatype: Double.self){
+                #if canImport(Accelerate)
+                vDSP_vfillD(&converted_value, $0, 1, vDSP_Length(size))
+                #else
+                $0.update(repeating: converted_value, count: size)
+                #endif
+            }
         }
         
         let newstructure = MfStructure(shape: shape, mforder: mforder)

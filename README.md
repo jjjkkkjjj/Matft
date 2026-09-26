@@ -888,6 +888,9 @@ let posb = a > 0
 let idx = MfArray([1, 3, 5, 7, 9])
 let values = a[posb]
 let signal = Matft.arange(start: 0, to: 1024*1024, by: 1, shape: [1024, 1024], mftype: .Float)
+let v = Matft.arange(start: 0, to: 10000, by: 1)
+let nested: [[Float]] = (0..<1000).map{ i in (0..<100).map{ Float(i*100 + $0) } }
+let m = MfArray((0..<256).map{ (i: Int) -> [Double] in (0..<256).map{ (j: Int) -> Double in i == j ? 256 : Double((i*256 + j) % 7) } })
 ```
 
 ```python
@@ -903,6 +906,9 @@ posb = a > 0
 idx = np.array([1, 3, 5, 7, 9])
 values = a[posb]
 signal = np.arange(1024*1024, dtype=np.float32).reshape((1024,1024))
+v = np.arange(10000)
+nested = np.arange(100000, dtype=np.float32).reshape(1000, 100).tolist()
+m = np.fromfunction(lambda i, j: np.where(i == j, 256, (i*256 + j) % 7), (256, 256))
 ```
 
 <!-- BENCHMARK:START -->

@@ -98,8 +98,8 @@ extension Matft{
         
         
         // conversion
-        var saxes = Array(axis..<mfarray.ndim)
-        var laxes = Array(0..<axis)
+        let saxes = Array(axis..<mfarray.ndim)
+        let laxes = Array(0..<axis)
         let movedMfArray = mfarray.transpose(axes: saxes + laxes).to_contiguous(mforder: .Row)// to Row order
         let accums = Matft.nums_like(0, mfarray: movedMfArray) // note that this ret must be converted
         // get initial value
@@ -116,11 +116,13 @@ extension Matft{
             return next
         }
         
-        //re-conversion
-        saxes = Array(axis..<accums.ndim)
-        laxes = Array(0..<axis)
-        let ret = accums.transpose(axes: saxes + laxes)
-        return ret
+        //re-conversion: the inverse of the permutation above
+        let perm = saxes + laxes
+        var inverse = [Int](repeating: 0, count: perm.count)
+        for (i, p) in perm.enumerated(){
+            inverse[p] = i
+        }
+        return accums.transpose(axes: inverse)
     }
 }
 

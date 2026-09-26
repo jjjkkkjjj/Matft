@@ -9,6 +9,14 @@ enum PerfFixtures {
     static var ad: MfArray { a.astype(.Double) }
     static var aneg: MfArray { Matft.arange(start: 0, to: -10*10*10*10*10*10, by: -1, shape: [10,10,10,10,10,10]) }
     static var idx: MfArray { MfArray([1, 3, 5, 7, 9]) }
+    static var v: MfArray { Matft.arange(start: 0, to: 10000, by: 1) }
+    static var nested: [[Float]] { (0..<1000).map{ i in (0..<100).map{ Float(i*100 + $0) } } }
+    static var m: MfArray {
+        let rows: [[Double]] = (0..<256).map{ (i: Int) -> [Double] in
+            (0..<256).map{ (j: Int) -> Double in i == j ? 256 : Double((i*256 + j) % 7) }
+        }
+        return MfArray(rows)
+    }
     static var signal: MfArray { Matft.arange(start: 0, to: 1024*1024, by: 1, shape: [1024, 1024], mftype: .Float) }
 }
 
