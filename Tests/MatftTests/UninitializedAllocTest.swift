@@ -131,14 +131,22 @@ final class UninitializedAllocTests: XCTestCase {
 
     func testLinAlgOps() throws{
         let m = MfArray([[[2, 1], [1, 3]], [[4, 1], [2, 5]], [[1, 2], [3, 4]]] as [[[Float]]])
-        for (name, x) in [("stacked", m), ("transposed", m.transpose(axes: [0, 2, 1])), ("double", m.astype(.Double))]{
+        #if os(WASI)
+        // single-precision LAPACK and SVD are not available on WASI
+        let cases = [("double", m.astype(.Double)), ("transposed double", m.astype(.Double).transpose(axes: [0, 2, 1]))]
+        #else
+        let cases = [("stacked", m), ("transposed", m.transpose(axes: [0, 2, 1])), ("double", m.astype(.Double))]
+        #endif
+        for (name, x) in cases{
             try assertSameWithPoison("inv \(name)"){ try Matft.linalg.inv(x) }
             try assertSameWithPoison("det \(name)"){ try Matft.linalg.det(x) }
             try assertSameWithPoison("eigen valRe \(name)"){ try Matft.linalg.eigen(x).valRe }
             try assertSameWithPoison("eigen valIm \(name)"){ try Matft.linalg.eigen(x).valIm }
             try assertSameWithPoison("eigen rvecRe \(name)"){ try Matft.linalg.eigen(x).rvecRe }
+            #if !os(WASI)
             try assertSameWithPoison("svd s \(name)"){ try Matft.linalg.svd(x).s }
             try assertSameWithPoison("svd v \(name)"){ try Matft.linalg.svd(x).v }
+            #endif
             try assertSameWithPoison("matmul \(name)"){ x *& x }
         }
     }
@@ -208,7 +216,8 @@ final class UninitializedAllocTests: XCTestCase {
 
     // eigenvalues of stacked matrices must match those of each matrix
     func testEigenStacked() throws{
-        let m = MfArray([[[2, 1], [1, 3]], [[4, 1], [2, 5]], [[1, 2], [3, 4]]] as [[[Float]]])
+        // Double: single-precision eigen is not available on WASI
+        let m = MfArray([[[2, 1], [1, 3]], [[4, 1], [2, 5]], [[1, 2], [3, 4]]] as [[[Double]]])
         let ret = try Matft.linalg.eigen(m)
         XCTAssertEqual(ret.valRe.shape, [3, 2])
         for i in 0..<3{
