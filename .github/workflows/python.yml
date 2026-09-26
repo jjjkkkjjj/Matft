@@ -1,0 +1,25 @@
+name: python
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "scripts/**"
+      - "python/**"
+      - ".github/workflows/python.yml"
+
+jobs:
+  scripts:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Install dependencies
+      run: pip install numpy==2.0.2 opencv-python-headless==5.0.0.93 pillow==11.3.0
+    # the unit tests of the helper scripts (image_compare.py, benchmark.py)
+    - name: Test scripts
+      run: python -m unittest discover -s scripts -p "test_*.py" -v
