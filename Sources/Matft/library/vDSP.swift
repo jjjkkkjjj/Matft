@@ -505,7 +505,7 @@ internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP
     //return mfarray must be either row or column major
     var mfarray = mfarray
     //print(mfarray)
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
     //print(mfarray)
     //print(mfarray.strides)
     
@@ -623,7 +623,7 @@ internal func biopvs_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T,
     var mfarray = l_mfarray
     var r_scalar = r_scalar
     
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -674,7 +674,7 @@ internal func biopsv_by_vDSP<T: MfStorable>(_ l_scalar: T, _ r_mfarray: MfArray,
     var mfarray = r_mfarray
     var l_scalar = l_scalar
     
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
     
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -1031,7 +1031,7 @@ internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ minval: T, _ max
     var maxval = maxval
     
     //print(mfarray)
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
     //print(mfarray)
     //print(mfarray.strides)
     
@@ -1056,7 +1056,7 @@ internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ minval: T, _ max
 ///    - vDSP_sve_func: vDSP_sve function
 /// - Returns: Converted mfarray
 internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_vthrsc_func: vDSP_vthrsc_func<T>, _ vDSP_vadd_func: vDSP_biopvv_func<T>, _ vDSP_sve_func: vDSP_stats_func<T>) -> MfArray{
-    let mfarray = check_contiguous(mfarray)
+    let mfarray = check_dense(mfarray)
         
     let size = mfarray.storedSize
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
@@ -1083,7 +1083,7 @@ internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_vthrsc_func
 ///   - vDSP_toFloat_func: The vDSP conversion function into Float. nil when T is Float
 /// - Returns: Bool mfarray
 internal func compare_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ op: MfCompareOp, _ scalar: T, _ vDSP_vthrsc_func: vDSP_vthrsc_func<T>, _ vDSP_vneg_func: vDSP_math_func<T, T>, _ vDSP_vsadd_func: vDSP_biopvs_func<T>, _ vDSP_vnabs_func: vDSP_math_func<T, T>, _ vDSP_toFloat_func: vDSP_convert_func<T, Float>?) -> MfArray{
-    let mfarray = check_contiguous(mfarray)
+    let mfarray = check_dense(mfarray)
     
     let size = mfarray.storedSize
     let newdata = MfData(size: size, mftype: .Bool)
@@ -1648,7 +1648,7 @@ internal typealias vDSP_dotpr_func<T> = (UnsafePointer<T>, Int, UnsafePointer<T>
 
 /// Pure Swift fallback for compare_by_vDSP
 internal func compare_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ op: MfCompareOp, _ scalar: T) -> MfArray{
-    let mfarray = check_contiguous(mfarray)
+    let mfarray = check_dense(mfarray)
     
     let size = mfarray.storedSize
     let newdata = MfData(size: size, mftype: .Bool)
@@ -2594,7 +2594,7 @@ internal func contiguous_and_astype_by_vDSP<T: MfStorable, U: MfStorable>(_ src_
 
 internal func preop_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ vDSP_func: vDSP_convert_func<T, T>) -> MfArray{
     var mfarray = mfarray
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
 
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2617,7 +2617,7 @@ internal func biopvs_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T,
     var mfarray = l_mfarray
     var r_scalar = r_scalar
 
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
 
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2636,7 +2636,7 @@ internal func biopsv_by_vDSP<T: MfStorable>(_ l_scalar: T, _ r_mfarray: MfArray,
     var mfarray = r_mfarray
     var l_scalar = l_scalar
 
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
 
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2850,7 +2850,7 @@ internal func clip_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ minval: T, _ max
     var minval = minval
     var maxval = maxval
 
-    mfarray = check_contiguous(mfarray)
+    mfarray = check_dense(mfarray)
 
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
@@ -2978,7 +2978,7 @@ internal func dotpr_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: Mf
 
 /// Pure Swift fallback for sign_by_vDSP (numpy semantics: sign(NaN) = NaN, sign(-0.0) = +0.0)
 internal func sign_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ type: T.Type) -> MfArray{
-    let mfarray = check_contiguous(mfarray)
+    let mfarray = check_dense(mfarray)
 
     let size = mfarray.storedSize
     let newdata = MfData(size: mfarray.storedSize, mftype: mfarray.mftype)
