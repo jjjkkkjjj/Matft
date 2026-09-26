@@ -483,45 +483,77 @@ fileprivate func _setter<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, 
     let true_num = Float.toInt(indices.sum().scalar(Float.self)!)
     let orig_ind_dim = indices.ndim
     
-    // broadcast
+    // row contiguous mask of mfarray's shape. It's only read, so the Float mask can be used as it is
     let indices = bool_broadcast_to(indices, shape: mfarray.shape)
-    
-    // must be row major
-    let indicesT: MfArray
+    let maskT: MfArray
     switch mfarray.storedType {
     case .Float:
-        indicesT = check_contiguous(indices.astype(.Float), .Row)
+        maskT = indices
     case .Double:
-        indicesT = check_contiguous(indices.astype(.Double), .Row)
+        maskT = indices.astype(.Double)
     }
     
-    // calculate assignMfarray's size
+    // the assigned values in row major order, in mfarray's stored type
     let lastShape = Array(mfarray.shape.suffix(mfarray.ndim - orig_ind_dim))
     let assignShape = [true_num] + lastShape
-    //let assignSize = shape2size(&assignShape)
+    let isScalar = assignMfArray.size == 1
+    var values = isScalar ? assignMfArray : assignMfArray.broadcast_to(shape: assignShape)
+    if values.storedType != mfarray.storedType{
+        values = values.astype(mfarray.mftype)
+    }
+    values = check_contiguous(values, .Row)
     
-    let assignMfArray = assignMfArray.broadcast_to(shape: assignShape).flatten(.Row).astype(mfarray.mftype)
-    
-    var srcoffset = 0
-    var indoffset = 0
-    
-    indicesT.withUnsafeMutableStartPointer(datatype: T.self){
-        indptr in
-        let indptr = indptr
-        assignMfArray.withUnsafeMutableStartPointer(datatype: T.self){
-            assptr in
-            let srcptr = assptr
-            mfarray.withContiguousDataUnsafeMPtrT(datatype: T.self){
-                if (indptr + indoffset).pointee != T.zero{
-                    $0.update(from: srcptr + srcoffset, count: 1)
-                    srcoffset += 1
-                    //print(srcptr.pointee)
+    let size = mfarray.size
+    guard size > 0 else { return }
+    maskT.withUnsafeMutableStartPointer(datatype: T.self){
+        maskptr in
+        values.withUnsafeMutableStartPointer(datatype: T.self){
+            valptr in
+            let scalar = valptr.pointee
+            var k = 0
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                dstptr in
+                if mfarray.mfstructure.row_contiguous{
+                    if isScalar{
+                        for i in 0..<size where maskptr[i] != T.zero{
+                            dstptr[i] = scalar
+                        }
+                    }
+                    else{
+                        for i in 0..<size where maskptr[i] != T.zero{
+                            dstptr[i] = valptr[k]
+                            k += 1
+                        }
+                    }
+                    return
                 }
-                indoffset += 1
+                
+                // row major order over a strided layout: the last axis is the inner loop
+                let lastDim = mfarray.shape[mfarray.ndim - 1]
+                let lastStride = mfarray.strides[mfarray.ndim - 1]
+                var outerShape = Array(mfarray.shape.dropLast())
+                var outerStrides = Array(mfarray.strides.dropLast())
+                var i = 0
+                func assignRow(_ rowptr: UnsafeMutablePointer<T>){
+                    for j in 0..<lastDim{
+                        if maskptr[i] != T.zero{
+                            rowptr[j * lastStride] = isScalar ? scalar : valptr[k]
+                            k += 1
+                        }
+                        i += 1
+                    }
+                }
+                if outerShape.isEmpty{
+                    assignRow(dstptr)
+                }
+                else{
+                    for ind in FlattenIndSequence(shape: &outerShape, strides: &outerStrides){
+                        assignRow(dstptr + ind.flattenIndex)
+                    }
+                }
             }
         }
     }
-    
 }
 
 fileprivate func _inner_product(_ left: UnsafeMutableBufferPointer<Int>, _ right: UnsafeMutableBufferPointer<Int>) -> Int{

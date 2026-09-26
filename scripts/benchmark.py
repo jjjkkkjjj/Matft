@@ -46,6 +46,7 @@ b = a.transpose((0,3,4,2,1,5))
 c = a.transpose((1,2,3,4,5,0))
 posb = a > 0
 idx = np.array([1, 3, 5, 7, 9])
+values = a[posb]
 signal = np.arange(1024*1024, dtype=np.float32).reshape((1024,1024))
 """
 
@@ -87,6 +88,9 @@ CASES = [
     Case("IndexingPefTests.testPeformanceBooleanIndexing2", "Indexing", "let _ = a[a > 0]", "a[a > 0]"),
     Case("IndexingPefTests.testPeformanceBooleanIndexing3", "Indexing", "let _ = aT[aT > 0]", "aT[aT > 0]"),
     Case("IndexingPefTests.testPeformanceFancyIndexing1", "Indexing", "let _ = a[idx]", "a[idx]"),
+    Case("IndexingPefTests.testPeformanceBoolSetter1", "Indexing", "let x = Matft.deepcopy(a); x[x > 0] = MfArray([0])", "x = a.copy(); x[x > 0] = 0"),
+    Case("IndexingPefTests.testPeformanceBoolSetter2", "Indexing", "let x = Matft.deepcopy(a); x[posb] = values", "x = a.copy(); x[posb] = values"),
+    Case("IndexingPefTests.testPeformanceBoolSetter3", "Indexing", "let x = Matft.deepcopy(a).T; x[x > 0] = MfArray([0])", "x = a.copy().T; x[x > 0] = 0"),
 ]
 
 _MEASURED_RE = re.compile(

@@ -886,6 +886,7 @@ let b = a.transpose(axes: [0,3,4,2,1,5])
 let c = a.transpose(axes: [1,2,3,4,5,0])
 let posb = a > 0
 let idx = MfArray([1, 3, 5, 7, 9])
+let values = a[posb]
 let signal = Matft.arange(start: 0, to: 1024*1024, by: 1, shape: [1024, 1024], mftype: .Float)
 ```
 
@@ -900,6 +901,7 @@ b = a.transpose((0,3,4,2,1,5))
 c = a.transpose((1,2,3,4,5,0))
 posb = a > 0
 idx = np.array([1, 3, 5, 7, 9])
+values = a[posb]
 signal = np.arange(1024*1024, dtype=np.float32).reshape((1024,1024))
 ```
 
