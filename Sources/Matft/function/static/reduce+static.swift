@@ -8,18 +8,27 @@
 
 import Foundation
 
+/// A binary array function `(MfArray, MfArray) -> MfArray`, such as `Matft.add`, used by `ufuncReduce` and `ufuncAccumulate`.
 public typealias biopufuncNoargs = (MfArray, MfArray) -> MfArray
 
 extension Matft{
     /**
-        Return reduced MfArray applied passed ufunc
-        - Parameters:
-            - mfarray: mfarray
-            - ufunc: Binary operation function with two arguments like (l_mfarray: MfArray, r_mfarray: MfArray)
-            - axis: (Optional) axis, if not given, get reduction for all axes
-            - keepDims: (Optional) whether to keep original dimension, default is true
-            - initial: Initial MfArray
-     */
+       Reduce an array by repeatedly applying a binary function.
+
+       Equivalent to `numpy.ufunc.reduce` (e.g. `Matft.ufuncReduce(mfarray: a, ufunc: Matft.add)` is like `np.add.reduce(a)`).
+
+       ```swift
+       let a = MfArray([[1, 2], [3, 4]])
+       let s = Matft.ufuncReduce(mfarray: a, ufunc: Matft.add, axis: 0)   // shape [2]
+       ```
+       - Parameters:
+            - mfarray: The source array.
+            - ufunc: A binary function `(MfArray, MfArray) -> MfArray`, such as `Matft.add`.
+            - axis: (Optional) The axis to reduce, by default 0. If `nil`, all axes are reduced.
+            - keepDims: (Optional) Whether to keep the reduced axes as dimensions of length 1, by default `false`.
+            - initial: (Optional) The value combined with the first element, as `ufunc(initial, first)`. Note that it is ignored when `axis` is `nil`.
+       - Returns: The reduced array.
+    */
     public static func ufuncReduce(mfarray: MfArray, ufunc: biopufuncNoargs, axis: Int? = 0, keepDims: Bool = false, initial: MfArray? = nil) -> MfArray {
         
         if let axis = axis{
@@ -87,12 +96,15 @@ extension Matft{
     }
     
     /**
-        Return accumulated MfArray applied passed ufunc along axis
-        - Parameters:
-            - mfarray: mfarray
-            - ufunc: Binary operation function with two arguments like (l_mfarray: MfArray, r_mfarray: MfArray)
-            - axis: axis
-     */
+       Accumulate the result of applying a binary function along the given axis.
+
+       Equivalent to `numpy.ufunc.accumulate` (e.g. `Matft.ufuncAccumulate(mfarray: a, ufunc: Matft.add)` is like `np.add.accumulate(a)`).
+       - Parameters:
+            - mfarray: The source array.
+            - ufunc: A binary function `(MfArray, MfArray) -> MfArray`, such as `Matft.add`.
+            - axis: (Optional) The axis along which to accumulate, by default 0.
+       - Returns: The accumulated array, which has the same shape and `mftype` as `mfarray`.
+    */
     public static func ufuncAccumulate(mfarray: MfArray, ufunc: biopufuncNoargs, axis: Int = 0) -> MfArray {
         let axis = get_positive_axis(axis, ndim: mfarray.ndim)
         
@@ -128,11 +140,17 @@ extension Matft{
 
 extension Array where Element == MfArray{
     /**
-        Return reduced MfArray applied passed ufunc
-        - Parameters:
-            - ufunc: Binary operation function with two arguments like (l_mfarray: MfArray, r_mfarray: MfArray)
-            - initial: Initial MfArray
-     */
+       Reduce an array of `MfArray`s by repeatedly applying a binary function from left to right.
+
+       ```swift
+       let total = [a, b, c].ufuncReduce(Matft.add)   // a + b + c
+       ```
+       - Parameters:
+            - ufunc: A binary function `(MfArray, MfArray) -> MfArray`, such as `Matft.add`.
+            - initial: (Optional) The value combined with the first element, as `ufunc(initial, first)`.
+       - Returns: The reduced array.
+       - Precondition: The array must not be empty.
+    */
     public func ufuncReduce(_ ufunc: biopufuncNoargs, initial: MfArray? = nil) -> MfArray {
         precondition(self.count > 0, "must be more than one element")
         let first: MfArray

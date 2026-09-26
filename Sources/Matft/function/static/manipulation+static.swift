@@ -7,13 +7,21 @@ import Foundation
 
 extension Matft{
     /**
-       Pad an array. Same as `np.pad`
-       - parameters:
-            - mfarray: mfarray
-            - pad_width: The number of values padded to the edges of each axis. `[(before, after)]` for each axis, or one `(before, after)` for all axes
-            - mode: (Optional) The padding mode, by default constant
-            - constant_values: (Optional) The value to set the padded values for constant mode, by default 0
-       - Returns: The padded mfarray
+       Pad an array.
+
+       The result is always a new array with the same `mftype`. Complex arrays are not supported.
+       Equivalent to `numpy.pad`.
+
+       ```swift
+       let a = MfArray([[1, 2], [3, 4]])
+       let b = Matft.pad(a, pad_width: [(1, 1), (0, 2)], mode: .edge)   // shape [4, 4]
+       ```
+       - Parameters:
+            - mfarray: The source array.
+            - pad_width: The number of values padded to the edges of each axis: `[(before, after)]` for each axis, or a single `(before, after)` applied to all axes. Values must be non-negative.
+            - mode: (Optional) The padding mode, by default `.constant`.
+            - constant_values: (Optional) The value used for the padded elements in `.constant` mode, by default 0. It is converted into `mfarray.mftype`.
+       - Returns: The padded array.
     */
     public static func pad(_ mfarray: MfArray, pad_width: [(Int, Int)], mode: MfPadMode = .constant, constant_values: Double = 0) -> MfArray{
         unsupport_complex(mfarray)
@@ -58,25 +66,31 @@ extension Matft{
     }
 
     /**
-       Pad an array with the same width for all edges. Same as `np.pad` with an int `pad_width`
-       - parameters:
-            - mfarray: mfarray
-            - pad_width: The number of values padded to all edges
-            - mode: (Optional) The padding mode, by default constant
-            - constant_values: (Optional) The value to set the padded values for constant mode, by default 0
-       - Returns: The padded mfarray
+       Pad an array with the same width on all edges.
+
+       Complex arrays are not supported.
+       Equivalent to `numpy.pad` with an int `pad_width`.
+       - Parameters:
+            - mfarray: The source array.
+            - pad_width: The number of values padded to both edges of every axis. It must be non-negative.
+            - mode: (Optional) The padding mode, by default `.constant`.
+            - constant_values: (Optional) The value used for the padded elements in `.constant` mode, by default 0. It is converted into `mfarray.mftype`.
+       - Returns: The padded array.
     */
     public static func pad(_ mfarray: MfArray, pad_width: Int, mode: MfPadMode = .constant, constant_values: Double = 0) -> MfArray{
         return Matft.pad(mfarray, pad_width: [(pad_width, pad_width)], mode: mode, constant_values: constant_values)
     }
 
     /**
-       Calculate the n-th discrete difference along the given axis. Same as `np.diff`
-       - parameters:
-            - mfarray: mfarray
-            - n: (Optional) The number of times values are differenced, by default 1
-            - axis: (Optional) The axis along which the difference is taken, by default the last axis
-       - Returns: The n-th differences. For bool mfarray, `not_equal` is used instead of subtraction
+       Calculate the n-th discrete difference along the given axis.
+
+       The first difference is `a[1:] - a[:-1]` along `axis`; higher differences are computed recursively.
+       Equivalent to `numpy.diff`.
+       - Parameters:
+            - mfarray: The source array.
+            - n: (Optional) The number of times values are differenced, by default 1. It must be non-negative; 0 returns `mfarray` itself.
+            - axis: (Optional) The axis along which the difference is taken, by default the last axis.
+       - Returns: The n-th differences, whose length along `axis` is reduced by `n`. For a `.Bool` array, `not_equal` is used instead of subtraction.
     */
     public static func diff(_ mfarray: MfArray, n: Int = 1, axis: Int = -1) -> MfArray{
         precondition(n >= 0, "order must be non-negative but got \(n)")
@@ -97,22 +111,34 @@ extension Matft{
     }
 
     /**
-       Return coordinate matrices from coordinate vectors. Same as `np.meshgrid`
-       - parameters:
-            - xi: The coordinate vectors. Each mfarray is flattened
-            - indexing: (Optional) Cartesian (.xy, default) or matrix (.ij) indexing
-       - Returns: The coordinate matrices (copies)
+       Return coordinate matrices from coordinate vectors.
+
+       Variadic form of `Matft.meshgrid(_:indexing:)`.
+       Equivalent to `numpy.meshgrid`.
+       - Parameters:
+            - xi: The coordinate vectors. Each array is flattened.
+            - indexing: (Optional) Cartesian (`.xy`, default) or matrix (`.ij`) indexing.
+       - Returns: The coordinate matrices, one per input. Each is a contiguous copy.
     */
     public static func meshgrid(_ xi: MfArray..., indexing: MfMeshIndexing = .xy) -> [MfArray]{
         return Matft.meshgrid(xi, indexing: indexing)
     }
 
     /**
-       Return coordinate matrices from coordinate vectors. Same as `np.meshgrid`
-       - parameters:
-            - xi: The coordinate vectors. Each mfarray is flattened
-            - indexing: (Optional) Cartesian (.xy, default) or matrix (.ij) indexing
-       - Returns: The coordinate matrices (copies)
+       Return coordinate matrices from coordinate vectors.
+
+       With `.xy` indexing and inputs of lengths `M` and `N`, the outputs have shape `[N, M]`; with `.ij` they have shape `[M, N]`.
+       Equivalent to `numpy.meshgrid`.
+
+       ```swift
+       let x = MfArray([1, 2, 3])
+       let y = MfArray([4, 5])
+       let grids = Matft.meshgrid([x, y])   // two arrays of shape [2, 3]
+       ```
+       - Parameters:
+            - xi: The coordinate vectors. Each array is flattened.
+            - indexing: (Optional) Cartesian (`.xy`, default) or matrix (`.ij`) indexing.
+       - Returns: The coordinate matrices, one per input. Each is a contiguous copy.
     */
     public static func meshgrid(_ xi: [MfArray], indexing: MfMeshIndexing = .xy) -> [MfArray]{
         let ndim = xi.count

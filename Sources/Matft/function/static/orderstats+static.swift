@@ -9,12 +9,17 @@ import Foundation
 
 extension Matft.stats{
     /**
-       Compute the median along the axis. Same as `np.median`. NaN propagates
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, compute the median of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
-       - Returns: The median. Float for Float and integer types, Double for Double
+       Compute the median along the given axis.
+
+       Equivalent to `numpy.median`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - axis: The axis along which to compute the median. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+       - Returns: The median. For an even number of elements it is the mean of the two middle values. The result is `.Double` for `.Double` input and `.Float` otherwise. A full reduction returns shape `[1]` instead of a scalar.
+       - Precondition: Complex arrays are not supported.
+       - Note: NaN propagates: a lane containing NaN gives NaN. Use `nanmedian(_:axis:keepDims:)` to ignore NaN.
     */
     public static func median(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         return _reduce_lanes(mfarray, axis: axis, keepDims: keepDims, outType: _float_type(mfarray)){
@@ -24,67 +29,100 @@ extension Matft.stats{
     }
 
     /**
-       Compute the q-th percentile along the axis. Same as `np.percentile`. NaN propagates
-       - parameters:
-            - mfarray: mfarray
-            - q: The percentile in [0, 100]
-            - axis: (Optional) axis, if not given, compute the percentile of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
-            - method: (Optional) The method to estimate the percentile, by default linear
-       - Returns: The percentile. Float for Float and integer types, Double for Double
+       Compute the q-th percentile along the given axis.
+
+       Equivalent to `numpy.percentile`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - q: The percentile to compute, in the range [0, 100].
+            - axis: The axis along which to compute the percentile. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+            - method: The interpolation method used when the quantile lies between two data points (`.linear`, `.lower`, `.higher`, `.nearest` or `.midpoint`). Default is `.linear`.
+       - Returns: The percentile. The result is `.Double` for `.Double` input and `.Float` otherwise. A full reduction returns shape `[1]` instead of a scalar.
+       - Precondition: Complex arrays are not supported.
+       - Precondition: Every `q` must be in the range [0, 100] for percentiles ([0, 1] for quantiles).
+       - Note: NaN propagates. Use `nanpercentile` to ignore NaN.
     */
     public static func percentile(_ mfarray: MfArray, q: Double, axis: Int? = nil, keepDims: Bool = false, method: MfQuantileMethod = .linear) -> MfArray{
         return Matft.stats.quantile(mfarray, q: q / 100, axis: axis, keepDims: keepDims, method: method)
     }
 
     /**
-       Compute the percentiles along the axis. Same as `np.percentile` with a sequence of q
-       - parameters:
-            - mfarray: mfarray
-            - q: The percentiles in [0, 100]
-            - axis: (Optional) axis, if not given, compute the percentiles of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
-            - method: (Optional) The method to estimate the percentile, by default linear
-       - Returns: The percentiles, whose shape is `[q.count] + reduced shape`
+       Compute several percentiles along the given axis.
+
+       Equivalent to `numpy.percentile`.
+
+       This is the overload for a sequence of `q`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - q: The percentiles to compute, each in the range [0, 100].
+            - axis: The axis along which to compute the percentiles. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+            - method: The interpolation method used when the quantile lies between two data points (`.linear`, `.lower`, `.higher`, `.nearest` or `.midpoint`). Default is `.linear`.
+       - Returns: The percentiles with shape `[q.count] + reduced shape`. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Precondition: Complex arrays are not supported.
+       - Precondition: Every `q` must be in the range [0, 100] for percentiles ([0, 1] for quantiles).
+       - Note: NaN propagates. Use `nanpercentile` to ignore NaN.
     */
     public static func percentile(_ mfarray: MfArray, q: [Double], axis: Int? = nil, keepDims: Bool = false, method: MfQuantileMethod = .linear) -> MfArray{
         return Matft.stats.quantile(mfarray, q: q.map{ $0 / 100 }, axis: axis, keepDims: keepDims, method: method)
     }
 
     /**
-       Compute the q-th quantile along the axis. Same as `np.quantile`. NaN propagates
-       - parameters:
-            - mfarray: mfarray
-            - q: The quantile in [0, 1]
-            - axis: (Optional) axis, if not given, compute the quantile of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
-            - method: (Optional) The method to estimate the quantile, by default linear
-       - Returns: The quantile. Float for Float and integer types, Double for Double
+       Compute the q-th quantile along the given axis.
+
+       Equivalent to `numpy.quantile`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - q: The quantile to compute, in the range [0, 1].
+            - axis: The axis along which to compute the quantile. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+            - method: The interpolation method used when the quantile lies between two data points (`.linear`, `.lower`, `.higher`, `.nearest` or `.midpoint`). Default is `.linear`.
+       - Returns: The quantile. The result is `.Double` for `.Double` input and `.Float` otherwise. A full reduction returns shape `[1]` instead of a scalar.
+       - Precondition: Complex arrays are not supported.
+       - Precondition: Every `q` must be in the range [0, 100] for percentiles ([0, 1] for quantiles).
+       - Note: NaN propagates. Use `nanquantile` to ignore NaN.
     */
     public static func quantile(_ mfarray: MfArray, q: Double, axis: Int? = nil, keepDims: Bool = false, method: MfQuantileMethod = .linear) -> MfArray{
         return _quantile(mfarray, q: [q], axis: axis, keepDims: keepDims, method: method, ignoreNaN: false, multiple: false)
     }
 
     /**
-       Compute the quantiles along the axis. Same as `np.quantile` with a sequence of q
-       - parameters:
-            - mfarray: mfarray
-            - q: The quantiles in [0, 1]
-            - axis: (Optional) axis, if not given, compute the quantiles of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
-            - method: (Optional) The method to estimate the quantile, by default linear
-       - Returns: The quantiles, whose shape is `[q.count] + reduced shape`
+       Compute several quantiles along the given axis.
+
+       Equivalent to `numpy.quantile`.
+
+       This is the overload for a sequence of `q`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - q: The quantiles to compute, each in the range [0, 1].
+            - axis: The axis along which to compute the quantiles. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+            - method: The interpolation method used when the quantile lies between two data points (`.linear`, `.lower`, `.higher`, `.nearest` or `.midpoint`). Default is `.linear`.
+       - Returns: The quantiles with shape `[q.count] + reduced shape`. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Precondition: Complex arrays are not supported.
+       - Precondition: Every `q` must be in the range [0, 100] for percentiles ([0, 1] for quantiles).
+       - Note: NaN propagates. Use `nanquantile` to ignore NaN.
     */
     public static func quantile(_ mfarray: MfArray, q: [Double], axis: Int? = nil, keepDims: Bool = false, method: MfQuantileMethod = .linear) -> MfArray{
         return _quantile(mfarray, q: q, axis: axis, keepDims: keepDims, method: method, ignoreNaN: false, multiple: true)
     }
 
     /**
-       Sum ignoring NaN. Same as `np.nansum`
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, sum all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
+       Compute the sum along the given axis, treating NaN as zero.
+
+       Equivalent to `numpy.nansum`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - axis: The axis along which to compute the sum. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+       - Returns: The sum. The result has the same `mftype` as `mfarray` (`.Bool` gives `.Float`). A full reduction returns shape `[1]` instead of a scalar.
+       - Precondition: Complex arrays are not supported.
     */
     public static func nansum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         return _reduce_lanes(mfarray, axis: axis, keepDims: keepDims, outType: _same_type(mfarray)){
@@ -94,11 +132,16 @@ extension Matft.stats{
     }
 
     /**
-       Mean ignoring NaN. Same as `np.nanmean`. All-NaN slice returns NaN
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, compute the mean of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
+       Compute the arithmetic mean along the given axis, ignoring NaN.
+
+       Equivalent to `numpy.nanmean`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - axis: The axis along which to compute the mean. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+       - Returns: The mean. An all-NaN lane gives NaN. The result is `.Double` for `.Double` input and `.Float` otherwise. A full reduction returns shape `[1]` instead of a scalar.
+       - Precondition: Complex arrays are not supported.
     */
     public static func nanmean(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         return _reduce_lanes(mfarray, axis: axis, keepDims: keepDims, outType: _float_type(mfarray)){
@@ -109,11 +152,16 @@ extension Matft.stats{
     }
 
     /**
-       Maximum ignoring NaN. Same as `np.nanmax`. All-NaN slice returns NaN
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, compute the maximum of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
+       Return the maximum along the given axis, ignoring NaN.
+
+       Equivalent to `numpy.nanmax`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - axis: The axis along which to compute the maximum. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+       - Returns: The maximum. An all-NaN lane gives NaN. The result has the same `mftype` as `mfarray` (`.Bool` gives `.Float`). A full reduction returns shape `[1]` instead of a scalar.
+       - Precondition: Complex arrays are not supported.
     */
     public static func nanmax(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         return _reduce_lanes(mfarray, axis: axis, keepDims: keepDims, outType: _same_type(mfarray)){
@@ -123,11 +171,16 @@ extension Matft.stats{
     }
 
     /**
-       Minimum ignoring NaN. Same as `np.nanmin`. All-NaN slice returns NaN
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, compute the minimum of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
+       Return the minimum along the given axis, ignoring NaN.
+
+       Equivalent to `numpy.nanmin`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - axis: The axis along which to compute the minimum. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+       - Returns: The minimum. An all-NaN lane gives NaN. The result has the same `mftype` as `mfarray` (`.Bool` gives `.Float`). A full reduction returns shape `[1]` instead of a scalar.
+       - Precondition: Complex arrays are not supported.
     */
     public static func nanmin(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         return _reduce_lanes(mfarray, axis: axis, keepDims: keepDims, outType: _same_type(mfarray)){
@@ -137,11 +190,16 @@ extension Matft.stats{
     }
 
     /**
-       Index of the maximum ignoring NaN. Same as `np.nanargmax`
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, return the index of the flattened mfarray
-       - Important: All-NaN slice is not allowed
+       Return the indices of the maximum values along the given axis, ignoring NaN.
+
+       Equivalent to `numpy.nanargmax`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - axis: The axis along which to search. If `nil` (default), the index is into the flattened (row-major) array.
+       - Returns: The `.Int` indices of the first maximum, with the reduced axis removed. A full reduction returns shape `[1]` instead of a scalar.
+       - Precondition: Complex arrays are not supported.
+       - Precondition: A lane consisting only of NaN is not allowed (it traps with "All-NaN slice encountered").
     */
     public static func nanargmax(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         return _reduce_lanes(mfarray, axis: axis, keepDims: false, outType: .Int){
@@ -151,11 +209,16 @@ extension Matft.stats{
     }
 
     /**
-       Index of the minimum ignoring NaN. Same as `np.nanargmin`
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, return the index of the flattened mfarray
-       - Important: All-NaN slice is not allowed
+       Return the indices of the minimum values along the given axis, ignoring NaN.
+
+       Equivalent to `numpy.nanargmin`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - axis: The axis along which to search. If `nil` (default), the index is into the flattened (row-major) array.
+       - Returns: The `.Int` indices of the first minimum, with the reduced axis removed. A full reduction returns shape `[1]` instead of a scalar.
+       - Precondition: Complex arrays are not supported.
+       - Precondition: A lane consisting only of NaN is not allowed (it traps with "All-NaN slice encountered").
     */
     public static func nanargmin(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         return _reduce_lanes(mfarray, axis: axis, keepDims: false, outType: .Int){
@@ -165,12 +228,17 @@ extension Matft.stats{
     }
 
     /**
-       Variance ignoring NaN. Same as `np.nanvar`. It returns NaN when the degrees of freedom <= 0
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, compute the variance of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
-            - ddof: (Optional) Delta degrees of freedom. The divisor is `N - ddof`, where N is the number of non-NaN elements. By default 0
+       Compute the variance along the given axis, ignoring NaN.
+
+       Equivalent to `numpy.nanvar`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - axis: The axis along which to compute the variance. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+            - ddof: Delta degrees of freedom. The divisor is `N - ddof`, where `N` is the number of non-NaN elements. Default is 0.
+       - Returns: The variance. NaN when `N - ddof <= 0`. The result is `.Double` for `.Double` input and `.Float` otherwise. A full reduction returns shape `[1]` instead of a scalar.
+       - Precondition: Complex arrays are not supported.
     */
     public static func nanvar(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false, ddof: Int = 0) -> MfArray{
         return _reduce_lanes(mfarray, axis: axis, keepDims: keepDims, outType: _float_type(mfarray)){
@@ -180,12 +248,17 @@ extension Matft.stats{
     }
 
     /**
-       Standard deviation ignoring NaN. Same as `np.nanstd`. It returns NaN when the degrees of freedom <= 0
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, compute the standard deviation of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
-            - ddof: (Optional) Delta degrees of freedom. The divisor is `N - ddof`, where N is the number of non-NaN elements. By default 0
+       Compute the standard deviation along the given axis, ignoring NaN.
+
+       Equivalent to `numpy.nanstd`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - axis: The axis along which to compute the standard deviation. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+            - ddof: Delta degrees of freedom. The divisor is `N - ddof`, where `N` is the number of non-NaN elements. Default is 0.
+       - Returns: The standard deviation. NaN when `N - ddof <= 0`. The result is `.Double` for `.Double` input and `.Float` otherwise. A full reduction returns shape `[1]` instead of a scalar.
+       - Precondition: Complex arrays are not supported.
     */
     public static func nanstd(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false, ddof: Int = 0) -> MfArray{
         return _reduce_lanes(mfarray, axis: axis, keepDims: keepDims, outType: _float_type(mfarray)){
@@ -195,11 +268,16 @@ extension Matft.stats{
     }
 
     /**
-       Median ignoring NaN. Same as `np.nanmedian`. All-NaN slice returns NaN
-       - parameters:
-            - mfarray: mfarray
-            - axis: (Optional) axis, if not given, compute the median of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
+       Compute the median along the given axis, ignoring NaN.
+
+       Equivalent to `numpy.nanmedian`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - axis: The axis along which to compute the median. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+       - Returns: The median. An all-NaN lane gives NaN. The result is `.Double` for `.Double` input and `.Float` otherwise. A full reduction returns shape `[1]` instead of a scalar.
+       - Precondition: Complex arrays are not supported.
     */
     public static func nanmedian(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         return _reduce_lanes(mfarray, axis: axis, keepDims: keepDims, outType: _float_type(mfarray)){
@@ -209,54 +287,80 @@ extension Matft.stats{
     }
 
     /**
-       Percentile ignoring NaN. Same as `np.nanpercentile`. All-NaN slice returns NaN
-       - parameters:
-            - mfarray: mfarray
-            - q: The percentile in [0, 100]
-            - axis: (Optional) axis, if not given, compute the percentile of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
-            - method: (Optional) The method to estimate the percentile, by default linear
+       Compute the q-th percentile along the given axis, ignoring NaN.
+
+       Equivalent to `numpy.nanpercentile`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - q: The percentile to compute, in the range [0, 100].
+            - axis: The axis along which to compute the percentile. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+            - method: The interpolation method used when the quantile lies between two data points (`.linear`, `.lower`, `.higher`, `.nearest` or `.midpoint`). Default is `.linear`.
+       - Returns: The percentile. An all-NaN lane gives NaN. The result is `.Double` for `.Double` input and `.Float` otherwise. A full reduction returns shape `[1]` instead of a scalar.
+       - Precondition: Complex arrays are not supported.
+       - Precondition: Every `q` must be in the range [0, 100] for percentiles ([0, 1] for quantiles).
     */
     public static func nanpercentile(_ mfarray: MfArray, q: Double, axis: Int? = nil, keepDims: Bool = false, method: MfQuantileMethod = .linear) -> MfArray{
         return _quantile(mfarray, q: [q / 100], axis: axis, keepDims: keepDims, method: method, ignoreNaN: true, multiple: false)
     }
 
     /**
-       Percentiles ignoring NaN. Same as `np.nanpercentile` with a sequence of q
-       - parameters:
-            - mfarray: mfarray
-            - q: The percentiles in [0, 100]
-            - axis: (Optional) axis, if not given, compute the percentiles of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
-            - method: (Optional) The method to estimate the percentile, by default linear
-       - Returns: The percentiles, whose shape is `[q.count] + reduced shape`
+       Compute several percentiles along the given axis, ignoring NaN.
+
+       Equivalent to `numpy.nanpercentile`.
+
+       This is the overload for a sequence of `q`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - q: The percentiles to compute, each in the range [0, 100].
+            - axis: The axis along which to compute the percentiles. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+            - method: The interpolation method used when the quantile lies between two data points (`.linear`, `.lower`, `.higher`, `.nearest` or `.midpoint`). Default is `.linear`.
+       - Returns: The percentiles with shape `[q.count] + reduced shape`. An all-NaN lane gives NaN. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Precondition: Complex arrays are not supported.
+       - Precondition: Every `q` must be in the range [0, 100] for percentiles ([0, 1] for quantiles).
     */
     public static func nanpercentile(_ mfarray: MfArray, q: [Double], axis: Int? = nil, keepDims: Bool = false, method: MfQuantileMethod = .linear) -> MfArray{
         return _quantile(mfarray, q: q.map{ $0 / 100 }, axis: axis, keepDims: keepDims, method: method, ignoreNaN: true, multiple: true)
     }
 
     /**
-       Quantile ignoring NaN. Same as `np.nanquantile`. All-NaN slice returns NaN
-       - parameters:
-            - mfarray: mfarray
-            - q: The quantile in [0, 1]
-            - axis: (Optional) axis, if not given, compute the quantile of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
-            - method: (Optional) The method to estimate the quantile, by default linear
+       Compute the q-th quantile along the given axis, ignoring NaN.
+
+       Equivalent to `numpy.nanquantile`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - q: The quantile to compute, in the range [0, 1].
+            - axis: The axis along which to compute the quantile. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+            - method: The interpolation method used when the quantile lies between two data points (`.linear`, `.lower`, `.higher`, `.nearest` or `.midpoint`). Default is `.linear`.
+       - Returns: The quantile. An all-NaN lane gives NaN. The result is `.Double` for `.Double` input and `.Float` otherwise. A full reduction returns shape `[1]` instead of a scalar.
+       - Precondition: Complex arrays are not supported.
+       - Precondition: Every `q` must be in the range [0, 100] for percentiles ([0, 1] for quantiles).
     */
     public static func nanquantile(_ mfarray: MfArray, q: Double, axis: Int? = nil, keepDims: Bool = false, method: MfQuantileMethod = .linear) -> MfArray{
         return _quantile(mfarray, q: [q], axis: axis, keepDims: keepDims, method: method, ignoreNaN: true, multiple: false)
     }
 
     /**
-       Quantiles ignoring NaN. Same as `np.nanquantile` with a sequence of q
-       - parameters:
-            - mfarray: mfarray
-            - q: The quantiles in [0, 1]
-            - axis: (Optional) axis, if not given, compute the quantiles of all elements
-            - keepDims: (Optional) whether to keep original dimension, default is false
-            - method: (Optional) The method to estimate the quantile, by default linear
-       - Returns: The quantiles, whose shape is `[q.count] + reduced shape`
+       Compute several quantiles along the given axis, ignoring NaN.
+
+       Equivalent to `numpy.nanquantile`.
+
+       This is the overload for a sequence of `q`.
+
+       - Parameters:
+            - mfarray: The input array. Any real `mftype`; values are processed as `Double` internally.
+            - q: The quantiles to compute, each in the range [0, 1].
+            - axis: The axis along which to compute the quantiles. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
+            - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
+            - method: The interpolation method used when the quantile lies between two data points (`.linear`, `.lower`, `.higher`, `.nearest` or `.midpoint`). Default is `.linear`.
+       - Returns: The quantiles with shape `[q.count] + reduced shape`. An all-NaN lane gives NaN. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Precondition: Complex arrays are not supported.
+       - Precondition: Every `q` must be in the range [0, 100] for percentiles ([0, 1] for quantiles).
     */
     public static func nanquantile(_ mfarray: MfArray, q: [Double], axis: Int? = nil, keepDims: Bool = false, method: MfQuantileMethod = .linear) -> MfArray{
         return _quantile(mfarray, q: q, axis: axis, keepDims: keepDims, method: method, ignoreNaN: true, multiple: true)

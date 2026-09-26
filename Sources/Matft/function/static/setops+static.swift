@@ -9,10 +9,14 @@ import Foundation
 
 extension Matft{
     /**
-       Find the sorted unique elements of the flattened mfarray. Same as `np.unique`. NaNs are collapsed into one at the end
-       - parameters:
-            - mfarray: mfarray
-       - Returns: The 1d unique values with the same type
+       Find the sorted unique elements of an array.
+
+       Equivalent to `numpy.unique` without the optional outputs. The input is flattened, and all NaNs are collapsed into one NaN placed at the end.
+
+       - Parameters:
+            - mfarray: The input array. Any shape.
+       - Returns: A 1-d array of the sorted unique values with the same `mftype` as `mfarray`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func unique(_ mfarray: MfArray) -> MfArray{
         let values = _unique_sorted(_doubles(mfarray))
@@ -20,20 +24,28 @@ extension Matft{
     }
 
     /**
-       Find the sorted unique elements. Same as `np.unique_values`
-       - parameters:
-            - mfarray: mfarray
-       - Returns: The 1d unique values with the same type
+       Find the sorted unique elements of an array.
+
+       Equivalent to `numpy.unique_values`. Same as `unique(_:)`.
+
+       - Parameters:
+            - mfarray: The input array. Any shape.
+       - Returns: A 1-d array of the sorted unique values with the same `mftype` as `mfarray`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func unique_values(_ mfarray: MfArray) -> MfArray{
         return Matft.unique(mfarray)
     }
 
     /**
-       Find the sorted unique elements and their counts. Same as `np.unique_counts`
-       - parameters:
-            - mfarray: mfarray
-       - Returns: The unique values and the Int counts
+       Find the sorted unique elements of an array and the number of times each appears.
+
+       Equivalent to `numpy.unique_counts`. NaNs are treated as equal to each other.
+
+       - Parameters:
+            - mfarray: The input array. Any shape.
+       - Returns: A tuple of `values` (the 1-d sorted unique values with the same `mftype` as `mfarray`) and `counts` (`.Int`).
+       - Precondition: Complex arrays are not supported.
     */
     public static func unique_counts(_ mfarray: MfArray) -> (values: MfArray, counts: MfArray){
         let ret = Matft.unique_all(mfarray)
@@ -41,10 +53,14 @@ extension Matft{
     }
 
     /**
-       Find the sorted unique elements and the indices to reconstruct the input. Same as `np.unique_inverse`
-       - parameters:
-            - mfarray: mfarray
-       - Returns: The unique values and the Int inverse indices with the same shape as the input
+       Find the sorted unique elements of an array and the indices to reconstruct the input.
+
+       Equivalent to `numpy.unique_inverse`. NaNs are treated as equal to each other.
+
+       - Parameters:
+            - mfarray: The input array. Any shape.
+       - Returns: A tuple of `values` (the 1-d sorted unique values) and `inverse_indices` (`.Int`, with the same shape as `mfarray`) such that `values[inverse_indices]` reconstructs `mfarray`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func unique_inverse(_ mfarray: MfArray) -> (values: MfArray, inverse_indices: MfArray){
         let ret = Matft.unique_all(mfarray)
@@ -52,14 +68,18 @@ extension Matft{
     }
 
     /**
-       Find the sorted unique elements, the first indices, the inverse indices and the counts. Same as `np.unique_all`
-       - parameters:
-            - mfarray: mfarray
-       - Returns:
-            - values: The 1d unique values with the same type
-            - indices: The Int indices of the first occurrences in the flattened input
-            - inverse_indices: The Int indices to reconstruct the input from the unique values, with the same shape as the input
-            - counts: The Int counts of the unique values
+       Find the sorted unique elements of an array together with their first indices, inverse indices and counts.
+
+       Equivalent to `numpy.unique_all`. NaNs are treated as equal to each other and placed at the end.
+
+       - Parameters:
+            - mfarray: The input array. Any shape.
+       - Returns: A tuple of
+            - `values`: The 1-d sorted unique values with the same `mftype` as `mfarray`.
+            - `indices`: The `.Int` indices of the first occurrences in the flattened (row-major) input.
+            - `inverse_indices`: The `.Int` indices to reconstruct the input from `values`, with the same shape as `mfarray`.
+            - `counts`: The `.Int` number of occurrences of each unique value.
+       - Precondition: Complex arrays are not supported.
     */
     public static func unique_all(_ mfarray: MfArray) -> (values: MfArray, indices: MfArray, inverse_indices: MfArray, counts: MfArray){
         let values = _doubles(mfarray)
@@ -96,12 +116,16 @@ extension Matft{
     }
 
     /**
-       Test whether each element is in test_elements. Same as `np.isin`
-       - parameters:
-            - element: mfarray
-            - test_elements: The values against which to test each element
-            - invert: (Optional) If true, the result is inverted, by default false
-       - Returns: The Bool mfarray with the same shape as element
+       Test whether each element of an array is also present in a second array.
+
+       Equivalent to `numpy.isin`. NaN is never considered to be contained.
+
+       - Parameters:
+            - element: The input array. Any shape.
+            - test_elements: The values against which to test each element. Any shape.
+            - invert: If `true`, the result is inverted (i.e. tests "not in"). Default is `false`.
+       - Returns: A `.Bool` array with the same shape as `element`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func isin(_ element: MfArray, _ test_elements: MfArray, invert: Bool = false) -> MfArray{
         // NaN is not equal to any value
@@ -115,11 +139,15 @@ extension Matft{
     }
 
     /**
-       Find the sorted unique values that are in both of the mfarrays. Same as `np.intersect1d`
-       - parameters:
-            - ar1: mfarray
-            - ar2: mfarray
-       - Returns: The 1d sorted unique values
+       Find the sorted unique values that are in both of the arrays.
+
+       Equivalent to `numpy.intersect1d`. The inputs are flattened. NaN is never matched.
+
+       - Parameters:
+            - ar1: The first input array.
+            - ar2: The second input array.
+       - Returns: A 1-d array of the sorted common unique values. Its `mftype` is the promoted type of `ar1` and `ar2`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func intersect1d(_ ar1: MfArray, _ ar2: MfArray) -> MfArray{
         let b = Set(_doubles(ar2))
@@ -127,11 +155,15 @@ extension Matft{
     }
 
     /**
-       Find the sorted unique values that are in either of the mfarrays. Same as `np.union1d`
-       - parameters:
-            - ar1: mfarray
-            - ar2: mfarray
-       - Returns: The 1d sorted unique values
+       Find the sorted unique values that are in either of the arrays.
+
+       Equivalent to `numpy.union1d`. The inputs are flattened.
+
+       - Parameters:
+            - ar1: The first input array.
+            - ar2: The second input array.
+       - Returns: A 1-d array of the sorted unique values. Its `mftype` is the promoted type of `ar1` and `ar2`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func union1d(_ ar1: MfArray, _ ar2: MfArray) -> MfArray{
         let values = _doubles(ar1) + _doubles(ar2)
@@ -139,11 +171,15 @@ extension Matft{
     }
 
     /**
-       Find the sorted unique values in ar1 that are not in ar2. Same as `np.setdiff1d`
-       - parameters:
-            - ar1: mfarray
-            - ar2: mfarray
-       - Returns: The 1d sorted unique values
+       Find the sorted unique values in `ar1` that are not in `ar2`.
+
+       Equivalent to `numpy.setdiff1d`. The inputs are flattened. NaN in `ar1` is always kept.
+
+       - Parameters:
+            - ar1: The input array.
+            - ar2: The values to remove from `ar1`.
+       - Returns: A 1-d array of the sorted unique values with the same `mftype` as `ar1`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func setdiff1d(_ ar1: MfArray, _ ar2: MfArray) -> MfArray{
         let b = Set(_doubles(ar2))

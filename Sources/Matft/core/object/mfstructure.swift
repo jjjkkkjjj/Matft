@@ -8,6 +8,10 @@
 
 import Foundation
 
+/// The shape and strides of an `MfArray`.
+///
+/// Strides are counted in elements (not bytes), unlike Numpy's `ndarray.strides`.
+/// Several views can share the same `MfData` with different `MfStructure`s.
 public class MfStructure{
     // TODO: `var` causes bug! use `let` instead of `var`
     // because mfstructure must be updated after changing it's shape or strides
@@ -17,10 +21,10 @@ public class MfStructure{
     internal var row_contiguous: Bool
     internal var column_contiguous: Bool
     
-    /// Initialization from shape array and order
+    /// Creates a contiguous structure for the given shape and order.
     /// - Parameters:
-    ///   - shape: A shape array
-    ///   - mforder: Order
+    ///   - shape: The shape.
+    ///   - mforder: The memory order used to compute the strides.
     public init(shape: [Int], mforder: MfOrder){
         self.shape = shape
         self.strides = shape2strides(&self.shape, mforder: mforder)
@@ -28,10 +32,10 @@ public class MfStructure{
         (self.row_contiguous, self.column_contiguous) = _check_contiguous(shape: &self.shape, strides: &self.strides)
     }
     
-    /// Initialization from shape and strides array
+    /// Creates a structure from an explicit shape and strides.
     /// - Parameters:
-    ///   - shape: A shape array
-    ///   - strides: A strides array
+    ///   - shape: The shape.
+    ///   - strides: The strides in elements. Must have the same count as `shape`.
     public init(shape: [Int], strides: [Int]){
         assert(shape.count == strides.count, "must have same size!")
         self.shape = shape

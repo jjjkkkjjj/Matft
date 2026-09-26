@@ -9,10 +9,14 @@ import Foundation
 
 extension Matft{
     /**
-       Return the indices of the elements that are non-zero. Same as `np.nonzero`
-       - parameters:
-            - mfarray: mfarray
-       - Returns: The Int indices for each dimension
+       Return the indices of the elements that are non-zero.
+
+       Equivalent to `numpy.nonzero`. NaN counts as non-zero. The indices are listed in row-major order.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: One 1-d `.Int` array per dimension of `mfarray`, holding the indices of the non-zero elements along that dimension.
+       - Precondition: Complex arrays are not supported.
     */
     public static func nonzero(_ mfarray: MfArray) -> [MfArray]{
         let (indices, count) = _nonzero_indices(mfarray)
@@ -20,10 +24,14 @@ extension Matft{
     }
 
     /**
-       Find the indices of the elements that are non-zero, grouped by element. Same as `np.argwhere`
-       - parameters:
-            - mfarray: mfarray
-       - Returns: The Int indices (N, ndim)
+       Find the indices of the non-zero elements, grouped by element.
+
+       Equivalent to `numpy.argwhere`. NaN counts as non-zero.
+
+       - Parameters:
+            - mfarray: The input array.
+       - Returns: An `.Int` array of shape `[N, ndim]`, where `N` is the number of non-zero elements.
+       - Precondition: Complex arrays are not supported.
     */
     public static func argwhere(_ mfarray: MfArray) -> MfArray{
         let (indices, count) = _nonzero_indices(mfarray)
@@ -38,22 +46,30 @@ extension Matft{
     }
 
     /**
-       Return the indices of the elements that are non-zero. Same as `np.where` with one argument (`np.nonzero`)
-       - parameters:
-            - condition: mfarray
-       - Returns: The Int indices for each dimension
+       Return the indices of the elements that are non-zero.
+
+       Equivalent to `numpy.where` with one argument, which is the same as `numpy.nonzero`.
+
+       - Parameters:
+            - condition: The input array. Non-zero (including NaN) elements are treated as `true`.
+       - Returns: One 1-d `.Int` array per dimension of `condition`.
+       - Precondition: Complex arrays are not supported.
     */
     public static func `where`(_ condition: MfArray) -> [MfArray]{
         return Matft.nonzero(condition)
     }
 
     /**
-       Return the elements chosen from x or y depending on the condition. Same as `np.where` with three arguments
-       - parameters:
-            - condition: Where true, yield x, otherwise yield y
-            - x: The values chosen where the condition is true
-            - y: The values chosen where the condition is false
-       - Returns: The broadcasted mfarray. The type is the priority type of x and y
+       Return elements chosen from `x` or `y` depending on `condition`.
+
+       Equivalent to `numpy.where` with three arguments. `condition`, `x` and `y` are broadcast together.
+
+       - Parameters:
+            - condition: Where non-zero, yield `x`; otherwise yield `y`.
+            - x: The values chosen where `condition` is non-zero.
+            - y: The values chosen where `condition` is zero.
+       - Returns: A new array with the broadcast shape. Its `mftype` is the promoted type of `x` and `y`.
+       - Precondition: `x` and `y` must be real (complex arrays are not supported), and the three shapes must be broadcastable.
     */
     public static func `where`(_ condition: MfArray, _ x: MfArray, _ y: MfArray) -> MfArray{
         unsupport_complex(x)
@@ -77,28 +93,53 @@ extension Matft{
         return mftype == .Double ? ret : ret.astype(mftype)
     }
 
-    /// Same as `np.where` with three arguments. y is a scalar
+    /// Return elements chosen from the array `x` or the scalar `y` depending on `condition`.
+    ///
+    /// Equivalent to `numpy.where` with three arguments where `y` is a scalar.
+    /// - Parameters:
+    ///   - condition: Where non-zero, yield `x`; otherwise yield `y`.
+    ///   - x: The values chosen where `condition` is non-zero.
+    ///   - y: The scalar chosen where `condition` is zero.
+    /// - Returns: A new array with the broadcast shape of `condition` and `x`.
     public static func `where`<T: MfTypable>(_ condition: MfArray, _ x: MfArray, _ y: T) -> MfArray{
         return Matft.where(condition, x, MfArray([y]))
     }
 
-    /// Same as `np.where` with three arguments. x is a scalar
+    /// Return elements chosen from the scalar `x` or the array `y` depending on `condition`.
+    ///
+    /// Equivalent to `numpy.where` with three arguments where `x` is a scalar.
+    /// - Parameters:
+    ///   - condition: Where non-zero, yield `x`; otherwise yield `y`.
+    ///   - x: The scalar chosen where `condition` is non-zero.
+    ///   - y: The values chosen where `condition` is zero.
+    /// - Returns: A new array with the broadcast shape of `condition` and `y`.
     public static func `where`<T: MfTypable>(_ condition: MfArray, _ x: T, _ y: MfArray) -> MfArray{
         return Matft.where(condition, MfArray([x]), y)
     }
 
-    /// Same as `np.where` with three arguments. x and y are scalars
+    /// Return the scalar `x` or the scalar `y` depending on `condition`.
+    ///
+    /// Equivalent to `numpy.where` with three arguments where both `x` and `y` are scalars.
+    /// - Parameters:
+    ///   - condition: Where non-zero, yield `x`; otherwise yield `y`.
+    ///   - x: The scalar chosen where `condition` is non-zero.
+    ///   - y: The scalar chosen where `condition` is zero.
+    /// - Returns: A new array with the shape of `condition`.
     public static func `where`<T: MfTypable, U: MfTypable>(_ condition: MfArray, _ x: T, _ y: U) -> MfArray{
         return Matft.where(condition, MfArray([x]), MfArray([y]))
     }
 
     /**
-       Find the indices where the values should be inserted to keep the order. Same as `np.searchsorted`
-       - parameters:
-            - a: The sorted 1d mfarray. NaN must be at the end, as `sort` does
-            - v: The values to insert
-            - side: (Optional) If left, the first suitable index is returned. If right, the last one. By default left
-       - Returns: The Int indices with the same shape as v
+       Find the indices where elements should be inserted to maintain order.
+
+       Equivalent to `numpy.searchsorted` (binary search).
+
+       - Parameters:
+            - a: The sorted 1-d array. NaN must be at the end, as `sort` places it.
+            - v: The values to insert. Any shape.
+            - side: `.left` (default) returns the first suitable index; `.right` returns the last one.
+       - Returns: An `.Int` array of indices with the same shape as `v`.
+       - Precondition: `a` must be 1-d. Complex arrays are not supported.
     */
     public static func searchsorted(_ a: MfArray, _ v: MfArray, side: MfSearchSide = .left) -> MfArray{
         precondition(a.ndim == 1, "a must be 1d")
@@ -108,12 +149,16 @@ extension Matft{
     }
 
     /**
-       Return the indices of the bins to which each value belongs. Same as `np.digitize`
-       - parameters:
-            - x: The values
-            - bins: The 1d monotonic bins
-            - right: (Optional) Whether the interval includes the right edge. By default false, i.e. bins[i-1] <= x < bins[i] for increasing bins
-       - Returns: The Int indices with the same shape as x
+       Return the indices of the bins to which each value belongs.
+
+       Equivalent to `numpy.digitize`.
+
+       - Parameters:
+            - x: The values to bin. Any shape.
+            - bins: The 1-d monotonically increasing or decreasing bin edges.
+            - right: Whether the intervals include the right edge instead of the left. Default is `false`, i.e. `bins[i-1] <= x < bins[i]` for increasing bins.
+       - Returns: An `.Int` array of bin indices with the same shape as `x`.
+       - Precondition: `bins` must be 1-d and monotonic. Complex arrays are not supported.
     */
     public static func digitize(_ x: MfArray, bins: MfArray, right: Bool = false) -> MfArray{
         precondition(bins.ndim == 1, "bins must be 1d")
@@ -133,12 +178,16 @@ extension Matft{
     }
 
     /**
-       Count the number of occurrences of each non-negative integer. Same as `np.bincount`
-       - parameters:
-            - x: The 1d non-negative integers
-            - weights: (Optional) The weights with the same shape as x
-            - minlength: (Optional) The minimum number of bins
-       - Returns: The Int counts, or the Double sums of weights
+       Count the number of occurrences of each non-negative integer value.
+
+       Equivalent to `numpy.bincount`. Values are truncated to `Int`.
+
+       - Parameters:
+            - x: The 1-d array of non-negative integers.
+            - weights: Optional weights with the same shape as `x`. When given, the weights are summed instead of counting.
+            - minlength: The minimum number of bins in the output. Default is 0.
+       - Returns: A 1-d array of length `max(x.max() + 1, minlength)`. It is `.Int` counts, or `.Double` sums when `weights` is given.
+       - Precondition: `x` must be 1-d and non-negative, and `weights` (if given) must have the same length. Complex arrays are not supported.
     */
     public static func bincount(_ x: MfArray, weights: MfArray? = nil, minlength: Int = 0) -> MfArray{
         precondition(x.ndim == 1, "x must be 1d")
@@ -157,14 +206,18 @@ extension Matft{
     }
 
     /**
-       Compute the histogram with equal-width bins. Same as `np.histogram` with an int bins
-       - parameters:
-            - a: The input values (flattened)
-            - bins: (Optional) The number of bins, by default 10
-            - range: (Optional) The lower and upper range of the bins. By default, (a.min(), a.max())
-            - density: (Optional) If true, return the probability density function, by default false
-            - weights: (Optional) The weights with the same shape as a
-       - Returns: The Int counts (Double for density or weights), and the Double bin edges
+       Compute the histogram of the values with equal-width bins.
+
+       Equivalent to `numpy.histogram` with an integer `bins`.
+
+       - Parameters:
+            - a: The input values. The array is flattened.
+            - bins: The number of equal-width bins. Default is 10.
+            - range: The lower and upper range of the bins. Values outside it are ignored. If `nil` (default), `(a.min(), a.max())` is used. An empty range is widened by 0.5 on each side.
+            - density: If `true`, return the value of the probability density function at each bin, normalized so that the integral over the range is 1. Default is `false`.
+            - weights: Optional weights with the same number of elements as `a`.
+       - Returns: A tuple of `hist` (`.Int` counts, or `.Double` for `density` or `weights`) and `bin_edges` (`.Double`, length `bins + 1`).
+       - Precondition: `bins` must be positive and `range` must be finite with `lower <= upper`. Complex arrays are not supported.
     */
     public static func histogram(_ a: MfArray, bins: Int = 10, range: (Double, Double)? = nil, density: Bool = false, weights: MfArray? = nil) -> (hist: MfArray, bin_edges: MfArray){
         precondition(bins > 0, "bins must be positive")
@@ -204,13 +257,17 @@ extension Matft{
     }
 
     /**
-       Compute the histogram with the given bin edges. Same as `np.histogram` with a sequence of bins
-       - parameters:
-            - a: The input values (flattened)
-            - bins: The monotonically increasing 1d bin edges. The last bin includes the right edge
-            - density: (Optional) If true, return the probability density function, by default false
-            - weights: (Optional) The weights with the same shape as a
-       - Returns: The Int counts (Double for density or weights), and the Double bin edges
+       Compute the histogram of the values with the given bin edges.
+
+       Equivalent to `numpy.histogram` with a sequence of `bins`. Each bin is half-open `[edge[i], edge[i+1])`, except the last one, which also includes its right edge.
+
+       - Parameters:
+            - a: The input values. The array is flattened.
+            - bins: The monotonically increasing 1-d bin edges (at least 2 edges).
+            - density: If `true`, return the value of the probability density function at each bin. Default is `false`.
+            - weights: Optional weights with the same number of elements as `a`.
+       - Returns: A tuple of `hist` (`.Int` counts, or `.Double` for `density` or `weights`) and `bin_edges` (`.Double`, a copy of `bins`).
+       - Precondition: `bins` must be 1-d, have at least 2 edges and increase monotonically. Complex arrays are not supported.
     */
     public static func histogram(_ a: MfArray, bins: MfArray, density: Bool = false, weights: MfArray? = nil) -> (hist: MfArray, bin_edges: MfArray){
         precondition(bins.ndim == 1 && bins.size >= 2, "bins must be 1d and have at least 2 edges")

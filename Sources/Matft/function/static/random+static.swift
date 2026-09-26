@@ -9,10 +9,14 @@ import Foundation
 
 extension Matft.random{
     /**
-       Get random mfarray in [0,1)
-       - parameters:
-            - shape: shape
-            - mftype: MfType
+       Return random values drawn uniformly from `[0, 1)`.
+
+       Equivalent to `numpy.random.rand` (the shape is passed as an array).
+       - Parameters:
+            - shape: The shape of the result.
+            - mftype: (Optional) `.Float` (default) or `.Double`.
+       - Returns: The array of random values.
+       - Precondition: `mftype` must be `.Float` or `.Double`.
     */
     public static func rand(shape: [Int], mftype: MfType = .Float) -> MfArray{
         precondition(mftype == .Float || mftype == .Double, "mftype must be Float or Double, but got \(mftype)")
@@ -30,12 +34,16 @@ extension Matft.random{
     }
     
     /**
-       Get random int mfarray in [low, high)
-       - parameters:
-            - low: low value
-            - high: (optional) high value
-            - shape: shape
-            - mftype: MfType
+       Return random integers drawn uniformly from `[low, high)`.
+
+       Similar to `numpy.random.randint`, but when `high` is `nil` the range is `[low, max)` where `max` is the maximum value of `mftype` (Numpy uses `[0, low)` instead).
+       - Parameters:
+            - low: The lowest value (included).
+            - high: (Optional) The upper bound (excluded). If `nil`, the maximum value of `mftype` is used.
+            - shape: The shape of the result.
+            - mftype: (Optional) An integer type, by default `.Int`.
+       - Returns: The array of random integers.
+       - Precondition: `mftype` must be an integer type, and `low` and `high` must be representable in it.
     */
     public static func randint(low: Int, high: Int? = nil, shape: [Int], mftype: MfType = .Int) -> MfArray{
         

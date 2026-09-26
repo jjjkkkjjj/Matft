@@ -185,7 +185,7 @@ internal func c4toc1_by_vImage(_ image: MfArray, pre_bias: [Float], coef: [Float
 /// Resize image
 /// - Parameters:
 ///   - image: An image mfarray
-///   - dstWidth: The dstination width
+///   - dstWidth: The destination width
 ///   - dstHeight: The destination height
 /// - Returns: Resized image mfarray
 internal func resize_by_vImage(_ image: MfArray, dstWidth: Int, dstHeight: Int) -> MfArray{

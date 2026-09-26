@@ -11,29 +11,44 @@ import Accelerate
 #endif
 
 extension Matft.image{
-    /// Same as `transformers.image_utils.OPENAI_CLIP_MEAN`
+    /// The per-channel RGB mean used by OpenAI CLIP. Same as `transformers.image_utils.OPENAI_CLIP_MEAN`.
     public static let OPENAI_CLIP_MEAN: [Double] = [0.48145466, 0.4578275, 0.40821073]
-    /// Same as `transformers.image_utils.OPENAI_CLIP_STD`
+    /// The per-channel RGB standard deviation used by OpenAI CLIP. Same as `transformers.image_utils.OPENAI_CLIP_STD`.
     public static let OPENAI_CLIP_STD: [Double] = [0.26862954, 0.26130258, 0.27577711]
-    /// Same as `transformers.image_utils.IMAGENET_DEFAULT_MEAN`
+    /// The per-channel RGB mean of ImageNet. Same as `transformers.image_utils.IMAGENET_DEFAULT_MEAN`.
     public static let IMAGENET_DEFAULT_MEAN: [Double] = [0.485, 0.456, 0.406]
-    /// Same as `transformers.image_utils.IMAGENET_DEFAULT_STD`
+    /// The per-channel RGB standard deviation of ImageNet. Same as `transformers.image_utils.IMAGENET_DEFAULT_STD`.
     public static let IMAGENET_DEFAULT_STD: [Double] = [0.229, 0.224, 0.225]
-    /// Same as `transformers.image_utils.IMAGENET_STANDARD_MEAN`
+    /// The per-channel mean `[0.5, 0.5, 0.5]`. Same as `transformers.image_utils.IMAGENET_STANDARD_MEAN`.
     public static let IMAGENET_STANDARD_MEAN: [Double] = [0.5, 0.5, 0.5]
-    /// Same as `transformers.image_utils.IMAGENET_STANDARD_STD`
+    /// The per-channel standard deviation `[0.5, 0.5, 0.5]`. Same as `transformers.image_utils.IMAGENET_STANDARD_STD`.
     public static let IMAGENET_STANDARD_STD: [Double] = [0.5, 0.5, 0.5]
 
     /**
-       Resize image in the same way as `PIL.Image.resize`
-       - parameters:
-            - image: An image mfarray (h, w) or (h, w, c). UInt8 image is resized with PIL's 8bit fixed-point arithmetic, so that the result is exactly the same as PIL.
-              The other types are resized with floating point arithmetic like PIL's mode "F"
-            - width: The new width
-            - height: The new height
-            - resample: The resampling filter
-       - Returns: The resized mfarray. The type is the same as the input (Float for integer types except UInt8)
-       - Note: Unlike PIL, RGBA image is not premultiplied by alpha
+       Resizes an image in the same way as `PIL.Image.resize`.
+
+       Equivalent to `PIL.Image.resize((width, height), resample)` (Pillow's `libImaging/Resample.c`).
+       A UInt8 image is resized with Pillow's 8-bit fixed-point arithmetic, so the result is exactly the same
+       pixels as PIL. The other mftypes are resized with floating-point arithmetic like PIL's mode `"F"`.
+       The image is not premultiplied by alpha, and any number of channels is accepted.
+
+       To follow `cv2.resize` instead, use `resize(_:width:height:interpolation:)`.
+
+       ```swift
+       // rgb: UInt8 (h, w, 3)
+       let resized = Matft.image.resize(rgb, width: 224, height: 224, resample: .bicubic) // == PIL.Image.resize(BICUBIC)
+       ```
+
+       - Parameters:
+            - image: An image mfarray of `(height, width)` or `(height, width, channels)`.
+            - width: The destination width.
+            - height: The destination height.
+            - resample: The resampling filter.
+       - Returns: The resized mfarray of `(height, width)` or `(height, width, channels)`. UInt8 stays UInt8,
+         Double-stored types keep their mftype, and the other types become Float.
+       - Precondition: `image` must be real and 2D or 3D, and `width` and `height` must be positive.
+       - Note: Unlike PIL, an RGBA image is not premultiplied by alpha before resampling.
+         Convert it to RGB first, as transformers does.
     */
     public static func resize(_ image: MfArray, width: Int, height: Int, resample: MfResample) -> MfArray{
         unsupport_complex(image)
@@ -70,14 +85,20 @@ extension Matft.image{
     }
 
     /**
-       Calculate the size for Qwen2-VL. Same as `transformers.models.qwen2_vl.image_processing_qwen2_vl.smart_resize`
-       - parameters:
-            - height: The height
-            - width: The width
-            - factor: (Optional) Both of the returned height and width are divisible by this, by default 28
-            - min_pixels: (Optional) The minimum number of pixels, by default 56*56
-            - max_pixels: (Optional) The maximum number of pixels, by default 14*14*4*1280
-       - Returns: The resized height and width
+       Calculates the resized image size for Qwen2-VL.
+
+       Equivalent to `transformers.models.qwen2_vl.image_processing_qwen2_vl.smart_resize`.
+       The returned height and width are divisible by `factor`, the number of pixels is within
+       `min_pixels...max_pixels`, and the aspect ratio is kept as much as possible.
+
+       - Parameters:
+            - height: The original height.
+            - width: The original width.
+            - factor: The value both returned sizes are divisible by, by default 28.
+            - min_pixels: The minimum number of pixels, by default `56 * 56`.
+            - max_pixels: The maximum number of pixels, by default `14 * 14 * 4 * 1280`.
+       - Returns: A tuple of the resized height and width.
+       - Precondition: The aspect ratio `max(height, width) / min(height, width)` must not exceed 200.
     */
     public static func smart_resize(height: Int, width: Int, factor: Int = 28, min_pixels: Int = 56 * 56, max_pixels: Int = 14 * 14 * 4 * 1280) -> (height: Int, width: Int){
         precondition(Double(Swift.max(height, width)) / Double(Swift.min(height, width)) <= 200, "absolute aspect ratio must be smaller than 200")
@@ -99,12 +120,18 @@ extension Matft.image{
     }
 
     /**
-       Crop the center of image. If the image is smaller than the size, it is padded with zeros. Same as `transformers.image_transforms.center_crop`
-       - parameters:
-            - image: An image mfarray (h, w) or (h, w, c)
-            - height: The height of the cropped image
-            - width: The width of the cropped image
-       - Returns: The cropped mfarray
+       Crops the center of an image.
+
+       Equivalent to `transformers.image_transforms.center_crop` for a channel-last image.
+       If the image is smaller than the requested size, it is padded with zeros.
+
+       - Parameters:
+            - image: An image mfarray of `(height, width)` or `(height, width, channels)`. Any mftype is accepted.
+            - height: The height of the cropped image.
+            - width: The width of the cropped image.
+       - Returns: The cropped row-contiguous mfarray of `(height, width)` or `(height, width, channels)`
+         with the same mftype as `image`.
+       - Precondition: `image` must be 2D or 3D.
     */
     public static func center_crop(_ image: MfArray, height: Int, width: Int) -> MfArray{
         precondition(image.ndim == 2 || image.ndim == 3, "image must be (h, w) or (h, w, c)")
@@ -136,11 +163,16 @@ extension Matft.image{
     }
 
     /**
-       Rescale image. Same as `transformers.image_transforms.rescale`
-       - parameters:
-            - image: An image mfarray
-            - scale: The scale
-       - Returns: The rescaled Float mfarray
+       Multiplies an image by a scale factor.
+
+       Equivalent to `transformers.image_transforms.rescale` with `dtype=np.float32`:
+       the product is computed in Double and returned as Float.
+
+       - Parameters:
+            - image: An image mfarray of any shape, e.g. UInt8 in `0...255`.
+            - scale: The scale factor, e.g. `1.0 / 255`.
+       - Returns: The rescaled Float mfarray with the same shape as `image`.
+       - Precondition: `image` must be real.
     */
     public static func rescale(_ image: MfArray, scale: Double) -> MfArray{
         unsupport_complex(image)
@@ -148,12 +180,17 @@ extension Matft.image{
     }
 
     /**
-       Normalize image with mean and std along the last (channel) axis. Same as `transformers.image_transforms.normalize` with channel last image
-       - parameters:
-            - image: An image mfarray (..., c)
-            - mean: The mean for each channel
-            - std: The standard deviation for each channel
-       - Returns: `(image - mean) / std`. The non-float image is converted to Float
+       Normalizes an image with a per-channel mean and standard deviation.
+
+       Equivalent to `transformers.image_transforms.normalize` for a channel-last image:
+       `(image - mean) / std` along the last axis.
+
+       - Parameters:
+            - image: An image mfarray whose last axis is the channel axis, e.g. `(height, width, channels)`.
+            - mean: The mean for each channel, e.g. `OPENAI_CLIP_MEAN`.
+            - std: The standard deviation for each channel, e.g. `OPENAI_CLIP_STD`.
+       - Returns: The normalized mfarray with the same shape as `image`. It is Double for a Double input and Float otherwise.
+       - Precondition: `image` must be real, and `mean` and `std` must have as many elements as the channels.
     */
     public static func normalize_meanstd(_ image: MfArray, mean: [Double], std: [Double]) -> MfArray{
         unsupport_complex(image)
@@ -166,17 +203,29 @@ extension Matft.image{
     }
 
     /**
-       Preprocess image for CLIP. Same as `CLIPImageProcessorPil` (resize the shortest edge -> center crop -> rescale -> normalize)
-       - parameters:
-            - image: An RGB UInt8 image mfarray (h, w, 3)
-            - size: (Optional) The size of the shortest edge after resizing, by default 224
-            - crop_height: (Optional) The height of center crop, by default 224
-            - crop_width: (Optional) The width of center crop, by default 224
-            - resample: (Optional) The resampling filter, by default bicubic
-            - rescale_factor: (Optional) The rescale factor, by default 1/255
-            - mean: (Optional) The mean for normalization, by default OPENAI_CLIP_MEAN
-            - std: (Optional) The std for normalization, by default OPENAI_CLIP_STD
-       - Returns: The pixel values (1, 3, crop_height, crop_width) Float
+       Preprocesses an image for CLIP.
+
+       Equivalent to transformers' `CLIPImageProcessor` with the PIL backend: resize the shortest edge to `size`
+       with `resize(_:width:height:resample:)`, center crop, rescale and normalize, then transpose to channel-first.
+
+       ```swift
+       let rgba = Matft.image.cgimage2mfarray(cgimage, mftype: .UInt8)          // (h, w, 4)
+       let rgb = rgba[Matft.all, Matft.all, 0~<3].to_contiguous(mforder: .Row) // (h, w, 3)
+       let pixel_values = Matft.image.clip_preprocess(rgb)                      // (1, 3, 224, 224)
+       ```
+
+       - Parameters:
+            - image: An RGB UInt8 image mfarray of `(height, width, 3)`.
+            - size: The length of the shortest edge after resizing, by default 224.
+            - crop_height: The height of the center crop, by default 224.
+            - crop_width: The width of the center crop, by default 224.
+            - resample: The resampling filter, by default `.bicubic`.
+            - rescale_factor: The rescale factor, by default `1 / 255`.
+            - mean: The per-channel mean for normalization, by default `OPENAI_CLIP_MEAN`.
+            - std: The per-channel standard deviation for normalization, by default `OPENAI_CLIP_STD`.
+       - Returns: The Float pixel values of shape `(1, channels, crop_height, crop_width)`.
+       - Precondition: `image` must be a 3D UInt8 mfarray, e.g. from `cgimage2mfarray(_:mftype:)` with `.UInt8`,
+         and `mean` and `std` must have as many elements as its channels.
     */
     public static func clip_preprocess(_ image: MfArray, size: Int = 224, crop_height: Int = 224, crop_width: Int = 224, resample: MfResample = .bicubic, rescale_factor: Double = 1.0 / 255, mean: [Double] = OPENAI_CLIP_MEAN, std: [Double] = OPENAI_CLIP_STD) -> MfArray{
         precondition(image.mftype == .UInt8 && image.ndim == 3, "image must be UInt8 (h, w, c). Use cgimage2mfarray(_:mftype: .UInt8)")
@@ -194,13 +243,21 @@ extension Matft.image{
     }
 
     /**
-       Flatten the image into patches for Qwen2-VL. Same as `Qwen2VLImageProcessorPil.patchify`
-       - parameters:
-            - image: A normalized image mfarray (c, h, w). h and w must be divisible by patch_size * merge_size
-            - patch_size: (Optional) The spatial patch size, by default 14
-            - temporal_patch_size: (Optional) The temporal patch size, by default 2
-            - merge_size: (Optional) The merge size, by default 2
-       - Returns: The flatten patches (grid_h * grid_w, c * temporal_patch_size * patch_size^2) Float, and grid_thw
+       Flattens a normalized image into patches for Qwen2-VL.
+
+       Equivalent to the patchify step of transformers' `Qwen2VLImageProcessor` for a single image.
+       The image is repeated `temporal_patch_size` times along the temporal axis, so the returned `grid_thw.t` is 1.
+
+       - Parameters:
+            - image: A normalized channel-first image mfarray of `(channels, height, width)`. `height` and `width`
+              must be divisible by `patch_size * merge_size`.
+            - patch_size: The spatial patch size, by default 14.
+            - temporal_patch_size: The temporal patch size, by default 2.
+            - merge_size: The spatial merge size, by default 2.
+       - Returns: A tuple of the Float patches of shape
+         `(grid_h * grid_w, channels * temporal_patch_size * patch_size * patch_size)` and the grid size
+         `(t: 1, h: height / patch_size, w: width / patch_size)`.
+       - Precondition: `image` must be 3D, and its height and width must be divisible by `patch_size * merge_size`.
     */
     public static func qwen2vl_patchify(_ image: MfArray, patch_size: Int = 14, temporal_patch_size: Int = 2, merge_size: Int = 2) -> (pixel_values: MfArray, grid_thw: (t: Int, h: Int, w: Int)){
         precondition(image.ndim == 3, "image must be (c, h, w)")
@@ -221,19 +278,30 @@ extension Matft.image{
     }
 
     /**
-       Preprocess image for Qwen2-VL. Same as `Qwen2VLImageProcessorPil` (smart resize -> rescale -> normalize -> patchify)
-       - parameters:
-            - image: An RGB UInt8 image mfarray (h, w, 3)
-            - min_pixels: (Optional) The minimum number of pixels, by default 56*56
-            - max_pixels: (Optional) The maximum number of pixels, by default 28*28*1280
-            - patch_size: (Optional) The spatial patch size, by default 14
-            - temporal_patch_size: (Optional) The temporal patch size, by default 2
-            - merge_size: (Optional) The merge size, by default 2
-            - resample: (Optional) The resampling filter, by default bicubic
-            - rescale_factor: (Optional) The rescale factor, by default 1/255
-            - mean: (Optional) The mean for normalization, by default OPENAI_CLIP_MEAN
-            - std: (Optional) The std for normalization, by default OPENAI_CLIP_STD
-       - Returns: The pixel values (grid_h * grid_w, 3 * temporal_patch_size * patch_size^2) Float, and image_grid_thw
+       Preprocesses an image for Qwen2-VL.
+
+       Equivalent to transformers' `Qwen2VLImageProcessor` with the PIL backend for a single image:
+       `smart_resize(height:width:factor:min_pixels:max_pixels:)`, `resize(_:width:height:resample:)`,
+       rescale, normalize and `qwen2vl_patchify(_:patch_size:temporal_patch_size:merge_size:)`.
+
+       ```swift
+       let (patches, grid_thw) = Matft.image.qwen2vl_preprocess(rgb) // rgb: UInt8 (h, w, 3)
+       ```
+
+       - Parameters:
+            - image: An RGB UInt8 image mfarray of `(height, width, 3)`.
+            - min_pixels: The minimum number of pixels after resizing, by default `56 * 56`.
+            - max_pixels: The maximum number of pixels after resizing, by default `28 * 28 * 1280`.
+            - patch_size: The spatial patch size, by default 14.
+            - temporal_patch_size: The temporal patch size, by default 2.
+            - merge_size: The spatial merge size, by default 2.
+            - resample: The resampling filter, by default `.bicubic`.
+            - rescale_factor: The rescale factor, by default `1 / 255`.
+            - mean: The per-channel mean for normalization, by default `OPENAI_CLIP_MEAN`.
+            - std: The per-channel standard deviation for normalization, by default `OPENAI_CLIP_STD`.
+       - Returns: A tuple of the Float patches of shape
+         `(grid_h * grid_w, channels * temporal_patch_size * patch_size * patch_size)` and the grid size `grid_thw`.
+       - Precondition: `image` must be a 3D UInt8 mfarray, and `mean` and `std` must have as many elements as its channels.
     */
     public static func qwen2vl_preprocess(_ image: MfArray, min_pixels: Int = 56 * 56, max_pixels: Int = 28 * 28 * 1280, patch_size: Int = 14, temporal_patch_size: Int = 2, merge_size: Int = 2, resample: MfResample = .bicubic, rescale_factor: Double = 1.0 / 255, mean: [Double] = OPENAI_CLIP_MEAN, std: [Double] = OPENAI_CLIP_STD) -> (pixel_values: MfArray, grid_thw: (t: Int, h: Int, w: Int)){
         precondition(image.mftype == .UInt8 && image.ndim == 3, "image must be UInt8 (h, w, c). Use cgimage2mfarray(_:mftype: .UInt8)")

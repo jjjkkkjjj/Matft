@@ -13,9 +13,12 @@ import Accelerate
 
 extension Matft{
     /**
-       Create shallow copy of mfarray. Shallow means copied mfarray will be  sharing data with original one
-       - parameters:
-           - mfarray: mfarray
+       Return a shallow copy of an array, which is a new `MfArray` object sharing memory with the original one.
+
+       Equivalent to `numpy.ndarray.view`.
+       - Parameters:
+           - mfarray: The source array.
+       - Returns: A view with the same shape and strides.
     */
     static public func shallowcopy(_ mfarray: MfArray) -> MfArray{
         let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
@@ -23,10 +26,13 @@ extension Matft{
         return MfArray(base: mfarray, mfstructure: newstructure, offset: mfarray.offsetIndex)
     }
     /**
-       Create deep copy of mfarray. Deep means copied mfarray will be different object from original one
-       - parameters:
-            - mfarray: mfarray
-            - order: (Optional) order, default is nil, which means close to either row or column major if possibe.
+       Return a deep copy of an array, which does not share memory with the original one.
+
+       Equivalent to `numpy.copy`.
+       - Parameters:
+            - mfarray: The source array.
+            - order: (Optional) The memory layout of the copy. If `nil` (default), a row- or column-contiguous array keeps its layout (strides included); otherwise the copy is row-major.
+       - Returns: The copied array.
     */
     static public func deepcopy(_ mfarray: MfArray, order: MfOrder? = nil) -> MfArray{
         if let order = order{
@@ -57,12 +63,20 @@ extension Matft{
         return newarray*/
     }
     /**
-       Create same value's mfarray
-       - parameters:
-            - value: the value of T, which must conform to MfTypable protocol
-            - shape: shape
-            - mftype: (Optional) the type of mfarray
-            - order: (Optional) order, default is nil, which means close to row major
+       Return a new array of the given shape filled with `value`.
+
+       Equivalent to `numpy.full`.
+
+       ```swift
+       let a = Matft.nums(0, shape: [2, 3])                    // .Int zeros
+       let b = Matft.nums(1.5, shape: [3], mftype: .Float)     // .Float
+       ```
+       - Parameters:
+            - value: The fill value.
+            - shape: The shape of the new array.
+            - mftype: (Optional) The type of the new array. If `nil`, it is inferred from the type of `value`.
+            - mforder: (Optional) The memory layout, by default `.Row`.
+       - Returns: The filled array.
     */
     static public func nums<T: MfTypable>(_ value: T, shape: [Int], mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
         var shape = shape
@@ -96,32 +110,48 @@ extension Matft{
         return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     /**
-       Create same value with passed mfarray's structure
-       - parameters:
-            - value: the value of T, which must conform to MfTypable protocol
-            - mfarray: mfarray
+       Return a new array filled with `value`, with the same shape and type as a given array.
+
+       Equivalent to `numpy.full_like`.
+       - Parameters:
+            - value: The fill value. It is converted into `mfarray.mftype`.
+            - mfarray: The array whose shape and `mftype` are used.
+            - mforder: (Optional) The memory layout, by default `.Row`.
+       - Returns: The filled array.
     */
     static public func nums_like<T: MfTypable>(_ value: T, mfarray: MfArray, mforder: MfOrder = .Row) -> MfArray{
         return Matft.nums(value, shape: mfarray.shape, mftype: mfarray.mftype, mforder: mforder)
     }
     /**
-       Create arithmetic sequence mfarray
-       - parameters:
-            - start: the start term of arithmetic sequence
-            - stop: the end term of arithmetic sequence, which is not included.
-            - shape: (Optional) shape
-            - mftype: (Optional) the type of mfarray
-            - order: (Optional) order, default is nil, which means close to row major
+       Return evenly spaced values in the half-open interval `[start, to)`.
+
+       Equivalent to `numpy.arange`.
+
+       ```swift
+       let a = Matft.arange(start: 0, to: 6, by: 1)                                  // [0, 1, 2, 3, 4, 5]
+       let b = Matft.arange(start: 1, to: 25, by: 1, shape: [2, 3, 4], mftype: .Float)
+       ```
+       - Parameters:
+            - start: The start of the interval (included).
+            - to: The end of the interval (not included).
+            - by: The spacing between values.
+            - shape: (Optional) The shape of the result. Its size must equal the number of generated values. If `nil`, the result is 1-D.
+            - mftype: (Optional) The type of the result. If `nil`, it is inferred from `T` (e.g. `.Int` for `Int`).
+            - mforder: (Optional) The memory layout, by default `.Row`.
+       - Returns: The array of evenly spaced values.
     */
     static public func arange<T: Strideable>(start: T, to: T, by: T.Stride, shape: [Int]? = nil, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
         return MfArray(Array(stride(from: start, to: to, by: by)), mftype: mftype, shape: shape, mforder: mforder)
     }
     /**
-       Create identity matrix. The size is (dim, dim)
-       - parameters:
-            - dim: the dimension, returned mfarray's shape is (dim, dim)
-            - mftype: (Optional) the type of mfarray
-            - order: (Optional) order, default is nil, which means close to row major
+       Return a 2-D identity matrix of shape `[dim, dim]`.
+
+       Equivalent to `numpy.eye` (square case, `k = 0`).
+       - Parameters:
+            - dim: The number of rows and columns.
+            - mftype: (Optional) The type of the result. If `nil`, `.Int` is used.
+            - mforder: (Optional) The memory layout, by default `.Row`.
+       - Returns: The identity matrix.
     */
     static public func eye(dim: Int, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
         var eye = Array(repeating: Array(repeating: 0, count: dim), count: dim)
@@ -131,12 +161,15 @@ extension Matft{
         return MfArray(eye, mftype: mftype, mforder: mforder)
     }
     /**
-       Create diagonal matrix. The size is (dim, dim)
-       - parameters:
-            - v: the diagonal values, returned mfarray's shape is (dim, dim), whose dim is length of v
-            - k: Int. Diagonal position.
-            - mftype: (Optional) the type of mfarray
-            - order: (Optional) order, default is nil, which means close to row major
+       Construct a 2-D array with the given values on a diagonal.
+
+       Equivalent to `numpy.diag` with a 1-D input.
+       - Parameters:
+            - v: The values placed on the diagonal. The result has shape `[n, n]` where `n = v.count + abs(k)`.
+            - k: (Optional) The diagonal offset, by default 0. Positive values refer to diagonals above the main diagonal, negative values to diagonals below.
+            - mftype: (Optional) The type of the result. If `nil`, it is inferred from `T`.
+            - mforder: (Optional) The memory layout, by default `.Row`.
+       - Returns: The 2-D diagonal array.
     */
     static public func diag<T: MfTypable>(v: [T], k: Int = 0, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
         let dim = v.count + abs(k)
@@ -155,12 +188,16 @@ extension Matft{
         return MfArray(d, mftype: mftype, mforder: mforder)
     }
     /**
-       Create diagonal matrix. The size is (dim, dim)
-       - parameters:
-            - v: the diagonal values, returned mfarray's shape is (dim, dim), whose dim is length of v
-            - k: Int. Diagonal position.
-            - mftype: (Optional) the type of mfarray
-            - order: (Optional) order, default is nil, which means close to row major
+       Construct a 2-D array with the elements of a 1-D array on a diagonal.
+
+       Equivalent to `numpy.diag` with a 1-D input.
+       - Parameters:
+            - v: A 1-D array of the diagonal values. The result has shape `[n, n]` where `n = v.size + abs(k)`.
+            - k: (Optional) The diagonal offset, by default 0. Positive values refer to diagonals above the main diagonal, negative values to diagonals below.
+            - mftype: (Optional) The type of the result. If `nil`, `v.mftype` is used.
+            - mforder: (Optional) The memory layout, by default `.Row`.
+       - Returns: The 2-D diagonal array.
+       - Precondition: `v` must be 1-D.
     */
     static public func diag(v: MfArray, k: Int = 0, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
         precondition(v.ndim == 1, "must be 1d")
@@ -204,9 +241,13 @@ extension Matft{
         
     }
     /**
-       Concatenate given arrays vertically(for row)
-       - parameters:
-            - mfarrays: the array of MfArray.
+       Stack arrays vertically, i.e. concatenate them along the first axis.
+
+       The result type is the highest-priority `mftype` among the inputs. Complex arrays are not supported.
+       Similar to `numpy.vstack`, but 1-D inputs are concatenated as they are (they are not promoted to shape `[1, N]`).
+       - Parameters:
+            - mfarrays: The arrays to stack. Their shapes must match except for the first axis.
+       - Returns: A new row-major array. If only one array is given, its deep copy is returned.
     */
     static public func vstack(_ mfarrays: [MfArray]) -> MfArray {
         if mfarrays.count == 1{
@@ -239,9 +280,13 @@ extension Matft{
         }
     }
     /**
-       Concatenate given arrays horizontally(for column)
-       - parameters:
-            - mfarrays: the array of MfArray.
+       Stack arrays horizontally, i.e. concatenate them along the last axis.
+
+       The result type is the highest-priority `mftype` among the inputs. Complex arrays are not supported.
+       Similar to `numpy.hstack` (which uses the second axis for arrays with 2 or more dimensions).
+       - Parameters:
+            - mfarrays: The arrays to stack. Their shapes must match except for the last axis.
+       - Returns: A new column-major array. If only one array is given, its deep copy is returned.
     */
     static public func hstack(_ mfarrays: [MfArray]) -> MfArray {
         if mfarrays.count == 1{
@@ -274,10 +319,20 @@ extension Matft{
         }
     }
     /**
-       Concatenate given arrays for arbitrary axis
-       - parameters:
-            - mfarrays: the array of MfArray.
-            - axis: the axis to concatenate
+       Join arrays along an existing axis.
+
+       The result type is the highest-priority `mftype` among the inputs. Complex arrays are not supported.
+       Equivalent to `numpy.concatenate`.
+
+       ```swift
+       let a = MfArray([[1, 2], [3, 4]])
+       let b = MfArray([[5, 6]])
+       let c = Matft.concatenate([a, b], axis: 0)   // shape [3, 2]
+       ```
+       - Parameters:
+            - mfarrays: The arrays to join. Their shapes must match except for `axis`.
+            - axis: (Optional) The axis along which the arrays are joined, by default 0. Negative values count from the end.
+       - Returns: A new array. If only one array is given, its deep copy is returned.
     */
     static public func concatenate(_ mfarrays: [MfArray], axis: Int = 0) -> MfArray{
         if mfarrays.count == 1{
@@ -324,10 +379,14 @@ extension Matft{
     
     /**
        Append values to the end of an array.
-       - parameters:
-            - mfarrays: the array of MfArray.
-            - values: appended mfarray
-            - axis: the axis to append
+
+       The result is a new array; the input is unchanged.
+       Equivalent to `numpy.append`.
+       - Parameters:
+            - mfarray: The source array.
+            - values: The values to append. When `axis` is given, it must have the same shape as `mfarray` except along `axis`.
+            - axis: (Optional) The axis along which `values` are appended. If `nil`, both `mfarray` and `values` are flattened first.
+       - Returns: The concatenated copy.
     */
     static public func append(_ mfarray: MfArray, values: MfArray, axis: Int? = nil) -> MfArray{
         //https://github.com/numpy/numpy/blob/v1.19.0/numpy/lib/function_base.py#L4616-L4671
@@ -345,11 +404,15 @@ extension Matft{
         return Matft.concatenate([mfarr, vals], axis: ax)
     }
     /**
-       Append values to the end of an array.
-       - parameters:
-            - mfarrays: the array of MfArray.
-            - value: appended value
-            - axis: the axis to append
+       Append a scalar value to the end of an array.
+
+       The value is wrapped into a 1-element array.
+       Equivalent to `numpy.append` with a scalar.
+       - Parameters:
+            - mfarray: The source array.
+            - value: The scalar to append.
+            - axis: (Optional) The axis along which `value` is appended. If `nil`, `mfarray` is flattened first.
+       - Returns: The concatenated copy.
     */
     static public func append<T: MfTypable>(_ mfarray: MfArray, value: T, axis: Int? = nil) -> MfArray{
         return Matft.append(mfarray, values: MfArray([value]), axis: axis)
@@ -357,10 +420,13 @@ extension Matft{
     
     /**
        Take elements from an array along an axis.
-       - parameters:
-            - mfarrays: the array of MfArray.
-            - indices: indices mfarray
-            - axis: the axis to append
+
+       Similar to `numpy.take`, but when `axis` is `nil` the elements are taken along axis 0 instead of from the flattened array.
+       - Parameters:
+            - mfarray: The source array.
+            - indices: An `.Int` array of the indices to take.
+            - axis: (Optional) The axis along which to take elements, by default axis 0.
+       - Returns: The array of the taken elements.
     */
     static public func take(_ mfarray: MfArray, indices: MfArray, axis: Int? = nil) -> MfArray{
         let axis = axis ?? 0
@@ -369,11 +435,15 @@ extension Matft{
     
     /**
        Insert values along the given axis before the given indices.
-       - parameters:
-            - mfarrays: the array of MfArray.
-            - indices: Index sequence
-            - values: appended mfarray
-            - axis: the axis to insert
+
+       Complex arrays are not supported.
+       Equivalent to `numpy.insert`.
+       - Parameters:
+            - mfarray: The source array.
+            - indices: The indices before which `values` are inserted. Negative values count from the end.
+            - values: The values to insert. It is squeezed and assigned to every inserted position.
+            - axis: (Optional) The axis along which to insert. If `nil`, `mfarray` is flattened first.
+       - Returns: A new array with the values inserted.
     */
     static public func insert(_ mfarray: MfArray, indices: [Int], values: MfArray, axis: Int? = nil) -> MfArray{
         //https://github.com/numpy/numpy/blob/v1.19.0/numpy/lib/function_base.py#L4421-L4609
@@ -422,12 +492,16 @@ extension Matft{
         return Matft.swapaxes(ret, axis1: ax, axis2: 0)
     }
     /**
-       Insert values along the given axis before the given indices.
-       - parameters:
-            - mfarrays: the array of MfArray.
-            - indices: Index sequence
-            - value: mftypable value
-            - axis: the axis to insert
+       Insert a scalar value along the given axis before the given indices.
+
+       Complex arrays are not supported.
+       Equivalent to `numpy.insert` with a scalar.
+       - Parameters:
+            - mfarray: The source array.
+            - indices: The indices before which `value` is inserted. Negative values count from the end.
+            - value: The scalar to insert.
+            - axis: (Optional) The axis along which to insert. If `nil`, `mfarray` is flattened first.
+       - Returns: A new array with the value inserted.
     */
     static public func insert<T: MfTypable>(_ mfarray: MfArray, indices: [Int], value: T, axis: Int? = nil) -> MfArray{
         return Matft.insert(mfarray, indices: indices, values: MfArray([value]), axis: axis)

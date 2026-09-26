@@ -12,9 +12,13 @@ import Accelerate
 extension Matft.complex{
     
     /**
-       Return the angle of the complex argument
-       - parameters:
-           - mfarray:  mfarray
+       Return the angle (argument) of each complex element, in radians.
+
+       A real array is treated as complex with zero imaginary part.
+       Equivalent to `numpy.angle`.
+       - Parameters:
+           - mfarray: The source array.
+       - Returns: A new real array of type `.Float` (Float-stored input) or `.Double` (Double-stored input).
     */
     public static func angle(_ mfarray: MfArray) -> MfArray{
         let src_mfarray: MfArray
@@ -38,9 +42,13 @@ extension Matft.complex{
     }
     
     /**
-       Return the conjugate of the complex mfarray
-       - parameters:
-           - mfarray:  mfarray
+       Return the complex conjugate, element-wise.
+
+       For a real array, a row-major copy is returned.
+       Equivalent to `numpy.conjugate`.
+       - Parameters:
+           - mfarray: The source array.
+       - Returns: A new array of the conjugates.
     */
     public static func conjugate(_ mfarray: MfArray) -> MfArray{
         if mfarray.isReal{
@@ -56,9 +64,13 @@ extension Matft.complex{
     }
     
     /**
-       Complex absolute
-       - parameters:
-           - mfarray:  mfarray
+       Return the absolute value (magnitude) of each element.
+
+       For a real array, this is the same as `Matft.math.abs(_:)`.
+       Equivalent to `numpy.abs`.
+       - Parameters:
+           - mfarray: The source array.
+       - Returns: A new real array. For complex input, its type is `.Float` (Float-stored input) or `.Double` (Double-stored input).
     */
     public static func abs(_ mfarray: MfArray) -> MfArray{
         if mfarray.isReal{
@@ -78,9 +90,12 @@ extension Matft.complex{
     }
     
     /**
-       Complex absolute and argument
-       - parameters:
-           - mfarray:  mfarray
+       Return the absolute value and the angle of each element at once.
+
+       For a real array, the angle is filled with 0 (Numpy's `angle` would return `pi` for negative values).
+       - Parameters:
+           - mfarray: The source array.
+       - Returns: A tuple of the absolute values (`abs`) and the angles in radians (`arg`).
     */
     public static func absarg(_ mfarray: MfArray) -> (abs: MfArray, arg: MfArray){
         if mfarray.isReal{
