@@ -207,6 +207,14 @@ internal func vvexpm1f(_ dst: UnsafeMutablePointer<Float>, _ src: UnsafePointer<
 }
 
 @inline(__always)
+internal func vvlog1pf(_ dst: UnsafeMutablePointer<Float>, _ src: UnsafePointer<Float>, _ count: UnsafePointer<Int32>) {
+    let n = Int(count.pointee)
+    for i in 0..<n {
+        dst[i] = log1pf(src[i])
+    }
+}
+
+@inline(__always)
 internal func vvpowf(_ dst: UnsafeMutablePointer<Float>, _ base: UnsafePointer<Float>, _ exp: UnsafePointer<Float>, _ count: UnsafePointer<Int32>) {
     let n = Int(count.pointee)
     for i in 0..<n {
@@ -421,6 +429,14 @@ internal func vvexpm1(_ dst: UnsafeMutablePointer<Double>, _ src: UnsafePointer<
     let n = Int(count.pointee)
     for i in 0..<n {
         dst[i] = expm1(src[i])
+    }
+}
+
+@inline(__always)
+internal func vvlog1p(_ dst: UnsafeMutablePointer<Double>, _ src: UnsafePointer<Double>, _ count: UnsafePointer<Int32>) {
+    let n = Int(count.pointee)
+    for i in 0..<n {
+        dst[i] = log1p(src[i])
     }
 }
 

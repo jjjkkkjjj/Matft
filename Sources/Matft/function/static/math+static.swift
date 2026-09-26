@@ -335,6 +335,60 @@ extension Matft.math{//use math_vv_by_vecLib
         }
     }
     /**
+       Calculate 2**x for all elements
+       - parameters:
+            - mfarray: mfarray
+    */
+    public static func exp2(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvexp2f)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvexp2)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+    /**
+       Calculate exp(x) - 1 for all elements. It's accurate for small x
+       - parameters:
+            - mfarray: mfarray
+    */
+    public static func expm1(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvexpm1f)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvexpm1)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+    /**
+       Calculate log(1 + x) for all elements. It's accurate for small x
+       - parameters:
+            - mfarray: mfarray
+    */
+    public static func log1p(_ mfarray: MfArray) -> MfArray{
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvlog1pf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvlog1p)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+    /**
        Calculate the natural log for all elements. i.e. log_e X
        - parameters:
             - mfarray: mfarray
@@ -956,8 +1010,27 @@ extension Matft.math {
     }
 
     public static func log1p(_ mfarray: MfArray) -> MfArray {
-        // log1p is not in vForce, implement using log(1+x)
-        return Matft.math.log(mfarray + 1)
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(mfarray, vvlog1pf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(mfarray, vvlog1p)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+
+    public static func square(_ mfarray: MfArray) -> MfArray {
+        unsupport_complex(mfarray)
+        switch mfarray.storedType {
+        case .Float:
+            return math_by_vDSP(mfarray, vDSP_vsq)
+        case .Double:
+            return math_by_vDSP(mfarray, vDSP_vsqD)
+        }
     }
 
     public static func abs(_ mfarray: MfArray) -> MfArray {
