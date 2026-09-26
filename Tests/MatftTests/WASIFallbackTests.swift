@@ -1,9 +1,9 @@
 import XCTest
 import Matft
 
-/// Tests for WASI fallback implementations
-/// These tests validate the pure Swift implementations that are used when Accelerate is not available (e.g., on WASI)
-/// The tests run on macOS to ensure the fallback logic is correct before deploying to WASI
+/// Tests for the operations that have WASI fallback implementations (pure Swift, used when Accelerate is not available).
+/// On macOS these tests exercise the Accelerate paths, so the fallbacks themselves are validated only by the wasm CI (`scripts/build-and-test-wasm.sh`).
+/// Keep the expected values platform independent so that both paths are checked against the same values
 
 final class WASIFallbackTests: XCTestCase {
 

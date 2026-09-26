@@ -90,6 +90,49 @@ public enum MfType: Int{
         }
     }
     
+    /// The result type of a binary operation between two arrays like `np.result_type`.
+    /// Integers are promoted by numpy's rules (e.g. UInt8 and Int8 -> Int16, UInt64 and a signed integer -> Double).
+    /// The others follow `priority`, i.e. integers don't get wider by Float because they are stored as Float
+    static public func result_type(_ a: MfType, _ b: MfType) -> MfType{
+        guard let (au, aw) = a._integerKind, let (bu, bw) = b._integerKind, au != bu else{
+            return priority(a, b)
+        }
+        // mixed signedness
+        let (uw, sw) = au ? (aw, bw) : (bw, aw)
+        if uw == 64{
+            return .Double
+        }
+        let signed = au ? b : a
+        if sw > uw{
+            return signed
+        }
+        switch uw * 2{
+        case 16:
+            return .Int16
+        case 32:
+            return .Int32
+        default:
+            return .Int64
+        }
+    }
+
+    /// (unsigned, bit width) of an integer type. nil for the others
+    private var _integerKind: (unsigned: Bool, width: Int)?{
+        switch self{
+        case .UInt8: return (true, 8)
+        case .UInt16: return (true, 16)
+        case .UInt32: return (true, 32)
+        case .UInt64: return (true, 64)
+        case .UInt: return (true, Swift.Int.bitWidth)
+        case .Int8: return (false, 8)
+        case .Int16: return (false, 16)
+        case .Int32: return (false, 32)
+        case .Int64: return (false, 64)
+        case .Int: return (false, Swift.Int.bitWidth)
+        default: return nil
+        }
+    }
+    
     static internal func storedType(_ mftype: MfType) -> StoredType{
         switch mftype {
         case .Double:

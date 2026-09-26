@@ -17,7 +17,7 @@ extension Matft{
            - mfarray: mfarray
     */
     public static func neg(_ mfarray: MfArray) -> MfArray{
-        return _prefix_operation(mfarray, .neg)
+        return wrap_integer_overflow(_prefix_operation(mfarray, .neg))
     }
     
     /**

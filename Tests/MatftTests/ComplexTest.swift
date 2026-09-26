@@ -14,6 +14,45 @@ import Matft
 import Accelerate
 
 final class ComplexTests: XCTestCase {
+    func testSetterIntoViews(){
+        for mftype in [MfType.Float, .Double]{
+            // z = (np.arange(6) + 1j*np.arange(6)[::-1]).reshape(2, 3)
+            var z = MfArray(real: Matft.arange(start: 0, to: 6, by: 1, shape: [2, 3], mftype: mftype), imag: Matft.arange(start: 5, to: -1, by: -1, shape: [2, 3], mftype: mftype))
+            // zt = z.T; zt[zt.real > 2] = 100 - 1j
+            let zt = z.T
+            zt[zt.real > 2] = MfArray(real: MfArray([100]), imag: MfArray([-1]))
+            XCTAssertEqual(z.real, MfArray([[0, 1, 2], [100, 100, 100]], mftype: mftype))
+            XCTAssertEqual(z.imag!, MfArray([[5, 4, 3], [-1, -1, -1]], mftype: mftype))
+
+            z = MfArray(real: Matft.arange(start: 0, to: 6, by: 1, shape: [2, 3], mftype: mftype), imag: Matft.arange(start: 5, to: -1, by: -1, shape: [2, 3], mftype: mftype))
+            // v = z[:, ::-1]; v[[0, 1], [0, 2]] = [7+7j, 8-8j]
+            let v = z[Matft.all, Matft.reverse]
+            v[MfArray([0, 1]), MfArray([0, 2])] = MfArray(real: MfArray([7, 8]), imag: MfArray([7, -8]))
+            XCTAssertEqual(z.real, MfArray([[0, 1, 7], [8, 4, 5]], mftype: mftype))
+            XCTAssertEqual(z.imag!, MfArray([[5, 4, 7], [-8, 1, 0]], mftype: mftype))
+        }
+    }
+
+    func testDivide(){
+        for mftype in [MfType.Float, .Double]{
+            // z = np.array([1-1j, 2-2j, 4, -3+4j]), w = np.array([2+1j, 1j, -1, 1-1j])
+            let z = MfArray(real: MfArray([1, 2, 4, -3], mftype: mftype), imag: MfArray([-1, -2, 0, 4], mftype: mftype))
+            let w = MfArray(real: MfArray([2, 0, -1, 1], mftype: mftype), imag: MfArray([1, 1, 0, -1], mftype: mftype))
+            // numpy: 2 / z
+            var ret = 2 / z
+            XCTAssertClose(ret.real, MfArray([1, 0.5, 0.5, -0.24] as [Double]), rtol: 1e-6)
+            XCTAssertClose(ret.imag!, MfArray([1, 0.5, 0, -0.32] as [Double]), rtol: 1e-6)
+            // numpy: z / w
+            ret = z / w
+            XCTAssertClose(ret.real, MfArray([0.2, -2, -4, -3.5] as [Double]), rtol: 1e-6)
+            XCTAssertClose(ret.imag!, MfArray([-0.6, -2, 0, 0.5] as [Double]), rtol: 1e-6, atol: 1e-7)
+            // numpy: w / z
+            ret = w / z
+            XCTAssertClose(ret.real, MfArray([0.5, -0.25, -0.25, -0.28] as [Double]), rtol: 1e-6)
+            XCTAssertClose(ret.imag!, MfArray([1.5, 0.25, 0, -0.04] as [Double]), rtol: 1e-6, atol: 1e-7)
+        }
+    }
+
     
     func test_complex() {
         do {

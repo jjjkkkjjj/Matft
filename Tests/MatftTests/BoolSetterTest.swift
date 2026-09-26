@@ -5,10 +5,6 @@ import Matft
 /// `a[mask] = v` over layouts, value shapes and types. Expected values are computed in row major order like numpy
 final class BoolSetterTests: XCTestCase {
     
-    private func rowValues(_ x: MfArray) -> [Double]{
-        x.astype(.Double).to_contiguous(mforder: .Row).data.map{ $0 as! Double }
-    }
-    
     /// Assign `values` (cycled when it has one element) to the elements where `mask` is true, in row major order
     private func expected(_ x: [Double], _ mask: [Bool], _ values: [Double]) -> [Double]{
         var ret = x

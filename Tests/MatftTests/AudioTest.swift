@@ -6,32 +6,32 @@ import Matft
 final class AudioTests: XCTestCase {
 
     func test_windows() {
-        XCTAssertClose(Matft.hanning(1), MfArray([1.0], mftype: .Double))
-        XCTAssertClose(Matft.hanning(2), MfArray([0.0, 0.0], mftype: .Double))
-        XCTAssertClose(Matft.hanning(5), MfArray([0.0, 0.5, 1.0, 0.5, 0.0], mftype: .Double))
-        XCTAssertClose(Matft.hanning(8), MfArray([0.0, 0.1882550991, 0.611260467, 0.950484434, 0.950484434, 0.611260467, 0.1882550991, 0.0], mftype: .Double))
-        XCTAssertClose(Matft.hamming(2), MfArray([0.08, 0.08], mftype: .Double))
-        XCTAssertClose(Matft.hamming(8), MfArray([0.08, 0.2531946911, 0.6423596296, 0.9544456792, 0.9544456792, 0.6423596296, 0.2531946911, 0.08], mftype: .Double))
-        XCTAssertClose(Matft.blackman(5), MfArray([0.0, 0.34, 1.0, 0.34, 0.0], mftype: .Double))
-        XCTAssertClose(Matft.blackman(8), MfArray([0.0, 0.0904534244, 0.4591829575, 0.9203636181, 0.9203636181, 0.4591829575, 0.0904534244, 0.0], mftype: .Double))
-        XCTAssertClose(Matft.bartlett(1), MfArray([1.0], mftype: .Double))
-        XCTAssertClose(Matft.bartlett(8), MfArray([0.0, 0.2857142857, 0.5714285714, 0.8571428571, 0.8571428571, 0.5714285714, 0.2857142857, 0.0], mftype: .Double))
-        XCTAssertClose(Matft.kaiser(1, beta: 5.0), MfArray([1.0], mftype: .Double))
-        XCTAssertClose(Matft.kaiser(5, beta: 5.0), MfArray([0.0367108923, 0.5528517697, 1.0, 0.5528517697, 0.0367108923], mftype: .Double))
-        XCTAssertClose(Matft.kaiser(8, beta: 5.0), MfArray([0.0367108923, 0.2706944179, 0.6517382352, 0.9552473165, 0.9552473165, 0.6517382352, 0.2706944179, 0.0367108923], mftype: .Double))
+        _assertClose(Matft.hanning(1), MfArray([1.0], mftype: .Double))
+        _assertClose(Matft.hanning(2), MfArray([0.0, 0.0], mftype: .Double))
+        _assertClose(Matft.hanning(5), MfArray([0.0, 0.5, 1.0, 0.5, 0.0], mftype: .Double))
+        _assertClose(Matft.hanning(8), MfArray([0.0, 0.1882550991, 0.611260467, 0.950484434, 0.950484434, 0.611260467, 0.1882550991, 0.0], mftype: .Double))
+        _assertClose(Matft.hamming(2), MfArray([0.08, 0.08], mftype: .Double))
+        _assertClose(Matft.hamming(8), MfArray([0.08, 0.2531946911, 0.6423596296, 0.9544456792, 0.9544456792, 0.6423596296, 0.2531946911, 0.08], mftype: .Double))
+        _assertClose(Matft.blackman(5), MfArray([0.0, 0.34, 1.0, 0.34, 0.0], mftype: .Double))
+        _assertClose(Matft.blackman(8), MfArray([0.0, 0.0904534244, 0.4591829575, 0.9203636181, 0.9203636181, 0.4591829575, 0.0904534244, 0.0], mftype: .Double))
+        _assertClose(Matft.bartlett(1), MfArray([1.0], mftype: .Double))
+        _assertClose(Matft.bartlett(8), MfArray([0.0, 0.2857142857, 0.5714285714, 0.8571428571, 0.8571428571, 0.5714285714, 0.2857142857, 0.0], mftype: .Double))
+        _assertClose(Matft.kaiser(1, beta: 5.0), MfArray([1.0], mftype: .Double))
+        _assertClose(Matft.kaiser(5, beta: 5.0), MfArray([0.0367108923, 0.5528517697, 1.0, 0.5528517697, 0.0367108923], mftype: .Double))
+        _assertClose(Matft.kaiser(8, beta: 5.0), MfArray([0.0367108923, 0.2706944179, 0.6517382352, 0.9552473165, 0.9552473165, 0.6517382352, 0.2706944179, 0.0367108923], mftype: .Double))
         XCTAssertEqual(Matft.hanning(0).shape, [0])
     }
 
     func test_get_window() {
         // periodic (fftbins=True)
-        XCTAssertClose(Matft.audio.get_window(.hann, Nx: 8), MfArray([0.0, 0.1464466094, 0.5, 0.8535533906, 1.0, 0.8535533906, 0.5, 0.1464466094], mftype: .Double))
-        XCTAssertClose(Matft.audio.get_window(.hamming, Nx: 8), MfArray([0.08, 0.2147308807, 0.54, 0.8652691193, 1.0, 0.8652691193, 0.54, 0.2147308807], mftype: .Double))
-        XCTAssertClose(Matft.audio.get_window(.blackman, Nx: 8), MfArray([0.0, 0.0664466094, 0.34, 0.7735533906, 1.0, 0.7735533906, 0.34, 0.0664466094], mftype: .Double))
-        XCTAssertClose(Matft.audio.get_window(.bartlett, Nx: 8), MfArray([0.0, 0.25, 0.5, 0.75, 1.0, 0.75, 0.5, 0.25], mftype: .Double))
-        XCTAssertClose(Matft.audio.get_window(.boxcar, Nx: 8), MfArray([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], mftype: .Double))
+        _assertClose(Matft.audio.get_window(.hann, Nx: 8), MfArray([0.0, 0.1464466094, 0.5, 0.8535533906, 1.0, 0.8535533906, 0.5, 0.1464466094], mftype: .Double))
+        _assertClose(Matft.audio.get_window(.hamming, Nx: 8), MfArray([0.08, 0.2147308807, 0.54, 0.8652691193, 1.0, 0.8652691193, 0.54, 0.2147308807], mftype: .Double))
+        _assertClose(Matft.audio.get_window(.blackman, Nx: 8), MfArray([0.0, 0.0664466094, 0.34, 0.7735533906, 1.0, 0.7735533906, 0.34, 0.0664466094], mftype: .Double))
+        _assertClose(Matft.audio.get_window(.bartlett, Nx: 8), MfArray([0.0, 0.25, 0.5, 0.75, 1.0, 0.75, 0.5, 0.25], mftype: .Double))
+        _assertClose(Matft.audio.get_window(.boxcar, Nx: 8), MfArray([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], mftype: .Double))
         // symmetric (fftbins=False)
-        XCTAssertClose(Matft.audio.get_window(.hann, Nx: 5, fftbins: false), MfArray([0.0, 0.5, 1.0, 0.5, 0.0], mftype: .Double))
-        XCTAssertClose(Matft.audio.get_window(.hamming, Nx: 5, fftbins: false), MfArray([0.08, 0.54, 1.0, 0.54, 0.08], mftype: .Double))
+        _assertClose(Matft.audio.get_window(.hann, Nx: 5, fftbins: false), MfArray([0.0, 0.5, 1.0, 0.5, 0.0], mftype: .Double))
+        _assertClose(Matft.audio.get_window(.hamming, Nx: 5, fftbins: false), MfArray([0.08, 0.54, 1.0, 0.54, 0.08], mftype: .Double))
     }
 
     func test_frame() {
@@ -62,15 +62,15 @@ final class AudioTests: XCTestCase {
         XCTAssertEqual(s.shape, [3, 6])
         XCTAssertEqual(s.mftype, .Float)
         XCTAssertTrue(s.isComplex)
-        XCTAssertClose(s.real, MfArray([[1.0, 0.5, 1.5, 0.25, 0.75, 0.75],
+        _assertClose(s.real, MfArray([[1.0, 0.5, 1.5, 0.25, 0.75, 0.75],
                                         [0.0, -0.5, -2.0, 0.5, -1.0, -1.0],
                                         [-1.0, 0.5, 2.5, -1.25, 1.25, 1.25]], mftype: .Double), rtol: 1e-5, atol: 1e-6)
-        XCTAssertClose(s.imag!, MfArray([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        _assertClose(s.imag!, MfArray([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                                          [0.0, -1.0, 0.5, 0.75, -1.75, 1.75],
                                          [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]], mftype: .Double), rtol: 1e-5, atol: 1e-6)
 
         let mel = Matft.audio.melspectrogram(y.astype(.Double), sr: 8, n_fft: 4, hop_length: 2, pad_mode: .reflect, n_mels: 2)
-        XCTAssertClose(mel, MfArray([[0.0, 0.46875, 1.59375, 0.3046875, 1.5234375, 1.5234375],
+        _assertClose(mel, MfArray([[0.0, 0.46875, 1.59375, 0.3046875, 1.5234375, 1.5234375],
                                      [0.0, 0.46875, 1.59375, 0.3046875, 1.5234375, 1.5234375]], mftype: .Double))
     }
 
@@ -83,37 +83,37 @@ final class AudioTests: XCTestCase {
             let s = Matft.audio.stft(y, n_fft: 256, hop_length: 64)
             XCTAssertEqual(s.shape, [129, 16])
             XCTAssertEqual(s.mftype, .Double); XCTAssertTrue(s.isComplex)
-            XCTAssertClose(s.real, _load("stft_center_constant_real.csv"))
-            XCTAssertClose(s.imag!, _load("stft_center_constant_imag.csv"))
+            _assertClose(s.real, _load("stft_center_constant_real.csv"))
+            _assertClose(s.imag!, _load("stft_center_constant_imag.csv"))
         }
         do {
             let s = Matft.audio.stft(y, n_fft: 256, hop_length: 64, pad_mode: .reflect)
-            XCTAssertClose(s.real, _load("stft_center_reflect_real.csv"))
-            XCTAssertClose(s.imag!, _load("stft_center_reflect_imag.csv"))
+            _assertClose(s.real, _load("stft_center_reflect_real.csv"))
+            _assertClose(s.imag!, _load("stft_center_reflect_imag.csv"))
         }
         do {
             let s = Matft.audio.stft(y, n_fft: 256, hop_length: 64, center: false)
             XCTAssertEqual(s.shape, [129, 12])
-            XCTAssertClose(s.real, _load("stft_nocenter_real.csv"))
-            XCTAssertClose(s.imag!, _load("stft_nocenter_imag.csv"))
+            _assertClose(s.real, _load("stft_nocenter_real.csv"))
+            _assertClose(s.imag!, _load("stft_nocenter_imag.csv"))
         }
         do {
             let s = Matft.audio.stft(y, n_fft: 256, hop_length: 64, win_length: 200, window: .hann, pad_mode: .reflect)
-            XCTAssertClose(s.real, _load("stft_win200_reflect_real.csv"))
-            XCTAssertClose(s.imag!, _load("stft_win200_reflect_imag.csv"))
+            _assertClose(s.real, _load("stft_win200_reflect_real.csv"))
+            _assertClose(s.imag!, _load("stft_win200_reflect_imag.csv"))
         }
         do {
             // Float input
             let s = Matft.audio.stft(y.astype(.Float), n_fft: 256, hop_length: 64)
             XCTAssertEqual(s.mftype, .Float); XCTAssertTrue(s.isComplex)
-            XCTAssertClose(s.real, _load("stft_center_constant_real.csv"), rtol: 1e-3, atol: 1e-4)
-            XCTAssertClose(s.imag!, _load("stft_center_constant_imag.csv"), rtol: 1e-3, atol: 1e-4)
+            _assertClose(s.real, _load("stft_center_constant_real.csv"), rtol: 1e-3, atol: 1e-4)
+            _assertClose(s.imag!, _load("stft_center_constant_imag.csv"), rtol: 1e-3, atol: 1e-4)
         }
     }
 
     func test_mel_filters() {
-        XCTAssertClose(Matft.audio.mel_filters(sr: 8000, n_fft: 256, n_mels: 20, mftype: .Double), _load("mel_slaney.csv"))
-        XCTAssertClose(Matft.audio.mel_filters(sr: 8000, n_fft: 256, n_mels: 20, fmin: 100, fmax: 3000, htk: true, norm: nil, mftype: .Double),
+        _assertClose(Matft.audio.mel_filters(sr: 8000, n_fft: 256, n_mels: 20, mftype: .Double), _load("mel_slaney.csv"))
+        _assertClose(Matft.audio.mel_filters(sr: 8000, n_fft: 256, n_mels: 20, fmin: 100, fmax: 3000, htk: true, norm: nil, mftype: .Double),
                        _load("mel_htk_nonorm.csv"))
         // librosa default dtype is float32
         XCTAssertEqual(Matft.audio.mel_filters(sr: 8000, n_fft: 256, n_mels: 20).mftype, .Float)
@@ -122,9 +122,9 @@ final class AudioTests: XCTestCase {
     func test_melspectrogram_power_to_db() {
         let y = _test_signal(1000, sr: 8000)
         let mel = Matft.audio.melspectrogram(y, sr: 8000, n_fft: 256, hop_length: 64, n_mels: 20)
-        XCTAssertClose(mel, _load("melspectrogram.csv"))
+        _assertClose(mel, _load("melspectrogram.csv"))
         XCTAssertEqual(Matft.audio.melspectrogram(y.astype(.Float), sr: 8000, n_fft: 256, hop_length: 64, n_mels: 20).mftype, .Float)
-        XCTAssertClose(Matft.audio.power_to_db(mel), _load("power_to_db.csv"))
+        _assertClose(Matft.audio.power_to_db(mel), _load("power_to_db.csv"))
         XCTAssertEqual(Matft.audio.power_to_db(mel.astype(.Float)).mftype, .Float)
     }
 
@@ -133,7 +133,7 @@ final class AudioTests: XCTestCase {
         let logmel = Matft.audio.whisper_log_mel(audio, n_mels: 80)
         XCTAssertEqual(logmel.shape, [80, 100])
         XCTAssertEqual(logmel.mftype, .Float)
-        XCTAssertClose(logmel, _load("whisper_log_mel80.csv"), rtol: 1e-4, atol: 1e-4)
+        _assertClose(logmel, _load("whisper_log_mel80.csv"), rtol: 1e-4, atol: 1e-4)
 
         // pad_or_trim
         XCTAssertEqual(Matft.audio.pad_or_trim(MfArray([1.0, 2.0, 3.0], mftype: .Double), length: 5), MfArray([1.0, 2.0, 3.0, 0.0, 0.0], mftype: .Double))
@@ -161,27 +161,6 @@ fileprivate func _load(_ name: String) -> MfArray {
     return Matft.file.loadtxt(url: url, delimiter: ",", mftype: .Double)!
 }
 
-/// Same as `np.testing.assert_allclose`: |actual - expected| <= atol + rtol * |expected|
-fileprivate func XCTAssertClose(_ actual: MfArray, _ expected: MfArray, rtol: Double = 1e-6, atol: Double = 1e-8, file: StaticString = #filePath, line: UInt = #line) {
-    XCTAssertEqual(actual.shape, expected.shape, "shape mismatch", file: file, line: line)
-    guard actual.shape == expected.shape else { return }
-
-    let a = actual.astype(.Double).flatten().data as! [Double]
-    let e = expected.astype(.Double).flatten().data as! [Double]
-    var worst = 0.0
-    var worstIndex = -1
-    for i in 0..<a.count {
-        if a[i].isNaN || e[i].isNaN {
-            XCTAssertEqual(a[i].isNaN, e[i].isNaN, "NaN mismatch at flatten index \(i)", file: file, line: line)
-            continue
-        }
-        let excess = abs(a[i] - e[i]) - (atol + rtol * abs(e[i]))
-        if excess > worst {
-            worst = excess
-            worstIndex = i
-        }
-    }
-    if worstIndex >= 0 {
-        XCTFail("not close at flatten index \(worstIndex): actual=\(a[worstIndex]), expected=\(e[worstIndex])", file: file, line: line)
-    }
+fileprivate func _assertClose(_ actual: MfArray, _ expected: MfArray, rtol: Double = 1e-6, atol: Double = 1e-8, file: StaticString = #filePath, line: UInt = #line) {
+    XCTAssertClose(actual, expected, rtol: rtol, atol: atol, checkType: false, file: file, line: line)
 }
