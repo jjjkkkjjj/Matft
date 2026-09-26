@@ -254,4 +254,101 @@ internal func affine_by_vImage(_ image: MfArray, dstHeight: Int, dstWidth: Int, 
         })
     }
 }
+
+/// Wrapper of vImage convolution function (correlation like cv2.filter2D)
+/// - Parameters:
+///   - srcptr: A  source pointer
+///   - dstptr: A destination pointer
+///   - height: height
+///   - width: width
+///   - kernel: The row contiguous kernel whose size is odd
+///   - kernelHeight: The kernel height
+///   - kernelWidth: The kernel width
+///   - borderType: The border type
+@inline(__always)
+internal func wrap_vImage_convolve(_ srcptr: UnsafeMutableRawPointer, _ dstptr: UnsafeMutableRawPointer, _ height: Int, _ width: Int, _ kernel: UnsafePointer<Float>, _ kernelHeight: Int, _ kernelWidth: Int, _ borderType: MfBorderType){
+    let bytenum = MemoryLayout<Float>.size // 4
+    var src_buffer = vImage_Buffer(data: srcptr, height: vImagePixelCount(height), width: vImagePixelCount(width), rowBytes: width*bytenum)
+    var dst_buffer = vImage_Buffer(data: dstptr, height: vImagePixelCount(height), width: vImagePixelCount(width), rowBytes: width*bytenum)
+    let flags = borderType == .Constant ? kvImageBackgroundColorFill : kvImageEdgeExtend
+
+    _ = vImageConvolve_PlanarF(&src_buffer, &dst_buffer, nil, 0, 0, kernel, UInt32(kernelHeight), UInt32(kernelWidth), 0, vImage_Flags(flags))
+}
+
+/// Convolve (correlate) the image with the kernel for each channel
+/// - Parameters:
+///   - image: An image mfarray (Float or UInt8)
+///   - kernel: The row contiguous kernel
+///   - kernelHeight: The kernel height
+///   - kernelWidth: The kernel width
+///   - anchor: The anchor (x, y). nil means the center
+///   - borderType: The border type
+/// - Returns: The Float image mfarray. Note that UInt8 image is not saturated
+internal func convolve_by_vImage(_ image: MfArray, kernel: [Float], kernelHeight: Int, kernelWidth: Int, anchor: (x: Int, y: Int)? = nil, borderType: MfBorderType) -> MfArray{
+    let (kernel, kernelHeight, kernelWidth) = center_kernel(kernel, height: kernelHeight, width: kernelWidth, anchor: anchor, pad: Float.zero)
+
+    return kernel.withUnsafeBufferPointer{
+        kernelptr in
+        apply_by_vImage(image.astype(.Float), dstHeight: image.shape[0], dstWidth: image.shape[1], argb_func: nil, planar_func: {
+            srcptr, dstptr, height, width, _, _, _, _ in
+            wrap_vImage_convolve(srcptr, dstptr, height, width, kernelptr.baseAddress!, kernelHeight, kernelWidth, borderType)
+        })
+    }
+}
+
+/// Convolve (correlate) the image with the separable kernel for each channel
+/// - Parameters:
+///   - image: An image mfarray (Float or UInt8)
+///   - kernelX: The kernel along x axis
+///   - kernelY: The kernel along y axis
+///   - anchor: The anchor (x, y). nil means the center
+///   - borderType: The border type
+/// - Returns: The Float image mfarray. Note that UInt8 image is not saturated
+internal func sep_convolve_by_vImage(_ image: MfArray, kernelX: [Float], kernelY: [Float], anchor: (x: Int, y: Int)? = nil, borderType: MfBorderType) -> MfArray{
+    let ret = convolve_by_vImage(image, kernel: kernelX, kernelHeight: 1, kernelWidth: kernelX.count, anchor: anchor.map{ ($0.x, 0) }, borderType: borderType)
+    return convolve_by_vImage(ret, kernel: kernelY, kernelHeight: kernelY.count, kernelWidth: 1, anchor: anchor.map{ (0, $0.y) }, borderType: borderType)
+}
+
+/// Apply erode (min) or dilate (max) filter with the mask for each channel.
+/// The pixels outside the image are ignored like OpenCV's default border value.
+/// - Parameters:
+///   - image: An image mfarray (Float or UInt8)
+///   - mask: The row contiguous mask of the structuring element
+///   - maskHeight: The mask height
+///   - maskWidth: The mask width
+///   - anchor: The anchor (x, y). nil means the center
+///   - isDilate: Dilate or erode
+/// - Returns: The image mfarray whose mftype is same as the input
+internal func morphology_by_vImage(_ image: MfArray, mask: [Bool], maskHeight: Int, maskWidth: Int, anchor: (x: Int, y: Int)?, isDilate: Bool) -> MfArray{
+    let (mask, kh, kw) = center_kernel(mask, height: maskHeight, width: maskWidth, anchor: anchor, pad: false)
+    let bytenum = MemoryLayout<Float>.size // 4
+
+    // vImageErode/Dilate_PlanarF compute min/max(src - kernel) + kernel[center], so the excluded elements are +-inf and the center must be included.
+    let excluded: Float = isDilate ? Float.infinity : -Float.infinity
+    let kernel = mask.map{ $0 ? Float.zero : excluded }
+    let isRect = mask.allSatisfy{ $0 }
+    let centerIncluded = mask[(kh/2)*kw + kw/2]
+
+    let ret = kernel.withUnsafeBufferPointer{
+        kernelptr in
+        apply_by_vImage(image, dstHeight: image.shape[0], dstWidth: image.shape[1], argb_func: nil, planar_func: {
+            srcptr, dstptr, height, width, _, _, _, _ in
+            var src_buffer = vImage_Buffer(data: srcptr, height: vImagePixelCount(height), width: vImagePixelCount(width), rowBytes: width*bytenum)
+            var dst_buffer = vImage_Buffer(data: dstptr, height: vImagePixelCount(height), width: vImagePixelCount(width), rowBytes: width*bytenum)
+
+            if isRect{
+                let flags = vImage_Flags(kvImageEdgeExtend)
+                _ = isDilate ? vImageMax_PlanarF(&src_buffer, &dst_buffer, nil, 0, 0, vImagePixelCount(kh), vImagePixelCount(kw), flags) : vImageMin_PlanarF(&src_buffer, &dst_buffer, nil, 0, 0, vImagePixelCount(kh), vImagePixelCount(kw), flags)
+            }
+            else if centerIncluded{
+                let flags = vImage_Flags(kvImageNoFlags)
+                _ = isDilate ? vImageDilate_PlanarF(&src_buffer, &dst_buffer, 0, 0, kernelptr.baseAddress!, vImagePixelCount(kh), vImagePixelCount(kw), flags) : vImageErode_PlanarF(&src_buffer, &dst_buffer, 0, 0, kernelptr.baseAddress!, vImagePixelCount(kh), vImagePixelCount(kw), flags)
+            }
+            else{
+                morph_by_loop(srcptr.assumingMemoryBound(to: Float.self), dstptr.assumingMemoryBound(to: Float.self), height: height, width: width, mask: mask, kh: kh, kw: kw, isDilate: isDilate)
+            }
+        })
+    }
+    return ret
+}
 #endif

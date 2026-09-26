@@ -57,6 +57,10 @@ def _rgb2gray(rgb: np.ndarray) -> np.ndarray:
     return np.rint(rgb @ np.array([0.299, 0.587, 0.114])).astype(np.uint8)
 
 
+def _gray(x: np.ndarray) -> np.ndarray:
+    return cv2.cvtColor(x, cv2.COLOR_RGBA2GRAY)
+
+
 def _rotation30(x: np.ndarray) -> np.ndarray:
     return cv2.getRotationMatrix2D((112, 112), 30, 1)
 
@@ -95,6 +99,91 @@ CASES: Dict[str, Case] = {
     "color_rgba2rgb_uint8": Case("rena.png",
                                  lambda x: cv2.cvtColor(np.rint(_composite_white(_alpha_ramp(x))).astype(np.uint8), cv2.COLOR_RGB2RGBA),
                                  "color(.RGBA2RGB) -> (.RGB2RGBA) on UInt8 with alpha ramp vs composite on white"),
+    # cvtColor
+    "cvtColor_rgba2bgra": Case("rena.png",
+                               lambda x: cv2.cvtColor(x, cv2.COLOR_RGBA2BGRA),
+                               "cvtColor(.RGBA2BGRA) vs cv2.cvtColor(RGBA2BGRA)"),
+    "cvtColor_rgb2hsv_h": Case("rena.png",
+                               lambda x: cv2.cvtColor(np.ascontiguousarray(x[:, :, :3]), cv2.COLOR_RGB2HSV)[:, :, 0],
+                               "cvtColor(.RGB2HSV)[H] (UInt8, H in [0, 180)) vs cv2.cvtColor(RGB2HSV)"),
+    # threshold / histogram
+    "threshold_binary_127": Case("rena.png",
+                                 lambda x: cv2.threshold(_gray(x), 127, 255, cv2.THRESH_BINARY)[1],
+                                 "threshold(127, 255, .Binary) vs cv2.threshold(THRESH_BINARY)"),
+    "threshold_otsu": Case("rena.png",
+                           lambda x: cv2.threshold(_gray(x), 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1],
+                           "threshold(.Binary, otsu: true) vs cv2.threshold(THRESH_BINARY + THRESH_OTSU)"),
+    "equalizeHist": Case("rena.png",
+                         lambda x: cv2.equalizeHist(_gray(x)),
+                         "equalizeHist vs cv2.equalizeHist"),
+    "LUT_gamma05": Case("rena.png",
+                        lambda x: cv2.LUT(x, np.rint(np.sqrt(np.arange(256) / 255) * 255).astype(np.uint8)),
+                        "LUT(gamma 0.5) vs cv2.LUT"),
+    # filter (Matft's default border is Replicate)
+    "filter2D_sharpen": Case("rena.png",
+                             lambda x: cv2.filter2D(x, -1, np.float32([[0, -1, 0], [-1, 5, -1], [0, -1, 0]]), borderType=cv2.BORDER_REPLICATE),
+                             "filter2D(sharpen) vs cv2.filter2D(BORDER_REPLICATE)"),
+    "blur_5x5": Case("rena.png",
+                     lambda x: cv2.blur(x, (5, 5), borderType=cv2.BORDER_REPLICATE),
+                     "blur((5, 5)) vs cv2.blur(BORDER_REPLICATE)"),
+    "GaussianBlur_k9": Case("rena.png",
+                            lambda x: cv2.GaussianBlur(x, (9, 9), 0, borderType=cv2.BORDER_REPLICATE),
+                            "GaussianBlur((9, 9), 0) vs cv2.GaussianBlur(BORDER_REPLICATE)"),
+    "Sobel_dx": Case("rena.png",
+                     lambda x: cv2.convertScaleAbs(cv2.Sobel(_gray(x), cv2.CV_32F, 1, 0, ksize=3, borderType=cv2.BORDER_REPLICATE)),
+                     "convertScaleAbs(Sobel(gray, dx=1)) vs cv2"),
+    "Laplacian_k3": Case("rena.png",
+                         lambda x: cv2.convertScaleAbs(cv2.Laplacian(_gray(x), cv2.CV_32F, ksize=3, borderType=cv2.BORDER_REPLICATE)),
+                         "convertScaleAbs(Laplacian(gray, ksize=3)) vs cv2"),
+    "adaptiveThreshold_mean": Case("rena.png",
+                                   lambda x: cv2.adaptiveThreshold(_gray(x), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2),
+                                   "adaptiveThreshold(.Mean, .Binary, 11, 2) vs cv2"),
+    "adaptiveThreshold_gaussian_inv": Case("rena.png",
+                                           lambda x: cv2.adaptiveThreshold(_gray(x), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2),
+                                           "adaptiveThreshold(.Gaussian, .BinaryInv, 11, 2) vs cv2"),
+    # morphology (default border)
+    "erode_rect5": Case("rena.png",
+                        lambda x: cv2.erode(x, cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))),
+                        "erode(rect 5x5) vs cv2.erode"),
+    "dilate_ellipse7": Case("rena.png",
+                            lambda x: cv2.dilate(x, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))),
+                            "dilate(ellipse 7x7) vs cv2.dilate"),
+    "morphologyEx_open_ellipse5": Case("rena.png",
+                                       lambda x: cv2.morphologyEx(cv2.threshold(_gray(x), 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1],
+                                                                  cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))),
+                                       "morphologyEx(.Open, ellipse 5x5) of Otsu binary vs cv2"),
+    "morphologyEx_gradient_cross3": Case("rena.png",
+                                         lambda x: cv2.morphologyEx(_gray(x), cv2.MORPH_GRADIENT, cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))),
+                                         "morphologyEx(.Gradient, cross 3x3) vs cv2"),
+    # geometry
+    "flip_horizontal": Case("rena.png",
+                            lambda x: cv2.flip(x, 1),
+                            "flip(flipCode: 1) vs cv2.flip"),
+    "rotate_90cw": Case("rena.png",
+                        lambda x: cv2.rotate(np.ascontiguousarray(x[:150]), cv2.ROTATE_90_CLOCKWISE),
+                        "rotate(image[0~<150], .Rotate90Clockwise) vs cv2.rotate"),
+    "warpPerspective": Case("rena.png",
+                            lambda x: cv2.warpPerspective(x, cv2.getPerspectiveTransform(np.float32([[0, 0], [224, 0], [224, 224], [0, 224]]),
+                                                                                         np.float32([[30, 10], [200, 40], [224, 200], [0, 224]])),
+                                                          (225, 225), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 255)),
+                            "warpPerspective(getPerspectiveTransform) vs cv2(LINEAR, CONSTANT)"),
+    "warpAffine_getRotationMatrix2D_45": Case("rena.png",
+                                              lambda x: cv2.warpAffine(x, cv2.getRotationMatrix2D((112, 112), 45, 0.8), (225, 225),
+                                                                       flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 255)),
+                                              "warpAffine(getRotationMatrix2D((112,112), 45, 0.8)) vs cv2(LINEAR, CONSTANT)"),
+    "resize_linear_300x150": Case("rena.png",
+                                  lambda x: cv2.resize(x, (300, 150), interpolation=cv2.INTER_LINEAR),
+                                  "resize(300x150, .Linear) vs cv2.resize(INTER_LINEAR)"),
+    "resize_nearest_100x60": Case("rena.png",
+                                  lambda x: cv2.resize(x, (100, 60), interpolation=cv2.INTER_NEAREST),
+                                  "resize(100x60, .Nearest) vs cv2.resize(INTER_NEAREST)"),
+    # edge
+    "Canny_100_200": Case("rena.png",
+                          lambda x: cv2.Canny(_gray(x), 100, 200),
+                          "Canny(100, 200) vs cv2.Canny"),
+    "Canny_50_150_L2": Case("rena.png",
+                            lambda x: cv2.Canny(_gray(x), 50, 150, L2gradient=True),
+                            "Canny(50, 150, L2gradient: true) vs cv2.Canny"),
 }
 
 
