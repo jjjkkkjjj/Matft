@@ -17,4 +17,11 @@ final class ConversionPefTests: XCTestCase {
             let _ = Matft.deepcopy(a)
         }
     }
+    
+    func testPeformanceReshape1() {
+        let a = PerfFixtures.a
+        self.measureWithWarmup {
+            let _ = a.reshape([1000, 1000])
+        }
+    }
 }

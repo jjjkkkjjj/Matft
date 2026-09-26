@@ -28,4 +28,39 @@ final class IndexingPefTests: XCTestCase {
             let _ = aT[aT > 0]
         }
     }
+    
+    func testPeformanceFancyIndexing1() {
+        let a = PerfFixtures.a
+        let idx = PerfFixtures.idx
+        self.measureWithWarmup {
+            let _ = a[idx]
+        }
+    }
+    
+    func testPeformanceBoolSetter1() {
+        let a = PerfFixtures.a
+        self.measureWithWarmup {
+            let x = Matft.deepcopy(a)
+            x[x > 0] = MfArray([0])
+        }
+    }
+    
+    func testPeformanceBoolSetter2() {
+        let a = PerfFixtures.a
+        let posb = a > 0
+        let values = a[posb]
+        self.measureWithWarmup {
+            let x = Matft.deepcopy(a)
+            x[posb] = values
+        }
+    }
+    
+    // not row contiguous target
+    func testPeformanceBoolSetter3() {
+        let a = PerfFixtures.a
+        self.measureWithWarmup {
+            let x = Matft.deepcopy(a).T
+            x[x > 0] = MfArray([0])
+        }
+    }
 }

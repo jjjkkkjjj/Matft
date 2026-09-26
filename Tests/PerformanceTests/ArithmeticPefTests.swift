@@ -32,4 +32,11 @@ final class ArithmeticPefTests: XCTestCase {
             let _ = c+aT
         }
     }
+    
+    func testPeformanceAddScalar1() {
+        let a = PerfFixtures.a
+        self.measureWithWarmup {
+            let _ = a + Float(0.5)
+        }
+    }
 }

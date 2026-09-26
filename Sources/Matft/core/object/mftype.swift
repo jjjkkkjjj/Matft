@@ -270,3 +270,18 @@ public enum MfResample: Int{
     case bicubic
     case lanczos
 }
+
+/// The window type. Same as `window` of `scipy.signal.get_window`
+public enum MfWindowType: Int{
+    case hann
+    case hamming
+    case blackman
+    case bartlett
+    case boxcar
+}
+
+/// The normalization of mel filters. Same as `norm` of `librosa.filters.mel`
+public enum MfMelNorm: Int{
+    /// Divide the triangular mel weights by the width of the mel band (area normalization)
+    case slaney
+}

@@ -71,7 +71,14 @@ extension Matft.image{
         let kernelX = Array(repeating: normalize ? 1/Float(ksize.width) : 1, count: ksize.width)
         let kernelY = Array(repeating: normalize ? 1/Float(ksize.height) : 1, count: ksize.height)
         let ret = sep_convolve_by_vImage(src, kernelX: kernelX, kernelY: kernelY, anchor: anchor, borderType: borderType)
-        return convert_image_depth(ret, ddepth ?? src.mftype)
+        let depth = ddepth ?? src.mftype
+        if depth == .UInt8 && normalize{
+            // OpenCV's UInt8 box filter rounds halves up (e.g. 32.5 -> 33), unlike saturate_cast (half to even).
+            // The exact mean is a multiple of 1/(w*h), so a quarter of it absorbs the Float error without reaching another value
+            let eps = 0.25 / Float(ksize.width * ksize.height)
+            return convert_image_depth(Matft.math.floor(ret + (0.5 + eps)), depth)
+        }
+        return convert_image_depth(ret, depth)
     }
 
     /**

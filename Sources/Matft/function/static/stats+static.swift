@@ -24,9 +24,9 @@ extension Matft.stats{
         
         switch mfarray.storedType {
         case .Float:
-            return boolean2float(stats_by_vDSP(mfarray.astype(.Float), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv))
+            return boolean2float(stats_by_vDSP(astype_or_view(mfarray, .Float), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanv))
         case .Double:
-            return stats_by_vDSP(mfarray.astype(.Double), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanvD)
+            return stats_by_vDSP(astype_or_view(mfarray, .Double), axis: axis, keepDims: keepDims, vDSP_func: vDSP_meanvD)
         }
     }
     /**

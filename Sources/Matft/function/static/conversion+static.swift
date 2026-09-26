@@ -120,8 +120,7 @@ extension Matft{
             return MfArray(real: Matft.reshape(mfarray.real, newshape: newshape, order: order),
                            imag: Matft.reshape(mfarray.imag!, newshape: newshape, order: order))
         }
-        // flatten returns a contiguous copy in the given order, so only the structure has to be replaced.
-        // (Converting via `data` ([Any]) was very slow and dropped the imaginary part)
+        // flatten always copies, so the copy can take the new shape as it is
         let ret = mfarray.flatten(order)
         ret.mfstructure = MfStructure(shape: newshape, mforder: order)
 

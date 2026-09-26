@@ -45,6 +45,8 @@ aT = a.T
 b = a.transpose((0,3,4,2,1,5))
 c = a.transpose((1,2,3,4,5,0))
 posb = a > 0
+idx = np.array([1, 3, 5, 7, 9])
+values = a[posb]
 signal = np.arange(1024*1024, dtype=np.float32).reshape((1024,1024))
 """
 
@@ -60,10 +62,14 @@ CASES = [
     Case("ArithmeticPefTests.testPeformanceAdd1", "Arithmetic", "let _ = a+aneg", "a+aneg"),
     Case("ArithmeticPefTests.testPeformanceAdd2", "Arithmetic", "let _ = b+aT", "b+aT"),
     Case("ArithmeticPefTests.testPeformanceAdd3", "Arithmetic", "let _ = c+aT", "c+aT"),
+    Case("ArithmeticPefTests.testPeformanceAddScalar1", "Arithmetic", "let _ = a + Float(0.5)", "a + np.float32(0.5)"),
     Case("MathPefTests.testPeformanceSin1", "Math", "let _ = Matft.math.sin(a)", "np.sin(a)"),
     Case("MathPefTests.testPeformanceSin2", "Math", "let _ = Matft.math.sin(b)", "np.sin(b)"),
     Case("MathPefTests.testPeformanceSign1", "Math", "let _ = Matft.math.sign(a)", "np.sign(a)"),
     Case("MathPefTests.testPeformanceSign2", "Math", "let _ = Matft.math.sign(b)", "np.sign(b)"),
+    Case("MathPefTests.testPeformancePower1", "Math", "let _ = Matft.math.power(bases: ad, exponents: 2)", "np.power(ad, 2)"),
+    Case("MathPefTests.testPeformanceArctan2", "Math", "let _ = Matft.math.arctan2(x1: ad, x2: ad)", "np.arctan2(ad, ad)"),
+    Case("StatsPefTests.testPeformanceMean1", "Stats", "let _ = a.mean()", "a.mean()"),
     Case("BoolPefTests.testPeformanceGreater1", "Bool", "let _ = a > 0", "a > 0"),
     Case("BoolPefTests.testPeformanceGreaterDouble1", "Bool", "let _ = ad > 0", "ad > 0"),
     Case("BoolPefTests.testPeformanceGreater2", "Bool", "let _ = a > b", "a > b"),
@@ -72,13 +78,19 @@ CASES = [
     Case("BoolPefTests.testPeformanceEqual3", "Bool", "let _ = a === 5", "a == 5"),
     Case("BoolPefTests.testPeformanceNotEqual1", "Bool", "let _ = a !== 0", "a != 0"),
     Case("BoolPefTests.testPeformanceLogicalNot1", "Bool", "let _ = Matft.logical_not(posb)", "np.logical_not(posb)"),
+    Case("BoolPefTests.testPeformanceAllEqual1", "Bool", "let _ = a == a", "np.array_equal(a, a)"),
     Case("ConversionPefTests.testPeformanceAstype1", "Conversion", "let _ = a.astype(.Double)", "a.astype(np.float64)"),
     Case("ConversionPefTests.testPeformanceDeepcopy1", "Conversion", "let _ = Matft.deepcopy(a)", "a.copy()"),
+    Case("ConversionPefTests.testPeformanceReshape1", "Conversion", "let _ = a.reshape([1000, 1000])", "a.reshape((1000, 1000)).copy()"),
     Case("FFTPefTests.testPeformanceRfft1", "FFT", "let _ = Matft.fft.rfft(signal)", "np.fft.rfft(signal)"),
     Case("FFTPefTests.testPeformanceRfftVDSP1", "FFT", "let _ = Matft.fft.rfft(signal, vDSP: true)", "np.fft.rfft(signal)"),
     Case("IndexingPefTests.testPeformanceBooleanIndexing1", "Indexing", "let _ = a[posb]", "a[posb]"),
     Case("IndexingPefTests.testPeformanceBooleanIndexing2", "Indexing", "let _ = a[a > 0]", "a[a > 0]"),
     Case("IndexingPefTests.testPeformanceBooleanIndexing3", "Indexing", "let _ = aT[aT > 0]", "aT[aT > 0]"),
+    Case("IndexingPefTests.testPeformanceFancyIndexing1", "Indexing", "let _ = a[idx]", "a[idx]"),
+    Case("IndexingPefTests.testPeformanceBoolSetter1", "Indexing", "let x = Matft.deepcopy(a); x[x > 0] = MfArray([0])", "x = a.copy(); x[x > 0] = 0"),
+    Case("IndexingPefTests.testPeformanceBoolSetter2", "Indexing", "let x = Matft.deepcopy(a); x[posb] = values", "x = a.copy(); x[posb] = values"),
+    Case("IndexingPefTests.testPeformanceBoolSetter3", "Indexing", "let x = Matft.deepcopy(a).T; x[x > 0] = MfArray([0])", "x = a.copy().T; x[x > 0] = 0"),
 ]
 
 _MEASURED_RE = re.compile(
