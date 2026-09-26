@@ -284,8 +284,6 @@ extension MfArray: MfSubscriptable{
     }
     
     private func _set_mfarray(indices: inout [Any], newValue: MfArray){
-        unsupport_complex(self)
-        
         indices = indices.map{
             ind in
             if let ind = ind as? SubscriptOps{
@@ -303,12 +301,7 @@ extension MfArray: MfSubscriptable{
             return ind
         }
         
-        // Convert real to complex
-        if newValue.isComplex && self.isReal{
-            // Note: in-place operation
-            let _ = self.to_complex(true)
-            assert(self.isComplex, "Not converted complex!")
-        }
+        self._to_complex_if_needed(newValue)
         
         //note that this function is alike _binary_operation
         let array = self._get_mfarray(indices: &indices)
@@ -326,11 +319,12 @@ extension MfArray: MfSubscriptable{
                         dstptr.pointee = $0.pointee
                     }
                 }
-                if newValue.isComplex{
+                if array.isComplex{
                     array.withUnsafeMutableStartImagPointer(datatype: T.self){
                         dstptr in
                         newValue.withUnsafeMutableStartImagPointer(datatype: T.self){
-                            dstptr!.pointee = $0!.pointee
+                            // imaginary part of the real newValue is regarded as zero
+                            dstptr!.pointee = $0?.pointee ?? T.zero
                         }
                     }
                 }
@@ -347,16 +341,18 @@ extension MfArray: MfSubscriptable{
             newValue = newValue.broadcast_to(shape: array.shape)
         }
         
+        // imaginary part of the real newValue is regarded as zero
+        let newValueImag = newValue.imag ?? MfArray([0]).astype(array.mftype).broadcast_to(shape: array.shape)
         switch array.storedType {
         case .Float:
             _ = copy_mfarray(newValue, dsttmpMfarray: array, cblas_func: cblas_scopy)
-            if newValue.isComplex{
-                _ = copy_mfarray(newValue.imag!, dsttmpMfarray: array.imag!, cblas_func: cblas_scopy)
+            if array.isComplex{
+                _ = copy_mfarray(newValueImag, dsttmpMfarray: array.imag!, cblas_func: cblas_scopy)
             }
         case .Double:
             _ = copy_mfarray(newValue, dsttmpMfarray: array, cblas_func: cblas_dcopy)
-            if newValue.isComplex{
-                _ = copy_mfarray(newValue.imag!, dsttmpMfarray: array.imag!, cblas_func: cblas_dcopy)
+            if array.isComplex{
+                _ = copy_mfarray(newValueImag, dsttmpMfarray: array.imag!, cblas_func: cblas_dcopy)
             }
         }
     }
@@ -405,41 +401,77 @@ extension MfArray: MfSubscriptable{
     }
     
     private func _fancysetall_mfarray(indices: inout [MfArray], assignedMfarray: MfArray) -> Void{
-        unsupport_complex(self)
-        unsupport_complex(assignedMfarray)
+        let _ = indices.map{ unsupport_complex($0) }
         
-        switch self.storedType {
-        case .Float:
-            fancysetall_by_cblas(self, &indices, assignedMfarray, cblas_scopy)
-        case .Double:
-            fancysetall_by_cblas(self, &indices, assignedMfarray, cblas_dcopy)
+        self._set_realimag(assignedMfarray: assignedMfarray){
+            (dst, src) in
+            switch dst.storedType {
+            case .Float:
+                fancysetall_by_cblas(dst, &indices, src, cblas_scopy)
+            case .Double:
+                fancysetall_by_cblas(dst, &indices, src, cblas_dcopy)
+            }
         }
-        
     }
     
     private func _set_mfarray(indices: MfArray, assignedMfarray: MfArray){
+        unsupport_complex(indices)
         
         switch indices.mftype {
         case .Bool:
-            switch self.storedType {
-            case .Float:
-                _setter(self, indices, assignMfArray: assignedMfarray, type: Float.self)
-            case .Double:
-                _setter(self, indices, assignMfArray: assignedMfarray, type: Double.self)
+            self._set_realimag(assignedMfarray: assignedMfarray){
+                (dst, src) in
+                switch dst.storedType {
+                case .Float:
+                    _setter(dst, indices, assignMfArray: src, type: Float.self)
+                case .Double:
+                    _setter(dst, indices, assignMfArray: src, type: Double.self)
+                }
             }
             
         case .Float, .Double:
             preconditionFailure("indices must be bool or interger, but got \(indices.mftype)")
         case .Int:
-            switch self.storedType {
-            case .Float:
-                fancyset_by_cblas(self, indices, assignedMfarray, cblas_scopy)
-            case .Double:
-                fancyset_by_cblas(self, indices, assignedMfarray, cblas_dcopy)
+            self._set_realimag(assignedMfarray: assignedMfarray){
+                (dst, src) in
+                switch dst.storedType {
+                case .Float:
+                    fancyset_by_cblas(dst, indices, src, cblas_scopy)
+                case .Double:
+                    fancyset_by_cblas(dst, indices, src, cblas_dcopy)
+                }
             }
             
         default:
             preconditionFailure("fancy indexing must be Int only, but got \(indices.mftype)")
+        }
+    }
+    
+    /// Convert self into complex in-place if the assigned mfarray is complex
+    /// - Parameters:
+    ///   - assignedMfarray: The assigned mfarray
+    private func _to_complex_if_needed(_ assignedMfarray: MfArray){
+        if assignedMfarray.isComplex && self.isReal{
+            // Note: in-place operation
+            let _ = self.to_complex(true)
+            assert(self.isComplex, "Not converted complex!")
+        }
+    }
+    
+    /// Apply a real setter to the real and imaginary parts respectively
+    /// - Parameters:
+    ///   - assignedMfarray: The assigned mfarray
+    ///   - setter: The real setter. Arguments are (destination mfarray, source mfarray)
+    private func _set_realimag(assignedMfarray: MfArray, _ setter: (MfArray, MfArray) -> Void){
+        self._to_complex_if_needed(assignedMfarray)
+        
+        if self.isReal{
+            setter(self, assignedMfarray)
+        }
+        else{
+            setter(self.real, assignedMfarray.real)
+            // imaginary part of the real assigned mfarray is regarded as zero
+            setter(self.imag!, assignedMfarray.imag ?? MfArray([0]))
         }
     }
 }
