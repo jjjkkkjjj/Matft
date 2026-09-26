@@ -710,12 +710,6 @@ final class SubscriptTests: XCTestCase {
             #endif
             let a = Matft.arange(start: 0, to: size * size, by: 1, shape: [size, size])
             let c = MfArray([true]).broadcast_to(shape: [size, size])
-            /*
-            self.measure {
-                a[c] = MfArray([555])
-                // time in release mode
-                // average: 0.005, relative standard deviation: 8.334%, values: [0.006032, 0.004685, 0.004630, 0.005293, 0.004738, 0.004789, 0.004905, 0.005056, 0.004624, 0.004729],
-            }*/
             a[c] = MfArray([555])
             XCTAssertEqual(a, MfArray([555]).broadcast_to(shape: [size, size]))
         }

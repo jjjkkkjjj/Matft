@@ -73,7 +73,6 @@
 		OBJ_164 /* FileTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_72 /* FileTest.swift */; };
 		OBJ_165 /* LinAlgTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_73 /* LinAlgTest.swift */; };
 		OBJ_166 /* MatMulTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_74 /* MatMulTest.swift */; };
-		OBJ_167 /* MatftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_75 /* MatftTests.swift */; };
 		OBJ_168 /* MathTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_76 /* MathTest.swift */; };
 		OBJ_169 /* PreOpTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_77 /* PreOpTest.swift */; };
 		OBJ_170 /* ProductTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_78 /* ProductTests.swift */; };
@@ -168,7 +167,6 @@
 		OBJ_72 /* FileTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTest.swift; sourceTree = "<group>"; };
 		OBJ_73 /* LinAlgTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinAlgTest.swift; sourceTree = "<group>"; };
 		OBJ_74 /* MatMulTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatMulTest.swift; sourceTree = "<group>"; };
-		OBJ_75 /* MatftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatftTests.swift; sourceTree = "<group>"; };
 		OBJ_76 /* MathTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathTest.swift; sourceTree = "<group>"; };
 		OBJ_77 /* PreOpTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreOpTest.swift; sourceTree = "<group>"; };
 		OBJ_78 /* ProductTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductTests.swift; sourceTree = "<group>"; };
@@ -386,7 +384,6 @@
 				OBJ_72 /* FileTest.swift */,
 				OBJ_73 /* LinAlgTest.swift */,
 				OBJ_74 /* MatMulTest.swift */,
-				OBJ_75 /* MatftTests.swift */,
 				OBJ_76 /* MathTest.swift */,
 				OBJ_77 /* PreOpTest.swift */,
 				OBJ_78 /* ProductTests.swift */,
@@ -619,7 +616,6 @@
 				OBJ_164 /* FileTest.swift in Sources */,
 				OBJ_165 /* LinAlgTest.swift in Sources */,
 				OBJ_166 /* MatMulTest.swift in Sources */,
-				OBJ_167 /* MatftTests.swift in Sources */,
 				OBJ_168 /* MathTest.swift in Sources */,
 				OBJ_169 /* PreOpTest.swift in Sources */,
 				OBJ_170 /* ProductTests.swift in Sources */,
