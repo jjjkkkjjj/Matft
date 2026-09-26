@@ -57,7 +57,6 @@ internal typealias vDSP_dotpr_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePo
 
 internal typealias vDSP_z2r_func<T, U> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<U>, vDSP_Stride, vDSP_Length) -> Void
 
-internal typealias vDSP_fft_zrop_func<T> = (FFTSetup, UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, vDSP_Stride, vDSP_Length, FFTDirection) -> Void
 
 @inline(__always)
 internal func vDSP_zvmul_(_ __A: UnsafePointer<DSPSplitComplex>, _ __IA: vDSP_Stride, _ __B: UnsafePointer<DSPSplitComplex>, _ __IB: vDSP_Stride, _ __C: UnsafePointer<DSPSplitComplex>, _ __IC: vDSP_Stride, _ __N: vDSP_Length) -> Void{
@@ -380,24 +379,6 @@ internal func wrap_vDSP_gathr<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointe
 @inline(__always)
 internal func wrap_vDSP_dotpr<T>(_ size: Int, _ lsrcptr: UnsafePointer<T>, _ lsrcStride: Int, _ rsrcptr: UnsafePointer<T>, _ rsrcStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_func: vDSP_dotpr_func<T>){
     vDSP_func(lsrcptr, vDSP_Stride(lsrcStride), rsrcptr, vDSP_Stride(rsrcStride), dstptr, vDSP_Length(size))
-}
-
-/// Wrapper of vDSP fft operation function
-/// - Parameters:
-///   - log2N: The base 2 exponent of the number of elements to process. For example, to process 1024 elements, specify 10 for parameter Log2N.
-///   - srcptr: A source pointer
-///   - srcStride: A left source stride
-///   - dstptr: A destination pointer
-///   - dstStride: A destination stride
-///   - dstptr: A destination pointer
-///   - isForward: Whether to be forward mode or not.
-///   - vDSP_func: The vDSP real fft function
-@inline(__always)
-internal func wrap_vDSP_fft_zr<T>(_ log2N: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafePointer<T>, _ dstStride: Int, _ isForward: Bool, _ vDSP_func: vDSP_fft_zrop_func<T>){
-    let setup = vDSP_create_fftsetup(vDSP_Length(log2N), FFTRadix(kFFTRadix2))!// TODO: raise error
-    let direction = isForward ? kFFTDirection_Forward : kFFTDirection_Inverse
-    vDSP_func(setup, srcptr, vDSP_Stride(srcStride), dstptr, vDSP_Stride(dstStride), vDSP_Length(log2N), FFTDirection(direction))
-    vDSP_destroy_fftsetup(setup)
 }
 
 /// Convert type and contiguous mfarray
@@ -1399,83 +1380,105 @@ internal func dotpr_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: Mf
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
-/// Real FFT.
+/// Real forward FFT by vDSP. Same as `np.fft.rfft`.
 /// - Parameters:
-///   - mfarray: A left mfarray
-///   - isForward: Whether to be forward or not.
-///   - vDSP_func: vDSP_fft_zrop_func
-/// - Returns: FFT array
-internal func fft_zr_by_vDSP<T: vDSP_ComplexTypable>(_ mfarray: MfArray, _ number: Int?, _ axis: Int, _ isForward: Bool, vDSP_func: vDSP_fft_zrop_func<T>) -> MfArray{
-    precondition(mfarray.isReal, "Must be real in REAL FFT. Use FFT instead")
-    
-    let mftype = MfType.storedType(mfarray.mftype).to_mftype()
-    let axis = get_positive_axis(axis, ndim: mfarray.ndim)
-    
-    // calculate number to process
-    let blocksize_src = mfarray.shape[axis]
-    let number = number ?? blocksize_src
-    let blocklog2N = Int(log2(Float(number)))
-    let process_number = Int(powf(2.0, Float(blocklog2N)))
-    
-    assert(process_number >= number, "Bug was occurred")
-    var src_mfarray: MfArray
-    if number < blocksize_src {
-        // extract
-        src_mfarray = mfarray.moveaxis(src: axis, dst: 0)[0~<number].moveaxis(src: 0, dst: axis)
+///   - mfarray: A real mfarray
+///   - number: The number of points along the axis. The signal is cropped or zero-padded to it. Must be a power of 2
+///   - axis: The axis
+///   - norm: The normalization mode
+/// - Returns: The complex mfarray whose size along the axis is number/2+1
+internal func rfft_by_vDSP(_ mfarray: MfArray, number: Int, axis: Int, norm: FFTNorm) -> MfArray{
+    switch mfarray.storedType{
+    case .Float:
+        return _rfft_by_vDSP(mfarray, number: number, axis: axis, norm: norm, DSPSplitComplex.self,
+                             create_setup: { vDSP_create_fftsetup($0, FFTRadix(kFFTRadix2)) },
+                             destroy_setup: { vDSP_destroy_fftsetup($0) },
+                             ctoz: { src, dst, n in
+                                src.withMemoryRebound(to: DSPComplex.self, capacity: n){ vDSP_ctoz($0, 2, dst, 1, vDSP_Length(n)) }
+                             },
+                             fft: { setup, dst, log2n in vDSP_fft_zrip(setup, dst, 1, vDSP_Length(log2n), FFTDirection(kFFTDirection_Forward)) },
+                             vsmul: vDSP_vsmul)
+    case .Double:
+        return _rfft_by_vDSP(mfarray, number: number, axis: axis, norm: norm, DSPDoubleSplitComplex.self,
+                             create_setup: { vDSP_create_fftsetupD($0, FFTRadix(kFFTRadix2)) },
+                             destroy_setup: { vDSP_destroy_fftsetupD($0) },
+                             ctoz: { src, dst, n in
+                                src.withMemoryRebound(to: DSPDoubleComplex.self, capacity: n){ vDSP_ctozD($0, 2, dst, 1, vDSP_Length(n)) }
+                             },
+                             fft: { setup, dst, log2n in vDSP_fft_zripD(setup, dst, 1, vDSP_Length(log2n), FFTDirection(kFFTDirection_Forward)) },
+                             vsmul: vDSP_vsmulD)
     }
-    else{
-        src_mfarray = mfarray
-    }
-    
-    // Whether to pad zero or not for vDSP
-    if process_number > number {
-        var srcShape = mfarray.shape
-        srcShape[axis] = process_number
-        src_mfarray = Matft.nums(Double.zero, shape: srcShape)
-        /*TODO: Use slice version
-        let slices = srcShape.map{MfSlice(start: 0, to: $0, by: 1)}
-        src_mfarray[slices] = mfarray*/
-        src_mfarray.moveaxis(src: axis, dst: 0)[~<blocksize_src] = mfarray.moveaxis(src: axis, dst: 0)
-        // The below code is not needed because the above codes allow to assign the original value using the isView feature in Matft
-        //src_mfarray = src_mfarray.moveaxis(src: 0, dst: axis)
-    }
-    
-    // to complex and contiguous
-    // not in place: check_contiguous may return the caller's signal itself
-    src_mfarray = check_contiguous(src_mfarray.moveaxis(src: axis, dst: -1), .Row).to_complex(false)
-    
-    assert(process_number % 2 == 0, "Bug was occurred")
-    let blocksize_dst = process_number/2 + 1
-    var retShape = mfarray.shape
-    retShape[retShape.count - 1] = blocksize_dst
-    
-    let newdata = MfData(size: shape2size(&retShape), mftype: mftype, complex: true) // vDSP_fft_zrop does not write the last imaginary bin
-    
-    var restShape = Array(retShape.prefix(retShape.count-1))
-    let loopnum = shape2size(&restShape)
-    
-    newdata.withUnsafeMutablevDSPComplexPointer(datatype: T.self){dstptr in
-        src_mfarray.withUnsafeMutablevDSPComplexPointer(datatype: T.self){
-            srcptr in
-            for i in 0..<loopnum{
-                var src = srcptr +++ i*blocksize_src
-                var dst = dstptr +++ i*blocksize_dst
-                wrap_vDSP_fft_zr(blocklog2N, &src, 1, &dst, 1, isForward, vDSP_func)
-                // the first element of imaginary part is nyquist component. Therefore, assign it multiplied -1 =(exp(i*pi)) to the last element
-                // ref: https://developer.apple.com/library/mac/documentation/Performance/Conceptual/vDSP_Programming_Guide/UsingFourierTransforms/UsingFourierTransforms.html#//apple_ref/doc/uid/TP40005147-CH3-SW1
-                (dst.realp + blocksize_dst-1).pointee = -1*dst.imagp.pointee
-                dst.imagp.pointee = 0
-            }
-            
-        }
-    }
-    
-    let newstructure = MfStructure(shape: retShape, mforder: .Row)
+}
 
-    let ret = MfArray(mfdata: newdata, mfstructure: newstructure).moveaxis(src: -1, dst: axis)
+fileprivate func _rfft_by_vDSP<S: vDSP_ComplexTypable>(_ mfarray: MfArray, number: Int, axis: Int, norm: FFTNorm, _ splitType: S.Type,
+                                                         create_setup: (vDSP_Length) -> OpaquePointer?,
+                                                         destroy_setup: (OpaquePointer?) -> Void,
+                                                         ctoz: (UnsafeMutablePointer<S.T>, UnsafeMutablePointer<S>, Int) -> Void,
+                                                         fft: (OpaquePointer, UnsafeMutablePointer<S>, Int) -> Void,
+                                                         vsmul: vDSP_biopvs_func<S.T>) -> MfArray{
+    typealias T = S.T
+    precondition(mfarray.isReal, "Must be real in REAL FFT. Use FFT instead")
+    precondition(number >= 2 && number & (number - 1) == 0, "vDSP rfft supports a power of 2 number only. Use vDSP: false for other numbers")
+    let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+    let log2n = number.trailingZeroBitCount
+    let half = number / 2
     
-    // rescale because zrop was 2x. 
-    return ret / 2
+    // signals along the last axis, cropped to `number`
+    var src = mfarray.moveaxis(src: axis, dst: -1)
+    if src.shape[src.ndim - 1] > number{
+        src = src.moveaxis(src: -1, dst: 0)[0~<number].moveaxis(src: 0, dst: -1)
+    }
+    src = check_contiguous(src, .Row)
+    let srcLength = src.shape[src.ndim - 1]
+    let rows = srcLength > 0 ? src.size / srcLength : 0
+    
+    var retShape = src.shape
+    retShape[retShape.count - 1] = half + 1
+    let dstLength = half + 1
+    let newdata = MfData(uninitializedSize: rows * dstLength, mftype: MfType.storedType(mfarray.mftype).to_mftype(), complex: true)
+    
+    let setup = create_setup(vDSP_Length(log2n))!
+    defer { destroy_setup(setup) }
+    // a zero padded signal is copied into this buffer. Its tail stays 0
+    let padded: UnsafeMutablePointer<T>? = srcLength < number ? allocate_unsafeMPtrT(type: T.self, count: number, zeroed: true) : nil
+    defer { padded?.deallocate() }
+    
+    newdata.withUnsafeMutablevDSPComplexPointer(datatype: S.self){
+        dstptr in
+        src.withUnsafeMutableStartPointer(datatype: T.self){
+            srcptr in
+            for r in 0..<rows{
+                var signal = srcptr + r * srcLength
+                if let padded = padded{
+                    padded.update(from: signal, count: srcLength)
+                    signal = padded
+                }
+                var dst = S(realp: dstptr.pointee.realp + r * dstLength, imagp: dstptr.pointee.imagp + r * dstLength)
+                // pack the real signal into the split complex form (even -> realp, odd -> imagp) and transform in place
+                ctoz(signal, &dst, half)
+                fft(setup, &dst, log2n)
+                // the DC and Nyquist components (both real) are packed in realp[0] and imagp[0]
+                dst.realp[half] = dst.imagp[0]
+                dst.imagp[half] = T.zero
+                dst.imagp[0] = T.zero
+            }
+        }
+        // vDSP's real FFT is 2x of the mathematical one
+        var scale: T
+        switch norm{
+        case .backward:
+            scale = T.from(0.5)
+        case .ortho:
+            scale = T.from(0.5 / Double(number).squareRoot())
+        case .forward:
+            scale = T.from(0.5 / Double(number))
+        }
+        let size = vDSP_Length(rows * dstLength)
+        vsmul(dstptr.pointee.realp, 1, &scale, dstptr.pointee.realp, 1, size)
+        vsmul(dstptr.pointee.imagp, 1, &scale, dstptr.pointee.imagp, 1, size)
+    }
+    
+    return MfArray(mfdata: newdata, mfstructure: MfStructure(shape: retShape, mforder: .Row)).moveaxis(src: -1, dst: axis)
 }
 
 /// Convert mfarray into CGImage. Supported color space is Gray (h, w), (h, w, 1)  or RGB (h, w, 4)

@@ -45,6 +45,7 @@ aT = a.T
 b = a.transpose((0,3,4,2,1,5))
 c = a.transpose((1,2,3,4,5,0))
 posb = a > 0
+signal = np.arange(1024*1024, dtype=np.float32).reshape((1024,1024))
 """
 
 
@@ -70,6 +71,8 @@ CASES = [
     Case("BoolPefTests.testPeformanceEqual2", "Bool", "let _ = a === b", "a == b"),
     Case("ConversionPefTests.testPeformanceAstype1", "Conversion", "let _ = a.astype(.Double)", "a.astype(np.float64)"),
     Case("ConversionPefTests.testPeformanceDeepcopy1", "Conversion", "let _ = Matft.deepcopy(a)", "a.copy()"),
+    Case("FFTPefTests.testPeformanceRfft1", "FFT", "let _ = Matft.fft.rfft(signal)", "np.fft.rfft(signal)"),
+    Case("FFTPefTests.testPeformanceRfftVDSP1", "FFT", "let _ = Matft.fft.rfft(signal, vDSP: true)", "np.fft.rfft(signal)"),
     Case("IndexingPefTests.testPeformanceBooleanIndexing1", "Indexing", "let _ = a[posb]", "a[posb]"),
     Case("IndexingPefTests.testPeformanceBooleanIndexing2", "Indexing", "let _ = a[a > 0]", "a[a > 0]"),
     Case("IndexingPefTests.testPeformanceBooleanIndexing3", "Indexing", "let _ = aT[aT > 0]", "aT[aT > 0]"),
