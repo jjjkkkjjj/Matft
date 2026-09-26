@@ -188,9 +188,8 @@ internal func structuring_element(_ shape: MfMorphShape, width: Int, height: Int
 ///     - interpolation: Nearest or Linear
 ///     - borderType: The border type
 ///     - borderValue: The border value for each channel
-///     - quantize: Whether to quantize the coordinates into 1/32 pixel like cv2.remap
 /// - Returns: The row contiguous remapped image
-internal func remap_image(_ image: MfArray, mapx: [Float], mapy: [Float], dstHeight: Int, dstWidth: Int, interpolation: MfInterpolation, borderType: MfBorderType, borderValue: [Float], quantize: Bool) -> MfArray{
+internal func remap_image(_ image: MfArray, mapx: [Float], mapy: [Float], dstHeight: Int, dstWidth: Int, interpolation: MfInterpolation, borderType: MfBorderType, borderValue: [Float]) -> MfArray{
     let is2d = image.ndim == 2
     let (image, height, width, channel) = check_and_convert_image_dim(image)
     precondition(mapx.count == dstHeight*dstWidth && mapy.count == dstHeight*dstWidth, "Invalid map size")
@@ -212,8 +211,14 @@ internal func remap_image(_ image: MfArray, mapx: [Float], mapy: [Float], dstHei
         }
     }
 
+    // clamp the coordinates far outside the image to avoid the overflow of Int conversion
+    @inline(__always)
+    func clamp(_ v: Float, _ size: Int) -> Float{
+        return v.isNaN ? -2 : min(max(v, -2), Float(size + 1))
+    }
+
     for i in 0..<dstHeight*dstWidth{
-        let (x, y) = (mapx[i], mapy[i])
+        let (x, y) = (clamp(mapx[i], width), clamp(mapy[i], height))
         if interpolation == .Nearest{
             let sx = Int(x.rounded(.toNearestOrEven))
             let sy = Int(y.rounded(.toNearestOrEven))
@@ -223,16 +228,8 @@ internal func remap_image(_ image: MfArray, mapx: [Float], mapy: [Float], dstHei
             continue
         }
 
-        var (sx, sy) = (Int(x.rounded(.down)), Int(y.rounded(.down)))
-        var (fx, fy) = (x - Float(sx), y - Float(sy))
-        if quantize{
-            let X = Int((x*32).rounded(.toNearestOrEven))
-            let Y = Int((y*32).rounded(.toNearestOrEven))
-            sx = X >> 5
-            sy = Y >> 5
-            fx = Float(X & 31)/32
-            fy = Float(Y & 31)/32
-        }
+        let (sx, sy) = (Int(x.rounded(.down)), Int(y.rounded(.down)))
+        let (fx, fy) = (x - Float(sx), y - Float(sy))
         for c in 0..<channel{
             let top = pixel(sy, sx, c)*(1 - fx) + pixel(sy, sx + 1, c)*fx
             let bottom = pixel(sy + 1, sx, c)*(1 - fx) + pixel(sy + 1, sx + 1, c)*fx
@@ -242,6 +239,40 @@ internal func remap_image(_ image: MfArray, mapx: [Float], mapy: [Float], dstHei
 
     let ret = floats2image(dst, shape: is2d ? [dstHeight, dstWidth] : [dstHeight, dstWidth, channel], mftype: .Float)
     return convert_image_depth(ret, image.mftype)
+}
+
+/// Resize the image like cv2.resize with INTER_LINEAR or INTER_NEAREST
+/// - Parameters:
+///     - image: An image mfarray (Float or UInt8)
+///     - dstWidth: The destination width
+///     - dstHeight: The destination height
+///     - interpolation: Linear or Nearest
+/// - Returns: The row contiguous resized image
+internal func resize_by_remap(_ image: MfArray, dstWidth: Int, dstHeight: Int, interpolation: MfInterpolation) -> MfArray{
+    let (height, width) = (image.shape[0], image.shape[1])
+    let scaleX = Double(width)/Double(dstWidth)
+    let scaleY = Double(height)/Double(dstHeight)
+
+    func coords(_ count: Int, _ scale: Double, _ size: Int) -> [Float]{
+        return (0..<count).map{ i -> Float in
+            if interpolation == .Nearest{
+                return Float(min(Int((Double(i)*scale).rounded(.down)), size - 1))
+            }
+            // the sampling position of the pixel center. The positions outside are extended by the edge (replicate).
+            return Float((Double(i) + 0.5)*scale - 0.5)
+        }
+    }
+    let xs = coords(dstWidth, scaleX, width)
+    let ys = coords(dstHeight, scaleY, height)
+    var mapx = Array(repeating: Float.zero, count: dstWidth*dstHeight)
+    var mapy = mapx
+    for y in 0..<dstHeight{
+        for x in 0..<dstWidth{
+            mapx[y*dstWidth + x] = xs[x]
+            mapy[y*dstWidth + x] = ys[y]
+        }
+    }
+    return remap_image(image, mapx: mapx, mapy: mapy, dstHeight: dstHeight, dstWidth: dstWidth, interpolation: interpolation, borderType: .Replicate, borderValue: [0])
 }
 
 /// Calculate the histogram like cv2.calcHist with uniform bins

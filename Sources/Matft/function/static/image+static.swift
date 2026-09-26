@@ -59,31 +59,38 @@ extension Matft.image{
             - image: An image mfarray
             - width: The new width
             - height: The new height
+            - interpolation: (Optional) The interpolation, by default Lanczos (vImage's high quality resampling). Linear and Nearest are same as cv2.INTER_LINEAR and cv2.INTER_NEAREST
        - Returns: MfArray
     */
-    public static func resize(_ image: MfArray, width: Int, height: Int) -> MfArray{
+    public static func resize(_ image: MfArray, width: Int, height: Int, interpolation: MfInterpolation = .Lanczos) -> MfArray{
         unsupport_complex(image)
         unsupport_imagetype(image)
         precondition(0 < width && 0 < height, "New size must be positive")
-        
-        return resize_by_vImage(image, dstWidth: width, dstHeight: height)
+
+        switch interpolation{
+        case .Lanczos:
+            return resize_by_vImage(image, dstWidth: width, dstHeight: height)
+        case .Linear, .Nearest:
+            return resize_by_remap(image, dstWidth: width, dstHeight: height, interpolation: interpolation)
+        }
     }
-    
+
     /**
        Resize image
        - parameters:
             - image: An image mfarray
             - factor_x: The factor of x
             - factor_y: The factor of y
+            - interpolation: (Optional) The interpolation, by default Lanczos
        - Returns: MfArray
     */
-    public static func resize(_ image: MfArray, factor_x: Float, factor_y: Float) -> MfArray{
+    public static func resize(_ image: MfArray, factor_x: Float, factor_y: Float, interpolation: MfInterpolation = .Lanczos) -> MfArray{
         precondition(0 < factor_x && 0 < factor_y, "New size must be positive")
 
         let height = Float(image.shape[0])
         let width = Float(image.shape[1])
 
-        return Matft.image.resize(image, width: Int(width*factor_x), height: Int(height*factor_y))
+        return Matft.image.resize(image, width: Int(width*factor_x), height: Int(height*factor_y), interpolation: interpolation)
     }
     
     /**

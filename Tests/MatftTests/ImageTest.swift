@@ -521,5 +521,121 @@ final class ImageTest: XCTestCase {
         ImageSnapshot.save(Matft.image.morphologyEx(binary, op: .Open, kernel: ellipse), as: "morphologyEx_open_ellipse5")
         ImageSnapshot.save(Matft.image.morphologyEx(loadRenaGray8(), op: .Gradient, kernel: cross), as: "morphologyEx_gradient_cross3")
     }
+
+    // MARK: - geometry
+
+    func test_flip_rotate() {
+        let a = MfArray([[1, 2, 3], [4, 5, 6]] as [[UInt8]])
+        // cv2.flip(a, 0 / 1 / -1)
+        XCTAssertEqual(Matft.image.flip(a, flipCode: 0), MfArray([[4, 5, 6], [1, 2, 3]] as [[UInt8]]))
+        XCTAssertEqual(Matft.image.flip(a, flipCode: 1), MfArray([[3, 2, 1], [6, 5, 4]] as [[UInt8]]))
+        XCTAssertEqual(Matft.image.flip(a, flipCode: -1), MfArray([[6, 5, 4], [3, 2, 1]] as [[UInt8]]))
+        // cv2.rotate(a, cv2.ROTATE_*)
+        XCTAssertEqual(Matft.image.rotate(a, rotateCode: .Rotate90Clockwise), MfArray([[4, 1], [5, 2], [6, 3]] as [[UInt8]]))
+        XCTAssertEqual(Matft.image.rotate(a, rotateCode: .Rotate180), MfArray([[6, 5, 4], [3, 2, 1]] as [[UInt8]]))
+        XCTAssertEqual(Matft.image.rotate(a, rotateCode: .Rotate90Counterclockwise), MfArray([[3, 6], [2, 5], [1, 4]] as [[UInt8]]))
+
+        let image = loadRena()
+        let flipped = Matft.image.flip(image, flipCode: 1)
+        XCTAssertEqual(flipped[10, 0], image[10, 224])
+        ImageSnapshot.save(flipped, as: "flip_horizontal")
+        let rotated = Matft.image.rotate(image[0~<150], rotateCode: .Rotate90Clockwise)
+        XCTAssertEqual(rotated.shape, [225, 150, 4])
+        ImageSnapshot.save(rotated, as: "rotate_90cw")
+    }
+
+    func test_transform_matrix() {
+        // cv2.getRotationMatrix2D((10, 20), 45, 0.5)
+        XCTAssertLessThan(maxAbsDiff(Matft.image.getRotationMatrix2D(center: (10, 20), angle: 45, scale: 0.5),
+                                     MfArray([[0.353553, 0.353553, -0.606602], [-0.353553, 0.353553, 16.464466]] as [[Float]])), 1e-5)
+        // cv2.getAffineTransform([[0,0],[10,0],[0,10]], [[5,5],[25,10],[0,20]])
+        let affine = Matft.image.getAffineTransform(src: MfArray([[0, 0], [10, 0], [0, 10]] as [[Float]]),
+                                                    dst: MfArray([[5, 5], [25, 10], [0, 20]] as [[Float]]))
+        XCTAssertEqual(affine.shape, [2, 3])
+        XCTAssertLessThan(maxAbsDiff(affine, MfArray([[2, -0.5, 5], [0.5, 1.5, 5]] as [[Float]])), 1e-5)
+        // cv2.getPerspectiveTransform([[0,0],[10,0],[10,10],[0,10]], [[1,2],[12,0],[9,11],[0,8]])
+        let persp = Matft.image.getPerspectiveTransform(src: MfArray([[0, 0], [10, 0], [10, 10], [0, 10]] as [[Float]]),
+                                                        dst: MfArray([[1, 2], [12, 0], [9, 11], [0, 8]] as [[Float]]))
+        XCTAssertEqual(persp.shape, [3, 3])
+        XCTAssertLessThan(maxAbsDiff(persp, MfArray([[0.533333, -0.1, 1], [-0.2, 0.651852, 2], [-0.047222, 0.006481, 1]] as [[Float]])), 1e-5)
+    }
+
+    func test_warpPerspective_remap() {
+        let a = Matft.arange(start: 0, to: 36, by: 1, shape: [6, 6], mftype: .Float)
+        let M = MfArray([[1.1, 0.1, -0.5], [0.05, 0.9, 0.3], [0.01, 0.02, 1]] as [[Double]])
+        // cv2.warpPerspective(a, M, (6, 6), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+        let expected = MfArray([[0.31168, 0.827686, 1.256027, 1.592092, 1.831033, 1.431091],
+                                [5.051867, 5.734311, 6.42827, 7.134043, 7.851932, 6.357449],
+                                [12.078473, 12.836364, 13.607336, 14.391732, 15.189902, 12.010749],
+                                [19.425163, 20.264772, 21.119205, 21.988867, 22.874159, 17.933258],
+                                [27.114323, 28.042561, 28.987574, 29.949833, 30.92981, 24.144682],
+                                [3.451678, 3.86809, 3.998538, 4.131394, 4.266772, 3.33332]] as [[Float]])
+        XCTAssertLessThan(maxAbsDiff(Matft.image.warpPerspective(a, M: M, dsize: (6, 6)), expected), 1e-3)
+        // cv2.warpPerspective(a, M, (5, 4), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+        XCTAssertLessThan(maxAbsDiff(Matft.image.warpPerspective(a, M: M, dsize: (5, 4), borderMode: .Replicate),
+                                     MfArray([[0.48731, 1.406346, 2.340557, 3.290323, 4.256034], [5.051867, 5.734311, 6.42827, 7.134043, 7.851932],
+                                              [12.078473, 12.836364, 13.607336, 14.391732, 15.189902], [19.425163, 20.264772, 21.119205, 21.988867, 22.874159]] as [[Float]])), 1e-3)
+        // cv2.warpPerspective(a, M, (6, 6), flags=cv2.INTER_NEAREST)
+        XCTAssertEqual(Matft.image.warpPerspective(a, M: M, dsize: (6, 6), interpolation: .Nearest),
+                       MfArray([[0, 1, 2, 0, 0, 0], [6, 7, 8, 9, 10, 11], [12, 13, 14, 15, 16, 17],
+                                [18, 19, 20, 21, 22, 23], [30, 25, 26, 27, 28, 29], [0, 0, 0, 0, 0, 0]] as [[Float]]))
+
+        // cv2.remap(a, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=100)
+        let mx = MfArray([[0.5, 1.25, -1], [3.75, 4.5, 5.9]] as [[Float]])
+        let my = MfArray([[0, 0.5, 2], [1.5, 5.2, -0.3]] as [[Float]])
+        XCTAssertLessThan(maxAbsDiff(Matft.image.remap(a, map1: mx, map2: my, interpolation: .Linear, borderMode: .Constant, borderValue: [100]),
+                                     MfArray([[0.5, 4.25, 100], [12.75, 47.599987, 93.350006]] as [[Float]])), 1e-4)
+
+        // perspective of RGBA
+        let src = MfArray([[0, 0], [224, 0], [224, 224], [0, 224]] as [[Float]])
+        let dst = MfArray([[30, 10], [200, 40], [224, 200], [0, 224]] as [[Float]])
+        let persp = Matft.image.getPerspectiveTransform(src: src, dst: dst)
+        let ret = Matft.image.warpPerspective(loadRena(), M: persp, dsize: (225, 225), borderValue: [0, 0, 0, 1])
+        XCTAssertEqual(ret.shape, [225, 225, 4])
+        ImageSnapshot.save(ret, as: "warpPerspective")
+        // warpAffine accepts the Double matrix of getRotationMatrix2D
+        let rot = Matft.image.warpAffine(loadRena(), matrix: Matft.image.getRotationMatrix2D(center: (112, 112), angle: 45, scale: 0.8), width: 225, height: 225, borderValue: [0, 0, 0, 1])
+        ImageSnapshot.save(rot, as: "warpAffine_getRotationMatrix2D_45")
+    }
+
+    func test_resize_interpolation() {
+        // cv2.resize(u, (7, 3), interpolation=cv2.INTER_LINEAR / cv2.INTER_NEAREST)
+        XCTAssertLessThanOrEqual(maxAbsDiff(Matft.image.resize(ramp8, width: 7, height: 3, interpolation: .Linear),
+                                            MfArray([[11, 18, 27, 37, 46, 55, 63], [98, 105, 114, 124, 133, 142, 150], [184, 191, 201, 210, 219, 229, 236]] as [[UInt8]])), 1)
+        XCTAssertEqual(Matft.image.resize(ramp8, width: 7, height: 3, interpolation: .Nearest),
+                       MfArray([[0, 0, 13, 26, 26, 39, 52], [65, 65, 78, 91, 91, 104, 117], [130, 130, 143, 156, 156, 169, 182]] as [[UInt8]]))
+        // cv2.resize(np.arange(36, dtype=np.float32).reshape(6, 6), (4, 9), interpolation=cv2.INTER_LINEAR)
+        let a = Matft.arange(start: 0, to: 36, by: 1, shape: [6, 6], mftype: .Float)
+        XCTAssertLessThan(maxAbsDiff(Matft.image.resize(a, width: 4, height: 9, interpolation: .Linear),
+                                     MfArray([[0.25, 1.75, 3.25, 4.75], [3.25, 4.75, 6.25, 7.75], [7.25, 8.75, 10.25, 11.75],
+                                              [11.25, 12.75, 14.25, 15.75], [15.25, 16.75, 18.25, 19.75], [19.25, 20.75, 22.25, 23.75],
+                                              [23.25, 24.75, 26.25, 27.75], [27.25, 28.75, 30.25, 31.75], [30.25, 31.75, 33.25, 34.75]] as [[Float]])), 1e-5)
+
+        let image = loadRena()
+        ImageSnapshot.save(Matft.image.resize(image, width: 300, height: 150, interpolation: .Linear), as: "resize_linear_300x150")
+        ImageSnapshot.save(Matft.image.resize(image, width: 100, height: 60, interpolation: .Nearest), as: "resize_nearest_100x60")
+    }
+
+    // MARK: - Canny
+
+    func test_Canny() {
+        // sq = np.zeros((8, 8), np.uint8); sq[2:6, 2:6] = 200; cv2.Canny(sq, 100, 200)
+        let sq = Matft.nums(UInt8(0), shape: [8, 8])
+        sq[2~<6, 2~<6] = MfArray([UInt8(200)])
+        XCTAssertEqual(Matft.image.Canny(sq, threshold1: 100, threshold2: 200),
+                       MfArray([[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 255, 255, 0, 0, 0], [0, 0, 255, 0, 0, 255, 0, 0], [0, 255, 0, 0, 0, 255, 0, 0],
+                                [0, 255, 0, 0, 0, 255, 0, 0], [0, 0, 255, 255, 255, 255, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]] as [[UInt8]]))
+
+        let gray = loadRenaGray8()
+        // (cv2.Canny(g, 100, 200) // 255).sum() == 5558
+        let edges = Matft.image.Canny(gray, threshold1: 100, threshold2: 200)
+        XCTAssertEqual(edges.mftype, .UInt8)
+        XCTAssertEqual((edges.astype(.Float) / Float(255)).sum().scalar(Float.self)!, 5558, accuracy: 30)
+        ImageSnapshot.save(edges, as: "Canny_100_200")
+        // (cv2.Canny(g, 50, 150, L2gradient=True) // 255).sum() == 6727
+        let edgesL2 = Matft.image.Canny(gray, threshold1: 50, threshold2: 150, L2gradient: true)
+        XCTAssertEqual((edgesL2.astype(.Float) / Float(255)).sum().scalar(Float.self)!, 6727, accuracy: 30)
+        ImageSnapshot.save(edgesL2, as: "Canny_50_150_L2")
+    }
 }
 #endif
