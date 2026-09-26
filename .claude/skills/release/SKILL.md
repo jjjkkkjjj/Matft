@@ -19,12 +19,12 @@ CocoaPods（`Matft.podspec`）と Carthage はこのスキルの対象外なの�
 git fetch origin --tags
 git branch --show-current
 git status --porcelain
-git rev-list --left-right --count origin/master...HEAD   # "<origin だけにある数> <ローカルだけにある数>"
+git rev-list --left-right --count origin/main...HEAD   # "<origin だけにある数> <ローカルだけにある数>"
 gh auth status
 ```
 
-- `<commit>` は通常 `origin/master` の先頭（`git rev-parse origin/master`）。ブランチ名ではなくコミットハッシュで指定する（後でブランチが動いても指す先が変わらないように）。
-- ローカルに未 push のコミットがある場合：その中にリリースに含めるべきコード変更があるかを見る。CLAUDE.md 追加など運用だけの変更なら無視して `origin/master` を対象にしてよい。コード変更なら，先に push するか（ユーザー確認後）ユーザーに聞く。
+- `<commit>` は通常 `origin/main` の先頭（`git rev-parse origin/main`）。ブランチ名ではなくコミットハッシュで指定する（後でブランチが動いても指す先が変わらないように）。
+- ローカルに未 push のコミットがある場合：その中にリリースに含めるべきコード変更があるかを見る。CLAUDE.md 追加など運用だけの変更なら無視して `origin/main` を対象にしてよい。コード変更なら，先に push するか（ユーザー確認後）ユーザーに聞く。
 - 未コミットの変更があっても，`<commit>` を明示してタグを付けるならリリース内容には入らない。ただし確認時に「作業ツリーの変更は含まれない」ことを一言添える。
 - 止まるべきなのは `gh` 未認証，origin 側に取り込んでいないコミットがあってどれを出すか不明，など対象が決められないときだけ。
 
