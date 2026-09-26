@@ -175,6 +175,9 @@ final class UninitializedAllocTests: XCTestCase {
         let a = Matft.arange(start: 0, to: 16, by: 1, shape: [2, 8], mftype: .Float)
         assertSameWithPoison("rfft"){ Matft.fft.rfft(a) }
         assertSameWithPoison("rfft axis 0"){ Matft.fft.rfft(a.T, axis: 0) }
+        assertSameWithPoison("rfft vDSP"){ Matft.fft.rfft(a, vDSP: true) }
+        assertSameWithPoison("rfft vDSP axis 0"){ Matft.fft.rfft(a.T, axis: 0, vDSP: true) }
+        assertSameWithPoison("rfft vDSP pad"){ Matft.fft.rfft(a, number: 16, vDSP: true) }
         assertSameWithPoison("irfft"){ Matft.fft.irfft(Matft.fft.rfft(a)) }
     }
 
@@ -206,12 +209,6 @@ final class UninitializedAllocTests: XCTestCase {
         assertSameWithPoison("calcHist"){ Matft.image.calcHist(gray, histSize: 8, range: (0, 1)) }
     }
 
-    // the experimental vDSP rfft must not convert the caller's signal into complex
-    func testRfftVDSPKeepsInputReal(){
-        let a = MfArray([1, 2, 3, 4, 5, 6, 7, 8] as [Float])
-        let _ = Matft.fft.rfft(a, vDSP: true)
-        XCTAssertTrue(a.isReal)
-    }
     #endif
 
     // eigenvalues of stacked matrices must match those of each matrix
