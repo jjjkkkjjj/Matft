@@ -196,9 +196,9 @@ extension MfArray{
     /**
        Reverse the mfarray order along given axes
        - parameters:
-            - axes: (optional) the reversed axis of list
+            - axes: the reversed axis of list
     */
-    public func flip(_ mfarray: MfArray, axes: [Int]? = nil) -> MfArray{
+    public func flip(axes: [Int]) -> MfArray{
         return Matft.flip(self, axes: axes)
     }
     

@@ -70,6 +70,7 @@ CASES = [
     Case("BoolPefTests.testPeformanceEqual2", "Bool", "let _ = a === b", "a == b"),
     Case("IndexingPefTests.testPeformanceBooleanIndexing1", "Indexing", "let _ = a[posb]", "a[posb]"),
     Case("IndexingPefTests.testPeformanceBooleanIndexing2", "Indexing", "let _ = a[a > 0]", "a[a > 0]"),
+    Case("IndexingPefTests.testPeformanceBooleanIndexing3", "Indexing", "let _ = aT[aT > 0]", "aT[aT > 0]"),
 ]
 
 _MEASURED_RE = re.compile(

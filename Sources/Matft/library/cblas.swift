@@ -302,8 +302,8 @@ internal func shift_by_cblas<T: MfStorable>(_ mfarray: MfArray, shift: Int, axis
     let src_mfarray: MfArray
     if let axis = axis, mfarray.ndim > 1 {
         src_mfarray = check_contiguous(mfarray.swapaxes(axis1: axis, axis2: 0), .Row)
-        var restShape = Array(mfarray.shape.suffix(mfarray.ndim-1))
-        let restSize = shape2size(&restShape)
+        // the number of elements per index along the rolled axis
+        let restSize = mfarray.size / mfarray.shape[get_positive_axis(axis, ndim: mfarray.ndim)]
         
         // update offset along all flatten array
         size = src_mfarray.size
@@ -313,7 +313,7 @@ internal func shift_by_cblas<T: MfStorable>(_ mfarray: MfArray, shift: Int, axis
         src_mfarray = check_contiguous(mfarray, .Row)
     }
     
-    let newdata = MfData(size: src_mfarray.storedSize, mftype: src_mfarray.mftype)
+    let newdata = MfData(size: src_mfarray.size, mftype: src_mfarray.mftype)
     
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in
@@ -1006,8 +1006,8 @@ internal func shift_by_cblas<T: MfStorable>(_ mfarray: MfArray, shift: Int, axis
     let src_mfarray: MfArray
     if let axis = axis, mfarray.ndim > 1 {
         src_mfarray = check_contiguous(mfarray.swapaxes(axis1: axis, axis2: 0), .Row)
-        var restShape = Array(mfarray.shape.suffix(mfarray.ndim-1))
-        let restSize = shape2size(&restShape)
+        // the number of elements per index along the rolled axis
+        let restSize = mfarray.size / mfarray.shape[get_positive_axis(axis, ndim: mfarray.ndim)]
 
         size = src_mfarray.size
         offset *= restSize
@@ -1016,7 +1016,7 @@ internal func shift_by_cblas<T: MfStorable>(_ mfarray: MfArray, shift: Int, axis
         src_mfarray = check_contiguous(mfarray, .Row)
     }
 
-    let newdata = MfData(size: src_mfarray.storedSize, mftype: src_mfarray.mftype)
+    let newdata = MfData(size: src_mfarray.size, mftype: src_mfarray.mftype)
 
     newdata.withUnsafeMutableStartPointer(datatype: T.self){
         dstptrT in

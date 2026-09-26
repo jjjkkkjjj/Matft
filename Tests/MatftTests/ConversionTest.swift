@@ -506,6 +506,26 @@ final class ConversionTests: XCTestCase {
         }
     }
     
+    func testFlip(){
+        let a = Matft.arange(start: 0, to: 24, by: 1, shape: [2, 3, 4])
+        // np.flip(a, axis=1)
+        let axis1 = MfArray([[[8, 9, 10, 11], [4, 5, 6, 7], [0, 1, 2, 3]], [[20, 21, 22, 23], [16, 17, 18, 19], [12, 13, 14, 15]]])
+        XCTAssertEqual(Matft.flip(a, axis: 1), axis1)
+        XCTAssertEqual(a.flip(axis: 1), axis1)
+        // np.flip(a, axis=-1)
+        XCTAssertEqual(Matft.flip(a, axis: -1), MfArray([[[3, 2, 1, 0], [7, 6, 5, 4], [11, 10, 9, 8]], [[15, 14, 13, 12], [19, 18, 17, 16], [23, 22, 21, 20]]]))
+        // np.flip(a)
+        let all = MfArray([[[23, 22, 21, 20], [19, 18, 17, 16], [15, 14, 13, 12]], [[11, 10, 9, 8], [7, 6, 5, 4], [3, 2, 1, 0]]])
+        XCTAssertEqual(Matft.flip(a), all)
+        XCTAssertEqual(a.flip(), all)
+        // np.flip(a, axis=(0, 2))
+        let axes02 = MfArray([[[15, 14, 13, 12], [19, 18, 17, 16], [23, 22, 21, 20]], [[3, 2, 1, 0], [7, 6, 5, 4], [11, 10, 9, 8]]])
+        XCTAssertEqual(Matft.flip(a, axes: [0, 2]), axes02)
+        XCTAssertEqual(a.flip(axes: [0, 2]), axes02)
+        // column major
+        XCTAssertEqual(Matft.flip(a.to_contiguous(mforder: .Column), axis: 1), axis1)
+    }
+
     func testRoll(){
         do{
             let a = Matft.arange(start: 0, to: 27, by: 1, shape: [3,3,3])

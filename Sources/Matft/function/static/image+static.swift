@@ -48,16 +48,9 @@ extension Matft.image{
         unsupport_complex(image)
         unsupport_imagetype(image)
         
-        switch conversion{
-        case .RGBA2GRAY:
-            // composite on white background before conversion
-            let image = exclude_alpha ? image : rgba2rgb_image(image, keepAlpha: true, background: [1, 1, 1])
-            return c4toc1_by_vImage(image, pre_bias: [0, 0, 0, 0], coef: [0.299, 0.587, 0.114, 0], post_bias: 0)
-        case .RGBA2RGB:
-            return rgba2rgb_image(image, keepAlpha: false, background: [1, 1, 1])
-        case .RGB2RGBA:
-            return rgb2rgba_image(image)
-        }
+        // composite on white background before conversion
+        let image = (conversion == .RGBA2GRAY || conversion == .BGRA2GRAY) && !exclude_alpha ? rgba2rgb_image(image, keepAlpha: true, background: [1, 1, 1]) : image
+        return Matft.image.cvtColor(image, code: conversion)
     }
     
     /**
@@ -66,31 +59,38 @@ extension Matft.image{
             - image: An image mfarray
             - width: The new width
             - height: The new height
+            - interpolation: (Optional) The interpolation, by default Lanczos (vImage's high quality resampling). Linear and Nearest are same as cv2.INTER_LINEAR and cv2.INTER_NEAREST
        - Returns: MfArray
     */
-    public static func resize(_ image: MfArray, width: Int, height: Int) -> MfArray{
+    public static func resize(_ image: MfArray, width: Int, height: Int, interpolation: MfInterpolation = .Lanczos) -> MfArray{
         unsupport_complex(image)
         unsupport_imagetype(image)
         precondition(0 < width && 0 < height, "New size must be positive")
-        
-        return resize_by_vImage(image, dstWidth: width, dstHeight: height)
+
+        switch interpolation{
+        case .Lanczos:
+            return resize_by_vImage(image, dstWidth: width, dstHeight: height)
+        case .Linear, .Nearest:
+            return resize_by_remap(image, dstWidth: width, dstHeight: height, interpolation: interpolation)
+        }
     }
-    
+
     /**
        Resize image
        - parameters:
             - image: An image mfarray
             - factor_x: The factor of x
             - factor_y: The factor of y
+            - interpolation: (Optional) The interpolation, by default Lanczos
        - Returns: MfArray
     */
-    public static func resize(_ image: MfArray, factor_x: Float, factor_y: Float) -> MfArray{
+    public static func resize(_ image: MfArray, factor_x: Float, factor_y: Float, interpolation: MfInterpolation = .Lanczos) -> MfArray{
         precondition(0 < factor_x && 0 < factor_y, "New size must be positive")
 
         let height = Float(image.shape[0])
         let width = Float(image.shape[1])
 
-        return Matft.image.resize(image, width: Int(width*factor_x), height: Int(height*factor_y))
+        return Matft.image.resize(image, width: Int(width*factor_x), height: Int(height*factor_y), interpolation: interpolation)
     }
     
     /**
