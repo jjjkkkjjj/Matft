@@ -20,6 +20,13 @@ final class BoolPefTests: XCTestCase {
         }
     }
     
+    func testPeformanceGreaterDouble1() {
+        let ad = PerfFixtures.ad
+        self.measure {
+            let _ = ad > 0
+        }
+    }
+    
     func testPeformanceGreater2() {
         let a = PerfFixtures.a
         let b = a.transpose(axes: [0,3,4,2,1,5])

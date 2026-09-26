@@ -35,6 +35,7 @@ MARKER_END = "<!-- BENCHMARK:END -->"
 SETUP = """\
 import numpy as np
 a = np.arange(10**6).reshape((10,10,10,10,10,10))
+ad = a.astype(np.float64)
 aneg = np.arange(0, -10**6, -1).reshape((10,10,10,10,10,10))
 aT = a.T
 b = a.transpose((0,3,4,2,1,5))
@@ -59,10 +60,12 @@ CASES = [
     Case("MathPefTests.testPeformanceSign1", "Math", "let _ = Matft.math.sign(a)", "np.sign(a)"),
     Case("MathPefTests.testPeformanceSign2", "Math", "let _ = Matft.math.sign(b)", "np.sign(b)"),
     Case("BoolPefTests.testPeformanceGreater1", "Bool", "let _ = a > 0", "a > 0"),
+    Case("BoolPefTests.testPeformanceGreaterDouble1", "Bool", "let _ = ad > 0", "ad > 0"),
     Case("BoolPefTests.testPeformanceGreater2", "Bool", "let _ = a > b", "a > b"),
     Case("BoolPefTests.testPeformanceEqual1", "Bool", "let _ = a === 0", "a == 0"),
     Case("BoolPefTests.testPeformanceEqual2", "Bool", "let _ = a === b", "a == b"),
     Case("IndexingPefTests.testPeformanceBooleanIndexing1", "Indexing", "let _ = a[posb]", "a[posb]"),
+    Case("IndexingPefTests.testPeformanceBooleanIndexing2", "Indexing", "let _ = a[a > 0]", "a[a > 0]"),
 ]
 
 _MEASURED_RE = re.compile(

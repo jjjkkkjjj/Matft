@@ -761,6 +761,7 @@ I use `Accelerate` framework, so all of MfArray operation may keep high performa
 
 ```swift
 let a = Matft.arange(start: 0, to: 10*10*10*10*10*10, by: 1, shape: [10,10,10,10,10,10])
+let ad = a.astype(.Double)
 let aneg = Matft.arange(start: 0, to: -10*10*10*10*10*10, by: -1, shape: [10,10,10,10,10,10])
 let aT = a.T
 let b = a.transpose(axes: [0,3,4,2,1,5])
@@ -772,6 +773,7 @@ let posb = a > 0
 import numpy as np
 
 a = np.arange(10**6).reshape((10,10,10,10,10,10))
+ad = a.astype(np.float64)
 aneg = np.arange(0, -10**6, -1).reshape((10,10,10,10,10,10))
 aT = a.T
 b = a.transpose((0,3,4,2,1,5))

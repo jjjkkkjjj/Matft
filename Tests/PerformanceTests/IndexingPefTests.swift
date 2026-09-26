@@ -13,4 +13,11 @@ final class IndexingPefTests: XCTestCase {
             let _ = a[posb]
         }
     }
+    
+    func testPeformanceBooleanIndexing2() {
+        let a = PerfFixtures.a
+        self.measure {
+            let _ = a[a > 0]
+        }
+    }
 }
