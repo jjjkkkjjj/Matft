@@ -11,7 +11,7 @@
 | 2 | [02-vlm-preprocess.md](02-vlm-preprocess.md) | PIL/transformers 互換の VLM 画像前処理（`Matft.image` に統合，PIL bicubic, smart_resize, normalize_meanstd, patchify） | なし |
 | 3 | [03-mlx-bridge.md](03-mlx-bridge.md)（**実装済み**） | `MfArray ⇄ MLXArray` ゼロコピー変換（別パッケージ `Extensions/MatftMLX`） | なし（1,2 後のデモ推奨）|
 | 4 | [04-numpy-gaps.md](04-numpy-gaps.md)（**4-A 実装済み**） | MLX に無い NumPy 関数（std/var, median/percentile, nan系, nonzero, unique, histogram, lstsq, pad …） | なし |
-| 5 | [05-readme-positioning.md](05-readme-positioning.md) | README で MLX との住み分けを明示 | 1〜4 の進捗に応じ随時 |
+| 5 | [05-readme-positioning.md](05-readme-positioning.md)（**実装済み**） | README で MLX との住み分けを明示 | 1〜4 の進捗に応じ随時 |
 
 推奨着手順: **4-A（pad, std/var 等の基礎）→ 1 → 2 → 4 残り → 3 → 5**
 （1 が reflect pad を必要とするため 4 の `pad` を先行させる）
