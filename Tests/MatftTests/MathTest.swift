@@ -164,6 +164,33 @@ final class MathTests: XCTestCase {
         }
     }
     
+    // Expected values are taken from numpy: np.sign([nan, -inf, -2, -0.0, 0.0, 5e-324, 3, inf])
+    func testSignEdgeCases(){
+        do{
+            let x = MfArray([Double.nan, -Double.infinity, -2.0, -0.0, 0.0, 5e-324, 3.0, Double.infinity], mftype: .Double)
+            let ret = x.sign().data as! [Double]
+            XCTAssertTrue(ret[0].isNaN)
+            XCTAssertEqual(Array(ret[1...]), [-1.0, -1.0, 0.0, 0.0, 1.0, 1.0, 1.0])
+            XCTAssertFalse(ret[3].sign == .minus) // sign(-0.0) is +0.0
+        }
+        do{
+            let x = MfArray([Float.nan, -Float.infinity, -2, -0.0, 0, Float.leastNonzeroMagnitude, 3, Float.infinity] as [Float])
+            let ret = x.sign().data as! [Float]
+            XCTAssertTrue(ret[0].isNaN)
+            XCTAssertEqual(Array(ret[1...]), [-1, -1, 0, 0, 1, 1, 1])
+        }
+        do{
+            // without NaN, but both of +inf and -inf (the sum is NaN)
+            let x = MfArray([-Float.infinity, 0, Float.infinity] as [Float])
+            XCTAssertEqual(x.sign().data as! [Float], [-1, 0, 1])
+        }
+        do{
+            // non-contiguous
+            let a = Matft.arange(start: -12, to: 12, by: 1, shape: [2, 3, 4]).transpose(axes: [2, 0, 1])
+            XCTAssertEqual(a.sign(), Matft.arange(start: -12, to: 12, by: 1, shape: [2, 3, 4]).transpose(axes: [2, 0, 1]).clip(min: -1, max: 1))
+        }
+    }
+    
     func testSign(){
         do{
             let a = MfArray([[[[ 1.0        , -0.65364362],
