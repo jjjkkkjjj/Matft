@@ -631,6 +631,35 @@ internal func biopvs_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T,
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
+/// Binary operation of complex mfarray and real scalar by vDSP, applying the real function to the real and imaginary parts separately
+/// - Parameters:
+///   - l_mfarray: The left complex mfarray
+///   - r_scalar: The right real scalar
+///   - vDSP_func: The vDSP biop function for real vectors
+/// - Returns: The result mfarray
+internal func biopzvs_separately_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ r_scalar: T, _ vDSP_func: vDSP_biopvs_func<T>) -> MfArray{
+    var r_scalar = r_scalar
+    let mfarray = check_dense(l_mfarray)
+    let size = mfarray.storedSize
+
+    let newdata = MfData(uninitializedSize: size, mftype: mfarray.mftype, complex: true)
+    newdata.withUnsafeMutableStartPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            wrap_vDSP_biopvs(size, $0, 1, &r_scalar, dstptrT, 1, vDSP_func)
+        }
+    }
+    newdata.withUnsafeMutableStartImagPointer(datatype: T.self){
+        dstptrT in
+        mfarray.withUnsafeMutableStartImagPointer(datatype: T.self){
+            wrap_vDSP_biopvs(size, $0!, 1, &r_scalar, dstptrT!, 1, vDSP_func)
+        }
+    }
+
+    let newstructure = MfStructure(shape: mfarray.shape, strides: mfarray.strides)
+    return MfArray(mfdata: newdata, mfstructure: newstructure)
+}
+
 /// ZBinary operation by vDSP
 /// - Parameters:
 ///   - l_mfarray: The left mfarray
@@ -1669,6 +1698,37 @@ internal func maxmg_by_vDSP(_ mfarray: MfArray) -> Double{
             ret = ret.isNaN || m.isNaN ? .nan : Swift.max(ret, m)
         }
     }
+    // vDSP_maxmgv drops NaN on x86_64 (maxps returns the other operand). The sum of magnitudes always propagates NaN
+    if !ret.isNaN && _sumOfMagnitudes_by_vDSP(mfarray).isNaN{
+        return .nan
+    }
+    return ret
+}
+
+/// The sum of |real| and |imag| over a dense mfarray
+fileprivate func _sumOfMagnitudes_by_vDSP(_ mfarray: MfArray) -> Double{
+    let size = mfarray.size
+    var ret = 0.0
+    switch mfarray.storedType{
+    case .Float:
+        var s = Float.zero
+        mfarray.withUnsafeMutableStartPointer(datatype: Float.self){ vDSP_svemg($0, 1, &s, vDSP_Length(size)) }
+        ret = Double(s)
+        mfarray.withUnsafeMutableStartImagPointer(datatype: Float.self){
+            guard let ptr = $0 else { return }
+            vDSP_svemg(ptr, 1, &s, vDSP_Length(size))
+            ret += Double(s)
+        }
+    case .Double:
+        var s = Double.zero
+        mfarray.withUnsafeMutableStartPointer(datatype: Double.self){ vDSP_svemgD($0, 1, &s, vDSP_Length(size)) }
+        ret = s
+        mfarray.withUnsafeMutableStartImagPointer(datatype: Double.self){
+            guard let ptr = $0 else { return }
+            vDSP_svemgD(ptr, 1, &s, vDSP_Length(size))
+            ret += s
+        }
+    }
     return ret
 }
 
@@ -1809,6 +1869,20 @@ internal func vDSP_vminD(_ srcA: UnsafePointer<Double>, _ strideA: Int, _ srcB: 
 }
 
 // MARK: - vDSP Binary Operations (Vector-Scalar)
+
+@inline(__always)
+internal func vDSP_vsmsa(_ src: UnsafePointer<Float>, _ srcStride: Int, _ scale: UnsafePointer<Float>, _ add: UnsafePointer<Float>, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * dstStride] = src[i * srcStride] * scale.pointee + add.pointee
+    }
+}
+
+@inline(__always)
+internal func vDSP_vsma(_ srcA: UnsafePointer<Float>, _ strideA: Int, _ scale: UnsafePointer<Float>, _ srcC: UnsafePointer<Float>, _ strideC: Int, _ dst: UnsafeMutablePointer<Float>, _ strideDst: Int, _ count: Int) {
+    for i in 0..<count {
+        dst[i * strideDst] = srcA[i * strideA] * scale.pointee + srcC[i * strideC]
+    }
+}
 
 @inline(__always)
 internal func vDSP_vsadd(_ src: UnsafePointer<Float>, _ srcStride: Int, _ scalar: UnsafePointer<Float>, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {

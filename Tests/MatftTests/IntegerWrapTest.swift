@@ -47,6 +47,28 @@ final class IntegerWrapTests: XCTestCase {
         XCTAssertFalse(MfArray([1], mftype: .Int8) == MfArray([2], mftype: .Int8))
     }
 
+    /// vDSP's conversion of out of range values is undefined (saturates on x86_64), so the wrap must not rely on it
+    func testInt16(){
+        let a = MfArray([30000, -30000, 300], mftype: .Int16)
+        let b = MfArray([10000, 10000, 300], mftype: .Int16)
+        // numpy: a + b -> [-25536, -20000, 600], a - b -> [20000, 25536, 0], a * b -> [-23808, 23808, 24464]
+        XCTAssertEqual((a + b).data as! [Int16], [-25536, -20000, 600])
+        XCTAssertEqual((a - b).data as! [Int16], [20000, 25536, 0])
+        XCTAssertEqual((a * b).data as! [Int16], [-23808, 23808, 24464])
+        XCTAssertTrue(a + b == MfArray([-25536, -20000, 600], mftype: .Int16))
+
+        let u = MfArray([65535, 0, 1000], mftype: .UInt16)
+        let v = MfArray([65535, 1, 1000], mftype: .UInt16)
+        // numpy: u + v -> [65534, 1, 2000], u - v -> [0, 65535, 0]
+        XCTAssertEqual((u + v).data as! [UInt16], [65534, 1, 2000])
+        XCTAssertEqual((u - v).data as! [UInt16], [0, 65535, 0])
+        // The products must be less than 2^24, which Float holds exactly
+        let s = MfArray([256, 300, 1000], mftype: .UInt16)
+        let t = MfArray([257, 300, 1000], mftype: .UInt16)
+        // numpy: s * t -> [256, 24464, 16960]
+        XCTAssertEqual((s * t).data as! [UInt16], [256, 24464, 16960])
+    }
+
     func testCompareAfterWrap(){
         let a = MfArray([0, 1, 200], mftype: .UInt8)
         let b = MfArray([5, 1, 100], mftype: .UInt8)

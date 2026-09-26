@@ -423,11 +423,13 @@ extension Matft{
         }
         else{
             #if canImport(Accelerate)
+            // Divide the real and imaginary parts separately like numpy.
+            // vDSP_zrvdiv is not exact on x86_64 (e.g. 1 / 2 -> 0.49999997)
             switch MfType.storedType(retmftype) {
             case .Float:
-                return biopzvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_zrvdiv)
+                return biopzvs_separately_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsdiv)
             case .Double:
-                return biopzvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_zrvdivD)
+                return biopzvs_separately_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsdivD)
             }
             #else
             fatalError("Complex array operations are not supported on this platform")
