@@ -26,24 +26,18 @@ extension Matft{
            - mfarray: mfarray
     */
     public static func logical_not(_ mfarray: MfArray) -> MfArray{
-        var ret = to_Bool(mfarray)// copy and convert to bool
         #if canImport(Accelerate)
-        ret = Matft.math.abs(ret - 1) // force cast to Float
-        #else
-        // Pure Swift fallback for abs(ret - 1)
-        let size = ret.storedSize
-        let newdata = MfData(uninitializedSize: size, mftype: .Bool)
-        newdata.withUnsafeMutableStartPointer(datatype: Float.self) { dstptr in
-            ret.withUnsafeMutableStartPointer(datatype: Float.self) { srcptr in
-                for i in 0..<size {
-                    dstptr[i] = Swift.abs(srcptr[i] - 1)
-                }
+        if mfarray.mftype == .Bool && mfarray.isReal{
+            // Bool is stored as 1/0 in Float, so not x = 1 - x in one pass
+            return biopvs_by_vDSP(mfarray, Float(1)){
+                srcptr, srcStride, one, dstptr, dstStride, n in
+                var minus_one = Float(-1)
+                vDSP_vsmsa(srcptr, srcStride, &minus_one, one, dstptr, dstStride, n)
             }
         }
-        ret = MfArray(mfdata: newdata, mfstructure: MfStructure(shape: ret.shape, strides: ret.strides))
         #endif
-        ret.mfdata.mftype = .Bool
-        return ret
+        // not x == (x == 0)
+        return to_IBool(mfarray)
     }
 }
 

@@ -77,6 +77,7 @@ final class UninitializedAllocTests: XCTestCase {
             assertSameWithPoison("equal \(name)"){ x === 1 }
             assertSameWithPoison("equal array \(name)"){ x === x }
             assertSameWithPoison("logical_not \(name)"){ Matft.logical_not(x) }
+            assertSameWithPoison("logical_not bool \(name)"){ Matft.logical_not(x.astype(.Bool)) }
             assertSameWithPoison("power \(name)"){ Matft.math.power(bases: x, exponents: 2) }
             assertSameWithPoison("arctan2 \(name)"){ Matft.math.arctan2(x1: x, x2: x + 1) }
             assertSameWithPoison("maximum \(name)"){ Matft.stats.maximum(x, -x) }
