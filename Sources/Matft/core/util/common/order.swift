@@ -95,6 +95,38 @@ internal func check_dense(_ mfarray: MfArray) -> MfArray{
     return mfarray.to_contiguous(mforder: .Row)
 }
 
+/// Make two mfarrays of the same shape dense in the same layout, so that their elements can be processed linearly together.
+/// Arrays already in the same dense layout are not copied.
+/// - Returns: The mfarrays. `size` elements from each start pointer correspond one by one
+internal func check_same_dense_layout(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (l: MfArray, r: MfArray){
+    assert(l_mfarray.shape == r_mfarray.shape, "call biop_broadcast_to first!")
+    let l = check_dense(l_mfarray)
+    let r = check_dense(r_mfarray)
+    if l.strides == r.strides{
+        return (l, r)
+    }
+    return (check_contiguous(l, .Row), check_contiguous(r, .Row))
+}
+
+/// Convert mftype for internal use. Unlike `astype`, which always copies, it returns a view when only the type label changes
+/// (e.g. Int -> Float, both stored as Float). The returned mfarray must not be written.
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - mftype: The new mftype
+/// - Returns: The mfarray of the given mftype
+internal func astype_or_view(_ mfarray: MfArray, _ mftype: MfType) -> MfArray{
+    if mfarray.mftype == mftype{
+        return mfarray
+    }
+    // Bool needs the values to be converted into 1/0
+    guard mftype != .Bool && MfType.storedType(mftype) == mfarray.storedType else{
+        return mfarray.astype(mftype)
+    }
+    let ret = MfArray(base: mfarray, mfstructure: mfarray.mfstructure, offset: mfarray.offsetIndex)
+    ret.mfdata.mftype = mftype
+    return ret
+}
+
 /// Whether the strides are a permutation of contiguous strides without gaps
 fileprivate func _is_dense_permutation(shape: [Int], strides: [Int]) -> Bool{
     let axes = (0..<shape.count).filter{ shape[$0] != 1 }.sorted{ strides[$0] < strides[$1] }

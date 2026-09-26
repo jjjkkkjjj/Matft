@@ -1317,12 +1317,12 @@ internal func fancy1dgetcol_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices
             dstptrT in
             let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
                 srcptr in
-                var offsets = (indices.data as! [Int]).map{ UInt(get_positive_index($0, axissize: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
+                var offsets = index_values(indices).map{ UInt(get_positive_index($0, axissize: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
                 wrap_vDSP_gathr(indices.size, srcptr, &offsets, 1, dstptrT, 1, vDSP_func)
             }
         }
         
-        let newstructure = MfStructure(shape: indices.shape, strides: indices.strides)
+        let newstructure = MfStructure(shape: indices.shape, mforder: .Row) // gathered in the row major order of indices
         return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     else{
@@ -1336,13 +1336,13 @@ internal func fancy1dgetcol_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices
                 let dstptrTr = dstptrT.pointee.realp as! UnsafeMutablePointer<T>
                 let dstptrTi = dstptrT.pointee.imagp as! UnsafeMutablePointer<T>
                 
-                var offsets = (indices.data as! [Int]).map{ UInt(get_positive_index($0, axissize: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
+                var offsets = index_values(indices).map{ UInt(get_positive_index($0, axissize: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
                 wrap_vDSP_gathr(indices.size, srcptrr, &offsets, 1, dstptrTr, 1, vDSP_func)
                 wrap_vDSP_gathr(indices.size, srcptri, &offsets, 1, dstptrTi, 1, vDSP_func)
             }
         }
         
-        let newstructure = MfStructure(shape: indices.shape, strides: indices.strides)
+        let newstructure = MfStructure(shape: indices.shape, mforder: .Row) // gathered in the row major order of indices
         return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
 }
@@ -1680,6 +1680,37 @@ fileprivate func _cgimage2rawptr(_ dstrawptr: UnsafeMutablePointer<UInt8>, _ cgi
     let contextRef = CGContext(data: dstrawptr, width: width, height: height, bitsPerComponent: 8*byteNumber, bytesPerRow: width*channel*byteNumber, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
     contextRef?.draw(cgimage, in: CGRect(x: 0, y: 0, width: width, height: height))
 }
+/// The largest absolute value over the real and imaginary parts. NaN if any element is NaN
+/// - Parameter mfarray: An input mfarray
+/// - Returns: The largest absolute value. 0 for an empty mfarray
+internal func maxmg_by_vDSP(_ mfarray: MfArray) -> Double{
+    let mfarray = check_dense(mfarray)
+    let size = mfarray.size
+    guard size > 0 else { return 0 }
+    var ret = 0.0
+    switch mfarray.storedType{
+    case .Float:
+        var m = Float.zero
+        mfarray.withUnsafeMutableStartPointer(datatype: Float.self){ vDSP_maxmgv($0, 1, &m, vDSP_Length(size)) }
+        ret = Double(m)
+        mfarray.withUnsafeMutableStartImagPointer(datatype: Float.self){
+            guard let ptr = $0 else { return }
+            vDSP_maxmgv(ptr, 1, &m, vDSP_Length(size))
+            ret = ret.isNaN || m.isNaN ? .nan : Swift.max(ret, Double(m))
+        }
+    case .Double:
+        var m = Double.zero
+        mfarray.withUnsafeMutableStartPointer(datatype: Double.self){ vDSP_maxmgvD($0, 1, &m, vDSP_Length(size)) }
+        ret = m
+        mfarray.withUnsafeMutableStartImagPointer(datatype: Double.self){
+            guard let ptr = $0 else { return }
+            vDSP_maxmgvD(ptr, 1, &m, vDSP_Length(size))
+            ret = ret.isNaN || m.isNaN ? .nan : Swift.max(ret, m)
+        }
+    }
+    return ret
+}
+
 #else
 // MARK: - WASI Fallback Implementations
 
@@ -2976,12 +3007,12 @@ internal func fancy1dgetcol_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ indices
             dstptrT in
             let _ = mfarray.withUnsafeMutableStartPointer(datatype: T.self){
                 srcptr in
-                var offsets = (indices.data as! [Int]).map{ UInt(get_positive_index($0, axissize: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
+                var offsets = index_values(indices).map{ UInt(get_positive_index($0, axissize: mfarray.size, axis: 0) * mfarray.strides[0] + 1) }
                 wrap_vDSP_gathr(indices.size, srcptr, &offsets, 1, dstptrT, 1, vDSP_func)
             }
         }
 
-        let newstructure = MfStructure(shape: indices.shape, strides: indices.strides)
+        let newstructure = MfStructure(shape: indices.shape, mforder: .Row) // gathered in the row major order of indices
         return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     else{
@@ -3062,6 +3093,60 @@ internal func vDSP_vclipc(_ src: UnsafePointer<Float>, _ srcStride: Int, _ low: 
 @inline(__always)
 internal func vDSP_vclipcD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ low: UnsafePointer<Double>, _ high: UnsafePointer<Double>, _ dst: UnsafeMutablePointer<Double>, _ dstStride: Int, _ count: Int, _ lowCount: UnsafeMutablePointer<UInt>, _ highCount: UnsafeMutablePointer<UInt>) {
     vDSP_vclipD(src, srcStride, low, high, dst, dstStride, count, lowCount, highCount)
+}
+
+/// The largest absolute value over the real and imaginary parts. NaN if any element is NaN
+/// - Parameter mfarray: An input mfarray
+/// - Returns: The largest absolute value. 0 for an empty mfarray
+internal func maxmg_by_vDSP(_ mfarray: MfArray) -> Double{
+    let mfarray = check_dense(mfarray)
+    let size = mfarray.size
+    guard size > 0 else { return 0 }
+    var ret = 0.0
+    switch mfarray.storedType{
+    case .Float:
+        var m = Float.zero
+        mfarray.withUnsafeMutableStartPointer(datatype: Float.self){ vDSP_maxmgv($0, 1, &m, size) }
+        ret = Double(m)
+        mfarray.withUnsafeMutableStartImagPointer(datatype: Float.self){
+            guard let ptr = $0 else { return }
+            vDSP_maxmgv(ptr, 1, &m, size)
+            ret = ret.isNaN || m.isNaN ? .nan : Swift.max(ret, Double(m))
+        }
+    case .Double:
+        var m = Double.zero
+        mfarray.withUnsafeMutableStartPointer(datatype: Double.self){ vDSP_maxmgvD($0, 1, &m, size) }
+        ret = m
+        mfarray.withUnsafeMutableStartImagPointer(datatype: Double.self){
+            guard let ptr = $0 else { return }
+            vDSP_maxmgvD(ptr, 1, &m, size)
+            ret = ret.isNaN || m.isNaN ? .nan : Swift.max(ret, m)
+        }
+    }
+    return ret
+}
+
+@inline(__always)
+internal func vDSP_maxmgv(_ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ count: Int) {
+    var m = Float.zero
+    for i in 0..<count {
+        let v = Swift.abs(src[i * srcStride])
+        // propagate NaN like vDSP
+        if v.isNaN { m = .nan; break }
+        m = Swift.max(m, v)
+    }
+    dst.pointee = m
+}
+
+@inline(__always)
+internal func vDSP_maxmgvD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Double>, _ count: Int) {
+    var m = Double.zero
+    for i in 0..<count {
+        let v = Swift.abs(src[i * srcStride])
+        if v.isNaN { m = .nan; break }
+        m = Swift.max(m, v)
+    }
+    dst.pointee = m
 }
 
 #endif // canImport(Accelerate)

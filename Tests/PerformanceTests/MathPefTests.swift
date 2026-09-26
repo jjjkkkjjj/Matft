@@ -44,4 +44,18 @@ final class MathPefTests: XCTestCase {
             let _ = Matft.math.sign(b)
         }
     }
+    
+    func testPeformancePower1() {
+        let ad = PerfFixtures.ad
+        self.measureWithWarmup {
+            let _ = Matft.math.power(bases: ad, exponents: 2)
+        }
+    }
+    
+    func testPeformanceArctan2() {
+        let ad = PerfFixtures.ad
+        self.measureWithWarmup {
+            let _ = Matft.math.arctan2(x1: ad, x2: ad)
+        }
+    }
 }

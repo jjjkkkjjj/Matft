@@ -557,7 +557,8 @@ extension Matft.math{//use math_vv_by_vecLib
     */
     public static func power(bases: MfArray, exponents: Float) -> MfArray{
         if bases.isReal{
-            return Matft.math.power(bases: bases, exponents: Matft.nums(exponents, shape: [1]))
+            // not broadcasting the scalar into an array
+            return pows_by_vForce(bases, exponents)
         }
         else{
             let b = Matft.complex.absarg(bases)
@@ -987,7 +988,8 @@ extension Matft.math {
     }
 
     public static func power(bases: MfArray, exponents: Float) -> MfArray {
-        return Matft.math.power(bases: bases, exponents: Matft.nums(exponents, shape: [1]))
+        unsupport_complex(bases)
+        return pows_by_vForce(bases, exponents)
     }
 
     public static func power(bases: MfArray, exponents: MfArray) -> MfArray {

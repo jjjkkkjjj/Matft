@@ -56,7 +56,7 @@ extension Matft{
         
         var l_mfarray = l_mfarray
         if retmftype != l_mfarray.mftype{
-            l_mfarray = l_mfarray.astype(retmftype)
+            l_mfarray = astype_or_view(l_mfarray, retmftype)
         }
         
         if l_mfarray.isReal{
@@ -92,7 +92,7 @@ extension Matft{
         
         var r_mfarray = r_mfarray
         if retmftype != r_mfarray.mftype{
-            r_mfarray = r_mfarray.astype(retmftype)
+            r_mfarray = astype_or_view(r_mfarray, retmftype)
         }
         
         if r_mfarray.isReal{
@@ -158,7 +158,7 @@ extension Matft{
         
         var l_mfarray = l_mfarray
         if retmftype != l_mfarray.mftype{
-            l_mfarray = l_mfarray.astype(retmftype)
+            l_mfarray = astype_or_view(l_mfarray, retmftype)
         }
         
         if l_mfarray.isReal{
@@ -194,7 +194,7 @@ extension Matft{
         
         var r_mfarray = r_mfarray
         if retmftype != r_mfarray.mftype{
-            r_mfarray = r_mfarray.astype(retmftype)
+            r_mfarray = astype_or_view(r_mfarray, retmftype)
         }
         
         if r_mfarray.isReal{
@@ -260,7 +260,7 @@ extension Matft{
         
         var l_mfarray = l_mfarray
         if retmftype != l_mfarray.mftype{
-            l_mfarray = l_mfarray.astype(retmftype)
+            l_mfarray = astype_or_view(l_mfarray, retmftype)
         }
         
         if l_mfarray.isReal{
@@ -296,7 +296,7 @@ extension Matft{
         
         var r_mfarray = r_mfarray
         if retmftype != r_mfarray.mftype{
-            r_mfarray = r_mfarray.astype(retmftype)
+            r_mfarray = astype_or_view(r_mfarray, retmftype)
         }
         
         if r_mfarray.isReal{
@@ -364,7 +364,7 @@ extension Matft{
         
         var l_mfarray = l_mfarray
         if retmftype != l_mfarray.mftype{
-            l_mfarray = l_mfarray.astype(retmftype)
+            l_mfarray = astype_or_view(l_mfarray, retmftype)
         }
         
         if l_mfarray.isReal{
@@ -400,7 +400,7 @@ extension Matft{
         
         var r_mfarray = r_mfarray
         if retmftype != r_mfarray.mftype{
-            r_mfarray = r_mfarray.astype(retmftype)
+            r_mfarray = astype_or_view(r_mfarray, retmftype)
         }
         
         if r_mfarray.isReal{
@@ -742,10 +742,10 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
     if lmfarray.mftype != rmfarray.mftype{
         let returnedType = MfType.priority(lmfarray.mftype, rmfarray.mftype)
         if returnedType != lmfarray.mftype{
-            lmfarray = lmfarray.astype(returnedType)
+            lmfarray = astype_or_view(lmfarray, returnedType)
         }
         else{
-            rmfarray = rmfarray.astype(returnedType)
+            rmfarray = astype_or_view(rmfarray, returnedType)
         }
     }
     
@@ -893,154 +893,33 @@ fileprivate func _compare_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, 
 }
 
 fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> Bool{
-   //print(diff)
-   if l_mfarray.shape != r_mfarray.shape{
-       return false
-   }
+    if l_mfarray.shape != r_mfarray.shape{
+        return false
+    }
     let diff = l_mfarray - r_mfarray
     
-    // diff must be 0 if all of elements are same
-    switch diff.storedType {
-    case .Float:
-        if let data = diff.data as? [UInt8]{
-            let ret = data.allSatisfy{ $0 == UInt8.zero }
-            if diff.isComplex{
-                let data_img = diff.data_imag as! [UInt8]
-                return ret && data_img.allSatisfy{ $0 == UInt8.zero }
-            }
-            else{
-                return ret
-            }
-        }
-        else if let data = diff.data as? [UInt16]{
-            let ret = data.allSatisfy{ $0 == UInt16.zero }
-            if diff.isComplex{
-                let data_img = diff.data_imag as! [UInt16]
-                return ret && data_img.allSatisfy{ $0 == UInt16.zero }
-            }
-            else{
-                return ret
-            }
-        }
-        else if let data = diff.data as? [UInt32]{
-            let ret = data.allSatisfy{ $0 == UInt32.zero }
-            if diff.isComplex{
-                let data_img = diff.data_imag as! [UInt32]
-                return ret && data_img.allSatisfy{ $0 == UInt32.zero }
-            }
-            else{
-                return ret
-            }
-        }
-        else if let data = diff.data as? [UInt64]{
-            let ret = data.allSatisfy{ $0 == UInt64.zero }
-            if diff.isComplex{
-                let data_img = diff.data_imag as! [UInt64]
-                return ret && data_img.allSatisfy{ $0 == UInt64.zero }
-            }
-            else{
-                return ret
-            }
-        }
-        else if let data = diff.data as? [UInt]{
-            let ret = data.allSatisfy{ $0 == UInt.zero }
-            if diff.isComplex{
-                let data_img = diff.data_imag as! [UInt]
-                return ret && data_img.allSatisfy{ $0 == UInt.zero }
-            }
-            else{
-                return ret
-            }
-        }
-        else if let data = diff.data as? [Int8]{
-            let ret = data.allSatisfy{ $0 == Int8.zero }
-            if diff.isComplex{
-                let data_img = diff.data_imag as! [Int8]
-                return ret && data_img.allSatisfy{ $0 == Int8.zero }
-            }
-            else{
-                return ret
-            }
-        }
-        else if let data = diff.data as? [Int16]{
-            let ret = data.allSatisfy{ $0 == Int16.zero }
-            if diff.isComplex{
-                let data_img = diff.data_imag as! [Int16]
-                return ret && data_img.allSatisfy{ $0 == Int16.zero }
-            }
-            else{
-                return ret
-            }
-        }
-        else if let data = diff.data as? [Int32]{
-            let ret = data.allSatisfy{ $0 == Int32.zero }
-            if diff.isComplex{
-                let data_img = diff.data_imag as! [Int32]
-                return ret && data_img.allSatisfy{ $0 == Int32.zero }
-            }
-            else{
-                return ret
-            }
-        }
-        else if let data = diff.data as? [Int64]{
-            let ret = data.allSatisfy{ $0 == Int64.zero }
-            if diff.isComplex{
-                let data_img = diff.data_imag as! [Int64]
-                return ret && data_img.allSatisfy{ $0 == Int64.zero }
-            }
-            else{
-                return ret
-            }
-        }
-        else if let data = diff.data as? [Int]{
-            let ret = data.allSatisfy{ $0 == Int.zero }
-            if diff.isComplex{
-                let data_img = diff.data_imag as! [Int]
-                return ret && data_img.allSatisfy{ $0 == Int.zero }
-            }
-            else{
-                return ret
-            }
-        }
-        else if let data = diff.data as? [Float]{
-            let ret = data.allSatisfy{ abs($0) <= thresholdF }
-            if diff.isComplex{
-                let data_img = diff.data_imag as! [Float]
-                return ret && data_img.allSatisfy{ abs($0) <= thresholdF }
-            }
-            else{
-                return ret
-            }
-        }
-        else{
-            // bool
-            guard let data = diff.astype(.Float).data as? [Float] else{
-                return false
-            }
-            
-            let ret = data.allSatisfy{ $0 == Float.zero }
-            if diff.isComplex{
-                let data_img = diff.data_imag as! [Float]
-                return ret && data_img.allSatisfy{ abs($0) <= thresholdF }
-            }
-            else{
-                return ret
-            }
-        }
-    case .Double:
-        if let data = diff.data as? [Double]{
-            let ret = data.allSatisfy{ abs($0) <= thresholdD }
-            if diff.isComplex{
-                let data_img = diff.data_imag as! [Double]
-                return ret && data_img.allSatisfy{ abs($0) <= thresholdD }
-            }
-            else{
-                return ret
-            }
-        }
-        else{
-            return false
-        }
+    // floating point: every |l - r| must be within the threshold. NaN is never equal
+    switch diff.mftype {
+    case .Float, .ComplexFloat:
+        return maxmg_by_vDSP(diff) <= Double(thresholdF)
+    case .Double, .ComplexDouble:
+        return maxmg_by_vDSP(diff) <= thresholdD
+    default:
+        break
     }
     
+    // integer and Bool: every difference must be 0 after conversion into the type,
+    // which rounds and wraps around (e.g. -5 and 251 are the same UInt8)
+    if maxmg_by_vDSP(diff) < 0.5{
+        return true
+    }
+    func isZero(_ value: Any) -> Bool{
+        if let value = value as? Bool{
+            return !value
+        }
+        // only 0 has as many trailing zero bits as its bit width
+        let value = value as! any BinaryInteger
+        return value.trailingZeroBitCount == value.bitWidth
+    }
+    return diff.data.allSatisfy(isZero) && (diff.isReal || diff.data_imag!.allSatisfy(isZero))
 }
