@@ -42,7 +42,7 @@ internal typealias vDSP_vthrsc_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafeP
 
 internal typealias vDSP_sort_func<T> = (UnsafeMutablePointer<T>, vDSP_Length, Int32) -> Void
 
-internal typealias vDSP_argsort_func<T> = (UnsafePointer<T>, UnsafeMutablePointer<vDSP_Length>, UnsafeMutablePointer<vDSP_Length>, vDSP_Length, Int32) -> Void
+internal typealias vDSP_argsort_func<T> = (UnsafePointer<T>, UnsafeMutablePointer<vDSP_Length>, UnsafeMutablePointer<vDSP_Length>?, vDSP_Length, Int32) -> Void
 
 internal typealias vDSP_stats_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafeMutablePointer<T>, vDSP_Length) -> Void
 
@@ -334,8 +334,8 @@ internal func wrap_vDSP_sort<T>(_ size: Int, _ srcdstptr: UnsafeMutablePointer<T
 ///   - vDSP_func: The vDSP argsort function
 @inline(__always)
 internal func wrap_vDSP_argsort<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<UInt>, _ order: MfSortOrder, _ vDSP_func: vDSP_argsort_func<T>){
-    var tmp = Array<vDSP_Length>(repeating: 0, count: size)
-    vDSP_func(srcptr, dstptr, &tmp, vDSP_Length(size), order.rawValue)
+    // the temporary buffer is not used by vDSP
+    vDSP_func(srcptr, dstptr, nil, vDSP_Length(size), order.rawValue)
 }
 
 /// Wrapper of vDSP stats function
@@ -359,8 +359,9 @@ internal func wrap_vDSP_stats<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ stri
 ///   - vDSP_func: The vDSP stats index function
 @inline(__always)
 internal func wrap_vDSP_stats_index<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ stride: Int, _ dstptr: UnsafeMutablePointer<UInt>, _ vDSP_func: vDSP_stats_index_func<T>){
-    var tmp = Array(repeating: T.zero, count: size)
-    vDSP_func(srcptr, vDSP_Stride(stride), &tmp, dstptr, vDSP_Length(size))
+    // the max / min value (not used)
+    var value = T.zero
+    vDSP_func(srcptr, vDSP_Stride(stride), &value, dstptr, vDSP_Length(size))
 }
 
 /// Wrapper of vDSP compress function
@@ -1016,16 +1017,15 @@ internal func argsort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ 
         srcmfarray.withUnsafeMutableStartPointer(datatype: T.self){
             srcptr in
             
+            // one index buffer for every row. vDSP's argsort needs it to start with 0..<count
+            var uiarray = Array<UInt>(repeating: 0, count: count)
             for _ in 0..<srcmfarray.size / count{
-                var uiarray = Array<UInt>(stride(from: 0, to: UInt(count), by: 1))
-                //let srcptr = stride >= 0 ? srcptr.baseAddress! : srcptr.baseAddress! - mfarray.offsetIndex
+                for j in 0..<count{
+                    uiarray[j] = UInt(j)
+                }
                 wrap_vDSP_argsort(count, srcptr + offset, &uiarray, order, vDSP_func)
-                
-                // TODO: refactor
-                //convert dataptr(int) to float
-                var flarray = uiarray.map{ Float($0) }
-                flarray.withUnsafeMutableBufferPointer{
-                    (dstptrF + offset).moveUpdate(from: $0.baseAddress!, count: count)
+                for j in 0..<count{
+                    dstptrF[offset + j] = Float(uiarray[j])
                 }
                 
                 offset += count
@@ -2622,8 +2622,9 @@ internal func wrap_vDSP_stats<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ stri
 
 @inline(__always)
 internal func wrap_vDSP_stats_index<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ stride: Int, _ dstptr: UnsafeMutablePointer<UInt>, _ vDSP_func: vDSP_stats_index_func<T>){
-    var tmp = Array(repeating: T.zero, count: size)
-    vDSP_func(srcptr, stride, &tmp, dstptr, size)
+    // the max / min value (not used)
+    var value = T.zero
+    vDSP_func(srcptr, stride, &value, dstptr, size)
 }
 
 @inline(__always)

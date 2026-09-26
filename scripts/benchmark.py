@@ -47,6 +47,9 @@ c = a.transpose((1,2,3,4,5,0))
 posb = a > 0
 idx = np.array([1, 3, 5, 7, 9])
 values = a[posb]
+v = np.arange(10000)
+nested = np.arange(100000, dtype=np.float32).reshape(1000, 100).tolist()
+m = np.fromfunction(lambda i, j: np.where(i == j, 256, (i*256 + j) % 7), (256, 256))
 signal = np.arange(1024*1024, dtype=np.float32).reshape((1024,1024))
 """
 
@@ -70,6 +73,15 @@ CASES = [
     Case("MathPefTests.testPeformancePower1", "Math", "let _ = Matft.math.power(bases: ad, exponents: 2)", "np.power(ad, 2)"),
     Case("MathPefTests.testPeformanceArctan2", "Math", "let _ = Matft.math.arctan2(x1: ad, x2: ad)", "np.arctan2(ad, ad)"),
     Case("StatsPefTests.testPeformanceMean1", "Stats", "let _ = a.mean()", "a.mean()"),
+    Case("StatsPefTests.testPeformanceCumsum1", "Stats", "let _ = Matft.stats.cumsum(a, axis: 0)", "np.cumsum(a, axis=0)"),
+    Case("StatsPefTests.testPeformanceCumsum2", "Stats", "let _ = Matft.stats.cumsum(a, axis: 5)", "np.cumsum(a, axis=5)"),
+    Case("StatsPefTests.testPeformanceCumsum3", "Stats", "let _ = Matft.stats.cumsum(v)", "np.cumsum(v)"),
+    Case("StatsPefTests.testPeformanceArgmax1", "Stats", "let _ = a.argmax(axis: 5)", "np.argmax(a, axis=5)"),
+    Case("StatsPefTests.testPeformanceArgmax2", "Stats", "let _ = a.argmax(axis: 0)", "np.argmax(a, axis=0)"),
+    Case("ConversionPefTests.testPeformanceArgsort1", "Conversion", "let _ = aneg.argsort(axis: -1)", "np.argsort(aneg, axis=-1)"),
+    Case("CreationPefTests.testPeformanceNested1", "Creation", "let _ = MfArray(nested)", "np.array(nested, dtype=np.float32)"),
+    Case("CreationPefTests.testPeformanceNums1", "Creation", "let _ = Matft.nums(Float(1), shape: [1000, 1000])", "np.full((1000, 1000), 1, dtype=np.float32)"),
+    Case("LinAlgPefTests.testPeformanceInv1", "LinAlg", "let _ = try! Matft.linalg.inv(m)", "np.linalg.inv(m)"),
     Case("BoolPefTests.testPeformanceGreater1", "Bool", "let _ = a > 0", "a > 0"),
     Case("BoolPefTests.testPeformanceGreaterDouble1", "Bool", "let _ = ad > 0", "ad > 0"),
     Case("BoolPefTests.testPeformanceGreater2", "Bool", "let _ = a > b", "a > b"),

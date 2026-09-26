@@ -461,7 +461,7 @@ extension Matft{
         let _dst: MfArray
         if axis != nil && mfarray.ndim > 1{// for given axis
             _axis = get_positive_axis(axis!, ndim: mfarray.ndim)
-            _dst = mfarray.deepcopy()
+            _dst = mfarray // the kernel copies it into a contiguous array
         }
         else{// for all elements
             _axis = 0
@@ -488,7 +488,7 @@ extension Matft{
         let _dst: MfArray
         if axis != nil && mfarray.ndim > 1{// for given axis
             _axis = get_positive_axis(axis!, ndim: mfarray.ndim)
-            _dst = mfarray.deepcopy()
+            _dst = mfarray // the kernel copies it into a contiguous array
         }
         else{// for all elements
             _axis = 0

@@ -190,11 +190,24 @@ extension Matft.stats{
     public static func cumsum(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         unsupport_complex(mfarray)
         
-        if let axis = axis{
-            return mfarray.ufuncAccumulate(Matft.add, axis: axis)
-        }
-        else{
-            return mfarray.flatten().ufuncAccumulate(Matft.add)
+        let (mfarray, axis) = axis == nil ? (mfarray.flatten(), 0) : (mfarray, axis!)
+        switch mfarray.storedType{
+        case .Float:
+            return _cumsum(mfarray, axis: axis, Float.self){
+                #if canImport(Accelerate)
+                vDSP_vadd($0, 1, $1, 1, $2, 1, vDSP_Length($3))
+                #else
+                vDSP_vadd($0, 1, $1, 1, $2, 1, $3)
+                #endif
+            }
+        case .Double:
+            return _cumsum(mfarray, axis: axis, Double.self){
+                #if canImport(Accelerate)
+                vDSP_vaddD($0, 1, $1, 1, $2, 1, vDSP_Length($3))
+                #else
+                vDSP_vaddD($0, 1, $1, 1, $2, 1, $3)
+                #endif
+            }
         }
     }
 
@@ -237,3 +250,40 @@ extension Matft.stats{
     }
 }
 
+/// Cumulative sum along the axis. The axis is moved to the front, and each row is accumulated onto the previous one.
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - axis: The axis
+///   - vadd: c = a + b for n elements
+/// - Returns: The cumulative sum. Bool is summed as Int like numpy
+fileprivate func _cumsum<T: MfStorable>(_ mfarray: MfArray, axis: Int, _ type: T.Type, _ vadd: (UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, Int) -> Void) -> MfArray{
+    let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+    let src = check_contiguous(mfarray.moveaxis(src: axis, dst: 0), .Row)
+    let size = src.size
+    let newdata = MfData(uninitializedSize: size, mftype: mfarray.mftype == .Bool ? .Int : mfarray.mftype)
+    
+    if size > 0{
+        let length = src.shape[0]
+        let rest = size / length
+        newdata.withUnsafeMutableStartPointer(datatype: T.self){
+            dstptr in
+            src.withUnsafeMutableStartPointer(datatype: T.self){
+                srcptr in
+                dstptr.update(from: srcptr, count: rest)
+                if rest >= 16{
+                    for k in 1..<length{
+                        vadd(dstptr + (k - 1)*rest, srcptr + k*rest, dstptr + k*rest, rest)
+                    }
+                }
+                else{
+                    // short rows (e.g. 1d): sequential in the same order as numpy
+                    for i in rest..<size{
+                        dstptr[i] = dstptr[i - rest] + srcptr[i]
+                    }
+                }
+            }
+        }
+    }
+    
+    return MfArray(mfdata: newdata, mfstructure: MfStructure(shape: src.shape, mforder: .Row)).moveaxis(src: 0, dst: axis)
+}
