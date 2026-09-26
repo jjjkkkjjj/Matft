@@ -14,7 +14,7 @@ The comparison images are committed to the repository so they can be reviewed in
 | Location | Role |
 |---|---|
 | `Tests/MatftTests/files/images/rena.png` | Input image (225x225, RGBA). Lossless PNG, because JPEG mixes in decoder differences |
-| `Tests/MatftTests/ImageSnapshot.swift` | Test helper. `loadFixture()` loads a CGImage; `save(_:as:)` saves Matft's output as PNG |
+| `Tests/MatftTests/ImageSnapshot.swift` | Test helper. `loadFixture()` loads a CGImage; `check(_:as:)` compares Matft's output with the committed `opencv/<case>.png` by `tolerances[<case>]` and then saves it as PNG (`save(_:as:)`) |
 | `Tests/MatftTests/ImageTest.swift` | Image processing tests (create it if missing) |
 | `scripts/image_compare.py` | Runs the OpenCV version of each conversion registered in `CASES` and writes reference images, comparison images, and diff metrics |
 | `files/images/matft/<case>.png` | Matft's output (committed) |
@@ -52,7 +52,7 @@ final class ImageTest: XCTestCase {
         XCTAssertEqual(ret.mftype, .Float)
         // Assert whatever can be checked numerically, e.g. representative pixel values
 
-        ImageSnapshot.save(ret, as: "resize_300x150")
+        ImageSnapshot.check(ret, as: "resize_300x150")
     }
 }
 #endif
@@ -63,7 +63,8 @@ Tips for numeric asserts:
 - Get expected values by computing them from `rena.png` in Python (numpy / cv2). Write the Python expression in a comment so it is clear where the embedded values come from.
 - For operations involving interpolation (resize, warpAffine), vImage and OpenCV do not match pixel for pixel. So assert **algorithm-independent properties**: shape, dtype, value range, pixels in flat regions, border values (warpAffine's borderValue), etc.
 - For operations that are exactly defined (flip, channel swap, grayscale), compare representative pixels with the numpy / cv2 values (divide by 255 for Float; tolerance around 1e-2).
-- Give each `save` a case name that tells the operation and its conditions (e.g. `warpAffine_rotate30_edgeExtend`).
+- Give each `check` a case name that tells the operation and its conditions (e.g. `warpAffine_rotate30_edgeExtend`).
+- `check` fails until the case has a tolerance in `ImageSnapshot.tolerances` and a committed reference `opencv/<case>.png` (step 4). Pick `.exact`, `.rounding(n)` or `.interpolation(meanAbs:minPSNR:)` from the metrics of step 4, with a little margin, and write the measured values in a comment.
 
 Confirm it fails with `swift test --filter MatftTests.ImageTest`.
 
@@ -100,7 +101,7 @@ python3 scripts/image_compare.py --filter '<regex of case names>'
 
 Check the `status` column of the table the script prints.
 
-- `missing-matft`: `save` was not called on the Swift side. Either `MATFT_IMAGE_SNAPSHOT=1` was forgotten or the case names do not match.
+- `missing-matft`: `check` was not called on the Swift side. Either `MATFT_IMAGE_SNAPSHOT=1` was forgotten or the case names do not match.
 - `missing-case`: not registered in `CASES`.
 
 ## 5. Visual check (Claude)
