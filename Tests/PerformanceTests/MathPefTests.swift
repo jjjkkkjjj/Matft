@@ -14,7 +14,7 @@ final class MathPefTests: XCTestCase {
     func testPeformanceSin1() {
         let a = PerfFixtures.a
         
-        self.measure {
+        self.measureWithWarmup {
             let _ = Matft.math.sin(a)
         }
     }
@@ -23,7 +23,7 @@ final class MathPefTests: XCTestCase {
         let a = PerfFixtures.a
         let b = a.transpose(axes: [0,3,4,2,1,5])
         
-        self.measure {
+        self.measureWithWarmup {
             let _ = Matft.math.sin(b)
         }
     }
@@ -31,7 +31,7 @@ final class MathPefTests: XCTestCase {
     func testPeformanceSign1() {
         let a = PerfFixtures.a
         
-        self.measure {
+        self.measureWithWarmup {
             let _ = Matft.math.sign(a)
         }
     }
@@ -40,7 +40,7 @@ final class MathPefTests: XCTestCase {
         let a = PerfFixtures.a
         let b = a.transpose(axes: [0,3,4,2,1,5])
         
-        self.measure {
+        self.measureWithWarmup {
             let _ = Matft.math.sign(b)
         }
     }

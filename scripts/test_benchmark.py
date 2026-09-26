@@ -26,6 +26,36 @@ class ParseXCTestOutputTest(unittest.TestCase):
         self.assertEqual(benchmark.parse_xctest_output("no measurements"), {})
 
 
+class ParseCallsPerSampleTest(unittest.TestCase):
+    def test_values_are_divided_by_calls_per_sample(self):
+        text = (
+            "MatftBench: -[PerformanceTests.BoolPefTests testPeformanceGreater1] number=100 warmup=0.5\n"
+            "Test Case '-[PerformanceTests.BoolPefTests testPeformanceGreater1]' measured [Time, seconds] "
+            "average: 0.015, relative standard deviation: 1.0%, values: [0.020000, 0.010000]\n"
+        )
+        got = benchmark.parse_xctest_output(text)
+        self.assertEqual(list(got), ["BoolPefTests.testPeformanceGreater1"])
+        for v, want in zip(got["BoolPefTests.testPeformanceGreater1"], [0.0002, 0.0001]):
+            self.assertAlmostEqual(v, want)
+
+    def test_parse_calls_per_sample_without_module(self):
+        # XCTestCase.name on macOS has no module prefix
+        text = "MatftBench: -[BoolPefTests testPeformanceGreater1] number=131 warmup=0.5\n"
+        self.assertEqual(benchmark.parse_calls_per_sample(text), {"BoolPefTests.testPeformanceGreater1": 131})
+
+    def test_parse_calls_per_sample(self):
+        text = "MatftBench: -[PerformanceTests.MathPefTests testPeformanceSin1] number=7 warmup=0.5\n"
+        self.assertEqual(benchmark.parse_calls_per_sample(text), {"MathPefTests.testPeformanceSin1": 7})
+
+
+class SwiftTestEnvTest(unittest.TestCase):
+    def test_env_contains_warmup_and_sample_time(self):
+        env = benchmark.swift_test_env(warmup=0.3, sample_time=0.05, base={"PATH": "/bin"})
+        self.assertEqual(env["PATH"], "/bin")
+        self.assertEqual(env["MATFT_BENCH_WARMUP"], "0.3")
+        self.assertEqual(env["MATFT_BENCH_SAMPLE_TIME"], "0.05")
+
+
 class FormatTimeTest(unittest.TestCase):
     def test_micro(self):
         self.assertEqual(benchmark.format_time(0.000596), "596μs")
@@ -45,6 +75,16 @@ class StatsTest(unittest.TestCase):
         self.assertAlmostEqual(s["median"], 0.0025)
         self.assertAlmostEqual(s["mean"], 0.0025)
         self.assertEqual(s["n"], 4)
+
+    def test_rsd_steady_ignores_leading_samples(self):
+        # XCTest `measure {}` reports slow first samples even after the warm-up
+        s = benchmark.summarize([0.004, 0.003, 0.002, 0.001, 0.001, 0.001])
+        self.assertGreater(s["rsd"], 0.5)
+        self.assertAlmostEqual(s["rsd_steady"], 0.0)
+
+    def test_rsd_steady_with_few_samples_falls_back_to_rsd(self):
+        s = benchmark.summarize([0.002, 0.001])
+        self.assertAlmostEqual(s["rsd_steady"], s["rsd"])
 
 
 class ReplaceReadmeTest(unittest.TestCase):
@@ -73,6 +113,13 @@ class RenderTest(unittest.TestCase):
         self.assertIn("2.00ms", md)
         self.assertIn("1.00ms", md)
         self.assertIn("2.00x", md)
+
+    def test_report_mentions_warmup_and_calls_per_sample(self):
+        cases = [benchmark.Case("X.testY", "Math", "let _ = y", "y")]
+        env = {"cpu": "c", "macos": "m", "swift": "s", "python": "p", "numpy": "n", "commit": "x", "date": "d"}
+        md = benchmark.render_report(cases, {"swift": {}, "numpy": {}}, env)
+        self.assertIn("warm-up", md)
+        self.assertIn("calls per sample", md)
 
     def test_render_missing_value(self):
         cases = [benchmark.Case("X.testY", "Math", "let _ = y", "y")]

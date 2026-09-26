@@ -8,7 +8,7 @@ final class ArithmeticPefTests: XCTestCase {
         let a = PerfFixtures.a
         let aneg = PerfFixtures.aneg
         
-        self.measure {
+        self.measureWithWarmup {
             let _ = a+aneg
         }
     }
@@ -18,7 +18,7 @@ final class ArithmeticPefTests: XCTestCase {
         let aT = a.T
         let b = a.transpose(axes: [0,3,4,2,1,5])
         
-        self.measure {
+        self.measureWithWarmup {
             let _ = b+aT
         }
     }
@@ -28,7 +28,7 @@ final class ArithmeticPefTests: XCTestCase {
         let aT = a.T
         let c = a.transpose(axes: [1,2,3,4,5,0])
         
-        self.measure {
+        self.measureWithWarmup {
             let _ = c+aT
         }
     }

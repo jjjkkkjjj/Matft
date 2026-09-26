@@ -9,6 +9,10 @@ Usage:
 
 Matft is measured with `swift test -c release --filter PerformanceTests` (XCTest `measure {}`),
 Numpy with `timeit`. Both report the median per-call time.
+
+Like `timeit`, each Matft sample runs the expression several times after a warm-up
+(see `measureWithWarmup` in Tests/PerformanceTests/PerfFixtures.swift): the number of calls
+per sample is chosen so that one sample takes about `--sample-time` seconds.
 """
 import argparse
 import datetime
@@ -71,16 +75,34 @@ CASES = [
 _MEASURED_RE = re.compile(
     r"Test Case '-\[\w+\.(\w+) (\w+)\]' measured \[Time, seconds\].*?values: \[([^\]]*)\]"
 )
+# Printed by `measureWithWarmup` before `measure {}` starts
+_CALLS_RE = re.compile(r"MatftBench: -\[(?:\w+\.)?(\w+) (\w+)\] number=(\d+)")
 
 
 # ---------------------------------------------------------------- pure helpers
 
+def parse_calls_per_sample(text):
+    """Extract `{ "<Class>.<method>": calls per sample }` printed by `measureWithWarmup`."""
+    return {f"{cls}.{method}": int(n) for cls, method, n in _CALLS_RE.findall(text)}
+
+
 def parse_xctest_output(text):
-    """Extract `{ "<Class>.<method>": [seconds, ...] }` from XCTest output."""
+    """Extract `{ "<Class>.<method>": [seconds per call, ...] }` from XCTest output."""
+    calls = parse_calls_per_sample(text)
     results = {}
     for cls, method, values in _MEASURED_RE.findall(text):
-        results[f"{cls}.{method}"] = [float(v) for v in values.split(",") if v.strip()]
+        case_id = f"{cls}.{method}"
+        number = calls.get(case_id, 1)
+        results[case_id] = [float(v) / number for v in values.split(",") if v.strip()]
     return results
+
+
+def swift_test_env(warmup, sample_time, base=None):
+    """Environment for `swift test`, read by `PerfFixtures` in Tests/PerformanceTests."""
+    env = dict(os.environ if base is None else base)
+    env["MATFT_BENCH_WARMUP"] = str(warmup)
+    env["MATFT_BENCH_SAMPLE_TIME"] = str(sample_time)
+    return env
 
 
 def format_time(sec):
@@ -95,14 +117,25 @@ def format_time(sec):
             return f"{v:.2f}{unit}"
 
 
+# XCTest `measure {}` reports systematically slow first samples even after the warm-up
+STEADY_SKIP = 3
+
+
+def _rsd(values):
+    mean = statistics.fmean(values)
+    return statistics.pstdev(values) / mean if mean else 0.0
+
+
 def summarize(values):
     mean = statistics.fmean(values)
     std = statistics.pstdev(values)
+    steady = values[STEADY_SKIP:] if len(values) > STEADY_SKIP + 1 else values
     return {
         "median": statistics.median(values),
         "mean": mean,
         "std": std,
         "rsd": std / mean if mean else 0.0,
+        "rsd_steady": _rsd(steady),  # variation after the leading samples; use this to judge reliability
         "n": len(values),
     }
 
@@ -161,7 +194,8 @@ def render_report(cases, results, env, baseline=None):
         render_tables(cases, results, baseline),
         render_env(env),
         "",
-        "Matft: median of XCTest `measure {}` in release build (`swift test -c release`). "
+        "Matft: median of XCTest `measure {}` in release build (`swift test -c release`), "
+        "after a warm-up and with several calls per sample (like `timeit`). "
         "Numpy: median of `timeit`. Ratios > 1 (Matft slower) are shown in bold.",
         "",
         "Regenerate with `python3 scripts/benchmark.py --update-readme`.",
@@ -193,12 +227,13 @@ def collect_env():
     }
 
 
-def run_swift(cases):
+def run_swift(cases, warmup, sample_time):
     # SwiftPM matches --filter against "<Target>.<Class>/<method>"
     ids = "|".join(re.escape(c.id).replace("\\.", "/") for c in cases)
     cmd = ["swift", "test", "-c", "release", "--filter", f"^PerformanceTests\\.({ids})$"]
     print("$ " + " ".join(cmd), file=sys.stderr)
-    proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
+    proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
+                          env=swift_test_env(warmup, sample_time))
     output = proc.stdout + proc.stderr
     if proc.returncode != 0:
         sys.stderr.write(output)
@@ -227,6 +262,8 @@ def main(argv=None):
     p.add_argument("--skip-numpy", action="store_true", help="reuse Numpy results from latest.json")
     p.add_argument("--baseline", help="previous results JSON to compare Matft against")
     p.add_argument("--update-readme", action="store_true", help="rewrite the table in README.md")
+    p.add_argument("--warmup", type=float, default=0.5, help="Matft: warm-up seconds per case")
+    p.add_argument("--sample-time", type=float, default=0.02, help="Matft: target seconds per sample")
     p.add_argument("--repeat", type=int, default=10, help="Numpy: number of samples")
     p.add_argument("--number", type=int, default=10, help="Numpy: calls per sample")
     args = p.parse_args(argv)
@@ -243,7 +280,7 @@ def main(argv=None):
             previous = json.load(f)
 
     results = {
-        "swift": previous["results"]["swift"] if args.skip_swift else run_swift(cases),
+        "swift": previous["results"]["swift"] if args.skip_swift else run_swift(cases, args.warmup, args.sample_time),
         "numpy": previous["results"]["numpy"] if args.skip_numpy else run_numpy(cases, args.repeat, args.number),
     }
     baseline = None
