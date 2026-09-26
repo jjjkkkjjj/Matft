@@ -7,6 +7,10 @@ mlx-swift に存在しない（特に「出力 shape がデータ依存」「nan
 ## スコープ（フェーズ分割，各フェーズ = 1 PR）
 
 ### 4-A: 基礎（Plan 1 の前提を含むので最優先）
+> **実装済み（branch `feature/numpy-gaps-basic`）**: `Matft.pad`（`MfPadMode`: constant/edge/reflect/symmetric/wrap, `pad_width: [(Int,Int)]` or `Int`），
+> `Matft.stats.var/std`（`ddof`），`Matft.diff`，`Matft.meshgrid`（`MfMeshIndexing`: xy/ij），`Matft.math.isnan/isinf/isfinite`（既存 namespace に合わせ `Matft.math` 配下）．
+> テスト: `PadTest.swift`, `NumpyBasicTest.swift`．`` func `var` `` をキーワード名で宣言し `Matft.stats.var(...)` で呼べることを確認済み → 4-C の `Matft.where` も同方式で可．
+> 注意: Matft は Int と Float が混在した配列リテラル（`[1, 2.5]`）を受け付けない（既存仕様）．
 | 関数 | NumPy 仕様の要点 |
 |---|---|
 | `Matft.pad(a, pad_width:, mode:, constant_values:)` | mode: `constant`, `edge`, `reflect`, `symmetric`, `wrap`（最低 constant/reflect/edge）．pad_width は `[(before, after)]` per axis |

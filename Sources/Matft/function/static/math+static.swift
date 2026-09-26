@@ -1125,3 +1125,59 @@ extension Matft.math {
     }
 }
 #endif
+
+extension Matft.math{
+    /**
+       Test element-wise for NaN. Same as `np.isnan`
+       - parameters:
+            - mfarray: mfarray
+       - Returns: Bool mfarray
+    */
+    public static func isnan(_ mfarray: MfArray) -> MfArray{
+        return _bool_map(mfarray, { $0.isNaN }, { $0.isNaN })
+    }
+
+    /**
+       Test element-wise for positive or negative infinity. Same as `np.isinf`
+       - parameters:
+            - mfarray: mfarray
+       - Returns: Bool mfarray
+    */
+    public static func isinf(_ mfarray: MfArray) -> MfArray{
+        return _bool_map(mfarray, { $0.isInfinite }, { $0.isInfinite })
+    }
+
+    /**
+       Test element-wise for finiteness (not infinity and not NaN). Same as `np.isfinite`
+       - parameters:
+            - mfarray: mfarray
+       - Returns: Bool mfarray
+    */
+    public static func isfinite(_ mfarray: MfArray) -> MfArray{
+        return _bool_map(mfarray, { $0.isFinite }, { $0.isFinite })
+    }
+}
+
+/// Apply the predicate element-wise and return the Bool mfarray (row major)
+fileprivate func _bool_map(_ mfarray: MfArray, _ predicateF: (Float) -> Bool, _ predicateD: (Double) -> Bool) -> MfArray{
+    unsupport_complex(mfarray)
+
+    let ret = Matft.nums(Float.zero, shape: mfarray.shape, mftype: .Bool)
+    ret.withUnsafeMutableStartPointer(datatype: Float.self){
+        dstptr in
+        var i = 0
+        switch mfarray.storedType {
+        case .Float:
+            mfarray.withContiguousDataUnsafeMPtrT(datatype: Float.self){
+                (dstptr + i).pointee = predicateF($0.pointee) ? 1 : 0
+                i += 1
+            }
+        case .Double:
+            mfarray.withContiguousDataUnsafeMPtrT(datatype: Double.self){
+                (dstptr + i).pointee = predicateD($0.pointee) ? 1 : 0
+                i += 1
+            }
+        }
+    }
+    return ret
+}

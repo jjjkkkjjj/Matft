@@ -1,0 +1,157 @@
+//
+//  manipulation+static.swift
+//  Matft
+//
+
+import Foundation
+
+extension Matft{
+    /**
+       Pad an array. Same as `np.pad`
+       - parameters:
+            - mfarray: mfarray
+            - pad_width: The number of values padded to the edges of each axis. `[(before, after)]` for each axis, or one `(before, after)` for all axes
+            - mode: (Optional) The padding mode, by default constant
+            - constant_values: (Optional) The value to set the padded values for constant mode, by default 0
+       - Returns: The padded mfarray
+    */
+    public static func pad(_ mfarray: MfArray, pad_width: [(Int, Int)], mode: MfPadMode = .constant, constant_values: Double = 0) -> MfArray{
+        unsupport_complex(mfarray)
+        let ndim = mfarray.ndim
+        precondition(pad_width.count == 1 || pad_width.count == ndim, "pad_width must have 1 or \(ndim) elements")
+        let pad_width = pad_width.count == 1 ? Array(repeating: pad_width[0], count: ndim) : pad_width
+        precondition(pad_width.allSatisfy{ $0.0 >= 0 && $0.1 >= 0 }, "pad_width must not contain negative values")
+
+        var ret = mfarray
+        for axis in 0..<ndim{
+            let (before, after) = pad_width[axis]
+            if before == 0 && after == 0{
+                continue
+            }
+
+            if mode == .constant{
+                var parts: [MfArray] = []
+                if before > 0{
+                    var shape = ret.shape
+                    shape[axis] = before
+                    parts.append(Matft.nums(constant_values, shape: shape, mftype: mfarray.mftype))
+                }
+                parts.append(ret)
+                if after > 0{
+                    var shape = ret.shape
+                    shape[axis] = after
+                    parts.append(Matft.nums(constant_values, shape: shape, mftype: mfarray.mftype))
+                }
+                ret = Matft.concatenate(parts, axis: axis)
+            }
+            else{
+                let size = ret.shape[axis]
+                precondition(size > 0, "can't extend empty axis \(axis) using modes other than 'constant'")
+                let indices = (-before..<size + after).map{ _pad_source_index($0, size: size, mode: mode) }
+                ret = Matft.take(ret, indices: MfArray(indices, mftype: .Int), axis: axis)
+            }
+        }
+
+        return ret === mfarray ? mfarray.deepcopy() : ret
+    }
+
+    /**
+       Pad an array with the same width for all edges. Same as `np.pad` with an int `pad_width`
+       - parameters:
+            - mfarray: mfarray
+            - pad_width: The number of values padded to all edges
+            - mode: (Optional) The padding mode, by default constant
+            - constant_values: (Optional) The value to set the padded values for constant mode, by default 0
+       - Returns: The padded mfarray
+    */
+    public static func pad(_ mfarray: MfArray, pad_width: Int, mode: MfPadMode = .constant, constant_values: Double = 0) -> MfArray{
+        return Matft.pad(mfarray, pad_width: [(pad_width, pad_width)], mode: mode, constant_values: constant_values)
+    }
+
+    /**
+       Calculate the n-th discrete difference along the given axis. Same as `np.diff`
+       - parameters:
+            - mfarray: mfarray
+            - n: (Optional) The number of times values are differenced, by default 1
+            - axis: (Optional) The axis along which the difference is taken, by default the last axis
+       - Returns: The n-th differences. For bool mfarray, `not_equal` is used instead of subtraction
+    */
+    public static func diff(_ mfarray: MfArray, n: Int = 1, axis: Int = -1) -> MfArray{
+        precondition(n >= 0, "order must be non-negative but got \(n)")
+        let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+
+        var ret = mfarray
+        for _ in 0..<n{
+            var upper: [Any] = Array(repeating: MfSlice(), count: ret.ndim)
+            upper[axis] = MfSlice(start: 1)
+            var lower: [Any] = Array(repeating: MfSlice(), count: ret.ndim)
+            lower[axis] = MfSlice(to: -1)
+
+            let l = ret._get_mfarray(indices: &upper)
+            let r = ret._get_mfarray(indices: &lower)
+            ret = ret.mftype == .Bool ? Matft.not_equal(l, r) : l - r
+        }
+        return ret
+    }
+
+    /**
+       Return coordinate matrices from coordinate vectors. Same as `np.meshgrid`
+       - parameters:
+            - xi: The coordinate vectors. Each mfarray is flattened
+            - indexing: (Optional) Cartesian (.xy, default) or matrix (.ij) indexing
+       - Returns: The coordinate matrices (copies)
+    */
+    public static func meshgrid(_ xi: MfArray..., indexing: MfMeshIndexing = .xy) -> [MfArray]{
+        return Matft.meshgrid(xi, indexing: indexing)
+    }
+
+    /**
+       Return coordinate matrices from coordinate vectors. Same as `np.meshgrid`
+       - parameters:
+            - xi: The coordinate vectors. Each mfarray is flattened
+            - indexing: (Optional) Cartesian (.xy, default) or matrix (.ij) indexing
+       - Returns: The coordinate matrices (copies)
+    */
+    public static func meshgrid(_ xi: [MfArray], indexing: MfMeshIndexing = .xy) -> [MfArray]{
+        let ndim = xi.count
+        // In xy indexing, the first two axes are swapped
+        let swap = indexing == .xy && ndim > 1
+
+        var retShape = xi.map{ $0.size }
+        if swap{
+            retShape.swapAt(0, 1)
+        }
+
+        return xi.enumerated().map{
+            (i, x) in
+            var shape = Array(repeating: 1, count: ndim)
+            shape[swap && i < 2 ? 1 - i : i] = x.size
+            return x.flatten().reshape(shape).broadcast_to(shape: retShape).to_contiguous(mforder: .Row)
+        }
+    }
+}
+
+/// Get the source index of the padded position `index` (relative to the start of the original values)
+fileprivate func _pad_source_index(_ index: Int, size: Int, mode: MfPadMode) -> Int{
+    func mod(_ a: Int, _ b: Int) -> Int{
+        return ((a % b) + b) % b
+    }
+
+    switch mode {
+    case .constant:
+        preconditionFailure("constant mode has no source index")
+    case .edge:
+        return Swift.min(Swift.max(index, 0), size - 1)
+    case .wrap:
+        return mod(index, size)
+    case .reflect:
+        if size == 1{
+            return 0
+        }
+        let m = mod(index, 2*size - 2)
+        return m < size ? m : 2*size - 2 - m
+    case .symmetric:
+        let m = mod(index, 2*size)
+        return m < size ? m : 2*size - 1 - m
+    }
+}

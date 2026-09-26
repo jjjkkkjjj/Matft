@@ -240,3 +240,25 @@ public enum MfInterpolation: Int{
     /// vImage's high quality resampling (Lanczos)
     case Lanczos
 }
+
+/// The padding mode. Same as `mode` of `np.pad`
+public enum MfPadMode: Int{
+    /// Pads with a constant value
+    case constant
+    /// Pads with the edge values
+    case edge
+    /// Pads with the reflection of the vector mirrored on the first and last values
+    case reflect
+    /// Pads with the reflection of the vector mirrored along the edge
+    case symmetric
+    /// Pads with the wrap of the vector along the axis
+    case wrap
+}
+
+/// The indexing of meshgrid. Same as `indexing` of `np.meshgrid`
+public enum MfMeshIndexing: Int{
+    /// Cartesian indexing
+    case xy
+    /// Matrix indexing
+    case ij
+}
