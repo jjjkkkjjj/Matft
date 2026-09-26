@@ -20,4 +20,12 @@ final class IndexingPefTests: XCTestCase {
             let _ = a[a > 0]
         }
     }
+    
+    // not row contiguous source
+    func testPeformanceBooleanIndexing3() {
+        let aT = PerfFixtures.a.T
+        self.measureWithWarmup {
+            let _ = aT[aT > 0]
+        }
+    }
 }

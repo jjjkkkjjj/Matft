@@ -166,11 +166,12 @@ internal func biop_broadcast_to(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> (
         r_mfarray = r_mfarray.astype(rettype)
     }
     if l_mfarray.isReal != r_mfarray.isReal{
+        // not in place: the inputs belong to the caller
         if l_mfarray.isReal{
-            let _ = l_mfarray.to_complex()
+            l_mfarray = l_mfarray.to_complex(false)
         }
         if r_mfarray.isReal{
-            let _ = r_mfarray.to_complex()
+            r_mfarray = r_mfarray.to_complex(false)
         }
     }
 
