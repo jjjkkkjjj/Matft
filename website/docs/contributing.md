@@ -42,6 +42,16 @@ This script will:
 
 The WASM script automatically handles toolchain, SDK and runtime installation, so you can run it on a fresh machine without any prior setup.
 
+### MatftMLX build & test
+
+To build and test [MatftMLX](https://github.com/jjjkkkjjj/Matft/tree/main/Extensions/MatftMLX) (Apple silicon and Xcode with the Metal Toolchain are required, `swift test` cannot build MLX's Metal shaders):
+
+```bash
+xcodebuild -downloadComponent MetalToolchain  # only once
+./scripts/build-and-test-mlx.sh
+./scripts/run-mlx-demo.sh                      # demos: Matft preprocessing -> MLX
+```
+
 ### Requirements
 
 - **iOS/macOS:** Swift 6.1 or later

@@ -4,6 +4,10 @@
 Matft が mlx-swift の代替ではなく **補完** であることを README で明示し，選ばれる理由を伝える．コストほぼゼロで即着手可能．
 （ドキュメント変更なので TDD 対象外．ただし記載する事実はコード・テストで裏付けのあるものだけにする）
 
+> 2026-09-27 追記: ドキュメントは Docusaurus サイト（`website/`）に移行し，README は入口だけに短縮した．
+> 下記「実装結果」で README に入れた比較表と MLX 連携の節は `website/docs/guide/mlx.md` に移し，README には 1 行サマリ・コード例・リンクのみ残した．
+> 関数一覧は `website/docs/numpy-mapping/`．以下の「README」はこれらに読み替える．
+
 ## 追加する節（案）
 
 ### 1. "Matft vs MLX" / "When to use Matft"

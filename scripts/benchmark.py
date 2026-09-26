@@ -3,7 +3,7 @@
 
 Usage:
     python3 scripts/benchmark.py                  # run both, write benchmarks/results/latest.{json,md}
-    python3 scripts/benchmark.py --update-readme  # also rewrite the table in README.md
+    python3 scripts/benchmark.py --update-docs    # also rewrite the table in website/docs/performance.md
     python3 scripts/benchmark.py --skip-swift     # reuse Swift results from the previous JSON
     python3 scripts/benchmark.py --baseline old.json
 
@@ -30,12 +30,12 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 RESULTS_DIR = os.path.join(ROOT, "benchmarks", "results")
 LATEST_JSON = os.path.join(RESULTS_DIR, "latest.json")
 LATEST_MD = os.path.join(RESULTS_DIR, "latest.md")
-README = os.path.join(ROOT, "README.md")
+PERFORMANCE_DOC = os.path.join(ROOT, "website", "docs", "performance.md")
 
 MARKER_START = "<!-- BENCHMARK:START -->"
 MARKER_END = "<!-- BENCHMARK:END -->"
 
-# Keep in sync with Tests/PerformanceTests/PerfFixtures.swift and the snippets in README.md.
+# Keep in sync with Tests/PerformanceTests/PerfFixtures.swift and the snippets in website/docs/performance.md.
 SETUP = """\
 import numpy as np
 a = np.arange(10**6).reshape((10,10,10,10,10,10))
@@ -57,8 +57,8 @@ signal = np.arange(1024*1024, dtype=np.float32).reshape((1024,1024))
 class Case(NamedTuple):
     id: str        # "<XCTestCase class>.<test method>"
     category: str  # table the case belongs to
-    matft: str     # Swift expression shown in README
-    numpy: str     # Numpy statement measured by timeit (also shown in README)
+    matft: str     # Swift expression shown in the docs
+    numpy: str     # Numpy statement measured by timeit (also shown in the docs)
 
 
 CASES = [
@@ -187,7 +187,7 @@ def _median(results, side, case_id):
 
 
 def render_tables(cases, results, baseline=None):
-    """Render README-style Markdown tables grouped by category."""
+    """Render Markdown tables grouped by category."""
     out = []
     categories = list(dict.fromkeys(c.category for c in cases))
     for category in categories:
@@ -232,7 +232,7 @@ def render_report(cases, results, env, baseline=None):
         "after a warm-up and with several calls per sample (like `timeit`). "
         "Numpy: median of `timeit`. Ratios > 1 (Matft slower) are shown in bold.",
         "",
-        "Regenerate with `python3 scripts/benchmark.py --update-readme`.",
+        "Regenerate with `python3 scripts/benchmark.py --update-docs`.",
     ])
 
 
@@ -299,7 +299,8 @@ def main(argv=None):
     p.add_argument("--skip-swift", action="store_true", help="reuse Swift results from latest.json")
     p.add_argument("--skip-numpy", action="store_true", help="reuse Numpy results from latest.json")
     p.add_argument("--baseline", help="previous results JSON to compare Matft against")
-    p.add_argument("--update-readme", action="store_true", help="rewrite the table in README.md")
+    p.add_argument("--update-docs", "--update-readme", dest="update_docs", action="store_true",
+                   help="rewrite the table in website/docs/performance.md (--update-readme is the old name)")
     p.add_argument("--warmup", type=float, default=0.5, help="Matft: warm-up seconds per case")
     p.add_argument("--sample-time", type=float, default=0.02, help="Matft: target seconds per sample")
     p.add_argument("--repeat", type=int, default=10, help="Numpy: number of samples")
@@ -307,14 +308,14 @@ def main(argv=None):
     p.add_argument("--configuration", choices=["release", "debug"], default="release",
                    help="Matft: build configuration (debug shows what apps built without optimization see)")
     args = p.parse_args(argv)
-    if args.update_readme and args.configuration != "release":
-        raise SystemExit("--update-readme requires --configuration release")
+    if args.update_docs and args.configuration != "release":
+        raise SystemExit("--update-docs requires --configuration release")
 
     cases = [c for c in CASES if not args.filter or re.search(args.filter, c.id)]
     if not cases:
         raise SystemExit("no case matches --filter")
-    if args.update_readme and len(cases) != len(CASES):
-        raise SystemExit("--update-readme requires all cases (drop --filter)")
+    if args.update_docs and len(cases) != len(CASES):
+        raise SystemExit("--update-docs requires all cases (drop --filter)")
 
     previous = {"results": {}}
     if args.skip_swift or args.skip_numpy:
@@ -346,12 +347,12 @@ def main(argv=None):
     with open(LATEST_MD, "w") as f:
         f.write(report + "\n")
 
-    if args.update_readme:
-        with open(README) as f:
+    if args.update_docs:
+        with open(PERFORMANCE_DOC) as f:
             text = f.read()
-        with open(README, "w") as f:
+        with open(PERFORMANCE_DOC, "w") as f:
             f.write(replace_between_markers(text, render_report(cases, results, env)))
-        print(f"updated {os.path.relpath(README, ROOT)}", file=sys.stderr)
+        print(f"updated {os.path.relpath(PERFORMANCE_DOC, ROOT)}", file=sys.stderr)
 
 
 if __name__ == "__main__":

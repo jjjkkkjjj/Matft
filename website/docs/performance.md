@@ -80,7 +80,7 @@ Measured on Apple M5, macOS 26.5.1, Swift version 6.2.3, Python 3.9.6, numpy 2.0
 
 Matft: median of XCTest `measure {}` in release build (`swift test -c release`), after a warm-up and with several calls per sample (like `timeit`). Numpy: median of `timeit`. Ratios > 1 (Matft slower) are shown in bold.
 
-Regenerate with `python3 scripts/benchmark.py --update-readme`.
+Regenerate with `python3 scripts/benchmark.py --update-docs`.
 <!-- BENCHMARK:END -->
 
 Performance improvements are always welcome ([Issue #18](https://github.com/jjjkkkjjj/Matft/issues/18))!!
