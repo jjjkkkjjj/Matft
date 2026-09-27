@@ -1057,7 +1057,7 @@ fileprivate func _inner_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
 fileprivate func _compare_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ op: MfCompareOp) -> MfArray{
     let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
     guard isReal else {
-        return compare_mfarray(l_mfarray - r_mfarray, op, 0)
+        return compare_complex_mfarray(l_mfarray, r_mfarray, op)
     }
     // the difference must not wrap around (e.g. UInt8: 0 - 1 is -1, not 255)
     // and the same infinities must be equal (inf - inf is NaN)
