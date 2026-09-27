@@ -80,7 +80,8 @@ final class EmptyArrayTests: XCTestCase {
         XCTAssertNil(MfArray([] as [Int], shape: [0]).scalar(Int.self))
     }
 
-    /// Complex arrays with a zero-length dimension through creation, printing and elementwise operations
+    #if canImport(Accelerate)
+    /// Complex arrays with a zero-length dimension through creation, printing and elementwise operations (complex kernels need Accelerate)
     func testComplex(){
         for shape in [[0]] + shapes{
             for mftype in [MfType.Double, .Float]{
@@ -112,4 +113,5 @@ final class EmptyArrayTests: XCTestCase {
             }
         }
     }
+    #endif
 }
