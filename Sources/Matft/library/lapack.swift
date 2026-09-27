@@ -527,6 +527,36 @@ public func swiftEigenDecomposition(_ n: Int, _ a: inout [Double], _ wr: inout [
 
 // MARK: - Platform-specific LAPACK implementations
 
+/// Unpack the eigenvectors of LAPACK `geev` into row-major real and imaginary parts.
+///
+/// `v` is column-major: the eigenvector `j` is the column `j`. For a complex conjugate pair (`wi[j] > 0`),
+/// the vectors are `v[:, j] + i*v[:, j+1]` and `v[:, j] - i*v[:, j+1]`.
+/// The returned arrays are row-major, so that the column `[:, j]` corresponds to the eigenvalue `j` like Numpy.
+internal func unpack_geev_vectors<T: MfStorable>(_ v: [T], _ wi: [T], _ n: Int) -> (re: [T], im: [T]){
+    var re = Array<T>(repeating: T.zero, count: n*n)
+    var im = Array<T>(repeating: T.zero, count: n*n)
+    var j = 0
+    while j < n{
+        if wi[j] == T.zero || j + 1 == n{
+            for i in 0..<n{
+                re[i*n + j] = v[i + j*n]
+            }
+            j += 1
+        }
+        else{
+            for i in 0..<n{
+                let r = v[i + j*n], m = v[i + (j + 1)*n]
+                re[i*n + j] = r
+                im[i*n + j] = m
+                re[i*n + j + 1] = r
+                im[i*n + j + 1] = -m
+            }
+            j += 2
+        }
+    }
+    return (re, im)
+}
+
 #if canImport(Accelerate)
 import Accelerate
 
@@ -784,37 +814,8 @@ internal func wrap_lapack_eigen<T: MfStorable>(_ rowcolnum: Int, _ srcptr: Unsaf
                         VR[k, j] - i*VR[k, j+1],
                         j += 2
          */
-        var VLRe = Array<T>(repeating: T.zero, count: rowcolnum*rowcolnum)
-        var VLIm = Array<T>(repeating: T.zero, count: rowcolnum*rowcolnum)
-        var VRRe = Array<T>(repeating: T.zero, count: rowcolnum*rowcolnum)
-        var VRIm = Array<T>(repeating: T.zero, count: rowcolnum*rowcolnum)
-        for k in 0..<rowcolnum{
-            var j = 0
-        
-            while j < rowcolnum{
-                let index = k*rowcolnum + j
-                if WI[k] == 0{
-                    VLRe[index] = VL[index]
-                    VLIm[index] = T.zero
-                    VRRe[index] = VR[index]
-                    VRIm[index] = T.zero
-                    j += 1
-                }
-                else{
-                    VLRe[index] = VL[index]
-                    VLIm[index] = VL[index + 1]
-                    VLRe[index + 1] = VL[index]
-                    VLIm[index + 1] = -VL[index + 1]
-                    
-                    VRRe[index] = VR[index]
-                    VRIm[index] = VR[index + 1]
-                    VRRe[index + 1] = VR[index]
-                    VRIm[index + 1] = -VR[index + 1]
-                    j += 2
-                }
-            }
-            
-        }
+        var (VLRe, VLIm) = unpack_geev_vectors(VL, WI, rowcolnum)
+        var (VRRe, VRIm) = unpack_geev_vectors(VR, WI, rowcolnum)
         //moveUpdate
         WR.withUnsafeMutableBufferPointer{
             dstValRePtr.moveUpdate(from: $0.baseAddress!, count: rowcolnum)
@@ -1611,34 +1612,8 @@ internal func wrap_lapack_eigen<T: MfStorable>(_ rowcolnum: Int, _ srcptr: Unsaf
         throw MfError.LinAlgError.notConverge("the QR algorithm failed to compute all the eigenvalues, and no eigenvectors have been computed; elements \(INFO)+1:N of WR and WI contain eigenvalues which have converged.")
     }
     else {
-        var VLRe = Array<T>(repeating: T.zero, count: rowcolnum*rowcolnum)
-        var VLIm = Array<T>(repeating: T.zero, count: rowcolnum*rowcolnum)
-        var VRRe = Array<T>(repeating: T.zero, count: rowcolnum*rowcolnum)
-        var VRIm = Array<T>(repeating: T.zero, count: rowcolnum*rowcolnum)
-        for k in 0..<rowcolnum {
-            var j = 0
-            while j < rowcolnum {
-                let index = k*rowcolnum + j
-                if WI[k] == 0 {
-                    VLRe[index] = VL[index]
-                    VLIm[index] = T.zero
-                    VRRe[index] = VR[index]
-                    VRIm[index] = T.zero
-                    j += 1
-                }
-                else {
-                    VLRe[index] = VL[index]
-                    VLIm[index] = VL[index + 1]
-                    VLRe[index + 1] = VL[index]
-                    VLIm[index + 1] = -VL[index + 1]
-                    VRRe[index] = VR[index]
-                    VRIm[index] = VR[index + 1]
-                    VRRe[index + 1] = VR[index]
-                    VRIm[index + 1] = -VR[index + 1]
-                    j += 2
-                }
-            }
-        }
+        var (VLRe, VLIm) = unpack_geev_vectors(VL, WI, rowcolnum)
+        var (VRRe, VRIm) = unpack_geev_vectors(VR, WI, rowcolnum)
         WR.withUnsafeMutableBufferPointer {
             dstValRePtr.moveUpdate(from: $0.baseAddress!, count: rowcolnum)
         }
