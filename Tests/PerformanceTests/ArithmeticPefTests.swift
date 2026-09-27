@@ -39,4 +39,26 @@ final class ArithmeticPefTests: XCTestCase {
             let _ = a + Float(0.5)
         }
     }
+
+    func testPeformanceDiv1() {
+        let a = PerfFixtures.a
+        let aneg = PerfFixtures.aneg
+        self.measureWithWarmup {
+            let _ = a/aneg
+        }
+    }
+
+    func testPeformanceDivScalar1() {
+        let a = PerfFixtures.a
+        self.measureWithWarmup {
+            let _ = a / Float(3)
+        }
+    }
+
+    func testPeformanceDivScalarDouble1() {
+        let ad = PerfFixtures.ad
+        self.measureWithWarmup {
+            let _ = ad / 3.0
+        }
+    }
 }

@@ -669,55 +669,94 @@ internal func biopzvs_separately_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ 
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
-/// `c = a / b` element-wise by IEEE division, which is correctly rounded like numpy.
+/// The number of elements `_vforce_div` divides per vForce call when it needs temporary buffers
+fileprivate let vforceDivChunk = 4096
+
+/// `c = a / b` element-wise by vForce's vvdivf / vvdiv, which are correctly rounded like numpy.
 /// vDSP's divisions aren't: vDSP_vdiv, vDSP_vsdiv and vDSP_svdiv of Float (e.g. 255 / 255 -> 0.99999994), and vDSP_vdivD and vDSP_vsdivD of Double
 /// (e.g. 6.0 / 10 -> 0.6000000000000001) are off by 1 ulp. A stride of 0 repeats the first element (a scalar).
-/// The loop is vectorized by the compiler, and it is as fast as vDSP in release builds
-@inline(__always)
-fileprivate func _ieee_div<T: FloatingPoint>(_ a: UnsafePointer<T>, _ ia: Int, _ b: UnsafePointer<T>, _ ib: Int, _ c: UnsafeMutablePointer<T>, _ ic: Int, _ n: Int){
-    if ic == 1 && ia == 1 && ib == 1{
-        for i in 0..<n{
-            c[i] = a[i] / b[i]
+/// vForce has no strides, so non-unit strides are gathered into (and scattered from) small buffers by `copy_func` (vDSP_vsmul by 1, which is exact).
+/// Unlike a Swift loop, this stays fast in debug builds
+fileprivate func _vforce_div<T: MfStorable>(_ a: UnsafePointer<T>, _ ia: Int, _ b: UnsafePointer<T>, _ ib: Int, _ c: UnsafeMutablePointer<T>, _ ic: Int, _ n: Int, _ vvdiv_func: (UnsafeMutablePointer<T>, UnsafePointer<T>, UnsafePointer<T>, UnsafePointer<Int32>) -> Void, _ copy_func: vDSP_biopvs_func<T>, _ fill_func: (UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void){
+    guard n > 0 else { return }
+    if ia == 1 && ib == 1 && ic == 1{
+        var start = 0
+        while start < n{
+            var m = Int32(min(n - start, Int(Int32.max)))
+            vvdiv_func(c + start, a + start, b + start, &m)
+            start += Int(m)
         }
+        return
     }
-    else if ic == 1 && ia == 1 && ib == 0{
-        let s = b.pointee
-        for i in 0..<n{
-            c[i] = a[i] / s
+
+    let chunk = min(n, vforceDivChunk)
+    var one = T.from(1)
+    // a buffer is needed only for a non-unit stride; a stride of 0 is filled with the scalar once
+    func buffer(_ p: UnsafePointer<T>, _ stride: Int) -> UnsafeMutablePointer<T>?{
+        guard stride != 1 else { return nil }
+        let buf = UnsafeMutablePointer<T>.allocate(capacity: chunk)
+        if stride == 0{
+            fill_func(p, buf, 1, vDSP_Length(chunk))
         }
+        return buf
     }
-    else if ic == 1 && ia == 0 && ib == 1{
-        let s = a.pointee
-        for i in 0..<n{
-            c[i] = s / b[i]
-        }
+    let abuf = buffer(a, ia), bbuf = buffer(b, ib)
+    let cbuf = ic == 1 ? nil : UnsafeMutablePointer<T>.allocate(capacity: chunk)
+    defer{
+        abuf?.deallocate(); bbuf?.deallocate(); cbuf?.deallocate()
     }
-    else{
-        for i in 0..<n{
-            c[i * ic] = a[i * ia] / b[i * ib]
+
+    var start = 0
+    while start < n{
+        let m = min(n - start, chunk)
+        func operand(_ p: UnsafePointer<T>, _ stride: Int, _ buf: UnsafeMutablePointer<T>?) -> UnsafePointer<T>{
+            guard let buf = buf else { return p + start }
+            if stride != 0{
+                copy_func(p + start * stride, stride, &one, buf, 1, vDSP_Length(m))
+            }
+            return UnsafePointer(buf)
         }
+        let aptr = operand(a, ia, abuf), bptr = operand(b, ib, bbuf)
+        var m32 = Int32(m)
+        if let cbuf = cbuf{
+            vvdiv_func(cbuf, aptr, bptr, &m32)
+            copy_func(cbuf, 1, &one, c + start * ic, ic, vDSP_Length(m))
+        }
+        else{
+            vvdiv_func(c + start, aptr, bptr, &m32)
+        }
+        start += m
     }
 }
 
-/// vDSP_vdiv (C = A / B) with correct rounding. See `_ieee_div`
+@inline(__always)
+fileprivate func _vforce_divf(_ a: UnsafePointer<Float>, _ ia: Int, _ b: UnsafePointer<Float>, _ ib: Int, _ c: UnsafeMutablePointer<Float>, _ ic: Int, _ n: Int){
+    _vforce_div(a, ia, b, ib, c, ic, n, vvdivf, vDSP_vsmul, vDSP_vfill)
+}
+@inline(__always)
+fileprivate func _vforce_divd(_ a: UnsafePointer<Double>, _ ia: Int, _ b: UnsafePointer<Double>, _ ib: Int, _ c: UnsafeMutablePointer<Double>, _ ic: Int, _ n: Int){
+    _vforce_div(a, ia, b, ib, c, ic, n, vvdiv, vDSP_vsmulD, vDSP_vfillD)
+}
+
+/// vDSP_vdiv (C = A / B) with correct rounding. See `_vforce_div`
 internal func vDSP_vdiv_exact(_ B: UnsafePointer<Float>, _ IB: vDSP_Stride, _ A: UnsafePointer<Float>, _ IA: vDSP_Stride, _ C: UnsafeMutablePointer<Float>, _ IC: vDSP_Stride, _ N: vDSP_Length){
-    _ieee_div(A, IA, B, IB, C, IC, Int(N))
+    _vforce_divf(A, IA, B, IB, C, IC, Int(N))
 }
-/// vDSP_vdivD (C = A / B) with correct rounding. See `_ieee_div`
+/// vDSP_vdivD (C = A / B) with correct rounding. See `_vforce_div`
 internal func vDSP_vdivD_exact(_ B: UnsafePointer<Double>, _ IB: vDSP_Stride, _ A: UnsafePointer<Double>, _ IA: vDSP_Stride, _ C: UnsafeMutablePointer<Double>, _ IC: vDSP_Stride, _ N: vDSP_Length){
-    _ieee_div(A, IA, B, IB, C, IC, Int(N))
+    _vforce_divd(A, IA, B, IB, C, IC, Int(N))
 }
-/// vDSP_vsdiv (C = A / scalar) with correct rounding. See `_ieee_div`
+/// vDSP_vsdiv (C = A / scalar) with correct rounding. See `_vforce_div`
 internal func vDSP_vsdiv_exact(_ A: UnsafePointer<Float>, _ IA: vDSP_Stride, _ B: UnsafePointer<Float>, _ C: UnsafeMutablePointer<Float>, _ IC: vDSP_Stride, _ N: vDSP_Length){
-    _ieee_div(A, IA, B, 0, C, IC, Int(N))
+    _vforce_divf(A, IA, B, 0, C, IC, Int(N))
 }
-/// vDSP_vsdivD (C = A / scalar) with correct rounding. See `_ieee_div`
+/// vDSP_vsdivD (C = A / scalar) with correct rounding. See `_vforce_div`
 internal func vDSP_vsdivD_exact(_ A: UnsafePointer<Double>, _ IA: vDSP_Stride, _ B: UnsafePointer<Double>, _ C: UnsafeMutablePointer<Double>, _ IC: vDSP_Stride, _ N: vDSP_Length){
-    _ieee_div(A, IA, B, 0, C, IC, Int(N))
+    _vforce_divd(A, IA, B, 0, C, IC, Int(N))
 }
-/// vDSP_svdiv (C = scalar / B) with correct rounding. See `_ieee_div`
+/// vDSP_svdiv (C = scalar / B) with correct rounding. See `_vforce_div`
 internal func vDSP_svdiv_exact(_ A: UnsafePointer<Float>, _ B: UnsafePointer<Float>, _ IB: vDSP_Stride, _ C: UnsafeMutablePointer<Float>, _ IC: vDSP_Stride, _ N: vDSP_Length){
-    _ieee_div(A, 0, B, IB, C, IC, Int(N))
+    _vforce_divf(A, 0, B, IB, C, IC, Int(N))
 }
 
 /// ZBinary operation by vDSP
