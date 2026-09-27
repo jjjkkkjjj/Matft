@@ -33,6 +33,16 @@ internal func wrap_cblas_copy<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcS
     cblas_func(Int32(size), srcptr, Int32(srcStride), dstptr, Int32(dstStride))
 }
 
+/// Same as `wrap_cblas_copy`, but the pointers are the first elements of the copied sequences even for negative strides.
+/// BLAS takes the element at the lowest address for a negative stride, so the pointers are moved there
+@inline(__always)
+internal func wrap_cblas_copy_from_first<T>(_ size: Int, _ srcptr: UnsafePointer<T>, _ srcStride: Int, _ dstptr: UnsafeMutablePointer<T>, _ dstStride: Int, _ cblas_func: cblas_copy_func<T>){
+    guard size > 0 else { return }
+    let srcptr = srcStride >= 0 ? srcptr : srcptr + (size - 1) * srcStride
+    let dstptr = dstStride >= 0 ? dstptr : dstptr + (size - 1) * dstStride
+    cblas_func(Int32(size), srcptr, Int32(srcStride), dstptr, Int32(dstStride))
+}
+
 /// Wrapper of cblas matmul function
 /// - Parameters:
 ///   - size: A size
@@ -695,7 +705,7 @@ internal func fancyset_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices: Mf
                 let workAssignedMfarrayStrides = Array(assignedMfarray.strides.suffix(from: indices.ndim))
                 for cblasParams in OptOffsetParamsSequence(shape: workShape, bigger_strides: workAssignedMfarrayStrides, smaller_strides: workMfarrayStrides){
                     for (i, offset) in offsets.enumerated(){
-                        wrap_cblas_copy(cblasParams.blocksize, srcptr + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
+                        wrap_cblas_copy_from_first(cblasParams.blocksize, srcptr + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
                     }
                 }
                 /*
@@ -757,7 +767,7 @@ internal func fancysetall_by_cblas<T: MfStorable>(_ mfarray: MfArray, _ indices:
                 let workAssignedMfarrayStrides = Array(assignedMfarray.strides.suffix(workShape.count))
                 for cblasParams in OptOffsetParamsSequence(shape: workShape, bigger_strides: workAssignedMfarrayStrides, smaller_strides: workMfarrayStrides){
                     for (i, offset) in offsets.enumerated(){
-                        wrap_cblas_copy(cblasParams.blocksize, srcptr + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
+                        wrap_cblas_copy_from_first(cblasParams.blocksize, srcptr + i*workSize + cblasParams.b_offset, cblasParams.b_stride, dstptr + offset + cblasParams.s_offset, cblasParams.s_stride, cblas_func)
                     }
                 }
             }

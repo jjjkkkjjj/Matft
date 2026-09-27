@@ -158,8 +158,11 @@ extension MfArray: MfSubscriptable{
         //Indexing ref: https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
         var fancy_axes: [Int] = []
         var fancy_ops: [MfArray] = []
-        for index in indices {
+        // positions in `indices` of the integers and index arrays (numpy's advanced indices)
+        var advanced_positions: [Int] = []
+        for (position, index) in indices.enumerated() {
             if let _index = index as? Int { // normal indexing
+                advanced_positions.append(position)
                 let index = get_positive_index(_index, axissize: orig_shape[orig_axis], axis: orig_axis)
 
                 offset += index * orig_strides[orig_axis]
@@ -183,7 +186,7 @@ extension MfArray: MfSubscriptable{
                 
                 by < 0
                 startIndex < -orig_dim ==> -orig_dim-1
-                startIndex > orig_dim ==> orig_dim
+                startIndex >= orig_dim ==> orig_dim-1
                 orig_dim < toIndex ==> orig_dim
                 toIndex < -orig_dim ==> -orig_dim-1
                 */
@@ -205,8 +208,9 @@ extension MfArray: MfSubscriptable{
                     if startIndex < -orig_dim{
                         startIndex = -orig_dim - 1
                     }
-                    else if startIndex > orig_dim{
-                        startIndex = orig_dim
+                    else if startIndex >= orig_dim{
+                        // like Python, the first element of a negative step is the last one at most
+                        startIndex = orig_dim - 1
                     }
                     if orig_dim < toIndex{
                         toIndex = orig_dim
@@ -273,6 +277,7 @@ extension MfArray: MfSubscriptable{
                 // get all values first, fancyget later
                 let orig_dim = orig_shape[orig_axis]
                 
+                advanced_positions.append(position)
                 fancy_axes.append(new_axis)
                 fancy_ops.append(subop)
                 
@@ -328,12 +333,16 @@ extension MfArray: MfSubscriptable{
             ret = ret.moveaxis(src: fancy_axes, dst: Array(0..<fancy_dim))._fancygetall_mfarray(indices: &fancy_ops)
         }
         
-        if backed_dim == 0{// all of axes are fancy indexed
+        // like numpy, the index dimensions stay in place only when the advanced indices (integers and index arrays) are next to each other,
+        // otherwise they come first
+        let adjacent = zip(advanced_positions, advanced_positions.dropFirst()).allSatisfy{ $1 == $0 + 1 }
+        if backed_dim == 0 || !adjacent{
             return ret
         }
         
-        // back to backed_dim
-        ret = ret.moveaxis(src: Array(fancy_dim..<fancy_dim+backed_dim), dst: Array(0..<backed_dim))
+        // back to backed_dim. The index dimensions are the broadcast shape of the index arrays
+        let fancy_ndim = fancy_shape.count
+        ret = ret.moveaxis(src: Array(fancy_ndim..<fancy_ndim+backed_dim), dst: Array(0..<backed_dim))
             
         return ret
         
@@ -357,11 +366,15 @@ extension MfArray: MfSubscriptable{
             return ind
         }
         
+        if indices.contains(where: { $0 is MfArray }){
+            return self._fancymixedset_mfarray(indices: indices, newValue: newValue)
+        }
+        
         self._to_complex_if_needed(newValue)
         
         //note that this function is alike _binary_operation
         let array = self._get_mfarray(indices: &indices)
-        var newValue = newValue
+        var newValue = self._unaliased(newValue)
 
         if array.mftype != newValue.mftype{
             newValue = newValue.astype(array.mftype)
@@ -503,6 +516,71 @@ extension MfArray: MfSubscriptable{
         }
     }
     
+    /// Setter for index arrays mixed with integers and slices, e.g. `a[1~<, MfArray([2, 0])] = v`.
+    /// The index arrays are applied to the view selected by the other indices
+    /// - Parameters:
+    ///   - indices: The indices including at least one `.Int` index array. `newaxis` must not be included
+    ///   - newValue: The assigned mfarray. It is broadcast to the shape of the selection like numpy
+    private func _fancymixedset_mfarray(indices: [Any], newValue: MfArray){
+        var viewIndices: [Any] = []
+        var fancy_axes: [Int] = [] // the axes of the view
+        var fancy_ops: [MfArray] = []
+        // positions in `indices` of the integers and index arrays (numpy's advanced indices)
+        var advanced_positions: [Int] = []
+        var view_axis = 0
+        for (position, index) in indices.enumerated(){
+            if let op = index as? MfArray{
+                precondition(op.mftype == .Int, "fancy indexing must be Int only, but got \(op.mftype)")
+                advanced_positions.append(position)
+                fancy_axes.append(view_axis)
+                fancy_ops.append(op)
+                viewIndices.append(MfSlice())
+                view_axis += 1
+            }
+            else if index is Int{
+                advanced_positions.append(position)
+                viewIndices.append(index)
+            }
+            else{
+                viewIndices.append(index)
+                view_axis += 1
+            }
+        }
+        
+        let view = self._get_mfarray(indices: &viewIndices)
+        // the indexed axes come first, which is the layout the fancy setters take
+        let moved = view.moveaxis(src: fancy_axes, dst: Array(0..<fancy_axes.count))
+        
+        // like the getter, the index dimensions of the selection stay in place only when the advanced indices are next to each other
+        var value = newValue
+        let adjacent = zip(advanced_positions, advanced_positions.dropFirst()).allSatisfy{ $1 == $0 + 1 }
+        if adjacent && fancy_axes[0] > 0{
+            let fancy_shape = fancy_ops.reduce(fancy_ops[0]){ biop_broadcast_to($0, $1).r }.shape
+            let rest_shape = Array(moved.shape.suffix(from: fancy_axes.count))
+            let k = fancy_axes[0]
+            let selection_shape = Array(rest_shape.prefix(k)) + fancy_shape + Array(rest_shape.suffix(from: k))
+            value = value.broadcast_to(shape: selection_shape).moveaxis(src: Array(k..<k + fancy_shape.count), dst: Array(0..<fancy_shape.count))
+        }
+        
+        if fancy_ops.count == 1{
+            moved[fancy_ops[0]] = value
+        }
+        else{
+            moved._fancysetall_mfarray(indices: &fancy_ops, assignedMfarray: value)
+        }
+    }
+    
+    /// A copy of the assigned mfarray if it shares memory with self, because a setter reading from the overwritten memory would
+    /// see the new values (numpy copies an overlapping right-hand side too, e.g. `a[1:] = a[:-1]`)
+    /// - Parameters:
+    ///   - assignedMfarray: The assigned mfarray
+    private func _unaliased(_ assignedMfarray: MfArray) -> MfArray{
+        if assignedMfarray.mfdata.data_real == self.mfdata.data_real{
+            return assignedMfarray.to_contiguous(mforder: .Row)
+        }
+        return assignedMfarray
+    }
+    
     /// Convert self into complex in-place if the assigned mfarray is complex
     /// - Parameters:
     ///   - assignedMfarray: The assigned mfarray
@@ -521,6 +599,11 @@ extension MfArray: MfSubscriptable{
     private func _set_realimag(assignedMfarray: MfArray, _ setter: (MfArray, MfArray) -> Void){
         self._to_complex_if_needed(assignedMfarray)
         
+        var assignedMfarray = self._unaliased(assignedMfarray)
+        if self.isReal && assignedMfarray.mftype != self.mftype{
+            // convert like numpy, e.g. 300 into .UInt8 wraps around to 44 and 2.7 into .Int is truncated to 2
+            assignedMfarray = assignedMfarray.astype(self.mftype)
+        }
         if self.isReal{
             setter(self, assignedMfarray)
         }
