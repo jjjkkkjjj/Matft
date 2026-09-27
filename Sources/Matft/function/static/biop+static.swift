@@ -912,8 +912,13 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
     print(rmfarray.data)
     print(lmfarray)
     print(rmfarray)*/
-    
-    
+
+    // an empty operand: BLAS rejects zero leading dimensions. The sum over an empty inner dimension is 0 like Numpy
+    if lmfarray.size == 0 || rmfarray.size == 0{
+        let retshape = Array(lmfarray.shape.dropLast()) + [rmfarray.shape[rmfarray.ndim - 1]]
+        return Matft.nums(0, shape: retshape, mftype: lmfarray.mftype)
+    }
+
     //run
     switch MfType.storedType(lmfarray.mftype) {
     case .Float:
