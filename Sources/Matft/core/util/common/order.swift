@@ -243,7 +243,11 @@ internal func toSwiftArray(_ mfarray: MfArray) -> [Any]{
     
     var shape = mfarray.shape
     var data = mfarray.data
-    
+    // a 0-d array has no axis to nest: its single value is returned as a 1-element array
+    if shape.isEmpty{
+        return data
+    }
+
     return _get_swiftArray(&data, shape: &shape, axis: 0)
 }
 

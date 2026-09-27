@@ -349,9 +349,11 @@ fileprivate func _gen<T: MfStorable>(parser: _TxtParser, fillnan: T, _ mftype: M
 }
 
 fileprivate func _save(url: URL, mfarray: MfArray, delimiter: Character, newline: Character = "\n", encoding: String.Encoding = .utf8){
-    precondition(mfarray.ndim <= 2, "mfarray must be 1d or 2d, but got \(mfarray.ndim)d")
+    precondition(mfarray.ndim == 1 || mfarray.ndim == 2, "mfarray must be 1d or 2d, but got \(mfarray.ndim)d")
+    // like numpy, an empty 1d array writes no line
+    let rows = mfarray.ndim == 1 ? (mfarray.size == 0 ? 0 : 1) : mfarray.shape[0]
     let mfarray = mfarray.ndim == 1 ? mfarray.expand_dims(axis: 0) : mfarray
-    
+
     let delimiter = String(delimiter)
     let stride = mfarray.shape[1]
     let contents: [String]
@@ -387,7 +389,7 @@ fileprivate func _save(url: URL, mfarray: MfArray, delimiter: Character, newline
     }
     
     var contentString = ""
-    for i in 0..<(mfarray.size / stride){
+    for i in 0..<rows{
         contentString += contents[i*stride..<(i+1)*stride].joined(separator: delimiter) + String(newline)
     }
 

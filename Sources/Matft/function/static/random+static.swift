@@ -43,64 +43,45 @@ extension Matft.random{
             - shape: The shape of the result.
             - mftype: (Optional) An integer type, by default `.Int`.
        - Returns: The array of random integers.
-       - Precondition: `mftype` must be an integer type, and `low` and `high` must be representable in it.
+       - Precondition: `mftype` must be an integer type, the range must not be empty, and its values must be representable in `mftype` (e.g. `high` may be 256 for `.UInt8`).
     */
     public static func randint(low: Int, high: Int? = nil, shape: [Int], mftype: MfType = .Int) -> MfArray{
         
         var shape = shape
         let size = shape2size(&shape)
-        
+
+        let l = high == nil ? 0 : low
+        let h = high ?? low
+        precondition(l < h, "low >= high")
+
+        // draw in Int and convert: the exclusive high may be one beyond the type (e.g. 256 for .UInt8)
+        func draw<T: MfTypable & FixedWidthInteger>(_ type: T.Type) -> MfArray{
+            precondition(T(exactly: l) != nil && T(exactly: h - 1) != nil, "low and high are out of bounds for \(mftype)")
+            let array = (0..<size).map{ _ in T(Int.random(in: l..<h)) }
+            return MfArray(array, shape: shape)
+        }
+
         switch mftype {
         case .UInt8:
-            let l = UInt8(high == nil ? 0 : low)
-            let h = UInt8(high ?? low)
-            let array = (0..<size).map{ _ in UInt8.random(in: l..<h) }
-            return MfArray(array, shape: shape)
+            return draw(UInt8.self)
         case .UInt16:
-            let l = UInt16(high == nil ? 0 : low)
-            let h = UInt16(high ?? low)
-            let array = (0..<size).map{ _ in UInt16.random(in: l..<h) }
-            return MfArray(array, shape: shape)
+            return draw(UInt16.self)
         case .UInt32:
-            let l = UInt32(high == nil ? 0 : low)
-            let h = UInt32(high ?? low)
-            let array = (0..<size).map{ _ in UInt32.random(in: l..<h) }
-            return MfArray(array, shape: shape)
+            return draw(UInt32.self)
         case .UInt64:
-            let l = UInt64(high == nil ? 0 : low)
-            let h = UInt64(high ?? low)
-            let array = (0..<size).map{ _ in UInt64.random(in: l..<h) }
-            return MfArray(array, shape: shape)
+            return draw(UInt64.self)
         case .UInt:
-            let l = UInt(high == nil ? 0 : low)
-            let h = UInt(high ?? low)
-            let array = (0..<size).map{ _ in UInt.random(in: l..<h) }
-            return MfArray(array, shape: shape)
+            return draw(UInt.self)
         case .Int8:
-            let l = Int8(high == nil ? 0 : low)
-            let h = Int8(high ?? low)
-            let array = (0..<size).map{ _ in Int8.random(in: l..<h) }
-            return MfArray(array, shape: shape)
+            return draw(Int8.self)
         case .Int16:
-            let l = Int16(high == nil ? 0 : low)
-            let h = Int16(high ?? low)
-            let array = (0..<size).map{ _ in Int16.random(in: l..<h) }
-            return MfArray(array, shape: shape)
+            return draw(Int16.self)
         case .Int32:
-            let l = Int32(high == nil ? 0 : low)
-            let h = Int32(high ?? low)
-            let array = (0..<size).map{ _ in Int32.random(in: l..<h) }
-            return MfArray(array, shape: shape)
+            return draw(Int32.self)
         case .Int64:
-            let l = Int64(high == nil ? 0 : low)
-            let h = Int64(high ?? low)
-            let array = (0..<size).map{ _ in Int64.random(in: l..<h) }
-            return MfArray(array, shape: shape)
+            return draw(Int64.self)
         case .Int:
-            let l = Int(high == nil ? 0 : low)
-            let h = Int(high ?? low)
-            let array = (0..<size).map{ _ in Int.random(in: l..<h) }
-            return MfArray(array, shape: shape)
+            return draw(Int.self)
         default:
             preconditionFailure("mftype must be Interger, but got \(mftype)")
         }
