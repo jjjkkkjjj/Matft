@@ -35,6 +35,10 @@ extension Matft.linalg{
         unsupport_complex(b)
         
         let returnedType = StoredType.priority(coef.storedType, b.storedType)
+        // a 0x0 system has the empty solution like numpy (LAPACK rejects a zero leading dimension)
+        if coef.shape == [0, 0] && b.ndim <= 2 && b.shape[0] == 0{
+            return b.astype(returnedType.to_mftype())
+        }
 
         switch returnedType{
         case .Float:
@@ -87,6 +91,12 @@ extension Matft.linalg{
     */
     public static func det(_ mfarray: MfArray) throws -> MfArray{
         unsupport_complex(mfarray)
+        let shape = mfarray.shape
+        // the determinant of a 0x0 matrix is 1 (the empty product) like numpy
+        if mfarray.ndim >= 2 && shape[mfarray.ndim - 1] == 0 && shape[mfarray.ndim - 2] == 0{
+            let stacked = Array(shape.prefix(mfarray.ndim - 2))
+            return Matft.nums(1, shape: stacked.isEmpty ? [1] : stacked, mftype: mfarray.mftype)
+        }
         
         switch mfarray.storedType {
         case .Float:
@@ -171,6 +181,24 @@ extension Matft.linalg{
     */
     public static func svd(_ mfarray: MfArray, full_matrices: Bool = true) throws -> (v: MfArray, s: MfArray, rt: MfArray){
         unsupport_complex(mfarray)
+        precondition(mfarray.ndim > 1, "cannot get a singular value decomposition from 1-d mfarray")
+        let M = mfarray.shape[mfarray.ndim - 2], N = mfarray.shape[mfarray.ndim - 1]
+        if M == 0 || N == 0{
+            // like numpy: no singular values, and the full matrices are identities
+            let stacked = Array(mfarray.shape.prefix(mfarray.ndim - 2))
+            let rettype = mfarray.storedType.to_mftype()
+            func identity(_ n: Int) -> MfArray{
+                if n == 0{
+                    return Matft.nums(0, shape: stacked + [0, 0], mftype: rettype)
+                }
+                return Matft.eye(dim: n, mftype: rettype).broadcast_to(shape: stacked + [n, n]).to_contiguous(mforder: .Row)
+            }
+            let s = Matft.nums(0, shape: stacked + [0], mftype: rettype)
+            if full_matrices{
+                return (identity(M), s, identity(N))
+            }
+            return (Matft.nums(0, shape: stacked + [M, 0], mftype: rettype), s, Matft.nums(0, shape: stacked + [0, N], mftype: rettype))
+        }
         
         switch mfarray.storedType {
         case .Float:
@@ -197,6 +225,10 @@ extension Matft.linalg{
     public static func pinv(_ mfarray: MfArray, rcond: Float = 1e-15) throws -> MfArray{
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
         unsupport_complex(mfarray)
+        if mfarray.size == 0{
+            // like numpy: an empty (N, M) result (there are no singular values to invert)
+            return Matft.nums(0, shape: mfarray.swapaxes(axis1: -1, axis2: -2).shape, mftype: mfarray.storedType.to_mftype())
+        }
         
         // v's shape = (...,N,X)
         // s's shape = (min(X,Y),)
@@ -309,13 +341,8 @@ extension Matft.linalg{
         if ord != 0{
             let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponents: ord)
             let sum = abspow.sum(axis: axis, keepDims: keepDims)
-            switch sum.storedType{
-            case .Float:
-                return Matft.math.power(bases: sum, exponents: 1/ord)
-            case .Double:
-                // 1/ord in Float (e.g. 1/3) would limit a Double result to Float precision
-                return Matft.math.power(bases: sum, exponents: Matft.nums(1 / Double(ord), shape: [1], mftype: .Double))
-            }
+            // 1/ord in Float (e.g. 1/3) would limit a Double result to Float precision
+            return Matft.math.power(bases: sum, exponents: 1 / Double(ord))
         }
         else{
             // remove mfarray == 0, and count up non-zero
@@ -420,7 +447,7 @@ extension Matft.linalg{
         
         let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponents: 2)
         
-        var ret = Matft.math.power(bases: abspow.sum(axis: max(axes.row, axes.col), keepDims: false).sum(axis: min(axes.row, axes.col), keepDims: false), exponents: 1/2)
+        var ret = Matft.math.power(bases: abspow.sum(axis: max(axes.row, axes.col), keepDims: false).sum(axis: min(axes.row, axes.col), keepDims: false), exponents: 0.5)
         
         if keepDims{
             var retShape = mfarray.shape

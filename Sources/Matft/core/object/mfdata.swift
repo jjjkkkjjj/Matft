@@ -349,6 +349,13 @@ fileprivate func _get_flatten_column_major(queue: inout [Any], shape: inout [Int
         let elements = queue[head]
         
         if var elements = elements as? [Any]{
+            if elements.isEmpty{
+                // a zero-length dimension (e.g. [[], []] has shape [2, 0]): there are no values
+                if cnt == 0{
+                    shape.append(0)
+                }
+                return []
+            }
             if cnt == 0{ //append next dim
                 shape.append(elements.count)
                 //axis += 1

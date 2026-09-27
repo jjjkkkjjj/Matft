@@ -41,8 +41,9 @@ final class ArithmeticTests: XCTestCase {
 
             XCTAssertEqual(a+2, MfArray([[ 4.0,  3.0, -1.0,  2.0],
                                          [ 5.0,  3.0,  6.0, -3.0]]))
-            XCTAssertEqual(a-3.2, MfArray([[-1.2, -2.2, -6.2, -3.2],
-                                           [-0.2, -2.2,  0.8, -8.2]]))
+            // an Int array with a fractional scalar gives Float (numpy: float64)
+            XCTAssertClose(a-3.2, MfArray([[-1.2, -2.2, -6.2, -3.2],
+                                           [-0.2, -2.2,  0.8, -8.2]], mftype: .Float), rtol: 1e-6, atol: 1e-6, checkType: true)
 
 
             XCTAssertEqual(a*UInt8(1.3), MfArray([[ 2.0,  1.0, -3.0,  0.0],

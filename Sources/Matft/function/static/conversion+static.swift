@@ -442,10 +442,13 @@ extension Matft{
             - mfarray: The source array.
             - min: (Optional) The minimum value. If `nil`, it is treated as `-inf`.
             - max: (Optional) The maximum value. If `nil`, it is treated as `inf`.
-       - Returns: The clipped array.
+       - Returns: The clipped array. The bounds are "weak" scalars like numpy's Python scalars (NEP 50): the array keeps its type unless the bounds are a higher kind, e.g. an `.Int` array with `0.5` gives `.Float` (numpy: float64) and a `.Bool` array with `1` gives `.Int`.
        - Note: Only the real part is processed; the result of a complex array is real.
     */
     public static func clip<T: MfTypable>(_ mfarray: MfArray, min: T? = nil, max: T? = nil) -> MfArray{
+        // the bounds are weak scalars like the arithmetic operators (e.g. an .Int array with 0.5 gives .Float)
+        let rettype = MfType.scalar_result_type(array: mfarray.mftype, scalar: MfType.mftype(value: T.zero))
+        let mfarray = rettype == mfarray.mftype || !mfarray.isReal ? mfarray : mfarray.astype(rettype)
         func _clip<U: MfStorable>(_ vDSP_func: vDSP_clip_func<U>) -> MfArray{
             let max = max == nil ? U.infinity : U.from(max!)
             // like numpy (minimum(maximum(a, min), max)), max wins when min > max

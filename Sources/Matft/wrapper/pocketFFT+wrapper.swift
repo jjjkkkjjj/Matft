@@ -191,10 +191,12 @@ internal func execute_real_backward(_ mfarray: MfArray, axis: Int, norm: Double)
     }
     mfarray.withUnsafeMutableStartImagPointer(datatype: Double.self){
         mfarrptr in
+        // a real input is a spectrum whose imaginary parts are 0 like numpy
+        guard let mfarrptr = mfarrptr else { return }
         srcarr.withUnsafeMutableBufferPointer{
             srcptr in
             
-            wrap_cblas_copy(src_size, mfarrptr!, 1, srcptr.baseAddress! + 1, 2, cblas_dcopy)
+            wrap_cblas_copy(src_size, mfarrptr, 1, srcptr.baseAddress! + 1, 2, cblas_dcopy)
         }
     }
     

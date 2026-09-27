@@ -147,6 +147,30 @@ public enum MfType: Int{
         }
     }
 
+    /// The result type of a binary operation between an array and a Swift scalar.
+    ///
+    /// A scalar is a "weak" Python scalar of numpy 2 (NEP 50): only its kind (Bool < integer < floating point) matters,
+    /// and the array keeps its type unless the scalar's kind is higher (e.g. `.UInt8` with `Int` -> `.UInt8`, `.Float` with `Double` -> `.Float`).
+    /// An integer or `.Bool` array with a floating point scalar gives `.Float` (numpy: float64), and a `.Bool` array with an integer scalar gives `.Int`.
+    /// - Parameters:
+    ///   - array: The type of the array.
+    ///   - scalar: The type of the scalar.
+    /// - Returns: The result type.
+    static internal func scalar_result_type(array: MfType, scalar: MfType) -> MfType{
+        func kind(_ t: MfType) -> Swift.Int{
+            switch t{
+            case .Bool: return 0
+            case .Float, .Double: return 2
+            default: return 1
+            }
+        }
+        let (ak, sk) = (kind(array), kind(scalar))
+        if sk <= ak{
+            return array
+        }
+        return sk == 1 ? .Int : .Float
+    }
+
     /// (unsigned, bit width) of an integer type. nil for the others
     private var _integerKind: (unsigned: Bool, width: Int)?{
         switch self{

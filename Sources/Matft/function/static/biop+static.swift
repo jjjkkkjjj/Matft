@@ -51,7 +51,7 @@ extension Matft{
     /**
        Add an array and a scalar element-wise.
 
-       The result type is the higher-priority `mftype` of `l_mfarray` and the type of `r_scalar`, and complex arrays are supported. This is what `l + scalar` calls.
+       The scalar is a "weak" scalar like numpy's Python scalars (NEP 50): the result keeps the type of `l_mfarray` unless the scalar is a higher kind (Bool < integer < floating point), e.g. `.UInt8` + `1` -> `.UInt8` (out of range values wrap around), `.Float` * `2.5` -> `.Float`. An integer or `.Bool` array with a floating point scalar gives `.Float` (numpy: float64), and a `.Bool` array with an integer scalar gives `.Int`. Complex arrays are supported and stay complex. This is what `l + scalar` calls.
        Equivalent to `numpy.add`.
        - Parameters:
            - l_mfarray: The left operand.
@@ -60,7 +60,7 @@ extension Matft{
     */
     public static func add<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         let r_mfype = MfType.mftype(value: r_scalar)
-        let retmftype = MfType.priority(l_mfarray.mftype, r_mfype)
+        let retmftype = MfType.scalar_result_type(array: l_mfarray.mftype, scalar: r_mfype)
         
         var l_mfarray = l_mfarray
         if retmftype != l_mfarray.mftype{
@@ -91,7 +91,7 @@ extension Matft{
     /**
        Add a scalar and an array element-wise.
 
-       The result type is the higher-priority `mftype` of the type of `l_scalar` and `r_mfarray`, and complex arrays are supported. This is what `scalar + r` calls.
+       The scalar is a "weak" scalar like numpy's Python scalars (NEP 50): the result keeps the type of `r_mfarray` unless the scalar is a higher kind (Bool < integer < floating point), e.g. `1` + `.UInt8` -> `.UInt8` (out of range values wrap around), `2.5` * `.Float` -> `.Float`. An integer or `.Bool` array with a floating point scalar gives `.Float` (numpy: float64), and a `.Bool` array with an integer scalar gives `.Int`. Complex arrays are supported and stay complex. This is what `scalar + r` calls.
        Equivalent to `numpy.add`.
        - Parameters:
            - l_scalar: The left operand.
@@ -100,7 +100,7 @@ extension Matft{
     */
     public static func add<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
         let l_mfype = MfType.mftype(value: l_scalar)
-        let retmftype = MfType.priority(l_mfype, r_mfarray.mftype)
+        let retmftype = MfType.scalar_result_type(array: r_mfarray.mftype, scalar: l_mfype)
         
         var r_mfarray = r_mfarray
         if retmftype != r_mfarray.mftype{
@@ -165,7 +165,7 @@ extension Matft{
     /**
        Subtract an array and a scalar element-wise.
 
-       The result type is the higher-priority `mftype` of `l_mfarray` and the type of `r_scalar`, and complex arrays are supported. This is what `l - scalar` calls.
+       The scalar is a "weak" scalar like numpy's Python scalars (NEP 50): the result keeps the type of `l_mfarray` unless the scalar is a higher kind (Bool < integer < floating point), e.g. `.UInt8` + `1` -> `.UInt8` (out of range values wrap around), `.Float` * `2.5` -> `.Float`. An integer or `.Bool` array with a floating point scalar gives `.Float` (numpy: float64), and a `.Bool` array with an integer scalar gives `.Int`. Complex arrays are supported and stay complex. This is what `l - scalar` calls.
        Equivalent to `numpy.subtract`.
        - Parameters:
            - l_mfarray: The left operand.
@@ -174,7 +174,7 @@ extension Matft{
     */
     public static func sub<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         let r_mfype = MfType.mftype(value: r_scalar)
-        let retmftype = MfType.priority(l_mfarray.mftype, r_mfype)
+        let retmftype = MfType.scalar_result_type(array: l_mfarray.mftype, scalar: r_mfype)
         
         var l_mfarray = l_mfarray
         if retmftype != l_mfarray.mftype{
@@ -205,7 +205,7 @@ extension Matft{
     /**
        Subtract a scalar and an array element-wise.
 
-       The result type is the higher-priority `mftype` of the type of `l_scalar` and `r_mfarray`, and complex arrays are supported. This is what `scalar - r` calls.
+       The scalar is a "weak" scalar like numpy's Python scalars (NEP 50): the result keeps the type of `r_mfarray` unless the scalar is a higher kind (Bool < integer < floating point), e.g. `1` + `.UInt8` -> `.UInt8` (out of range values wrap around), `2.5` * `.Float` -> `.Float`. An integer or `.Bool` array with a floating point scalar gives `.Float` (numpy: float64), and a `.Bool` array with an integer scalar gives `.Int`. Complex arrays are supported and stay complex. This is what `scalar - r` calls.
        Equivalent to `numpy.subtract`.
        - Parameters:
            - l_scalar: The left operand.
@@ -214,7 +214,7 @@ extension Matft{
     */
     public static func sub<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
         let l_mfype = MfType.mftype(value: l_scalar)
-        let retmftype = MfType.priority(l_mfype, r_mfarray.mftype)
+        let retmftype = MfType.scalar_result_type(array: r_mfarray.mftype, scalar: l_mfype)
         
         var r_mfarray = r_mfarray
         if retmftype != r_mfarray.mftype{
@@ -279,7 +279,7 @@ extension Matft{
     /**
        Multiply an array and a scalar element-wise.
 
-       The result type is the higher-priority `mftype` of `l_mfarray` and the type of `r_scalar`, and complex arrays are supported. This is what `l * scalar` calls.
+       The scalar is a "weak" scalar like numpy's Python scalars (NEP 50): the result keeps the type of `l_mfarray` unless the scalar is a higher kind (Bool < integer < floating point), e.g. `.UInt8` + `1` -> `.UInt8` (out of range values wrap around), `.Float` * `2.5` -> `.Float`. An integer or `.Bool` array with a floating point scalar gives `.Float` (numpy: float64), and a `.Bool` array with an integer scalar gives `.Int`. Complex arrays are supported and stay complex. This is what `l * scalar` calls.
        Equivalent to `numpy.multiply`.
        - Parameters:
            - l_mfarray: The left operand.
@@ -288,7 +288,7 @@ extension Matft{
     */
     public static func mul<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         let r_mfype = MfType.mftype(value: r_scalar)
-        let retmftype = MfType.priority(l_mfarray.mftype, r_mfype)
+        let retmftype = MfType.scalar_result_type(array: l_mfarray.mftype, scalar: r_mfype)
         
         var l_mfarray = l_mfarray
         if retmftype != l_mfarray.mftype{
@@ -319,7 +319,7 @@ extension Matft{
     /**
        Multiply a scalar and an array element-wise.
 
-       The result type is the higher-priority `mftype` of the type of `l_scalar` and `r_mfarray`, and complex arrays are supported. This is what `scalar * r` calls.
+       The scalar is a "weak" scalar like numpy's Python scalars (NEP 50): the result keeps the type of `r_mfarray` unless the scalar is a higher kind (Bool < integer < floating point), e.g. `1` + `.UInt8` -> `.UInt8` (out of range values wrap around), `2.5` * `.Float` -> `.Float`. An integer or `.Bool` array with a floating point scalar gives `.Float` (numpy: float64), and a `.Bool` array with an integer scalar gives `.Int`. Complex arrays are supported and stay complex. This is what `scalar * r` calls.
        Equivalent to `numpy.multiply`.
        - Parameters:
            - l_scalar: The left operand.
@@ -328,7 +328,7 @@ extension Matft{
     */
     public static func mul<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
         let l_mfype = MfType.mftype(value: l_scalar)
-        let retmftype = MfType.priority(l_mfype, r_mfarray.mftype)
+        let retmftype = MfType.scalar_result_type(array: r_mfarray.mftype, scalar: l_mfype)
         
         var r_mfarray = r_mfarray
         if retmftype != r_mfarray.mftype{
@@ -401,7 +401,7 @@ extension Matft{
        Divide an array and a scalar element-wise.
 
        Complex arrays are supported. This is what `l / scalar` calls.
-       Like the array-array version, the result type is `.Float` when the higher-priority `mftype` of `l_mfarray` and the type of `r_scalar` is stored as Float (e.g. an `.Int` array divided by an `Int` gives `.Float`), and `.Double` for Double-stored types.
+       Like the array-array version, the result type is `.Float` when `l_mfarray` is stored as Float (e.g. an `.Int` array divided by an `Int` gives `.Float`; numpy: float64); the scalar doesn't change the type (NEP 50), and `.Double` for Double-stored types.
        Equivalent to `numpy.divide`.
        - Parameters:
            - l_mfarray: The left operand.
@@ -410,7 +410,7 @@ extension Matft{
     */
     public static func div<T: MfTypable>(_ l_mfarray: MfArray, _ r_scalar: T) -> MfArray{
         let r_mfype = MfType.mftype(value: r_scalar)
-        let retmftype = MfType.priority(l_mfarray.mftype, r_mfype)
+        let retmftype = MfType.scalar_result_type(array: l_mfarray.mftype, scalar: r_mfype)
         
         var l_mfarray = l_mfarray
         if retmftype != l_mfarray.mftype{
@@ -446,7 +446,7 @@ extension Matft{
        Divide a scalar and an array element-wise.
 
        Complex arrays are supported. This is what `scalar / r` calls.
-       Like the array-array version, the result type is `.Float` when the higher-priority `mftype` of the type of `l_scalar` and `r_mfarray` is stored as Float (e.g. an `Int` divided by an `.Int` array gives `.Float`), and `.Double` for Double-stored types.
+       Like the array-array version, the result type is `.Float` when `r_mfarray` is stored as Float (e.g. an `Int` divided by an `.Int` array gives `.Float`; numpy: float64); the scalar doesn't change the type (NEP 50), and `.Double` for Double-stored types.
        Equivalent to `numpy.divide`.
        - Parameters:
            - l_scalar: The left operand.
@@ -455,7 +455,7 @@ extension Matft{
     */
     public static func div<T: MfTypable>(_ l_scalar: T, _ r_mfarray: MfArray) -> MfArray{
         let l_mfype = MfType.mftype(value: l_scalar)
-        let retmftype = MfType.priority(l_mfype, r_mfarray.mftype)
+        let retmftype = MfType.scalar_result_type(array: r_mfarray.mftype, scalar: l_mfype)
         
         var r_mfarray = r_mfarray
         if retmftype != r_mfarray.mftype{
@@ -1034,11 +1034,11 @@ fileprivate func _inner_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
     let retShape = Array(l_mfarray.shape.prefix(l_mfarray.ndim - 1) + r_mfarray.shape.prefix(r_mfarray.ndim - 1))
     let rettype = l_mfarray.mftype
     
-    //convert shape to calculate
-    let l_mfarray = l_mfarray.reshape([-1, lastdim])
-    let l_calcsize = l_mfarray.shape[0]
-    let r_mfarray = r_mfarray.reshape([-1, lastdim])
-    let r_calcsize = r_mfarray.shape[0]
+    //convert shape to calculate (the number of rows is given explicitly because -1 can't be inferred when lastdim is 0)
+    let l_calcsize = l_mfarray.shape.dropLast().reduce(1, *)
+    let l_mfarray = l_mfarray.reshape([l_calcsize, lastdim])
+    let r_calcsize = r_mfarray.shape.dropLast().reduce(1, *)
+    let r_mfarray = r_mfarray.reshape([r_calcsize, lastdim])
     
     let ret = Matft.nums(0, shape: [l_calcsize*r_calcsize], mftype: rettype)
     for lind in 0..<l_calcsize{

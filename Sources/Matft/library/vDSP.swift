@@ -920,7 +920,8 @@ internal func sort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ ord
     
     srcdst_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
         srcdstptr in
-        for _ in 0..<srcdst_mfarray.size / count{
+        // no lanes when the sorted axis (or another axis) is zero-length
+        for _ in 0..<(count > 0 ? srcdst_mfarray.size / count : 0){
             wrap_vDSP_sort(count, srcdstptr + offset, order, vDSP_func)
             offset += count
         }
@@ -958,7 +959,7 @@ internal func argsort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ 
             
             // one index buffer for every row. vDSP's argsort needs it to start with 0..<count
             var uiarray = Array<UInt>(repeating: 0, count: count)
-            for _ in 0..<srcmfarray.size / count{
+            for _ in 0..<(count > 0 ? srcmfarray.size / count : 0){
                 for j in 0..<count{
                     uiarray[j] = UInt(j)
                 }
@@ -1401,7 +1402,8 @@ fileprivate func _rfft_by_vDSP<S: vDSP_ComplexTypable>(_ mfarray: MfArray, numbe
     }
     src = check_contiguous(src, .Row)
     let srcLength = src.shape[src.ndim - 1]
-    let rows = srcLength > 0 ? src.size / srcLength : 0
+    // the number of signals (an empty signal is zero padded to `number`, so it still gives an output row)
+    let rows = src.shape.dropLast().reduce(1, *)
     
     var retShape = src.shape
     retShape[retShape.count - 1] = half + 1
@@ -2731,7 +2733,8 @@ internal func sort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ ord
 
     srcdst_mfarray.withUnsafeMutableStartPointer(datatype: T.self){
         srcdstptr in
-        for _ in 0..<srcdst_mfarray.size / count{
+        // no lanes when the sorted axis (or another axis) is zero-length
+        for _ in 0..<(count > 0 ? srcdst_mfarray.size / count : 0){
             wrap_vDSP_sort(count, srcdstptr + offset, order, vDSP_func)
             offset += count
         }
@@ -2757,7 +2760,7 @@ internal func argsort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ 
         srcmfarray.withUnsafeMutableStartPointer(datatype: T.self){
             srcptr in
 
-            for _ in 0..<srcmfarray.size / count{
+            for _ in 0..<(count > 0 ? srcmfarray.size / count : 0){
                 var uiarray = Array<UInt>(stride(from: 0, to: UInt(count), by: 1))
                 wrap_vDSP_argsort(count, srcptr + offset, &uiarray, order, vDSP_func)
 

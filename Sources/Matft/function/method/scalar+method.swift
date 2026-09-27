@@ -47,10 +47,11 @@ extension MfArray{
                     return UInt64(exactly: valueT) as AnyObject
                 case .UInt:
                     return UInt(exactly: valueT) as AnyObject
+                // not `exactly:`, which gives nil for NaN
                 case .Float:
-                    return Float(exactly: valueT) as AnyObject
+                    return Float(valueT) as AnyObject
                 case .Double:
-                    return Double(exactly: valueT) as AnyObject
+                    return Double(valueT) as AnyObject
                 case .Bool:
                     return (valueT != 0) as AnyObject
                 default:

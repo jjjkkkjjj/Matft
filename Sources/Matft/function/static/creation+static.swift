@@ -142,7 +142,9 @@ extension Matft{
        - Returns: The array of evenly spaced values.
     */
     static public func arange<T: Strideable>(start: T, to: T, by: T.Stride, shape: [Int]? = nil, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
-        return MfArray(Array(stride(from: start, to: to, by: by)), mftype: mftype, shape: shape, mforder: mforder)
+        let values = Array(stride(from: start, to: to, by: by))
+        // an empty range has no values to infer the type from: use the type of start (np.arange(0, 0) is int64)
+        return MfArray(values, mftype: mftype ?? (values.isEmpty ? MfType.mftype(value: start) : nil), shape: shape, mforder: mforder)
     }
     /**
        Return a 2-D identity matrix of shape `[dim, dim]`.
@@ -150,7 +152,7 @@ extension Matft{
        Equivalent to `numpy.eye` (square case, `k = 0`).
        - Parameters:
             - dim: The number of rows and columns.
-            - mftype: (Optional) The type of the result. If `nil`, `.Int` is used.
+            - mftype: (Optional) The type of the result. If `nil`, `.Double` is used like `numpy.eye` (float64).
             - mforder: (Optional) The memory layout, by default `.Row`.
        - Returns: The identity matrix.
     */
@@ -159,7 +161,8 @@ extension Matft{
         for i in 0..<dim{
             eye[i][i] = 1
         }
-        return MfArray(eye, mftype: mftype, mforder: mforder)
+        // with the explicit shape, dim 0 gives shape [0, 0] like numpy
+        return MfArray(eye, mftype: mftype ?? .Double, shape: [dim, dim], mforder: mforder)
     }
     /**
        Construct a 2-D array with the given values on a diagonal.

@@ -597,6 +597,15 @@ final class ManipulationCoverageTests: XCTestCase {
         for (name, x) in layoutVariants(AN){
             XCTAssertClose(Matft.clip(x, min: 0, max: 5), MfArray([1.0, .nan, 3.0, 4.0, 2.0, 5.0, .nan, 1.0, .nan, 5.0, 2.0, 0.0] as [Double], mftype: .Double, shape: [3, 4]), rtol: 1e-10, atol: 1e-10, checkType: true, "Matft.clip(x, min: 0, max: 5) \(name)")
         }
+        for (name, x) in layoutVariants(AI){
+            XCTAssertClose(Matft.clip(x, min: 0.5, max: 4.5), MfArray([3.0, 0.5, 4.0, 1.0, 4.5, 4.5, 0.5, 4.5, 4.5, 3.0, 4.5, 4.5] as [Double], mftype: .Float, shape: [3, 4]), rtol: 1e-05, atol: 1e-05, checkType: true, "Matft.clip(x, min: 0.5, max: 4.5) \(name)")
+        }
+        for (name, x) in layoutVariants(BL){
+            XCTAssertClose(Matft.clip(x, min: 0, max: 1), MfArray([1, 0, 1, 0, 0, 1] as [Int], mftype: .Int, shape: [2, 3]), rtol: 0, atol: 0, checkType: true, "Matft.clip(x, min: 0, max: 1) \(name)")
+        }
+        for (name, x) in layoutVariants(A){
+            XCTAssertClose(Matft.clip(x, min: Float(0.5)), MfArray([3.0, 0.5, 4.0, 1.0, 5.0, 9.0, 0.5, 6.0, 5.0, 3.0, 5.0, 8.0] as [Double], mftype: .Double, shape: [3, 4]), rtol: 1e-10, atol: 1e-10, checkType: true, "Matft.clip(x, min: Float(0.5)) \(name)")
+        }
     }
 
     func test_sort_argsort() {
@@ -1166,6 +1175,8 @@ final class ManipulationCoverageTests: XCTestCase {
     }
 
     func test_eye() {
+        XCTAssertClose(Matft.eye(dim: 3), MfArray([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0] as [Double], mftype: .Double, shape: [3, 3]), rtol: 1e-10, atol: 1e-10, checkType: true, "Matft.eye(dim: 3)")
+        XCTAssertClose(Matft.eye(dim: 2, mforder: .Column), MfArray([1.0, 0.0, 0.0, 1.0] as [Double], mftype: .Double, shape: [2, 2]), rtol: 1e-10, atol: 1e-10, checkType: true, "Matft.eye(dim: 2, mforder: .Column)")
         XCTAssertClose(Matft.eye(dim: 3, mftype: .Double), MfArray([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0] as [Double], mftype: .Double, shape: [3, 3]), rtol: 1e-10, atol: 1e-10, checkType: true, "Matft.eye(dim: 3, mftype: .Double)")
         XCTAssertClose(Matft.eye(dim: 3, mftype: .Float), MfArray([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0] as [Double], mftype: .Float, shape: [3, 3]), rtol: 1e-05, atol: 1e-05, checkType: true, "Matft.eye(dim: 3, mftype: .Float)")
         XCTAssertClose(Matft.eye(dim: 3, mftype: .Int), MfArray([1, 0, 0, 0, 1, 0, 0, 0, 1] as [Int], mftype: .Int, shape: [3, 3]), rtol: 0, atol: 0, checkType: true, "Matft.eye(dim: 3, mftype: .Int)")

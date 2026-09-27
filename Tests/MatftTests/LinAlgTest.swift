@@ -12,7 +12,7 @@ final class LinAlgTests: XCTestCase {
         // numpy: [1, 8]
         XCTAssertClose(try Matft.linalg.det(Matft.concatenate([Matft.eye(dim: 3, mftype: .Double), Matft.eye(dim: 3, mftype: .Double) * 2]).reshape([2, 3, 3])), MfArray([1.0, 8.0]), rtol: 1e-12)
         #if !os(WASI)
-        XCTAssertClose(try Matft.linalg.det(Matft.eye(dim: 3)), MfArray([1.0] as [Float]), rtol: 1e-6)
+        XCTAssertClose(try Matft.linalg.det(Matft.eye(dim: 3, mftype: .Int)), MfArray([1.0] as [Float]), rtol: 1e-6)
         #endif
     }
 

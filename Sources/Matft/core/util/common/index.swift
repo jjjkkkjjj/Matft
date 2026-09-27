@@ -114,6 +114,8 @@ internal func get_flatten_index(_ index: Int, shape: [Int], strides: [Int]) -> I
 /// - Returns: A positive shape array
 internal func get_positive_shape(_ shape: [Int], _ size: Int) -> [Int]{
     let restsize = shape.filter{ $0 != -1 }.reduce(1, *)
+    // like numpy, -1 can't be inferred when the other dimensions contain 0 (any length would do)
+    precondition(restsize != 0 || !shape.contains(-1), "cannot infer -1 in shape \(shape) because the other dimensions contain 0")
     return shape.map{
         if $0 != -1{
             return $0
@@ -277,6 +279,10 @@ internal struct FlattenIndSequenceIterator: IteratorProtocol{
     
     mutating func next() -> (flattenIndex: Int, indices: [Int])? {
         if self.upaxis == -1{// flattenIndex = 0, indicesOfAxes = [0,...,0] must be returned
+            // a shape with a zero-length dimension has no element (the index [0,...,0] would be out of bounds)
+            if self.shape.contains(0){
+                return nil
+            }
             self.upaxis = self.shape.count - 1
             return (self.flattenIndex, self.indicesOfAxes)
         }

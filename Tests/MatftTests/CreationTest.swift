@@ -240,9 +240,10 @@ final class CreationTests: XCTestCase {
 
     func testEye(){
         do{
-            XCTAssertEqual(Matft.eye(dim: 3), MfArray([[ 1,  0,  0],
-                                                               [ 0,  1,  0],
-                                                               [ 0,  0,  1]]))
+            // numpy: np.eye(3).dtype -> float64
+            XCTAssertClose(Matft.eye(dim: 3), MfArray([[ 1,  0,  0],
+                                                       [ 0,  1,  0],
+                                                       [ 0,  0,  1]] as [[Double]]), rtol: 0, atol: 0, checkType: true)
         }
         do{
             XCTAssertEqual(Matft.eye(dim: 3, mftype: .Float), MfArray([[ 1,  0,  0],
