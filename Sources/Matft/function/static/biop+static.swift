@@ -153,9 +153,9 @@ extension Matft{
             #if canImport(Accelerate)
             switch MfType.storedType(rettype){
             case .Float:
-                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvsub)
+                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvsub_)
             case .Double:
-                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvsubD)
+                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvsubD_)
             }
             #else
             fatalError("Complex array operations are not supported on this platform")
