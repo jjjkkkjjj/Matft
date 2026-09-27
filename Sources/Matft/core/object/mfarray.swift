@@ -65,7 +65,8 @@ open class MfArray: MfArrayProtocol{
             //print(flatten)
             preconditionFailure("Matft does not support Object and None. Shape was \(shape_from_array)")
         }
-        let mftype_from_array = get_mftype(&flattenArray)
+        // an empty nested array has no values to infer the type from, but its Swift element type is kept (e.g. [[], []] as [[Float]])
+        let mftype_from_array = (flattenArray.isEmpty ? _mftype_of_empty_nested(array) : nil) ?? get_mftype(&flattenArray)
         let mftype = mftype ?? mftype_from_array
         
         // set mfdata and mfstructure
@@ -320,4 +321,23 @@ fileprivate func _check_same_structure(_ real: MfArray, _ imag: MfArray, mftype:
          (r.offsetIndex == 0 && i.offsetIndex == 0), "Not same structure")
     
     return (r, i)
+}
+
+/// The element type of an empty nested Swift array, e.g. `.Float` for `[[], []] as [[Float]]`.
+/// `get_mftype` can't infer it from the (no) values, but each empty inner array keeps its Swift type
+/// - Parameter array: The nested array
+/// - Returns: The MfType of the innermost element type, or nil if it is unknown (e.g. `[] as [Any]`)
+fileprivate func _mftype_of_empty_nested(_ array: [Any]) -> MfType?{
+    var value: Any = array
+    // down to the first empty inner array
+    while let inner = value as? [Any], let first = inner.first{
+        value = first
+    }
+    let elementTypes: [(Any.Type, MfType)] = [
+        ([Bool].self, .Bool), ([UInt8].self, .UInt8), ([UInt16].self, .UInt16), ([UInt32].self, .UInt32), ([UInt64].self, .UInt64),
+        ([UInt].self, .UInt), ([Int8].self, .Int8), ([Int16].self, .Int16), ([Int32].self, .Int32), ([Int64].self, .Int64),
+        ([Int].self, .Int), ([Float].self, .Float), ([Double].self, .Double),
+    ]
+    let valueType = ObjectIdentifier(type(of: value))
+    return elementTypes.first{ ObjectIdentifier($0.0) == valueType }?.1
 }

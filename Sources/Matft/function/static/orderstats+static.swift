@@ -161,9 +161,10 @@ extension Matft.stats{
             - axis: The axis along which to compute the maximum. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
             - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
        - Returns: The maximum. An all-NaN lane gives NaN. The result has the same `mftype` as `mfarray` (`.Bool` gives `.Float`). A full reduction returns shape `[1]` instead of a scalar.
-       - Precondition: Complex arrays are not supported.
+       - Precondition: Complex arrays are not supported. The reduced axis (all the elements for `axis == nil`) must not be empty, as numpy raises for it.
     */
     public static func nanmax(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+        precondition_nonempty_lanes(mfarray, axis: axis, "fmax")
         return _reduce_lanes(mfarray, axis: axis, keepDims: keepDims, outType: _same_type(mfarray)){
             lane, out in
             out[0] = lane.reduce(Double.nan){ $1.isNaN ? $0 : ($0.isNaN || $1 > $0 ? $1 : $0) }
@@ -180,9 +181,10 @@ extension Matft.stats{
             - axis: The axis along which to compute the minimum. Negative values count from the last axis. If `nil` (default), it is computed over all elements.
             - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
        - Returns: The minimum. An all-NaN lane gives NaN. The result has the same `mftype` as `mfarray` (`.Bool` gives `.Float`). A full reduction returns shape `[1]` instead of a scalar.
-       - Precondition: Complex arrays are not supported.
+       - Precondition: Complex arrays are not supported. The reduced axis (all the elements for `axis == nil`) must not be empty, as numpy raises for it.
     */
     public static func nanmin(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
+        precondition_nonempty_lanes(mfarray, axis: axis, "fmin")
         return _reduce_lanes(mfarray, axis: axis, keepDims: keepDims, outType: _same_type(mfarray)){
             lane, out in
             out[0] = lane.reduce(Double.nan){ $1.isNaN ? $0 : ($0.isNaN || $1 < $0 ? $1 : $0) }
@@ -408,7 +410,8 @@ internal func _reduce_lanes(_ mfarray: MfArray, axis: Int?, keepDims: Bool, outT
     }
 
     let laneSize = axis == nil ? x.size : x.shape[x.ndim - 1]
-    let laneCount = laneSize == 0 ? 0 : x.size / laneSize
+    // zero-length lanes are still lanes: `body` gives their value (e.g. NaN for the median, 0 for nansum) like numpy
+    let laneCount = laneSize > 0 ? x.size / laneSize : (axis == nil ? 1 : x.shape.dropLast().reduce(1, *))
     let ret = Matft.nums(Double.zero, shape: shape, mftype: .Double)
     let out = UnsafeMutablePointer<Double>.allocate(capacity: outCount)
     defer { out.deallocate() }
@@ -572,6 +575,7 @@ fileprivate func _nanvar(_ lane: [Double], ddof: Int) -> Double{
 
 /// The index of the first best value ignoring NaN
 fileprivate func _nanargbest(_ lane: [Double], _ isBetter: (Double, Double) -> Bool) -> Int{
+    precondition(!lane.isEmpty, "attempt to get argmax/argmin of an empty sequence")
     var best = -1
     for (i, v) in lane.enumerated() where !v.isNaN{
         if best < 0 || isBetter(v, lane[best]){

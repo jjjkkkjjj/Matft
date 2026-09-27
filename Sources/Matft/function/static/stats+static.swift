@@ -60,11 +60,12 @@ extension Matft.stats{
             - axis: The axis along which to reduce. Negative values count from the last axis. If `nil` (default), the reduction is over all elements.
             - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
        - Returns: The maximum with the same `mftype` as `mfarray`.
-       - Precondition: Complex arrays are not supported.
+       - Precondition: Complex arrays are not supported. The reduced axis (all the elements for `axis == nil`) must not be empty, as numpy raises for it.
        - Note: Unlike Numpy, reducing all elements (`axis == nil`, `keepDims == false`) returns a 1-d array of shape `[1]` instead of a scalar. As in Numpy, NaN propagates (a lane containing NaN gives NaN); use the `nan*` functions to ignore NaN.
     */
     public static func max(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         unsupport_complex(mfarray)
+        precondition_nonempty_lanes(mfarray, axis: axis, "maximum")
         
         switch mfarray.storedType {
         case .Float:
@@ -105,11 +106,12 @@ extension Matft.stats{
             - axis: The axis along which to reduce. Negative values count from the last axis. If `nil` (default), the reduction is over all elements.
             - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
        - Returns: The minimum with the same `mftype` as `mfarray`.
-       - Precondition: Complex arrays are not supported.
+       - Precondition: Complex arrays are not supported. The reduced axis (all the elements for `axis == nil`) must not be empty, as numpy raises for it.
        - Note: Unlike Numpy, reducing all elements (`axis == nil`, `keepDims == false`) returns a 1-d array of shape `[1]` instead of a scalar. As in Numpy, NaN propagates (a lane containing NaN gives NaN); use the `nan*` functions to ignore NaN.
     */
     public static func min(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         unsupport_complex(mfarray)
+        precondition_nonempty_lanes(mfarray, axis: axis, "minimum")
         
         switch mfarray.storedType {
         case .Float:
@@ -419,4 +421,14 @@ fileprivate func _propagate_nan_elementwise(_ ret: MfArray, _ l_mfarray: MfArray
         ret = Matft.where(Matft.math.isnan(r_mfarray), Double.nan, ret)
     }
     return ret.astype(rettype)
+}
+
+/// The maximum / minimum of a zero-length lane is undefined (numpy raises ValueError: there is no identity), so stop instead of returning ±inf
+/// - Parameters:
+///   - mfarray: The reduced mfarray
+///   - axis: The reduced axis, or nil for all the elements
+///   - name: The name of the reduction for the message
+internal func precondition_nonempty_lanes(_ mfarray: MfArray, axis: Int?, _ name: String){
+    let laneSize = axis.map{ mfarray.shape[get_positive_axis($0, ndim: mfarray.ndim)] } ?? mfarray.size
+    precondition(laneSize > 0, "zero-size array to reduction operation \(name) which has no identity")
 }
