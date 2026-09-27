@@ -26,16 +26,18 @@ final class BugHuntCreationConversionTests: XCTestCase {
 
     /// np.array([3_000_000_000]) -> int64; these values are exact in Float
     func testLargeIntegers() {
-        XCTAssertClose(MfArray([3_000_000_000]), MfArray([3e9] as [Double], mftype: .Int), checkType: true)
-        XCTAssertClose(MfArray([-3_000_000_000], mftype: .Double), MfArray([-3e9] as [Double]), checkType: true)
         XCTAssertClose(MfArray([Int64(-3_000_000_000)]), MfArray([-3e9] as [Double], mftype: .Int64), checkType: true)
         XCTAssertClose(MfArray([UInt64(5_000_000_000)]), MfArray([5e9] as [Double], mftype: .UInt64), checkType: true)
+        #if !arch(wasm32) // Int / UInt are 32-bit on wasm32, so these literals don't fit
+        XCTAssertClose(MfArray([3_000_000_000]), MfArray([3e9] as [Double], mftype: .Int), checkType: true)
+        XCTAssertClose(MfArray([-3_000_000_000], mftype: .Double), MfArray([-3e9] as [Double]), checkType: true)
         XCTAssertClose(MfArray([UInt(5_000_000_000)], mftype: .Double), MfArray([5e9] as [Double]), checkType: true)
         // np.arange(0, 6_000_000_000, 3_000_000_000) -> [0, 3000000000]
         XCTAssertClose(Matft.arange(start: 0, to: 6_000_000_000, by: 3_000_000_000), MfArray([0, 3e9] as [Double], mftype: .Int), checkType: true)
         let r = Matft.random.randint(low: 0, high: 1 << 40, shape: [3])
         XCTAssertEqual(r.shape, [3])
         XCTAssertEqual(r.mftype, .Int)
+        #endif
     }
 
     // MARK: - init with an integer mftype
