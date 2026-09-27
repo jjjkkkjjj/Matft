@@ -40,7 +40,7 @@ extension Matft{
     /**
        Find the sorted unique elements of an array and the number of times each appears.
 
-       Equivalent to `numpy.unique_counts`. NaNs are treated as equal to each other.
+       Equivalent to `numpy.unique_counts`. Every NaN is a separate value with a count of 1 (unlike `unique(_:)`).
 
        - Parameters:
             - mfarray: The input array. Any shape.
@@ -55,7 +55,7 @@ extension Matft{
     /**
        Find the sorted unique elements of an array and the indices to reconstruct the input.
 
-       Equivalent to `numpy.unique_inverse`. NaNs are treated as equal to each other.
+       Equivalent to `numpy.unique_inverse`. Every NaN is a separate value (unlike `unique(_:)`).
 
        - Parameters:
             - mfarray: The input array. Any shape.
@@ -70,7 +70,7 @@ extension Matft{
     /**
        Find the sorted unique elements of an array together with their first indices, inverse indices and counts.
 
-       Equivalent to `numpy.unique_all`. NaNs are treated as equal to each other and placed at the end.
+       Equivalent to `numpy.unique_all`. Every NaN is a separate value (unlike `unique(_:)`), and the NaNs are placed at the end in the order they appear.
 
        - Parameters:
             - mfarray: The input array. Any shape.
@@ -96,8 +96,8 @@ extension Matft{
         var inverse = [Double](repeating: 0, count: values.count)
         for i in order{
             let v = values[i]
-            // NaNs are equal to each other here (equal_nan=True)
-            if let last = uniques.last, last == v || (last.isNaN && v.isNaN){
+            // like numpy's unique_all (equal_nan=False), every NaN is a separate value
+            if let last = uniques.last, last == v{
                 counts[counts.count - 1] += 1
             }
             else{
@@ -146,7 +146,7 @@ extension Matft{
        - Parameters:
             - ar1: The first input array.
             - ar2: The second input array.
-       - Returns: A 1-d array of the sorted common unique values. Its `mftype` is the promoted type of `ar1` and `ar2`.
+       - Returns: A 1-d array of the sorted common unique values. Its `mftype` is `MfType.result_type(ar1.mftype, ar2.mftype)`.
        - Precondition: Complex arrays are not supported.
     */
     public static func intersect1d(_ ar1: MfArray, _ ar2: MfArray) -> MfArray{
@@ -162,12 +162,12 @@ extension Matft{
        - Parameters:
             - ar1: The first input array.
             - ar2: The second input array.
-       - Returns: A 1-d array of the sorted unique values. Its `mftype` is the promoted type of `ar1` and `ar2`.
+       - Returns: A 1-d array of the sorted unique values. Its `mftype` is `MfType.result_type(ar1.mftype, ar2.mftype)`.
        - Precondition: Complex arrays are not supported.
     */
     public static func union1d(_ ar1: MfArray, _ ar2: MfArray) -> MfArray{
         let values = _doubles(ar1) + _doubles(ar2)
-        return Matft.unique(_mfarray(values, shape: [values.count], mftype: MfType.priority(ar1.mftype, ar2.mftype)))
+        return Matft.unique(_mfarray(values, shape: [values.count], mftype: MfType.result_type(ar1.mftype, ar2.mftype)))
     }
 
     /**
@@ -205,7 +205,7 @@ fileprivate func _unique_sorted(_ values: [Double]) -> [Double]{
 }
 
 fileprivate func _set_result(_ values: [Double], _ ar1: MfArray, _ ar2: MfArray) -> MfArray{
-    return _mfarray(values, shape: [values.count], mftype: MfType.priority(ar1.mftype, ar2.mftype))
+    return _mfarray(values, shape: [values.count], mftype: MfType.result_type(ar1.mftype, ar2.mftype))
 }
 
 /// LSD radix sort of the non-NaN Double values (4 passes of 16 bits). It is much faster than the comparison sort for large arrays

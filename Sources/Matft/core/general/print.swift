@@ -16,7 +16,17 @@ extension MfArray: CustomStringConvertible{
             desc += "\t[], type=\(self.mftype), shape=\(self.shape)"
             return desc
         }
-        
+        if self.ndim == 0{// a 0-d array has a single value and no brackets
+            let value = self.data[self.offsetIndex]
+            if let imag = self.data_imag?[self.offsetIndex]{
+                desc += "\t\(value) \(imag)j, type=\(self.mftype), shape=\(self.shape)"
+            }
+            else{
+                desc += "\t\(value), type=\(self.mftype), shape=\(self.shape)"
+            }
+            return desc
+        }
+
         desc += String(repeating: "[", count: self.ndim)
         
         let flattenData = self.data

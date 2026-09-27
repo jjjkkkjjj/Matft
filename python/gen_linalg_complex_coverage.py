@@ -12,7 +12,7 @@ so the expected values must not depend on the memory layout.
 Matft conventions (not bugs):
 - A reduction over all the axes returns shape [1] (numpy returns a 0-d scalar).
 - LAPACK functions return `.Float` for every non-Double input (numpy returns float64 for integers).
-- `det` keeps the input mftype and throws for an exactly singular matrix (numpy returns 0).
+- `det` of an integer matrix is .Float (numpy: float64), and it throws for an exactly singular matrix (numpy returns 0).
 - `normlp_vec(ord: 0)` keeps the input mftype; the other norms return `.Float` for integer input.
 - `matmul` / `cross` use `MfType.priority` for mixed types, so Int with Float gives Float (numpy float64).
 - `inner` returns the left operand's mftype.
@@ -271,8 +271,8 @@ test("inv", lines, wasi_skip=W)
 lines = []
 lines += close("try Matft.linalg.det(x)", np.linalg.det(A3), layout="A3")
 lines += close("try Matft.linalg.det(x)", f32(np.linalg.det(A3)), mftype="Float", layout="A3F", **FLOAT_LAPACK_TOL)
-# Matft convention: det keeps the input mftype
-lines += equal("try Matft.linalg.det(A3I)", np.round(np.linalg.det(A3)).astype(np.int64))
+# Matft convention: det of an integer matrix is .Float (numpy: float64)
+lines += close("try Matft.linalg.det(A3I)", f32(np.linalg.det(A3)), mftype="Float", **FLOAT_LAPACK_TOL)
 lines += close("try Matft.linalg.det(x)", np.linalg.det(S23), layout="S23")
 lines += close("try Matft.linalg.det(ONE)", np.linalg.det(ONE))
 lines += close("try Matft.linalg.det(x)", np.linalg.det(SYM), layout="SYM")

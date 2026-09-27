@@ -35,10 +35,73 @@ internal enum MfCompareOp{
 internal func compare_mfarray<U: MfTypable>(_ mfarray: MfArray, _ op: MfCompareOp, _ scalar: U) -> MfArray{
     switch mfarray.storedType {
     case .Float:
+        guard mfarray.isReal else {
+            return compare_complex_mfarray(mfarray, Matft.nums(Float.from(scalar), shape: mfarray.shape), op)
+        }
         return compare_by_vDSP(mfarray, op, Float.from(scalar))
     case .Double:
+        guard mfarray.isReal else {
+            return compare_complex_mfarray(mfarray, Matft.nums(Double.from(scalar), shape: mfarray.shape), op)
+        }
         return compare_by_vDSP(mfarray, op, Double.from(scalar))
     }
+}
+
+/// Compare complex elements like numpy: `==` and `!=` compare both parts, and the others are lexicographic,
+/// i.e. the real parts decide unless they are equal (and then the imaginary parts decide). Like numpy, the real parts decide only when neither imaginary part is NaN.
+/// A real operand has 0 imaginary part.
+/// - Parameters:
+///   - l_mfarray: The left operand
+///   - r_mfarray: The right operand of the same shape as `l_mfarray`
+///   - op: The comparison operator
+/// - Returns: Bool mfarray in row major order
+internal func compare_complex_mfarray(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ op: MfCompareOp) -> MfArray{
+    assert(l_mfarray.shape == r_mfarray.shape, "call biop_broadcast_to first!")
+    switch MfType.storedType(MfType.priority(l_mfarray.mftype, r_mfarray.mftype)){
+    case .Float:
+        return _compare_complex(l_mfarray, r_mfarray, op, Float.self)
+    case .Double:
+        return _compare_complex(l_mfarray, r_mfarray, op, Double.self)
+    }
+}
+
+fileprivate func _compare_complex<T: MfStorable & BinaryFloatingPoint>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ op: MfCompareOp, _ type: T.Type) -> MfArray{
+    let mftype: MfType = T.self == Float.self ? .Float : .Double
+    let size = l_mfarray.size
+    // the real and imaginary parts as row major arrays of T
+    func parts(_ mfarray: MfArray) -> (re: [T], im: [T]){
+        func values(_ part: MfArray?) -> [T]{
+            guard let part = part else { return [T](repeating: T.zero, count: size) }
+            let row = part.astype(mftype, mforder: .Row)
+            return row.withUnsafeMutableStartPointer(datatype: T.self){ Array(UnsafeBufferPointer(start: $0, count: size)) }
+        }
+        return (values(mfarray.real), values(mfarray.imag))
+    }
+    let (lre, lim) = parts(l_mfarray)
+    let (rre, rim) = parts(r_mfarray)
+    
+    func compare(_ i: Int) -> Bool{
+        let (xr, xi, yr, yi) = (lre[i], lim[i], rre[i], rim[i])
+        // numpy's CEQ, CNE, CLT, CLE, CGT and CGE
+        let ordered = !xi.isNaN && !yi.isNaN
+        switch op{
+        case .equal: return xr == yr && xi == yi
+        case .notEqual: return xr != yr || xi != yi
+        case .less: return (xr < yr && ordered) || (xr == yr && xi < yi)
+        case .lessEqual: return (xr < yr && ordered) || (xr == yr && xi <= yi)
+        case .greater: return (xr > yr && ordered) || (xr == yr && xi > yi)
+        case .greaterEqual: return (xr > yr && ordered) || (xr == yr && xi >= yi)
+        }
+    }
+    
+    let newdata = MfData(uninitializedSize: size, mftype: .Bool)
+    newdata.withUnsafeMutableStartPointer(datatype: Float.self){
+        dstptr in
+        for i in 0..<size{
+            dstptr[i] = compare(i) ? 1 : 0
+        }
+    }
+    return MfArray(mfdata: newdata, mfstructure: MfStructure(shape: l_mfarray.shape, mforder: .Row))
 }
 
 /// Recompute the elements of `ret` = op(l, r) where l or r is NaN or ±inf.
@@ -190,7 +253,6 @@ internal func to_Bool_sm_op<U: MfStorable>(l_scalar: U, r_mfarray: MfArray, op: 
  */
 internal func bool_broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
     assert(mfarray.mftype == .Bool, "must be bool")
-    var mfarray = mfarray
     
     let origSize = mfarray.size
     
@@ -201,11 +263,12 @@ internal func bool_broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
     
     let idim_start = new_ndim  - mfarray.ndim
     
-    precondition(idim_start >= 0, "can't broadcast to fewer dimensions")
+    precondition(idim_start >= 0, "too many indices for array: array is \(new_ndim)-dimensional, but the boolean index is \(mfarray.ndim)-dimensional")
     
-    // broadcast for common part's shape
+    // like numpy, the mask must match the leading axes exactly. Broadcasting it (e.g. a mask of shape [3, 1] on [3, 4])
+    // would count fewer true elements than the ones selected, and the getters and setters would run past their buffers
     let commonShape = Array(shape[0..<mfarray.ndim])
-    mfarray = mfarray.broadcast_to(shape: commonShape)
+    precondition(mfarray.shape == commonShape, "boolean index did not match indexed array: the index shape is \(mfarray.shape) but the corresponding shape is \(commonShape)")
     
     // convert row contiguous
     let rowc_mfarray = check_contiguous(mfarray, .Row)

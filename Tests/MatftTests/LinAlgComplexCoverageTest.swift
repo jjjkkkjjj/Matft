@@ -103,7 +103,7 @@ final class LinAlgComplexCoverageTests: XCTestCase {
         for (name, x) in layoutVariants(A3F){
             XCTAssertClose(try Matft.linalg.det(x), MfArray([263.0] as [Double], mftype: .Float, shape: [1]), rtol: 0.0001, atol: 1e-05, checkType: true, "try Matft.linalg.det(x) \(name)")
         }
-        XCTAssertClose(try Matft.linalg.det(A3I), MfArray([263] as [Int], mftype: .Int, shape: [1]), rtol: 0, atol: 0, checkType: true, "try Matft.linalg.det(A3I)")
+        XCTAssertClose(try Matft.linalg.det(A3I), MfArray([263.0] as [Double], mftype: .Float, shape: [1]), rtol: 0.0001, atol: 1e-05, checkType: true, "try Matft.linalg.det(A3I)")
         for (name, x) in layoutVariants(S23){
             XCTAssertClose(try Matft.linalg.det(x), MfArray([262.99999999999983, 17.999999999999996] as [Double], mftype: .Double, shape: [2]), rtol: 1e-10, atol: 1e-10, checkType: true, "try Matft.linalg.det(x) \(name)")
         }

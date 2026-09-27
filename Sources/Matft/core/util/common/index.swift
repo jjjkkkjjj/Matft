@@ -241,13 +241,13 @@ internal struct FlattenIndSequence: Sequence{
     ///   - shape: A shape array
     ///   - strides: A strides array
     public init(shape: inout [Int], strides: inout [Int]){
-        assert(!shape.isEmpty && !strides.isEmpty, "shape and strides must not be empty")
+        // empty shape and strides (a 0-d array) give the only index (0, [])
         assert(shape.count == strides.count, "shape and strides must be samesize")
-        
+
         self.shape = shape
         self.strides = strides
     }
-    
+
     /// Generate an iterator
     /// - Returns: Iterator on index for a flatten array
     func makeIterator() -> FlattenIndSequenceIterator {

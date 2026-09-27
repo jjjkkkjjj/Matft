@@ -47,8 +47,8 @@ extension Matft{
             if mfarray.mfstructure.column_contiguous || mfarray.mfstructure.row_contiguous{// all including strides will be copied
                 return copy_all_mfarray(mfarray)
             }
-            var strides = mfarray.strides
-            if !isReverse(&strides) && !mfarray.mfdata._isView{// not contain reverse and is not view, copy all
+            // a dense permutation that isn't a view (e.g. the result of an elementwise op on a transposed array) occupies its whole stored data
+            if !mfarray.mfdata._isView && mfarray.offsetIndex == 0 && mfarray.size == mfarray.storedSize && _is_dense_permutation(shape: mfarray.shape, strides: mfarray.strides){
                 return copy_all_mfarray(mfarray)
             }
             else{//close to row major
@@ -196,7 +196,7 @@ extension Matft{
     /**
        Construct a 2-D array with the elements of a 1-D array on a diagonal.
 
-       Equivalent to `numpy.diag` with a 1-D input.
+       Equivalent to `numpy.diag` with a 1-D input. A complex `v` gives a complex result.
        - Parameters:
             - v: A 1-D array of the diagonal values. The result has shape `[n, n]` where `n = v.size + abs(k)`.
             - k: (Optional) The diagonal offset, by default 0. Positive values refer to diagonals above the main diagonal, negative values to diagonals below.
@@ -207,6 +207,10 @@ extension Matft{
     */
     static public func diag(v: MfArray, k: Int = 0, mftype: MfType? = nil, mforder: MfOrder = .Row) -> MfArray{
         precondition(v.ndim == 1, "must be 1d")
+        if let imag = v.imag{
+            // the real and imaginary parts are diagonal matrices of the same layout
+            return MfArray(real: Matft.diag(v: v.real, k: k, mftype: mftype, mforder: mforder), imag: Matft.diag(v: imag, k: k, mftype: mftype, mforder: mforder))
+        }
         let dim = v.size + abs(k)
         let size = dim*dim
         let retmftype = mftype ?? v.mftype
@@ -251,7 +255,7 @@ extension Matft{
     /**
        Stack arrays vertically, i.e. concatenate them along the first axis.
 
-       The result type is `MfType.result_type` of the inputs (like `numpy.result_type`). Complex arrays are not supported.
+       The result type is `MfType.result_type` of the inputs (like `numpy.result_type`). Complex arrays are joined with their imaginary parts (a real array has 0 imaginary part).
        Equivalent to `numpy.vstack`: 1-D inputs of length `N` are treated as rows of shape `[1, N]`.
        - Parameters:
             - mfarrays: The arrays to stack. Their shapes must match except for the first axis.
@@ -267,6 +271,9 @@ extension Matft{
         if mfarrays.count == 1{
             return mfarrays[0].deepcopy()
         }
+        if let ret = _join_complex(mfarrays, Matft._vstack){
+            return ret
+        }
         
         var retShape = mfarrays.first!.shape // shape except for given axis first, return shape later
         var retMfType = mfarrays.first!.mftype
@@ -279,7 +286,6 @@ extension Matft{
             
             retMfType = MfType.result_type(retMfType, mfarrays[i].mftype)
             
-            unsupport_complex(mfarrays[i])
             precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
         }
         
@@ -296,7 +302,7 @@ extension Matft{
     /**
        Stack arrays horizontally, i.e. concatenate them along the last axis.
 
-       The result type is `MfType.result_type` of the inputs (like `numpy.result_type`). Complex arrays are not supported.
+       The result type is `MfType.result_type` of the inputs (like `numpy.result_type`). Complex arrays are joined with their imaginary parts (a real array has 0 imaginary part).
        Similar to `numpy.hstack` (which uses the second axis for arrays with 2 or more dimensions).
        - Parameters:
             - mfarrays: The arrays to stack. Their shapes must match except for the last axis.
@@ -305,6 +311,9 @@ extension Matft{
     static public func hstack(_ mfarrays: [MfArray]) -> MfArray {
         if mfarrays.count == 1{
             return mfarrays[0].deepcopy()
+        }
+        if let ret = _join_complex(mfarrays, Matft.hstack){
+            return ret
         }
         
         var retShape = mfarrays.first!.shape // shape except for given axis first, return shape later
@@ -318,7 +327,6 @@ extension Matft{
             
             retMfType = MfType.result_type(retMfType, mfarrays[i].mftype)
             
-            unsupport_complex(mfarrays[i])
             precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
         }
         
@@ -335,7 +343,7 @@ extension Matft{
     /**
        Join arrays along an existing axis.
 
-       The result type is `MfType.result_type` of the inputs (like `numpy.result_type`). Complex arrays are not supported.
+       The result type is `MfType.result_type` of the inputs (like `numpy.result_type`). Complex arrays are joined with their imaginary parts (a real array has 0 imaginary part).
        Equivalent to `numpy.concatenate`.
 
        ```swift
@@ -365,6 +373,10 @@ extension Matft{
         }
     
         
+        if let ret = _join_complex(mfarrays, { Matft.concatenate($0, axis: axis) }){
+            return ret
+        }
+        
         var concatDim = retShape.remove(at: axis)
         
         var retMfType = mfarrays.first!.mftype
@@ -376,7 +388,6 @@ extension Matft{
             
             retMfType = MfType.result_type(retMfType, mfarrays[i].mftype)
             
-            unsupport_complex(mfarrays[i])
             precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
         }
         
@@ -389,6 +400,15 @@ extension Matft{
             return concat_by_cblas(mfarrays, ret_shape: retShape, ret_mftype: retMfType, axis: axis, cblas_dcopy)
         }
         
+    }
+    
+    /// Join complex arrays by joining their real and imaginary parts separately (a real array has 0 imaginary part).
+    /// - Returns: The joined complex array, or `nil` if all the arrays are real
+    fileprivate static func _join_complex(_ mfarrays: [MfArray], _ join: ([MfArray]) -> MfArray) -> MfArray?{
+        guard mfarrays.contains(where: { $0.isComplex }) else { return nil }
+        let real = join(mfarrays.map{ $0.real })
+        let imag = join(mfarrays.map{ $0.imag ?? Matft.nums(0, shape: $0.shape, mftype: $0.mftype) })
+        return MfArray(real: real, imag: imag)
     }
     
     /**

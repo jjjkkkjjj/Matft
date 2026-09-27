@@ -84,7 +84,7 @@ extension Matft.linalg{
 
        - Parameters:
             - mfarray: The array of shape `(..., M, M)`.
-       - Returns: The determinants with shape `(...)`, or `[1]` for a single 2-d matrix. The result keeps the `mftype` of `mfarray`; the values are computed in `Float` (`Double` for `.Double` input).
+       - Returns: The determinants with shape `(...)`, or `[1]` for a single 2-d matrix. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs give `.Float`; numpy: float64).
        - Throws: `MfError.LinAlgError.factorizationError` if LAPACK reports an illegal argument, or `MfError.LinAlgError.singularMatrix` if the matrix is exactly singular.
        - Precondition: `mfarray` must be at least 2-d and its last two dimensions must be square. Complex arrays are not supported.
        - Note: Unlike Numpy, which returns 0, an exactly singular matrix throws `MfError.LinAlgError.singularMatrix`.
@@ -95,16 +95,20 @@ extension Matft.linalg{
         // the determinant of a 0x0 matrix is 1 (the empty product) like numpy
         if mfarray.ndim >= 2 && shape[mfarray.ndim - 1] == 0 && shape[mfarray.ndim - 2] == 0{
             let stacked = Array(shape.prefix(mfarray.ndim - 2))
-            return Matft.nums(1, shape: stacked.isEmpty ? [1] : stacked, mftype: mfarray.mftype)
+            return Matft.nums(1, shape: stacked.isEmpty ? [1] : stacked, mftype: mfarray.storedType == .Double ? .Double : .Float)
         }
         
+        // the determinant of an integer matrix isn't an integer in floating point (e.g. -305.99997), so it is a float array like numpy
+        let ret: MfArray
         switch mfarray.storedType {
         case .Float:
-            return try det_by_lapack(mfarray, sgetrf_)
+            ret = try det_by_lapack(mfarray, sgetrf_)
+            ret.mfdata.mftype = .Float
             
         case .Double:
-            return try det_by_lapack(mfarray, dgetrf_)
+            ret = try det_by_lapack(mfarray, dgetrf_)
         }
+        return ret
 
     }
     
@@ -215,12 +219,12 @@ extension Matft.linalg{
        Equivalent to `numpy.linalg.pinv`. It is computed from the SVD, and singular values not larger than `rcond * max(s)` are treated as zero.
 
        - Parameters:
-            - mfarray: The matrix of shape `(M, N)`.
+            - mfarray: The matrix of shape `(..., M, N)`.
             - rcond: The cutoff ratio for small singular values. Default is `1e-15`.
-       - Returns: The pseudo-inverse of shape `(N, M)`. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Returns: The pseudo-inverse of shape `(..., N, M)`. The result is `.Double` for `.Double` input and `.Float` otherwise.
        - Throws: `MfError.LinAlgError.factorizationError` if LAPACK reports an illegal argument, or `MfError.LinAlgError.notConverge` if the decomposition does not converge.
        - Precondition: `mfarray` must be at least 2-d. Complex arrays are not supported.
-       - Note: The cutoff and the reciprocal singular values are computed over all singular values at once, so only a single 2-d matrix is handled correctly; stacked matrices are not supported like in Numpy.
+       - Note: Stacked matrices are inverted separately, and the cutoff uses the largest singular value of each matrix like in Numpy.
     */
     public static func pinv(_ mfarray: MfArray, rcond: Float = 1e-15) throws -> MfArray{
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
@@ -236,11 +240,19 @@ extension Matft.linalg{
         let (v, s, rt) = try Matft.linalg.svd(mfarray, full_matrices: false)
         
         func _pinv<T: MfStorable>(_ type: T.Type) -> MfArray{
-            let smax = s.max().scalar(T.self)!
-            let condition = T.from(rcond) * smax
-            let spinv_array = s.toFlattenArray(datatype: T.self){ $0 <= condition ? T.zero : 1/$0 }
-            let spinv = MfArray(spinv_array)
-            return rt.swapaxes(axis1: -1, axis2: -2) *& (spinv.expand_dims(axis: 1) * v.swapaxes(axis1: -1, axis2: -2))
+            // like numpy, the cutoff is rcond * the largest singular value of each matrix
+            let s = s.to_contiguous(mforder: .Row)
+            let k = s.shape[s.ndim - 1]
+            var values = s.toFlattenArray(datatype: T.self){ $0 }
+            for start in stride(from: 0, to: values.count, by: Swift.max(k, 1)){
+                let lane = start..<start + k
+                let condition = T.from(rcond) * (values[lane].max() ?? T.zero)
+                for i in lane{
+                    values[i] = values[i] > condition ? 1/values[i] : T.zero
+                }
+            }
+            let spinv = MfArray(values, mftype: s.mftype, shape: s.shape)
+            return rt.swapaxes(axis1: -1, axis2: -2) *& (spinv.expand_dims(axis: spinv.ndim) * v.swapaxes(axis1: -1, axis2: -2))
         }
         switch mfarray.storedType {
         case .Float:
@@ -333,13 +345,13 @@ extension Matft.linalg{
         unsupport_complex(mfarray)
         
         if ord == Float.infinity{
-            return Matft.math.abs(mfarray).max(axis: axis, keepDims: keepDims)
+            return _abs_for_norm(mfarray).max(axis: axis, keepDims: keepDims)
         }
         else if ord == -Float.infinity{
-            return Matft.math.abs(mfarray).min(axis: axis, keepDims: keepDims)
+            return _abs_for_norm(mfarray).min(axis: axis, keepDims: keepDims)
         }
         if ord != 0{
-            let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponents: ord)
+            let abspow = Matft.math.power(bases: _abs_for_norm(mfarray), exponents: ord)
             let sum = abspow.sum(axis: axis, keepDims: keepDims)
             // 1/ord in Float (e.g. 1/3) would limit a Double result to Float precision
             return Matft.math.power(bases: sum, exponents: 1 / Double(ord))
@@ -393,25 +405,25 @@ extension Matft.linalg{
             if axes.col > axes.row{
                 axes.col -= 1
             }
-            ret = Matft.math.abs(mfarray).sum(axis: axes.row, keepDims: false).max(axis: axes.col, keepDims: false)
+            ret = _abs_for_norm(mfarray).sum(axis: axes.row, keepDims: false).max(axis: axes.col, keepDims: false)
         }
         else if ord == Float.infinity{
             if axes.row > axes.col{
                 axes.row -= 1
             }
-            ret = Matft.math.abs(mfarray).sum(axis: axes.col, keepDims: false).max(axis: axes.row, keepDims: false)
+            ret = _abs_for_norm(mfarray).sum(axis: axes.col, keepDims: false).max(axis: axes.row, keepDims: false)
         }
         else if ord == -1{
             if axes.col > axes.row{
                 axes.col -= 1
             }
-            ret = Matft.math.abs(mfarray).sum(axis: axes.row, keepDims: false).min(axis: axes.col, keepDims: false)
+            ret = _abs_for_norm(mfarray).sum(axis: axes.row, keepDims: false).min(axis: axes.col, keepDims: false)
         }
         else if ord == -Float.infinity{
             if axes.row > axes.col{
                 axes.row -= 1
             }
-            ret = Matft.math.abs(mfarray).sum(axis: axes.col, keepDims: false).min(axis: axes.row, keepDims: false)
+            ret = _abs_for_norm(mfarray).sum(axis: axes.col, keepDims: false).min(axis: axes.row, keepDims: false)
         }
         else{
             preconditionFailure("Invalid norm order for matrices.")
@@ -445,7 +457,7 @@ extension Matft.linalg{
         precondition(axes.row != axes.col, "Duplicate axes given.")
         unsupport_complex(mfarray)
         
-        let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponents: 2)
+        let abspow = Matft.math.power(bases: _abs_for_norm(mfarray), exponents: 2)
         
         var ret = Matft.math.power(bases: abspow.sum(axis: max(axes.row, axes.col), keepDims: false).sum(axis: min(axes.row, axes.col), keepDims: false), exponents: 0.5)
         
@@ -488,6 +500,11 @@ extension Matft.linalg{
         
         return ret
     }
+}
+
+/// |x| in floating point: numpy's norm computes integer and Bool input as float, while `Matft.math.abs` keeps the integer type (and wraps around)
+fileprivate func _abs_for_norm(_ mfarray: MfArray) -> MfArray{
+    return Matft.math.abs(_is_integer_type(mfarray.mftype) ? mfarray.astype(.Float) : mfarray)
 }
 
 fileprivate typealias _norm_op = (MfArray, Int?, Bool) -> MfArray

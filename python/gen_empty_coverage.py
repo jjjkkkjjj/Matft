@@ -291,8 +291,8 @@ test("scalar_and_unary", lines)
 
 # ---------- math ----------
 UNARY = ["sin", "asin", "sinh", "asinh", "cos", "acos", "cosh", "acosh", "tan", "atan", "tanh", "atanh", "sqrt", "rsqrt",
-         "exp", "exp2", "expm1", "log1p", "log", "log2", "log10", "ceil", "floor", "trunc", "nearest", "abs", "reciprocal"]
-SAME_TYPE = ["square", "sign"]
+         "exp", "exp2", "expm1", "log1p", "log", "log2", "log10", "ceil", "floor", "trunc", "nearest", "reciprocal"]
+SAME_TYPE = ["square", "sign", "abs"]
 BOOL_RESULT = ["isnan", "isinf", "isfinite"]
 
 

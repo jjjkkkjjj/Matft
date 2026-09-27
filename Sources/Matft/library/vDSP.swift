@@ -669,6 +669,57 @@ internal func biopzvs_separately_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ 
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
+/// `c = a / b` element-wise by IEEE division, which is correctly rounded like numpy.
+/// vDSP's divisions aren't: vDSP_vdiv, vDSP_vsdiv and vDSP_svdiv of Float (e.g. 255 / 255 -> 0.99999994), and vDSP_vdivD and vDSP_vsdivD of Double
+/// (e.g. 6.0 / 10 -> 0.6000000000000001) are off by 1 ulp. A stride of 0 repeats the first element (a scalar).
+/// The loop is vectorized by the compiler, and it is as fast as vDSP in release builds
+@inline(__always)
+fileprivate func _ieee_div<T: FloatingPoint>(_ a: UnsafePointer<T>, _ ia: Int, _ b: UnsafePointer<T>, _ ib: Int, _ c: UnsafeMutablePointer<T>, _ ic: Int, _ n: Int){
+    if ic == 1 && ia == 1 && ib == 1{
+        for i in 0..<n{
+            c[i] = a[i] / b[i]
+        }
+    }
+    else if ic == 1 && ia == 1 && ib == 0{
+        let s = b.pointee
+        for i in 0..<n{
+            c[i] = a[i] / s
+        }
+    }
+    else if ic == 1 && ia == 0 && ib == 1{
+        let s = a.pointee
+        for i in 0..<n{
+            c[i] = s / b[i]
+        }
+    }
+    else{
+        for i in 0..<n{
+            c[i * ic] = a[i * ia] / b[i * ib]
+        }
+    }
+}
+
+/// vDSP_vdiv (C = A / B) with correct rounding. See `_ieee_div`
+internal func vDSP_vdiv_exact(_ B: UnsafePointer<Float>, _ IB: vDSP_Stride, _ A: UnsafePointer<Float>, _ IA: vDSP_Stride, _ C: UnsafeMutablePointer<Float>, _ IC: vDSP_Stride, _ N: vDSP_Length){
+    _ieee_div(A, IA, B, IB, C, IC, Int(N))
+}
+/// vDSP_vdivD (C = A / B) with correct rounding. See `_ieee_div`
+internal func vDSP_vdivD_exact(_ B: UnsafePointer<Double>, _ IB: vDSP_Stride, _ A: UnsafePointer<Double>, _ IA: vDSP_Stride, _ C: UnsafeMutablePointer<Double>, _ IC: vDSP_Stride, _ N: vDSP_Length){
+    _ieee_div(A, IA, B, IB, C, IC, Int(N))
+}
+/// vDSP_vsdiv (C = A / scalar) with correct rounding. See `_ieee_div`
+internal func vDSP_vsdiv_exact(_ A: UnsafePointer<Float>, _ IA: vDSP_Stride, _ B: UnsafePointer<Float>, _ C: UnsafeMutablePointer<Float>, _ IC: vDSP_Stride, _ N: vDSP_Length){
+    _ieee_div(A, IA, B, 0, C, IC, Int(N))
+}
+/// vDSP_vsdivD (C = A / scalar) with correct rounding. See `_ieee_div`
+internal func vDSP_vsdivD_exact(_ A: UnsafePointer<Double>, _ IA: vDSP_Stride, _ B: UnsafePointer<Double>, _ C: UnsafeMutablePointer<Double>, _ IC: vDSP_Stride, _ N: vDSP_Length){
+    _ieee_div(A, IA, B, 0, C, IC, Int(N))
+}
+/// vDSP_svdiv (C = scalar / B) with correct rounding. See `_ieee_div`
+internal func vDSP_svdiv_exact(_ A: UnsafePointer<Float>, _ B: UnsafePointer<Float>, _ IB: vDSP_Stride, _ C: UnsafeMutablePointer<Float>, _ IC: vDSP_Stride, _ N: vDSP_Length){
+    _ieee_div(A, 0, B, IB, C, IC, Int(N))
+}
+
 /// ZBinary operation by vDSP
 /// - Parameters:
 ///   - l_mfarray: The left mfarray
@@ -922,7 +973,7 @@ internal func sort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ ord
         srcdstptr in
         // no lanes when the sorted axis (or another axis) is zero-length
         for _ in 0..<(count > 0 ? srcdst_mfarray.size / count : 0){
-            wrap_vDSP_sort(count, srcdstptr + offset, order, vDSP_func)
+            sort_lane(count, srcdstptr + offset, order, vDSP_func)
             offset += count
         }
     }
@@ -957,13 +1008,10 @@ internal func argsort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ 
         srcmfarray.withUnsafeMutableStartPointer(datatype: T.self){
             srcptr in
             
-            // one index buffer for every row. vDSP's argsort needs it to start with 0..<count
+            // one index buffer for every row
             var uiarray = Array<UInt>(repeating: 0, count: count)
             for _ in 0..<(count > 0 ? srcmfarray.size / count : 0){
-                for j in 0..<count{
-                    uiarray[j] = UInt(j)
-                }
-                wrap_vDSP_argsort(count, srcptr + offset, &uiarray, order, vDSP_func)
+                argsort_lane(count, srcptr + offset, &uiarray, order, vDSP_func)
                 for j in 0..<count{
                     dstptrF[offset + j] = Float(uiarray[j])
                 }
@@ -1790,6 +1838,13 @@ internal func vDSP_vsdivD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ scal
         dst[i * dstStride] = src[i * srcStride] / s
     }
 }
+
+// the fallbacks already divide with correct rounding
+internal let vDSP_vdiv_exact = vDSP_vdiv
+internal let vDSP_vdivD_exact = vDSP_vdivD
+internal let vDSP_vsdiv_exact = vDSP_vsdiv
+internal let vDSP_vsdivD_exact = vDSP_vsdivD
+internal let vDSP_svdiv_exact = vDSP_svdiv
 
 @inline(__always)
 internal func vDSP_svdiv(_ scalar: UnsafePointer<Float>, _ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {
@@ -2735,7 +2790,7 @@ internal func sort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ ord
         srcdstptr in
         // no lanes when the sorted axis (or another axis) is zero-length
         for _ in 0..<(count > 0 ? srcdst_mfarray.size / count : 0){
-            wrap_vDSP_sort(count, srcdstptr + offset, order, vDSP_func)
+            sort_lane(count, srcdstptr + offset, order, vDSP_func)
             offset += count
         }
     }
@@ -2761,8 +2816,8 @@ internal func argsort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ 
             srcptr in
 
             for _ in 0..<(count > 0 ? srcmfarray.size / count : 0){
-                var uiarray = Array<UInt>(stride(from: 0, to: UInt(count), by: 1))
-                wrap_vDSP_argsort(count, srcptr + offset, &uiarray, order, vDSP_func)
+                var uiarray = Array<UInt>(repeating: 0, count: count)
+                argsort_lane(count, srcptr + offset, &uiarray, order, vDSP_func)
 
                 var flarray = uiarray.map{ Float($0) }
                 flarray.withUnsafeMutableBufferPointer{
@@ -3006,6 +3061,94 @@ internal func vDSP_maxmgvD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst
 
 
 // MARK: - Shared by the Accelerate and WASI paths
+
+/// Sort one contiguous lane in place, placing NaN like numpy: last for `.Ascending`, first for `.Descending`
+/// (the exact reverse of the ascending order). vDSP's sort leaves NaN anywhere, so the NaNs are moved out first.
+/// - Parameters:
+///   - count: The number of elements
+///   - ptr: The lane
+///   - order: MfSortOrder
+///   - vDSP_func: The vDSP sort function
+internal func sort_lane<T: MfStorable>(_ count: Int, _ ptr: UnsafeMutablePointer<T>, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_func<T>){
+    var nanCount = 0
+    for i in 0..<count where ptr[i].isNaN{
+        nanCount += 1
+    }
+    if nanCount == 0{
+        wrap_vDSP_sort(count, ptr, order, vDSP_func)
+        return
+    }
+    let valueCount = count - nanCount
+    if order == .Ascending{
+        // values to the front, NaN to the back
+        var j = 0
+        for i in 0..<count where !ptr[i].isNaN{
+            ptr[j] = ptr[i]
+            j += 1
+        }
+        (ptr + valueCount).update(repeating: T.nan, count: nanCount)
+        wrap_vDSP_sort(valueCount, ptr, order, vDSP_func)
+    }
+    else{
+        // NaN to the front, values to the back
+        var j = count - 1
+        for i in stride(from: count - 1, through: 0, by: -1) where !ptr[i].isNaN{
+            ptr[j] = ptr[i]
+            j -= 1
+        }
+        ptr.update(repeating: T.nan, count: nanCount)
+        wrap_vDSP_sort(valueCount, ptr + nanCount, order, vDSP_func)
+    }
+}
+
+/// Argsort one contiguous lane, placing NaN like numpy: the NaN indices come last in increasing order for `.Ascending`,
+/// and first in decreasing order for `.Descending` (the exact reverse of the ascending order).
+/// - Parameters:
+///   - count: The number of elements
+///   - srcptr: The lane
+///   - indices: The result, `count` indices
+///   - order: MfSortOrder
+///   - vDSP_func: The vDSP argsort function
+internal func argsort_lane<T: MfStorable>(_ count: Int, _ srcptr: UnsafePointer<T>, _ indices: inout [UInt], _ order: MfSortOrder, _ vDSP_func: vDSP_argsort_func<T>){
+    var nanCount = 0
+    for i in 0..<count where srcptr[i].isNaN{
+        nanCount += 1
+    }
+    if nanCount == 0{
+        // vDSP's argsort needs the indices to start with 0..<count
+        for j in 0..<count{
+            indices[j] = UInt(j)
+        }
+        wrap_vDSP_argsort(count, srcptr, &indices, order, vDSP_func)
+        return
+    }
+    // argsort the non-NaN values compacted into a buffer, then map back to the original indices
+    var positions: [UInt] = [], nanPositions: [UInt] = []
+    var values: [T] = []
+    positions.reserveCapacity(count - nanCount)
+    values.reserveCapacity(count - nanCount)
+    nanPositions.reserveCapacity(nanCount)
+    for i in 0..<count{
+        if srcptr[i].isNaN{
+            nanPositions.append(UInt(i))
+        }
+        else{
+            positions.append(UInt(i))
+            values.append(srcptr[i])
+        }
+    }
+    var sorted = Array<UInt>(0..<UInt(values.count))
+    if !values.isEmpty{
+        values.withUnsafeBufferPointer{
+            wrap_vDSP_argsort($0.count, $0.baseAddress!, &sorted, order, vDSP_func)
+        }
+    }
+    let ordered = sorted.map{ positions[Int($0)] }
+    let result = order == .Ascending ? ordered + nanPositions : nanPositions.reversed() + ordered
+    for j in 0..<count{
+        indices[j] = result[j]
+    }
+}
 
 /// argmax / argmin by vDSP (`vDSP_maxvi`, `vDSP_minvi`, ...), following numpy:
 /// the indices are `.Int`, the first index wins for ties, and the first NaN wins when the lane contains NaN

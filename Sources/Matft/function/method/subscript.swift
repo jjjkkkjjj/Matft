@@ -26,6 +26,8 @@ extension MfArray: MfSubscriptable{
     ///   - indices: One integer per axis (at most `ndim`).
     /// - Returns: A Swift scalar (boxed in `Any`) when the result has a single element, otherwise an `MfArray` view that shares memory with the original array.
     ///   When setting, a scalar or an `MfArray` broadcastable to the selected region can be assigned.
+    ///   Like numpy, the assigned value may have extra leading dimensions of size 1, and a complex value assigned into a real array
+    ///   is cast to its real part (the array stays real). The same applies to the other subscripts.
     public subscript(indices: Int...) -> Any{
         get {
             var indices: [Any] = indices
@@ -370,11 +372,9 @@ extension MfArray: MfSubscriptable{
             return self._fancymixedset_mfarray(indices: indices, newValue: newValue)
         }
         
-        self._to_complex_if_needed(newValue)
-        
         //note that this function is alike _binary_operation
         let array = self._get_mfarray(indices: &indices)
-        var newValue = self._unaliased(newValue)
+        var newValue = self._unaliased(self._castable_value(newValue))
 
         if array.mftype != newValue.mftype{
             newValue = newValue.astype(array.mftype)
@@ -407,7 +407,7 @@ extension MfArray: MfSubscriptable{
             return
         }
         if array.shape != newValue.shape{
-            newValue = newValue.broadcast_to(shape: array.shape)
+            newValue = setter_broadcast_to(newValue, shape: array.shape)
         }
         
         // imaginary part of the real newValue is regarded as zero
@@ -559,7 +559,7 @@ extension MfArray: MfSubscriptable{
             let rest_shape = Array(moved.shape.suffix(from: fancy_axes.count))
             let k = fancy_axes[0]
             let selection_shape = Array(rest_shape.prefix(k)) + fancy_shape + Array(rest_shape.suffix(from: k))
-            value = value.broadcast_to(shape: selection_shape).moveaxis(src: Array(k..<k + fancy_shape.count), dst: Array(0..<fancy_shape.count))
+            value = setter_broadcast_to(value, shape: selection_shape).moveaxis(src: Array(k..<k + fancy_shape.count), dst: Array(0..<fancy_shape.count))
         }
         
         if fancy_ops.count == 1{
@@ -581,15 +581,15 @@ extension MfArray: MfSubscriptable{
         return assignedMfarray
     }
     
-    /// Convert self into complex in-place if the assigned mfarray is complex
+    /// The assigned mfarray as it can be written into self. Like numpy, a complex value assigned into a real array
+    /// is cast to its real part (numpy warns with ComplexWarning), and self keeps its type
     /// - Parameters:
     ///   - assignedMfarray: The assigned mfarray
-    private func _to_complex_if_needed(_ assignedMfarray: MfArray){
+    private func _castable_value(_ assignedMfarray: MfArray) -> MfArray{
         if assignedMfarray.isComplex && self.isReal{
-            // Note: in-place operation
-            let _ = self.to_complex(true)
-            assert(self.isComplex, "Not converted complex!")
+            return assignedMfarray.real
         }
+        return assignedMfarray
     }
     
     /// Apply a real setter to the real and imaginary parts respectively
@@ -597,9 +597,7 @@ extension MfArray: MfSubscriptable{
     ///   - assignedMfarray: The assigned mfarray
     ///   - setter: The real setter. Arguments are (destination mfarray, source mfarray)
     private func _set_realimag(assignedMfarray: MfArray, _ setter: (MfArray, MfArray) -> Void){
-        self._to_complex_if_needed(assignedMfarray)
-        
-        var assignedMfarray = self._unaliased(assignedMfarray)
+        var assignedMfarray = self._unaliased(self._castable_value(assignedMfarray))
         if self.isReal && assignedMfarray.mftype != self.mftype{
             // convert like numpy, e.g. 300 into .UInt8 wraps around to 44 and 2.7 into .Int is truncated to 2
             assignedMfarray = assignedMfarray.astype(self.mftype)
@@ -615,6 +613,22 @@ extension MfArray: MfSubscriptable{
     }
 }
 
+
+/// Broadcast the value assigned by a setter to the shape of the selection.
+/// Like numpy, the value may have more dimensions than the selection as long as the extra leading ones have size 1
+/// (e.g. `a[0] = MfArray([[1, 2, 3, 4]])` for `a` of shape [3, 4])
+/// - Parameters:
+///   - value: The assigned mfarray
+///   - shape: The shape of the selection
+/// - Returns: The broadcast view
+internal func setter_broadcast_to(_ value: MfArray, shape: [Int]) -> MfArray{
+    let extra = value.ndim - shape.count
+    guard extra > 0 && value.shape.prefix(extra).allSatisfy({ $0 == 1 }) else{
+        return value.broadcast_to(shape: shape)
+    }
+    let structure = MfStructure(shape: Array(value.shape.suffix(from: extra)), strides: Array(value.strides.suffix(from: extra)))
+    return MfArray(base: value, mfstructure: structure, offset: value.offsetIndex).broadcast_to(shape: shape)
+}
 
 fileprivate func _setter<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, assignMfArray: MfArray, type: T.Type){
     let true_num = Float.toInt(indices.sum().scalar(Float.self)!)
@@ -634,7 +648,7 @@ fileprivate func _setter<T: MfStorable>(_ mfarray: MfArray, _ indices: MfArray, 
     let lastShape = Array(mfarray.shape.suffix(mfarray.ndim - orig_ind_dim))
     let assignShape = [true_num] + lastShape
     let isScalar = assignMfArray.size == 1
-    var values = isScalar ? assignMfArray : assignMfArray.broadcast_to(shape: assignShape)
+    var values = isScalar ? assignMfArray : setter_broadcast_to(assignMfArray, shape: assignShape)
     if values.storedType != mfarray.storedType{
         values = values.astype(mfarray.mftype)
     }

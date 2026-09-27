@@ -66,9 +66,46 @@ internal func get_mftype(_ flattenArray: inout [Any]) -> MfType{
     else if flattenArray is [DSPDoubleComplex]{
         return .ComplexDouble
     }
+    else if let mftype = _homogenize_flattenArray(&flattenArray){
+        return mftype
+    }
     else{
         fatalError("flattenArray couldn't cast MfTypable.")
     }
+}
+
+/// Convert a flatten array of mixed real scalar types into Double values of their result type like numpy
+/// (e.g. `MfArray([0.5, 1, 2])` passes Double and Int values, and np.array([0.5, 1, 2]) is float64).
+/// - Parameter flattenArray: An input and output flatten array
+/// - Returns: The result type, or nil if an element is not a real scalar
+fileprivate func _homogenize_flattenArray(_ flattenArray: inout [Any]) -> MfType?{
+    var mftype: MfType? = nil
+    var values: [Double] = []
+    values.reserveCapacity(flattenArray.count)
+    for value in flattenArray{
+        let v: Double
+        switch value{
+        case let x as Bool: v = x ? 1 : 0
+        case let x as UInt8: v = Double(x)
+        case let x as UInt16: v = Double(x)
+        case let x as UInt32: v = Double(x)
+        case let x as UInt64: v = Double(x)
+        case let x as UInt: v = Double(x)
+        case let x as Int8: v = Double(x)
+        case let x as Int16: v = Double(x)
+        case let x as Int32: v = Double(x)
+        case let x as Int64: v = Double(x)
+        case let x as Int: v = Double(x)
+        case let x as Float: v = Double(x)
+        case let x as Double: v = x
+        default: return nil
+        }
+        let type = MfType.mftype(value: value)
+        mftype = mftype.map{ MfType.result_type($0, type) } ?? type
+        values.append(v)
+    }
+    flattenArray = values
+    return mftype
 }
 
 /**
@@ -100,18 +137,11 @@ internal func allocate_floatdata_from_flattenArray(_ flattenArray: inout [Any], 
         return _array2ptrU(&flattenArray, vDSP_func: vDSP_vfltu32, toBool: toBool)
     }
     else if let flattenArray = flattenArray as? [UInt64]{
-        //convert uint64 to uint32
-        var flatten32array = flattenArray.map{ UInt32($0) }
-        
-        return _array2ptrU(&flatten32array, vDSP_func: vDSP_vfltu32, toBool: toBool)
+        // 64 bit integers don't fit in the 32 bit vDSP conversions (values beyond UInt32 would trap), so they are converted directly
+        return _array2ptrU(flattenArray.map{ Float($0) }, toBool: toBool)
     }
     else if let flattenArray = flattenArray as? [UInt]{
-        //convert uint to uint32
-        //Note that UInt and Int will be handled as uint32 and Int32 respectively
-        //Also Int will be handled as int64
-        var flatten32array = flattenArray.map{ UInt32($0) }
-        
-        return _array2ptrU(&flatten32array, vDSP_func: vDSP_vfltu32, toBool: toBool)
+        return _array2ptrU(flattenArray.map{ Float($0) }, toBool: toBool)
     }
     //Int
     else if var flattenArray = flattenArray as? [Int8]{
@@ -124,16 +154,11 @@ internal func allocate_floatdata_from_flattenArray(_ flattenArray: inout [Any], 
         return _array2ptrU(&flattenArray, vDSP_func: vDSP_vflt32, toBool: toBool)
     }
     else if let flattenArray = flattenArray as? [Int64]{
-        //convert int64 to int32
-        var flatten32array = flattenArray.map{ Int32($0) }
-        
-        return _array2ptrU(&flatten32array, vDSP_func: vDSP_vflt32, toBool: toBool)
+        // 64 bit integers don't fit in the 32 bit vDSP conversions (values beyond Int32 would trap), so they are converted directly
+        return _array2ptrU(flattenArray.map{ Float($0) }, toBool: toBool)
     }
     else if let flattenArray = flattenArray as? [Int]{
-        //convert int to int32
-        var flatten32array = flattenArray.map{ Int32($0) }
-        
-        return _array2ptrU(&flatten32array, vDSP_func: vDSP_vflt32, toBool: toBool)
+        return _array2ptrU(flattenArray.map{ Float($0) }, toBool: toBool)
     }
     else if var flattenArray = flattenArray as? [Float]{
         let ptrF = allocate_unsafeMPtrT(type: Float.self, count: flattenArray.count, zeroed: false)
@@ -194,18 +219,11 @@ internal func allocate_doubledata_from_flattenArray(_ flattenArray: inout [Any],
         return _array2ptrU(&flattenArray, vDSP_func: vDSP_vfltu32D, toBool: toBool)
     }
     else if let flattenArray = flattenArray as? [UInt64]{
-        //convert uint64 to uint32
-        var flatten32array = flattenArray.map{ UInt32($0) }
-        
-        return _array2ptrU(&flatten32array, vDSP_func: vDSP_vfltu32D, toBool: toBool)
+        // 64 bit integers don't fit in the 32 bit vDSP conversions (values beyond UInt32 would trap), so they are converted directly
+        return _array2ptrU(flattenArray.map{ Double($0) }, toBool: toBool)
     }
     else if let flattenArray = flattenArray as? [UInt]{
-        //convert uint to uint32
-        //Note that UInt and Int will be handled as uint32 and Int32 respectively
-        //Also Int will be handled as int64
-        var flatten32array = flattenArray.map{ UInt32($0) }
-        
-        return _array2ptrU(&flatten32array, vDSP_func: vDSP_vfltu32D, toBool: toBool)
+        return _array2ptrU(flattenArray.map{ Double($0) }, toBool: toBool)
     }
     //Int
     else if var flattenArray = flattenArray as? [Int8]{
@@ -218,16 +236,11 @@ internal func allocate_doubledata_from_flattenArray(_ flattenArray: inout [Any],
         return _array2ptrU(&flattenArray, vDSP_func: vDSP_vflt32D, toBool: toBool)
     }
     else if let flattenArray = flattenArray as? [Int64]{
-        //convert int64 to int32
-        var flatten32array = flattenArray.map{ Int32($0) }
-        
-        return _array2ptrU(&flatten32array, vDSP_func: vDSP_vflt32D, toBool: toBool)
+        // 64 bit integers don't fit in the 32 bit vDSP conversions (values beyond Int32 would trap), so they are converted directly
+        return _array2ptrU(flattenArray.map{ Double($0) }, toBool: toBool)
     }
     else if let flattenArray = flattenArray as? [Int]{
-        //convert int to int32
-        var flatten32array = flattenArray.map{ Int32($0) }
-        
-        return _array2ptrU(&flatten32array, vDSP_func: vDSP_vflt32D, toBool: toBool)
+        return _array2ptrU(flattenArray.map{ Double($0) }, toBool: toBool)
     }
     else if var flattenArray = flattenArray as? [Float]{
         return _array2ptrU(&flattenArray, vDSP_func: vDSP_vspdp, toBool: toBool)
@@ -291,6 +304,21 @@ fileprivate func _array2ptrU<T: MfTypable, U: MfStorable>(_ flattenArray: inout 
     return UnsafeMutableRawPointer(ptrU)
 }
 
+/// Copy already converted values into a newly allocated buffer
+fileprivate func _array2ptrU<U: MfStorable>(_ convertedArray: [U], toBool: Bool) -> UnsafeMutableRawPointer{
+    let ptrU = allocate_unsafeMPtrT(type: U.self, count: convertedArray.count, zeroed: false)
+    convertedArray.withUnsafeBufferPointer{
+        if let base = $0.baseAddress{
+            ptrU.update(from: base, count: $0.count)
+        }
+    }
+
+    if toBool{
+        _U2Binary(UnsafeMutableBufferPointer(start: ptrU, count: convertedArray.count))
+    }
+    return UnsafeMutableRawPointer(ptrU)
+}
+
 
 /// Wrap around the out of range values of 8/16 bit integer mfarray in place like numpy's fixed width integers (e.g. UInt8: -5 -> 251).
 /// Call this only on a newly created result. Wider integers are left as they are because Float can't hold their wrapped values exactly.
@@ -340,7 +368,7 @@ internal func cast_to_integer(_ mfarray: MfArray, truncate: Bool) -> MfArray{
     return wrap_integer_overflow(mfarray)
 }
 
-/// The scalar version of `cast_to_integer(_:)`: truncate toward zero and wrap around 8/16 bit integers. Returns the value as it is for the other types
+/// The scalar version of `cast_to_integer(_:)`: truncate toward zero and wrap around 8/16 bit integers, and make a Bool 0 or 1. Returns the value as it is for the other types
 internal func cast_to_integer(_ value: Float, mftype: MfType) -> Float{
     let bits: Int, signed: Bool
     switch mftype {
@@ -350,6 +378,8 @@ internal func cast_to_integer(_ value: Float, mftype: MfType) -> Float{
     case .Int16: (bits, signed) = (16, true)
     case .UInt32, .UInt64, .UInt, .Int32, .Int64, .Int:
         return value.rounded(.towardZero)
+    case .Bool:
+        return value != 0 ? 1 : 0
     default:
         return value
     }
