@@ -366,7 +366,7 @@ internal func vvintf(_ dst: UnsafeMutablePointer<Float>, _ src: UnsafePointer<Fl
 internal func vvnintf(_ dst: UnsafeMutablePointer<Float>, _ src: UnsafePointer<Float>, _ count: UnsafePointer<Int32>) {
     let n = Int(count.pointee)
     for i in 0..<n {
-        dst[i] = roundf(src[i])
+        dst[i] = src[i].rounded(.toNearestOrEven) // like Accelerate's vvnintf (roundf rounds halves away from zero)
     }
 }
 
@@ -592,7 +592,7 @@ internal func vvint(_ dst: UnsafeMutablePointer<Double>, _ src: UnsafePointer<Do
 internal func vvnint(_ dst: UnsafeMutablePointer<Double>, _ src: UnsafePointer<Double>, _ count: UnsafePointer<Int32>) {
     let n = Int(count.pointee)
     for i in 0..<n {
-        dst[i] = round(src[i])
+        dst[i] = src[i].rounded(.toNearestOrEven) // like Accelerate's vvnint (round rounds halves away from zero)
     }
 }
 

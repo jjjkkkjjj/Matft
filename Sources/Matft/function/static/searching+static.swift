@@ -68,7 +68,7 @@ extension Matft{
             - condition: Where non-zero, yield `x`; otherwise yield `y`.
             - x: The values chosen where `condition` is non-zero.
             - y: The values chosen where `condition` is zero.
-       - Returns: A new array with the broadcast shape. Its `mftype` is the promoted type of `x` and `y`.
+       - Returns: A new array with the broadcast shape. Its `mftype` is `MfType.result_type(x.mftype, y.mftype)` (e.g. `.UInt8` and `.Int8` give `.Int16`).
        - Precondition: `x` and `y` must be real (complex arrays are not supported), and the three shapes must be broadcastable.
     */
     public static func `where`(_ condition: MfArray, _ x: MfArray, _ y: MfArray) -> MfArray{
@@ -89,7 +89,7 @@ extension Matft{
                 }
             }
         }
-        let mftype = MfType.priority(x.mftype, y.mftype)
+        let mftype = MfType.result_type(x.mftype, y.mftype)
         return mftype == .Double ? ret : ret.astype(mftype)
     }
 

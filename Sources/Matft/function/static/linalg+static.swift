@@ -84,7 +84,7 @@ extension Matft.linalg{
 
        - Parameters:
             - mfarray: The array of shape `(..., M, M)`.
-       - Returns: The determinants with shape `(...)`, or `[1]` for a single 2-d matrix. The result keeps the `mftype` of `mfarray`; the values are computed in `Float` (`Double` for `.Double` input).
+       - Returns: The determinants with shape `(...)`, or `[1]` for a single 2-d matrix. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs give `.Float`; numpy: float64).
        - Throws: `MfError.LinAlgError.factorizationError` if LAPACK reports an illegal argument, or `MfError.LinAlgError.singularMatrix` if the matrix is exactly singular.
        - Precondition: `mfarray` must be at least 2-d and its last two dimensions must be square. Complex arrays are not supported.
        - Note: Unlike Numpy, which returns 0, an exactly singular matrix throws `MfError.LinAlgError.singularMatrix`.
@@ -95,16 +95,20 @@ extension Matft.linalg{
         // the determinant of a 0x0 matrix is 1 (the empty product) like numpy
         if mfarray.ndim >= 2 && shape[mfarray.ndim - 1] == 0 && shape[mfarray.ndim - 2] == 0{
             let stacked = Array(shape.prefix(mfarray.ndim - 2))
-            return Matft.nums(1, shape: stacked.isEmpty ? [1] : stacked, mftype: mfarray.mftype)
+            return Matft.nums(1, shape: stacked.isEmpty ? [1] : stacked, mftype: mfarray.storedType == .Double ? .Double : .Float)
         }
         
+        // the determinant of an integer matrix isn't an integer in floating point (e.g. -305.99997), so it is a float array like numpy
+        let ret: MfArray
         switch mfarray.storedType {
         case .Float:
-            return try det_by_lapack(mfarray, sgetrf_)
+            ret = try det_by_lapack(mfarray, sgetrf_)
+            ret.mfdata.mftype = .Float
             
         case .Double:
-            return try det_by_lapack(mfarray, dgetrf_)
+            ret = try det_by_lapack(mfarray, dgetrf_)
         }
+        return ret
 
     }
     
@@ -341,13 +345,13 @@ extension Matft.linalg{
         unsupport_complex(mfarray)
         
         if ord == Float.infinity{
-            return Matft.math.abs(mfarray).max(axis: axis, keepDims: keepDims)
+            return _abs_for_norm(mfarray).max(axis: axis, keepDims: keepDims)
         }
         else if ord == -Float.infinity{
-            return Matft.math.abs(mfarray).min(axis: axis, keepDims: keepDims)
+            return _abs_for_norm(mfarray).min(axis: axis, keepDims: keepDims)
         }
         if ord != 0{
-            let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponents: ord)
+            let abspow = Matft.math.power(bases: _abs_for_norm(mfarray), exponents: ord)
             let sum = abspow.sum(axis: axis, keepDims: keepDims)
             // 1/ord in Float (e.g. 1/3) would limit a Double result to Float precision
             return Matft.math.power(bases: sum, exponents: 1 / Double(ord))
@@ -401,25 +405,25 @@ extension Matft.linalg{
             if axes.col > axes.row{
                 axes.col -= 1
             }
-            ret = Matft.math.abs(mfarray).sum(axis: axes.row, keepDims: false).max(axis: axes.col, keepDims: false)
+            ret = _abs_for_norm(mfarray).sum(axis: axes.row, keepDims: false).max(axis: axes.col, keepDims: false)
         }
         else if ord == Float.infinity{
             if axes.row > axes.col{
                 axes.row -= 1
             }
-            ret = Matft.math.abs(mfarray).sum(axis: axes.col, keepDims: false).max(axis: axes.row, keepDims: false)
+            ret = _abs_for_norm(mfarray).sum(axis: axes.col, keepDims: false).max(axis: axes.row, keepDims: false)
         }
         else if ord == -1{
             if axes.col > axes.row{
                 axes.col -= 1
             }
-            ret = Matft.math.abs(mfarray).sum(axis: axes.row, keepDims: false).min(axis: axes.col, keepDims: false)
+            ret = _abs_for_norm(mfarray).sum(axis: axes.row, keepDims: false).min(axis: axes.col, keepDims: false)
         }
         else if ord == -Float.infinity{
             if axes.row > axes.col{
                 axes.row -= 1
             }
-            ret = Matft.math.abs(mfarray).sum(axis: axes.col, keepDims: false).min(axis: axes.row, keepDims: false)
+            ret = _abs_for_norm(mfarray).sum(axis: axes.col, keepDims: false).min(axis: axes.row, keepDims: false)
         }
         else{
             preconditionFailure("Invalid norm order for matrices.")
@@ -453,7 +457,7 @@ extension Matft.linalg{
         precondition(axes.row != axes.col, "Duplicate axes given.")
         unsupport_complex(mfarray)
         
-        let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponents: 2)
+        let abspow = Matft.math.power(bases: _abs_for_norm(mfarray), exponents: 2)
         
         var ret = Matft.math.power(bases: abspow.sum(axis: max(axes.row, axes.col), keepDims: false).sum(axis: min(axes.row, axes.col), keepDims: false), exponents: 0.5)
         
@@ -496,6 +500,11 @@ extension Matft.linalg{
         
         return ret
     }
+}
+
+/// |x| in floating point: numpy's norm computes integer and Bool input as float, while `Matft.math.abs` keeps the integer type (and wraps around)
+fileprivate func _abs_for_norm(_ mfarray: MfArray) -> MfArray{
+    return Matft.math.abs(_is_integer_type(mfarray.mftype) ? mfarray.astype(.Float) : mfarray)
 }
 
 fileprivate typealias _norm_op = (MfArray, Int?, Bool) -> MfArray

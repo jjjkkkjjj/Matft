@@ -146,7 +146,7 @@ extension Matft{
        - Parameters:
             - ar1: The first input array.
             - ar2: The second input array.
-       - Returns: A 1-d array of the sorted common unique values. Its `mftype` is the promoted type of `ar1` and `ar2`.
+       - Returns: A 1-d array of the sorted common unique values. Its `mftype` is `MfType.result_type(ar1.mftype, ar2.mftype)`.
        - Precondition: Complex arrays are not supported.
     */
     public static func intersect1d(_ ar1: MfArray, _ ar2: MfArray) -> MfArray{
@@ -162,12 +162,12 @@ extension Matft{
        - Parameters:
             - ar1: The first input array.
             - ar2: The second input array.
-       - Returns: A 1-d array of the sorted unique values. Its `mftype` is the promoted type of `ar1` and `ar2`.
+       - Returns: A 1-d array of the sorted unique values. Its `mftype` is `MfType.result_type(ar1.mftype, ar2.mftype)`.
        - Precondition: Complex arrays are not supported.
     */
     public static func union1d(_ ar1: MfArray, _ ar2: MfArray) -> MfArray{
         let values = _doubles(ar1) + _doubles(ar2)
-        return Matft.unique(_mfarray(values, shape: [values.count], mftype: MfType.priority(ar1.mftype, ar2.mftype)))
+        return Matft.unique(_mfarray(values, shape: [values.count], mftype: MfType.result_type(ar1.mftype, ar2.mftype)))
     }
 
     /**
@@ -205,7 +205,7 @@ fileprivate func _unique_sorted(_ values: [Double]) -> [Double]{
 }
 
 fileprivate func _set_result(_ values: [Double], _ ar1: MfArray, _ ar2: MfArray) -> MfArray{
-    return _mfarray(values, shape: [values.count], mftype: MfType.priority(ar1.mftype, ar2.mftype))
+    return _mfarray(values, shape: [values.count], mftype: MfType.result_type(ar1.mftype, ar2.mftype))
 }
 
 /// LSD radix sort of the non-NaN Double values (4 passes of 16 bits). It is much faster than the comparison sort for large arrays

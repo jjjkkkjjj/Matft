@@ -656,20 +656,16 @@ extension Matft.math{//use math_vv_by_vecLib
     /**
        Round each element to the given number of decimals.
 
-       Equivalent to `numpy.round`. Implemented as `nearest(mfarray * 10^decimals) / 10^decimals`, where the scaling factor is a `Float`.
+       Equivalent to `numpy.round`, computed like numpy: `rint(x * 10^decimals) / 10^decimals`, or `rint(x / 10^-decimals) * 10^-decimals` for a negative `decimals` (halves round to even).
 
        - Parameters:
             - mfarray: The input array.
             - decimals: The number of decimal places to round to. Default is 0, which is equivalent to `nearest(_:)`. A negative value rounds to the left of the decimal point.
-       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input, integer input keeps its type (8/16 bit integers wrap around, e.g. `.Int8` 126 with `decimals: -1` is -126), and `.Float` otherwise.
        - Precondition: Complex arrays are not supported.
     */
     public static func round(_ mfarray: MfArray, decimals: Int = 0) -> MfArray{
-        unsupport_complex(mfarray)
-        
-        let pow = powf(10, Float(decimals))
-        let n =  Matft.math.nearest(mfarray * pow)
-        return n / pow
+        return _round(mfarray, decimals: decimals)
     }
     
     //
@@ -682,7 +678,7 @@ extension Matft.math{//use math_vv_by_vecLib
 
        - Parameters:
             - mfarray: The input array.
-       - Returns: A new array with the same shape as `mfarray`. The result is `.Double` for `.Double` input and `.Float` otherwise (integer and `.Bool` inputs are converted to `.Float`). Complex input is supported and returns the real magnitude `|z|` (same as `Matft.complex.abs`).
+       - Returns: A new array with the same shape as `mfarray`. The result has the same type as `mfarray` like numpy (8/16 bit integers wrap around, e.g. `.Int8` -128 stays -128). Complex input is supported and returns the real magnitude `|z|` (same as `Matft.complex.abs`).
     */
     public static func abs(_ mfarray: MfArray) -> MfArray{
         if mfarray.isReal{
@@ -690,7 +686,7 @@ extension Matft.math{//use math_vv_by_vecLib
             case .Float:
                 let ret = mathf_by_vForce(mfarray, vvfabsf)
                 ret.mfdata.mftype = .Float
-                return ret
+                return _keep_integer_type(ret, mfarray.mftype)
             case .Double:
                 let ret = mathf_by_vForce(mfarray, vvfabs)
                 ret.mfdata.mftype = .Double
@@ -774,7 +770,7 @@ extension Matft.math{//use math_vv_by_vecLib
        - Parameters:
             - bases: The array of bases.
             - exponents: The scalar exponent.
-       - Returns: A new array with the same shape as `bases`. For real `bases` the result is `.Double` for `.Double` input and `.Float` otherwise (the scalar doesn't change the type, like numpy's Python scalars; numpy gives an integer array for integer bases and exponents). Complex `bases` are supported and computed in polar form.
+       - Returns: A new array with the same shape as `bases`. For real `bases` the result is `.Double` for `.Double` input and `.Float` otherwise (the scalar doesn't change the type, like numpy's Python scalars; an `Int` exponent keeps an integer type, see `power(bases:exponents:)` with an `Int`). Complex `bases` are supported and computed in polar form.
     */
     public static func power(bases: MfArray, exponents: Double) -> MfArray{
         if bases.isReal{
@@ -809,9 +805,13 @@ extension Matft.math{//use math_vv_by_vecLib
        - Parameters:
             - bases: The array of bases.
             - exponents: The array of exponents. It is broadcast against `bases`.
-       - Returns: A new array with the broadcast shape. For real inputs the result is `.Double` if the promoted type is stored as `Double` and `.Float` otherwise. Complex inputs are supported and computed as `exp(exponents * log(bases))`.
+       - Returns: A new array with the broadcast shape. For real inputs the result has the promoted type when it is an integer type like numpy (8/16 bit integers wrap around, and `.Bool` gives `.Int8`), and otherwise `.Double` if the promoted type is stored as `Double` and `.Float` otherwise. Complex inputs are supported and computed as `exp(exponents * log(bases))`.
+       - Precondition: An integer result doesn't accept negative exponents (numpy raises `ValueError`).
     */
     public static func power(bases: MfArray, exponents: MfArray) -> MfArray{
+        if let ret = _integer_power_if_needed(bases, exponents){
+            return ret
+        }
         let (bases, exponents, rettype, isReal) = biop_broadcast_to(bases, exponents)
         
         if isReal{
@@ -870,7 +870,7 @@ extension Matft.math{//use vDSP
 
        - Parameters:
             - mfarray: The input array.
-       - Returns: A new array with the same shape and the same `mftype` as `mfarray`.
+       - Returns: A new array with the same shape and the same `mftype` as `mfarray`. 8/16 bit integers wrap around like numpy.
        - Precondition: Complex arrays are not supported.
     */
     public static func square(_ mfarray: MfArray) -> MfArray{
@@ -878,7 +878,8 @@ extension Matft.math{//use vDSP
         
         switch mfarray.storedType {
         case .Float:
-            return math_by_vDSP(mfarray, vDSP_vsq)
+            // 8/16 bit integers wrap around like numpy
+            return wrap_integer_overflow(math_by_vDSP(mfarray, vDSP_vsq))
         case .Double:
             return math_by_vDSP(mfarray, vDSP_vsqD)
         }
@@ -1247,7 +1248,8 @@ extension Matft.math {
         unsupport_complex(mfarray)
         switch mfarray.storedType {
         case .Float:
-            return math_by_vDSP(mfarray, vDSP_vsq)
+            // 8/16 bit integers wrap around like numpy
+            return wrap_integer_overflow(math_by_vDSP(mfarray, vDSP_vsq))
         case .Double:
             return math_by_vDSP(mfarray, vDSP_vsqD)
         }
@@ -1260,7 +1262,7 @@ extension Matft.math {
         case .Float:
             let ret = mathf_by_vForce(mfarray, vvfabsf)
             ret.mfdata.mftype = .Float
-            return ret
+            return _keep_integer_type(ret, mfarray.mftype)
         case .Double:
             let ret = mathf_by_vForce(mfarray, vvfabs)
             ret.mfdata.mftype = .Double
@@ -1307,6 +1309,9 @@ extension Matft.math {
     public static func power(bases: MfArray, exponents: MfArray) -> MfArray {
         unsupport_complex(bases)
         unsupport_complex(exponents)
+        if let ret = _integer_power_if_needed(bases, exponents) {
+            return ret
+        }
         let (baseBc, exponentsBc, _, _) = biop_broadcast_to(bases, exponents)
         switch baseBc.storedType {
         case .Float:
@@ -1385,33 +1390,7 @@ extension Matft.math {
 
     /// Round each element to the given number of decimals (WASI fallback).
     public static func round(_ mfarray: MfArray, decimals: Int = 0) -> MfArray {
-        unsupport_complex(mfarray)
-        if decimals == 0 {
-            switch mfarray.storedType {
-            case .Float:
-                let ret = mathf_by_vForce(mfarray, vvnintf)
-                ret.mfdata.mftype = .Float
-                return ret
-            case .Double:
-                let ret = mathf_by_vForce(mfarray, vvnint)
-                ret.mfdata.mftype = .Double
-                return ret
-            }
-        } else {
-            let factor = pow(10.0, Double(decimals))
-            switch mfarray.storedType {
-            case .Float:
-                let scaled = mfarray * Float(factor)
-                let rounded = mathf_by_vForce(scaled, vvnintf)
-                rounded.mfdata.mftype = .Float
-                return rounded / Float(factor)
-            case .Double:
-                let scaled = mfarray * factor
-                let rounded = mathf_by_vForce(scaled, vvnint)
-                rounded.mfdata.mftype = .Double
-                return rounded / factor
-            }
-        }
+        return _round(mfarray, decimals: decimals)
     }
 
     /// Truncate each element toward zero (WASI fallback).
@@ -1513,4 +1492,181 @@ fileprivate func _bool_map(_ mfarray: MfArray, _ predicateF: (Float) -> Bool, _ 
         }
     }
     return ret
+}
+
+extension Matft.math{
+    /**
+       Raise each element of an array to an integer scalar power.
+
+       Equivalent to `numpy.power(bases, exponents)` with a Python int exponent: an integer array keeps its type and 8/16 bit integers wrap around (e.g. `.UInt8` 16 ** 2 is 0),
+       and the other arrays are the same as `power(bases:exponents:)` with a `Double` exponent.
+
+       - Parameters:
+            - bases: The array of bases.
+            - exponents: The scalar exponent.
+       - Returns: A new array with the same shape as `bases`. The type is the same as `bases`, except that `.Bool` gives `.Int` (the scalar doesn't change the type, NEP 50).
+       - Precondition: `exponents` must not be negative for an integer or `.Bool` array (numpy raises `ValueError`).
+    */
+    public static func power(bases: MfArray, exponents: Int) -> MfArray{
+        let rettype = MfType.scalar_result_type(array: bases.mftype, scalar: .Int)
+        guard bases.isReal && _is_integer_type(rettype) else{
+            return Matft.math.power(bases: bases, exponents: Double(exponents))
+        }
+        return _integer_power(bases, Matft.nums(exponents, shape: bases.shape, mftype: .Int), rettype)
+    }
+    /**
+       Raise an integer scalar base to the powers given by an array, element-wise.
+
+       Equivalent to `numpy.power(bases, exponents)` with a Python int base: an integer array of exponents gives the same integer type and 8/16 bit integers wrap around
+       (e.g. 2 ** `.UInt8` 9 is 0), and the other arrays are the same as `power(bases:exponents:)` with a `Double` base.
+
+       - Parameters:
+            - bases: The scalar base.
+            - exponents: The array of exponents.
+       - Returns: A new array with the same shape as `exponents`. The type is the same as `exponents`, except that `.Bool` gives `.Int` (the scalar doesn't change the type, NEP 50).
+       - Precondition: `exponents` must not be negative for an integer or `.Bool` array (numpy raises `ValueError`).
+    */
+    public static func power(bases: Int, exponents: MfArray) -> MfArray{
+        let rettype = MfType.scalar_result_type(array: exponents.mftype, scalar: .Int)
+        guard exponents.isReal && _is_integer_type(rettype) else{
+            return Matft.math.power(bases: Double(bases), exponents: exponents)
+        }
+        return _integer_power(Matft.nums(bases, shape: exponents.shape, mftype: .Int), exponents, rettype)
+    }
+}
+
+/// Whether the type is an integer type or `.Bool`, i.e. not a floating point type
+internal func _is_integer_type(_ mftype: MfType) -> Bool{
+    switch mftype {
+    case .Float, .Double, .ComplexFloat, .ComplexDouble, .None, .Object:
+        return false
+    default:
+        return true
+    }
+}
+
+/// `bases ** exponents` of integer arrays like numpy: the result has the integer type and 8/16 bit integers wrap around.
+/// Returns nil when the result type isn't an integer type or `.Bool`
+/// - Parameters:
+///   - bases: The bases broadcastable with `exponents`
+///   - exponents: The exponents
+internal func _integer_power_if_needed(_ bases: MfArray, _ exponents: MfArray) -> MfArray?{
+    let rettype = MfType.result_type(bases.mftype, exponents.mftype)
+    guard bases.isReal && exponents.isReal && _is_integer_type(rettype) else{
+        return nil
+    }
+    let (b, e, _, _) = biop_broadcast_to(bases, exponents)
+    return _integer_power(b, e, rettype)
+}
+
+/// `bases ** exponents` element-wise into `rettype` (an integer type, or `.Bool` which gives `.Int8` like numpy).
+/// The shapes must be the same, and the values are read in row major order
+fileprivate func _integer_power(_ bases: MfArray, _ exponents: MfArray, _ rettype: MfType) -> MfArray{
+    let rettype: MfType = rettype == .Bool ? .Int8 : rettype
+    let shape = bases.shape
+    assert(shape == exponents.shape)
+
+    func values(_ mfarray: MfArray) -> [Double]{
+        var ret: [Double] = []
+        ret.reserveCapacity(mfarray.size)
+        switch mfarray.storedType {
+        case .Float:
+            mfarray.withContiguousDataUnsafeMPtrT(datatype: Float.self){ ret.append(Double($0.pointee)) }
+        case .Double:
+            mfarray.withContiguousDataUnsafeMPtrT(datatype: Double.self){ ret.append($0.pointee) }
+        }
+        return ret
+    }
+    let b = values(bases), e = values(exponents)
+
+    let bits: Int?, signed: Bool
+    switch rettype {
+    case .UInt8: (bits, signed) = (8, false)
+    case .Int8: (bits, signed) = (8, true)
+    case .UInt16: (bits, signed) = (16, false)
+    case .Int16: (bits, signed) = (16, true)
+    default: (bits, signed) = (nil, true) // wider integers aren't wrapped because Float can't hold their wrapped values exactly
+    }
+
+    let ret = Matft.nums(Float.zero, shape: shape, mftype: rettype)
+    ret.withUnsafeMutableStartPointer(datatype: Float.self){
+        dstptr in
+        for i in 0..<b.count{
+            precondition(e[i] >= 0, "Integers to negative integer powers are not allowed")
+            guard let bits = bits else{
+                dstptr[i] = Float(Foundation.pow(b[i], e[i]))
+                continue
+            }
+            // exponentiation by squaring; wrapping around 2^64 keeps the value modulo 2^bits
+            var result: Int64 = 1
+            var base = Int64(b[i])
+            var n = Int64(e[i])
+            while n > 0{
+                if n & 1 == 1{
+                    result = result &* base
+                }
+                base = base &* base
+                n >>= 1
+            }
+            let low = result & ((1 << bits) - 1)
+            dstptr[i] = Float(signed && low >= 1 << (bits - 1) ? low - (1 << bits) : low)
+        }
+    }
+    return ret
+}
+
+/// numpy's `round`: `rint(x * 10^decimals) / 10^decimals`, or `rint(x / 10^-decimals) * 10^-decimals` for negative decimals, where 10^n is computed like numpy.
+/// Integer arrays keep their type (8/16 bit integers wrap around), and they are returned as they are for non-negative decimals
+internal func _round(_ mfarray: MfArray, decimals: Int) -> MfArray{
+    unsupport_complex(mfarray)
+
+    func rint(_ x: MfArray) -> MfArray{
+        switch x.storedType {
+        case .Float:
+            let ret = mathf_by_vForce(x, vvnintf)
+            ret.mfdata.mftype = .Float
+            return ret
+        case .Double:
+            let ret = mathf_by_vForce(x, vvnint)
+            ret.mfdata.mftype = .Double
+            return ret
+        }
+    }
+    // numpy's power_of_ten (numpy/_core/src/multiarray/calculation.c)
+    func powerOfTen(_ n: Int) -> Double{
+        let p10: [Double] = [1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8]
+        if n < 9{
+            return p10[n]
+        }
+        var ret = 1e9
+        for _ in 9..<n{
+            ret *= 10
+        }
+        return ret
+    }
+
+    let isInteger = _is_integer_type(mfarray.mftype) && mfarray.mftype != .Bool
+    let ret: MfArray
+    if decimals == 0 || (isInteger && decimals > 0){
+        ret = rint(mfarray)
+    }
+    else{
+        let f = powerOfTen(Swift.abs(decimals))
+        switch mfarray.storedType {
+        case .Float:
+            ret = decimals > 0 ? rint(mfarray * Float(f)) / Float(f) : rint(mfarray / Float(f)) * Float(f)
+        case .Double:
+            ret = decimals > 0 ? rint(mfarray * f) / f : rint(mfarray / f) * f
+        }
+    }
+    return isInteger ? _keep_integer_type(ret, mfarray.mftype) : ret
+}
+
+/// The result of a function keeping integer values (e.g. abs, round) has the type of the input like numpy: 8/16 bit integers wrap around (e.g. abs of `.Int8` -128 is -128)
+internal func _keep_integer_type(_ ret: MfArray, _ mftype: MfType) -> MfArray{
+    guard _is_integer_type(mftype) else{
+        return ret
+    }
+    ret.mfdata.mftype = mftype
+    return wrap_integer_overflow(ret)
 }

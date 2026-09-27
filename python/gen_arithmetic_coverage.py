@@ -466,21 +466,29 @@ test("compare_scalar_precision", lines)
 
 # ---------- power with a scalar exponent / base ----------
 # the exponent (base) keeps its precision: a Double exponent with a Double array matches numpy to 1e-12.
-# Matft convention: the result is Double for Double arrays and Float otherwise, like division (numpy: int ** int -> int64)
+# An integer array with an Int scalar keeps the integer type like numpy (int ** int -> int64).
+# Matft convention: otherwise the result is Double for Double arrays and Float otherwise, like division
+
+
+def power_type(ta, ts, s):
+    t = scalar_type(ta, ts, s)
+    return t if ts == "Int" and t in INT_TYPES else div_type(t)
+
+
 lines = []
 EXPONENTS = [("1.0/3", 1 / 3, "Double"), ("-0.5", -0.5, "Double"), ("2", 2, "Int"), ("3", 3, "Int"), ("0", 0, "Int"),
              ("Float(2.5)", 2.5, "Float"), ("2.0", 2.0, "Double")]
 for src in ["P", "PF", "PI"]:
     a, ta = INPUTS[src]
     for sw, s, ts in EXPONENTS:
-        rt = div_type(scalar_type(ta, ts, s))
+        rt = power_type(ta, ts, s)
         e = np.power(as_np(a, rt), NP_DTYPE[rt](py_scalar(s, ts)))
         lines += close(f"Matft.math.power(bases: x, exponents: {sw})", e, rt, rtol=1e-12 if rt == "Double" else 1e-5, layout=src)
 BASES = [("2.0", 2.0, "Double"), ("2", 2, "Int"), ("Float(1.5)", 1.5, "Float"), ("10.0/3", 10 / 3, "Double")]
 for src in ["P", "PF", "PI"]:
     a, ta = INPUTS[src]
     for sw, s, ts in BASES:
-        rt = div_type(scalar_type(ta, ts, s))
+        rt = power_type(ta, ts, s)
         e = np.power(NP_DTYPE[rt](py_scalar(s, ts)), as_np(a, rt))
         lines += close(f"Matft.math.power(bases: {sw}, exponents: x)", e, rt, rtol=1e-12 if rt == "Double" else 1e-5, layout=src)
 test("power_scalar", lines)
