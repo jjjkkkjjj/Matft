@@ -13,7 +13,7 @@ import Foundation
 /// - Returns: The destination mfarray
 @usableFromInline
 internal func copy_all_mfarray(_ src_mfarray: MfArray) -> MfArray{
-    assert(src_mfarray.mfstructure.row_contiguous || src_mfarray.mfstructure.column_contiguous, "To call copyAll function, passed mfarray must be contiguous")
+    assert(src_mfarray.mfstructure.row_contiguous || src_mfarray.mfstructure.column_contiguous || _is_dense_permutation(shape: src_mfarray.shape, strides: src_mfarray.strides), "To call copyAll function, passed mfarray must be contiguous")
     
     let newsize = src_mfarray.size
     let newdata = MfData(uninitializedSize: newsize, mftype: src_mfarray.mftype, complex: src_mfarray.isComplex)
@@ -128,7 +128,7 @@ internal func astype_or_view(_ mfarray: MfArray, _ mftype: MfType) -> MfArray{
 }
 
 /// Whether the strides are a permutation of contiguous strides without gaps
-fileprivate func _is_dense_permutation(shape: [Int], strides: [Int]) -> Bool{
+internal func _is_dense_permutation(shape: [Int], strides: [Int]) -> Bool{
     let axes = (0..<shape.count).filter{ shape[$0] != 1 }.sorted{ strides[$0] < strides[$1] }
     var expected = 1
     for axis in axes{

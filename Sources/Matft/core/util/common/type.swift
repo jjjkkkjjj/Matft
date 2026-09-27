@@ -190,7 +190,6 @@ internal func to_Bool_sm_op<U: MfStorable>(l_scalar: U, r_mfarray: MfArray, op: 
  */
 internal func bool_broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
     assert(mfarray.mftype == .Bool, "must be bool")
-    var mfarray = mfarray
     
     let origSize = mfarray.size
     
@@ -201,11 +200,12 @@ internal func bool_broadcast_to(_ mfarray: MfArray, shape: [Int]) -> MfArray{
     
     let idim_start = new_ndim  - mfarray.ndim
     
-    precondition(idim_start >= 0, "can't broadcast to fewer dimensions")
+    precondition(idim_start >= 0, "too many indices for array: array is \(new_ndim)-dimensional, but the boolean index is \(mfarray.ndim)-dimensional")
     
-    // broadcast for common part's shape
+    // like numpy, the mask must match the leading axes exactly. Broadcasting it (e.g. a mask of shape [3, 1] on [3, 4])
+    // would count fewer true elements than the ones selected, and the getters and setters would run past their buffers
     let commonShape = Array(shape[0..<mfarray.ndim])
-    mfarray = mfarray.broadcast_to(shape: commonShape)
+    precondition(mfarray.shape == commonShape, "boolean index did not match indexed array: the index shape is \(mfarray.shape) but the corresponding shape is \(commonShape)")
     
     // convert row contiguous
     let rowc_mfarray = check_contiguous(mfarray, .Row)

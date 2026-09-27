@@ -49,6 +49,10 @@ public func fft_by_pocketFFT(_ mfarray: MfArray, number: Int?, axis: Int, isReal
         var srcShape = mfarray.shape
         srcShape[axis] = number
         src_mfarray = Matft.nums(Double.zero, shape: srcShape)
+        if mfarray.isComplex{
+            // a real array keeps its type when a complex value is assigned, so the padded array must be complex beforehand
+            src_mfarray = MfArray(real: src_mfarray, imag: nil)
+        }
         /*TODO: Use slice version
         let slices = srcShape.map{MfSlice(start: 0, to: $0, by: 1)}
         src_mfarray[slices] = mfarray*/

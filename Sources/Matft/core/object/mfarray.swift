@@ -120,7 +120,8 @@ open class MfArray: MfArrayProtocol{
             precondition(real.isReal, "Argument: real must be real")
             
             realmfdata = real.mfdata
-            imagmfdata = MFDATA(size: real.storedSize, mftype: real.mftype)
+            // zeros laid out like the given part, i.e. with the same offset when it's a view
+            imagmfdata = MFDATA(refdata: MFDATA(size: real.storedSize, mftype: real.mftype), offset: real.mfdata.offset)
             shape = real.shape
             strides = real.strides
         }
@@ -128,7 +129,8 @@ open class MfArray: MfArrayProtocol{
             precondition(imag.isReal, "Argument: imag must be real")
             
             imagmfdata = imag.mfdata
-            realmfdata = MFDATA(size: imag.storedSize, mftype: imag.mftype)
+            // zeros laid out like the given part, i.e. with the same offset when it's a view
+            realmfdata = MFDATA(refdata: MFDATA(size: imag.storedSize, mftype: imag.mftype), offset: imag.mfdata.offset)
             shape = imag.shape
             strides = imag.strides
         }
