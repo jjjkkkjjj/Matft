@@ -47,8 +47,8 @@ extension Matft{
             if mfarray.mfstructure.column_contiguous || mfarray.mfstructure.row_contiguous{// all including strides will be copied
                 return copy_all_mfarray(mfarray)
             }
-            var strides = mfarray.strides
-            if !isReverse(&strides) && !mfarray.mfdata._isView{// not contain reverse and is not view, copy all
+            // a dense permutation that isn't a view (e.g. the result of an elementwise op on a transposed array) occupies its whole stored data
+            if !mfarray.mfdata._isView && mfarray.offsetIndex == 0 && mfarray.size == mfarray.storedSize && _is_dense_permutation(shape: mfarray.shape, strides: mfarray.strides){
                 return copy_all_mfarray(mfarray)
             }
             else{//close to row major

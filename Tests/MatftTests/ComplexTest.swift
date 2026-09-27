@@ -371,7 +371,7 @@ final class ComplexTests: XCTestCase {
             XCTAssertEqual(b.imag!, imag[indices, indices])
 
             // getter -> setter round trip
-            let c = Matft.arange(start: 0, to: 16, by: 1).reshape([2,2,4])
+            let c = MfArray(real: Matft.arange(start: 0, to: 16, by: 1).reshape([2,2,4]), imag: nil)
             c[real > 5] = a[real > 5]
             XCTAssertEqual(c.real[real > 5], real[real > 5])
             XCTAssertEqual(c.imag![real > 5], imag[real > 5])
@@ -459,17 +459,15 @@ final class ComplexTests: XCTestCase {
                                                 [-106, -107]]]))
         }
 
-        // real <- complex
+        // real <- complex: like numpy, the value is cast to its real part and the array stays real
         do{
             let a = Matft.arange(start: 0, to: 6, by: 1).reshape([2,3])
 
             a[MfArray([[false, true, false],
                        [true, false, true]])] = MfArray(real: MfArray([7]), imag: MfArray([1]))
-            _assertComplexEqual(a,
-                                real: MfArray([[0, 7, 2],
-                                               [7, 4, 7]]),
-                                imag: MfArray([[0, 1, 0],
-                                               [1, 0, 1]]))
+            XCTAssertTrue(a.isReal)
+            XCTAssertEqual(a, MfArray([[0, 7, 2],
+                                       [7, 4, 7]]))
         }
 
         // complex <- real
@@ -538,14 +536,13 @@ final class ComplexTests: XCTestCase {
                                                [13, -2, 15]]))
         }
 
-        // real <- complex
+        // real <- complex: like numpy, the value is cast to its real part and the array stays real
         do{
             let a = Matft.arange(start: 0, to: 4, by: 1)
 
             a[MfArray([1])] = MfArray(real: MfArray([5]), imag: MfArray([6]))
-            _assertComplexEqual(a,
-                                real: MfArray([0, 5, 2, 3]),
-                                imag: MfArray([0, 6, 0, 0]))
+            XCTAssertTrue(a.isReal)
+            XCTAssertEqual(a, MfArray([0, 5, 2, 3]))
         }
 
         // complex <- real
@@ -617,16 +614,14 @@ final class ComplexTests: XCTestCase {
                                                [-7, 60]]))
         }
 
-        // real <- complex
+        // real <- complex: like numpy, the value is cast to its real part and the array stays real
         do{
             let a = Matft.arange(start: 0, to: 4, by: 1).reshape([2,2])
 
             a[MfArray([0, 1]), MfArray([1, 0])] = MfArray(real: MfArray([7]), imag: MfArray([8]))
-            _assertComplexEqual(a,
-                                real: MfArray([[0, 7],
-                                               [7, 3]]),
-                                imag: MfArray([[0, 8],
-                                               [8, 0]]))
+            XCTAssertTrue(a.isReal)
+            XCTAssertEqual(a, MfArray([[0, 7],
+                                       [7, 3]]))
         }
 
         // complex <- real

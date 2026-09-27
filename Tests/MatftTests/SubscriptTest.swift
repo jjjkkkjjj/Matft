@@ -585,7 +585,8 @@ final class SubscriptTests: XCTestCase {
         // Disabled temporally until we support complex operations in WASM
         #if canImport(Accelerate)
         do{
-            let a = Matft.arange(start: 0, to: 16, by: 1).reshape([2,4,2])
+            // a complex array (assigning a complex value into a real array keeps it real like numpy)
+            let a = MfArray(real: Matft.arange(start: 0, to: 16, by: 1).reshape([2,4,2]), imag: nil)
             a[Matft.all, 2, Matft.all] = MfArray(real: MfArray([3]), imag: MfArray([-1]))
             
             let ans_real = MfArray([[[ 0,  1],
