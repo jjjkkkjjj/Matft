@@ -257,7 +257,7 @@ fileprivate func _get_swiftArray(_ data: inout [Any], shape: inout [Int], axis: 
     let dim = shape[axis]
     let ndim = shape.count
     let size = data.count
-    let offset = size / dim // note that this division must be divisible
+    let offset = dim == 0 ? 0 : size / dim // note that this division must be divisible
     
     var ret: [Any] = []
     for i in 0..<dim{

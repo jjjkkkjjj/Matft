@@ -1401,7 +1401,8 @@ fileprivate func _rfft_by_vDSP<S: vDSP_ComplexTypable>(_ mfarray: MfArray, numbe
     }
     src = check_contiguous(src, .Row)
     let srcLength = src.shape[src.ndim - 1]
-    let rows = srcLength > 0 ? src.size / srcLength : 0
+    // the number of signals (an empty signal is zero padded to `number`, so it still gives an output row)
+    let rows = src.shape.dropLast().reduce(1, *)
     
     var retShape = src.shape
     retShape[retShape.count - 1] = half + 1
