@@ -64,6 +64,10 @@ The stored data type is `Float` or `Double` only, even if you set `MfType.Int`.
 The results of 8/16-bit integer arrays wrap around like Numpy's fixed-width integers (e.g. `UInt8`: -5 → 251),
 but big numbers of wider integer types may lose precision or give strange results in calculations (`+`, `-`, `*`, `/`, … etc.), though this is rarely a problem in practical use.
 Mixed integer types are promoted like `numpy.result_type` (e.g. `UInt8` + `Int8` → `Int16`).
+A Swift scalar works like a Python scalar in Numpy 2 (NEP 50): the array keeps its type unless the scalar is a higher kind
+(Bool < integer < floating point), e.g. `UInt8` array + `1` → `UInt8` (out-of-range scalars wrap around, where Numpy raises `OverflowError`)
+and `Float` array * `2.5` → `Float`. An integer or `Bool` array with a floating point scalar gives `Float` (Numpy: float64),
+and a `Bool` array with an integer scalar gives `Int`.
 :::
 
 If `mftype` is not passed, `MfArray` infers it from the given values (`MfType.Int` in the example above).
