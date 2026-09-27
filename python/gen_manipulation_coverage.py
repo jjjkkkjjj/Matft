@@ -332,6 +332,11 @@ for src, _ in REAL:
 lines += close("Matft.clip(x, min: -0.5, max: 4.5)", np.clip(AF, -0.5, 4.5), layout="AF")
 lines += equal("Matft.clip(x, min: 10, max: 250)", np.clip(U8, 10, 250), layout="U8")
 lines += close("Matft.clip(x, min: 0, max: 5)", np.clip(AN, 0, 5), layout="AN")
+# the bounds are weak scalars (NEP 50) like the arithmetic operators: an Int array with fractional bounds gives Float
+# (Matft convention; numpy: float64), a Bool array with integer bounds gives Int
+lines += close("Matft.clip(x, min: 0.5, max: 4.5)", np.clip(AI.astype(np.float32), 0.5, 4.5), layout="AI")
+lines += equal("Matft.clip(x, min: 0, max: 1)", np.clip(BL, 0, 1), layout="BL")
+lines += close("Matft.clip(x, min: Float(0.5))", np.clip(A, np.float64(np.float32(0.5)), None), layout="A")
 test("clip", lines)
 
 # ---------- sort / argsort ----------
@@ -467,7 +472,9 @@ lines += shape("Matft.arange(start: 3, to: 3, by: 1)", np.arange(3, 3, 1).shape)
 test("arange", lines)
 
 lines = []
-# TODO(numpy-diff): Matft.eye(dim:) defaults to .Int while np.eye defaults to float64; changing the default is a breaking change
+# the default type is Double like np.eye (float64)
+lines += close("Matft.eye(dim: 3)", np.eye(3))
+lines += close("Matft.eye(dim: 2, mforder: .Column)", np.eye(2))
 for t in ["Double", "Float", "Int", "UInt8"]:
     lines += assert_by_type(f"Matft.eye(dim: 3, mftype: .{t})", np.eye(3, dtype=NP_DTYPE[t]))
 lines += close("Matft.eye(dim: 4, mftype: .Double, mforder: .Column)", np.eye(4))

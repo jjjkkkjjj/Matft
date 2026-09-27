@@ -9,8 +9,10 @@ Cases taking `x` run over `layoutVariants(input)` (row/column major, transposed,
 so the expected values must not depend on the memory layout.
 Matft conventions (not bugs, the expected values follow them):
 - Array-array integer promotion follows np.result_type; otherwise the higher `MfType.priority` wins, so
-  Int + Float -> Float (numpy: float64) and an array with a Swift scalar keeps the priority of the two types
-  (UInt8 array + Int 1 -> Int, numpy: uint8).
+  Int + Float -> Float (numpy: float64).
+- A Swift scalar is a NEP 50 "weak" Python scalar (UInt8 array + 1 -> UInt8, Float array * 2.5 -> Float), except that
+  an integer / Bool array with a fractional scalar gives Float (numpy: float64) and an out of range integer scalar
+  wraps (UInt8 array + 300 -> UInt8; numpy raises OverflowError).
 - Division of Float-stored types (integers, Bool, Float) gives Float (numpy: float64 for integers).
 """
 import os
@@ -237,6 +239,11 @@ inp("VEC", [0.5, -1, 2, 3], "Double")
 inp("A3", np.arange(24).reshape(2, 3, 4) - 11, "Double")
 inp("A3NZ", np.arange(24).reshape(2, 3, 4) - 11.5, "Double")
 inp("COLI", [[2], [-3], [7]], "Int")
+# positive values (for power with fractional exponents) including 0.1, which is not exact in Float
+POS = [[0.1, 0.5, 2.0], [3.0, 10.0, 0.25]]
+inp("P", POS, "Double")
+inp("PF", POS, "Float")
+inp("PI", [[1, 2, 3], [4, 10, 7]], "Int")
 # special floating values; with the second operand they hit inf-inf, 0*inf, 0/0, x/±0 and NaN in every row
 SP = [[nan, inf, -inf, 0.0, -0.0, 1.0], [-1.0, inf, 2.0, -0.0, nan, -inf]]
 SQ = [[1.0, inf, inf, 0.0, 0.0, -0.0], [0.0, -inf, nan, -0.0, 3.0, -inf]]
@@ -296,29 +303,70 @@ lines += close2("x * y", np.multiply(INPUTS["BA"][0], INPUTS["BB"][0]), "Bool", 
 test("arithmetic_bool", lines)
 
 # ---------- array with a scalar on both sides ----------
-# the result type is the priority of the array's and the scalar's type (Matft convention)
+# Swift scalars are numpy 2 (NEP 50) "weak" Python scalars: the kind of the scalar (bool < int < float) only matters
+# when it is higher than the array's kind, otherwise the array keeps its type (UInt8 array + 1 -> UInt8).
+# Matft conventions: an integer / Bool array with a fractional scalar gives Float (numpy: float64), and an integer scalar
+# out of the range of a small integer array wraps around (UInt8 array + 300; numpy raises OverflowError).
+def py_scalar(s, ts):
+    """The Python scalar numpy sees for a Swift scalar of type ts"""
+    if ts == "Bool":
+        return bool(s)
+    if ts in INT_TYPES:
+        return int(s)
+    return float(s)
+
+
+def scalar_type(ta, ts, s):
+    """The result type of an array of type ta with a Swift scalar s of type ts, by NEP 50 and the Matft conventions"""
+    try:
+        with warnings.catch_warnings(), np.errstate(all="ignore"):
+            warnings.simplefilter("ignore")
+            dt = (np.zeros(1, NP_DTYPE[ta]) + py_scalar(s, ts)).dtype
+    except OverflowError:
+        return ta  # Matft wraps an out of range integer scalar
+    t = mftype_of(np.empty(0, dt))
+    if t == "Double" and ta != "Double":
+        t = "Float"  # integer / Bool array with a fractional scalar
+    return t
+
+
+def scalar_op(op, a, ta, s, ts, scalar_first=False):
+    """(expected, mftype) of `a op s` (or `s op a`) with NEP 50 promotion, computed by numpy in the result type"""
+    t = scalar_type(ta, ts, s)
+    f = OPS[op][1]
+    with np.errstate(all="ignore"):
+        if op == "/":
+            # true division like the array-array version: Float for Float-stored types, Double for Double
+            rt = div_type(t)
+            x, y = as_np(a, rt), NP_DTYPE[rt](py_scalar(s, ts))
+            return (y / x if scalar_first else x / y), rt
+        if t in INT_TYPES:
+            # computed in int64 and wrapped into t like numpy's fixed-width integers
+            x, y = as_np(a, t).astype(np.int64), np.int64(py_scalar(s, ts))
+            return (f(y, x) if scalar_first else f(x, y)).astype(NP_DTYPE[t]), t
+        x, y = as_np(a, t), NP_DTYPE[t](py_scalar(s, ts))
+        return (f(y, x) if scalar_first else f(x, y)), t
+
+
 lines = []
-SCALARS = [("2", 2, "Int"), ("-3", -3, "Int"), ("2.5", 2.5, "Double"), ("Float(0.5)", 0.5, "Float"),
-           ("UInt8(200)", 200, "UInt8"), ("Int8(-1)", -1, "Int8")]
-for src in ["A", "AF", "AI", "U8A", "I8E"]:
+SCALARS = [("2", 2, "Int"), ("-3", -3, "Int"), ("300", 300, "Int"), ("2.5", 2.5, "Double"), ("2.0", 2.0, "Double"),
+           ("Float(0.5)", 0.5, "Float"), ("UInt8(200)", 200, "UInt8"), ("Int8(-1)", -1, "Int8"), ("true", True, "Bool")]
+for src in ["A", "AF", "AI", "U8A", "U16A", "I8E", "BA"]:
     a, ta = INPUTS[src]
     for sw, s, ts in SCALARS:
-        t = priority(ta, ts)
-        if ts == "UInt8" and ta == "Int8":
-            continue  # 200 does not fit into Int8
-        with np.errstate(all="ignore"):
-            A_ = as_np(a, t)
-            S_ = NP_DTYPE[t](s)
-            lines += close(f"x + {sw}", A_ + S_, t, layout=src)
-            lines += close(f"{sw} - x", S_ - A_, t, layout=src)
-            lines += close(f"x - {sw}", A_ - S_, t, layout=src)
-            lines += close(f"{sw} * x", S_ * A_, t, layout=src)
-            lines += close(f"Matft.sub(x, {sw})", A_ - S_, t, layout=src)
-            # true division of the original values like numpy, in Float (Double for Double) like the array-array version
-            rt = div_type(t)
-            lines += close(f"x / {sw}", as_np(a, rt) / NP_DTYPE[rt](s), rt, layout=src)
-            if not np.any(A_ == 0):
-                lines += close(f"{sw} / x", NP_DTYPE[rt](s) / as_np(a, rt), rt, layout=src)
+        bool_bool = ta == "Bool" and ts == "Bool"
+        for op in ["+", "-", "*", "/"]:
+            if bool_bool and op == "-":
+                continue  # numpy: boolean subtract is not supported
+            e, t = scalar_op(op, a, ta, s, ts)
+            lines += close(f"x {op} {sw}", e, t, layout=src)
+            if op == "/" and (bool_bool or np.any(as_np(a, "Double") == 0)):
+                continue  # scalar / 0 is covered below
+            e, t = scalar_op(op, a, ta, s, ts, scalar_first=True)
+            lines += close(f"{sw} {op} x", e, t, layout=src)
+        fop, fname = ("+", "add") if bool_bool else ("-", "sub")
+        e, t = scalar_op(fop, a, ta, s, ts)
+        lines += close(f"Matft.{fname}(x, {sw})", e, t, layout=src)
 test("arithmetic_scalar", lines)
 
 # division by an array containing 0 and by the scalar 0 (x/0 = ±inf, 0/0 = nan)
@@ -405,6 +453,37 @@ for src in ["A", "AF", "AI", "U8A", "I8E"]:
         lines += close(f"{sw} === x", np.equal(s, a), "Bool", layout=src)
         lines += close(f"Matft.greater_equal({sw}, x)", np.greater_equal(s, a), "Bool", layout=src)
 test("compare_scalar", lines)
+
+# a scalar is compared in the array's precision like numpy's weak scalars:
+# float32 array == 0.1 is true for float32(0.1), float64 array == Float(0.1) compares with float64(float32(0.1))
+lines = []
+for src, sw, s in [("PF", "0.1", np.float32(0.1)), ("P", "0.1", 0.1), ("P", "Float(0.1)", np.float64(np.float32(0.1))),
+                   ("PF", "Float(0.1)", np.float32(0.1)), ("PI", "2.5", 2.5), ("PI", "3", 3)]:
+    a = INPUTS[src][0]
+    for op, (fname, f) in CMPS.items():
+        lines += close(f"x {op} {sw}", f(a, s), "Bool", layout=src)
+test("compare_scalar_precision", lines)
+
+# ---------- power with a scalar exponent / base ----------
+# the exponent (base) keeps its precision: a Double exponent with a Double array matches numpy to 1e-12.
+# Matft convention: the result is Double for Double arrays and Float otherwise, like division (numpy: int ** int -> int64)
+lines = []
+EXPONENTS = [("1.0/3", 1 / 3, "Double"), ("-0.5", -0.5, "Double"), ("2", 2, "Int"), ("3", 3, "Int"), ("0", 0, "Int"),
+             ("Float(2.5)", 2.5, "Float"), ("2.0", 2.0, "Double")]
+for src in ["P", "PF", "PI"]:
+    a, ta = INPUTS[src]
+    for sw, s, ts in EXPONENTS:
+        rt = div_type(scalar_type(ta, ts, s))
+        e = np.power(as_np(a, rt), NP_DTYPE[rt](py_scalar(s, ts)))
+        lines += close(f"Matft.math.power(bases: x, exponents: {sw})", e, rt, rtol=1e-12 if rt == "Double" else 1e-5, layout=src)
+BASES = [("2.0", 2.0, "Double"), ("2", 2, "Int"), ("Float(1.5)", 1.5, "Float"), ("10.0/3", 10 / 3, "Double")]
+for src in ["P", "PF", "PI"]:
+    a, ta = INPUTS[src]
+    for sw, s, ts in BASES:
+        rt = div_type(scalar_type(ta, ts, s))
+        e = np.power(NP_DTYPE[rt](py_scalar(s, ts)), as_np(a, rt))
+        lines += close(f"Matft.math.power(bases: {sw}, exponents: x)", e, rt, rtol=1e-12 if rt == "Double" else 1e-5, layout=src)
+test("power_scalar", lines)
 
 lines = []
 T = INPUTS["T"][0]
