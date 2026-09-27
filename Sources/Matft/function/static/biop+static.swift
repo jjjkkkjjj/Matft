@@ -376,7 +376,11 @@ extension Matft{
             case .Float:
                 let ret = biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv)
                 ret.mfdata.mftype = .Float
+                #if arch(x86_64)
+                return fix_nan_elements(l_mfarray, r_mfarray, ret, datatype: Float.self){ $0 / $1 }
+                #else
                 return ret
+                #endif
             case .Double:
                 return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
             }
@@ -397,8 +401,8 @@ extension Matft{
     /**
        Divide an array and a scalar element-wise.
 
-       The result type is the higher-priority `mftype` of `l_mfarray` and the type of `r_scalar`, and complex arrays are supported. This is what `l / scalar` calls.
-       Note that, unlike the array-array version, the result keeps that type (e.g. dividing an `.Int` array by an `Int` gives an `.Int` array).
+       Complex arrays are supported. This is what `l / scalar` calls.
+       Like the array-array version, the result type is `.Float` when the higher-priority `mftype` of `l_mfarray` and the type of `r_scalar` is stored as Float (e.g. an `.Int` array divided by an `Int` gives `.Float`), and `.Double` for Double-stored types.
        Equivalent to `numpy.divide`.
        - Parameters:
            - l_mfarray: The left operand.
@@ -417,7 +421,9 @@ extension Matft{
         if l_mfarray.isReal{
             switch MfType.storedType(retmftype) {
             case .Float:
-                return biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsdiv)
+                let ret = biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsdiv)
+                ret.mfdata.mftype = .Float
+                return ret
             case .Double:
                 return biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsdivD)
             }
@@ -440,8 +446,8 @@ extension Matft{
     /**
        Divide a scalar and an array element-wise.
 
-       The result type is the higher-priority `mftype` of the type of `l_scalar` and `r_mfarray`, and complex arrays are supported. This is what `scalar / r` calls.
-       Note that, unlike the array-array version, the result keeps that type (e.g. dividing an `Int` by an `.Int` array gives an `.Int` array).
+       Complex arrays are supported. This is what `scalar / r` calls.
+       Like the array-array version, the result type is `.Float` when the higher-priority `mftype` of the type of `l_scalar` and `r_mfarray` is stored as Float (e.g. an `Int` divided by an `.Int` array gives `.Float`), and `.Double` for Double-stored types.
        Equivalent to `numpy.divide`.
        - Parameters:
            - l_scalar: The left operand.
@@ -460,7 +466,14 @@ extension Matft{
         if r_mfarray.isReal{
             switch MfType.storedType(retmftype) {
             case .Float:
-                return biopsv_by_vDSP(Float.from(l_scalar), r_mfarray, vDSP_svdiv)
+                let l_scalar = Float.from(l_scalar)
+                let ret = biopsv_by_vDSP(l_scalar, r_mfarray, vDSP_svdiv)
+                ret.mfdata.mftype = .Float
+                #if arch(x86_64)
+                return fix_nan_elements(r_mfarray, r_mfarray, ret, datatype: Float.self){ l_scalar / $1 }
+                #else
+                return ret
+                #endif
             case .Double:
                 return biopsv_by_vDSP(Double.from(l_scalar), r_mfarray, vDSP_svdivD)
             }
