@@ -665,7 +665,7 @@ for t in ["Double", "Float"]:
             lines += [f"    XCTAssertEqual(({expr}).shape, {s}, \"{swift_escape(expr)} {t} {shp}\")",
                       f"    XCTAssertTrue(({expr}).isComplex, \"{swift_escape(expr)} {t} {shp}\")"]
         lines += ["}"]
-test("complex", lines)
+test("complex", lines, wasi_skip=True)  # complex arithmetic is unavailable on WASI
 
 lines = []
 # complex fancy indexing (unavailable on WASI)

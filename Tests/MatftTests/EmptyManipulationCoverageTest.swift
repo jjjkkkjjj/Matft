@@ -1981,6 +1981,7 @@ final class EmptyManipulationCoverageTests: XCTestCase {
         }
     }
 
+    #if !os(WASI)
     func test_complex() {
         do {
             let z = MfArray(real: MfArray([] as [Double], mftype: .Double, shape: [3, 0]), imag: MfArray([] as [Double], mftype: .Double, shape: [3, 0]))
@@ -2071,6 +2072,7 @@ final class EmptyManipulationCoverageTests: XCTestCase {
             XCTAssertTrue((z + z).isComplex, "z + z Float [0, 4]")
         }
     }
+    #endif
 
     #if !os(WASI)
     func test_complex_fancy() {
