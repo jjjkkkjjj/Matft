@@ -52,9 +52,11 @@ internal struct OptOffsetParamIterator: IteratorProtocol{
     /// - Parameter optParams: Optimal offset and stride parameters sequence
     public init(optParams: OptOffsetParamsSequence){
         self.isEmpty = optParams.shape.contains(0)
-        var shape = optParams.shape
-        var b_strides = optParams.strides.b
-        var s_strides = optParams.strides.s
+        // a 0-d array is a single element block
+        let is0d = optParams.shape.isEmpty
+        var shape = is0d ? [1] : optParams.shape
+        var b_strides = is0d ? [1] : optParams.strides.b
+        var s_strides = is0d ? [1] : optParams.strides.s
         
         let (axis, blocksize, iterAxes) =
         

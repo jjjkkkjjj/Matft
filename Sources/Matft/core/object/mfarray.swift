@@ -49,7 +49,8 @@ open class MfArray: MfArrayProtocol{
     /// ```
     /// - Parameters:
     ///    - array: A (nested) Swift array of scalars. All inner arrays at the same depth must have the same length.
-    ///    - mftype: The element type. If `nil`, it is inferred from the elements (e.g. `Int` values give `.Int`).
+    ///    - mftype: The element type. If `nil`, it is inferred from the elements (e.g. `Int` values give `.Int`, and mixed `Int` and `Double` values give `.Double`).
+    ///      The values are converted like `astype` (e.g. `.Int` truncates `1.5` to `1`, and `.UInt8` wraps `300` to `44`).
     ///      `.Object` and `.None` are not supported.
     ///    - shape: The shape of the result. If `nil`, the shape of the nested array is used.
     ///      The size must equal the number of elements.
@@ -76,6 +77,10 @@ open class MfArray: MfArrayProtocol{
         self.mfdata = MfData(flattenArray: &flattenArray, mftype: mftype)
         self.mfstructure = MfStructure(shape: shape, mforder: mforder)
 
+        // like astype, the values are truncated toward zero and wrap around the integer type (e.g. [1.5, 300] as .UInt8 is [1, 44])
+        if mftype != mftype_from_array{
+            cast_to_integer(self, truncate: true)
+        }
     }
 
     /// Creates an array from a flat Swift array of scalars. Same as `init(_:mftype:shape:mforder:)` with `[Any]`,

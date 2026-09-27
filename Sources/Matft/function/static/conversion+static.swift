@@ -54,7 +54,9 @@ extension Matft{
         if mfarray.isReal{
             switch newStoredType{
             case .Float://double to float
-                return cast_to_integer(contiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vdpsp), truncate: truncate)
+                // into integers, truncate in Double first. Rounding into Float first can carry up (e.g. 2.9999999999 -> 3.0 -> 3)
+                let src = mftype == .Float ? mfarray : Matft.math.trunc(mfarray)
+                return cast_to_integer(contiguous_and_astype_by_vDSP(src, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vdpsp), truncate: truncate)
                 
             case .Double://float to double
                 return contiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vspdp)
@@ -196,6 +198,7 @@ extension Matft{
             - mfarray: The source array.
             - axes: The positions of the new axes in the result. Negative values count from the end.
        - Returns: A view with `ndim + axes.count` dimensions.
+       - Precondition: `axes` must not repeat an axis.
     */
     public static func expand_dims(_ mfarray: MfArray, axes: [Int]) -> MfArray{
         let newarray = mfarray.shallowcopy()
@@ -206,6 +209,7 @@ extension Matft{
         let orig_strides = mfarray.strides
         var orig_ax = 0
         let axes = axes.map{ get_positive_axis_for_expand_dims($0, ndim: out_ndim) }
+        precondition(Set(axes).count == axes.count, "repeated axis")
         for ax in (0..<out_ndim){
             if axes.contains(ax) {
                 newshape[ax] = 1
@@ -279,10 +283,12 @@ extension Matft{
             - mfarray: The source array.
             - axes: The axes to remove. Each of them must have length 1.
        - Returns: The squeezed view.
+       - Precondition: `axes` must not repeat an axis.
     */
     public static func squeeze(_ mfarray: MfArray, axes: [Int]) -> MfArray{
         // remove from the last axis. Negative axes must be made positive before sorting
         let axes = axes.map{ get_positive_axis($0, ndim: mfarray.ndim) }.sorted{ $0 > $1 }
+        precondition(Set(axes).count == axes.count, "repeated axis")
         var newshape = mfarray.shape
         var newstrides = mfarray.strides
         for axis in axes{
@@ -423,11 +429,13 @@ extension Matft{
             - mfarray: The source array.
             - axes: The axes to reverse.
        - Returns: The flipped view.
+       - Precondition: `axes` must not repeat an axis.
     */
     public static func flip(_ mfarray: MfArray, axes: [Int]) -> MfArray{
         var slices: [Any] = Array(repeating: MfSlice(), count: mfarray.ndim)
+        let axes = axes.map{ get_positive_axis($0, ndim: mfarray.ndim) }
+        precondition(Set(axes).count == axes.count, "repeated axis")
         for axis in axes{
-            let axis = get_positive_axis(axis, ndim: mfarray.ndim)
             slices[axis] = MfSlice(by: -1)
         }
         return mfarray._get_mfarray(indices: &slices)
