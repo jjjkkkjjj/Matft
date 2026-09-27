@@ -32,6 +32,20 @@ final class StatsPefTests: XCTestCase {
         }
     }
     
+    func testPeformanceMax1() {
+        let a = PerfFixtures.a
+        self.measureWithWarmup {
+            let _ = a.max(axis: 5)
+        }
+    }
+    
+    func testPeformanceMax2() {
+        let a = PerfFixtures.a
+        self.measureWithWarmup {
+            let _ = a.max()
+        }
+    }
+    
     func testPeformanceArgmax1() {
         let a = PerfFixtures.a
         self.measureWithWarmup {

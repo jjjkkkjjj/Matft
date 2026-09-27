@@ -61,16 +61,16 @@ extension Matft.stats{
             - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
        - Returns: The maximum with the same `mftype` as `mfarray`.
        - Precondition: Complex arrays are not supported.
-       - Note: Unlike Numpy, reducing all elements (`axis == nil`, `keepDims == false`) returns a 1-d array of shape `[1]` instead of a scalar. NaN handling follows vDSP and is not guaranteed to propagate like Numpy; use the `nan*` functions to ignore NaN.
+       - Note: Unlike Numpy, reducing all elements (`axis == nil`, `keepDims == false`) returns a 1-d array of shape `[1]` instead of a scalar. As in Numpy, NaN propagates (a lane containing NaN gives NaN); use the `nan*` functions to ignore NaN.
     */
     public static func max(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         unsupport_complex(mfarray)
         
         switch mfarray.storedType {
         case .Float:
-            return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxv)
+            return _propagate_nan(stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxv), mfarray, axis: axis, keepDims: keepDims)
         case .Double:
-            return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxvD)
+            return _propagate_nan(stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_maxvD), mfarray, axis: axis, keepDims: keepDims)
         }
     }
     /**
@@ -81,18 +81,18 @@ extension Matft.stats{
        - Parameters:
             - mfarray: The input array.
             - axis: The axis along which to search. If `nil` (default), the index is into the flattened (row-major) array.
-       - Returns: The indices of the maximum values, with the reduced axis removed.
-       - Precondition: Complex arrays are not supported.
-       - Note: Unlike Numpy, the indices are stored with the same `mftype` as `mfarray` (e.g. a `.Float` input gives `.Float` indices), and `axis == nil` returns shape `[1]`. When the extreme value appears multiple times, the first index is returned.
+       - Returns: The `.Int` indices of the maximum values, with the reduced axis removed. As in Numpy, the first index is returned when the extreme value appears multiple times, and the index of the first NaN when there is NaN.
+       - Precondition: Complex arrays are not supported. The searched axis (all the elements for `axis == nil`) must not be empty.
+       - Note: Unlike Numpy, `axis == nil` (or a 1-d input) returns shape `[1]` instead of a scalar.
     */
     public static func argmax(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         unsupport_complex(mfarray)
         
         switch mfarray.storedType {
         case .Float:
-            return stats_index_by_vDSP(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_maxvi)
+            return stats_index_by_vDSP(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_maxvi, vDSP_sum_func: vDSP_sve)
         case .Double:
-            return stats_index_by_vDSP(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_maxviD)
+            return stats_index_by_vDSP(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_maxviD, vDSP_sum_func: vDSP_sveD)
         }
     }
     /**
@@ -106,16 +106,16 @@ extension Matft.stats{
             - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
        - Returns: The minimum with the same `mftype` as `mfarray`.
        - Precondition: Complex arrays are not supported.
-       - Note: Unlike Numpy, reducing all elements (`axis == nil`, `keepDims == false`) returns a 1-d array of shape `[1]` instead of a scalar. NaN handling follows vDSP and is not guaranteed to propagate like Numpy; use the `nan*` functions to ignore NaN.
+       - Note: Unlike Numpy, reducing all elements (`axis == nil`, `keepDims == false`) returns a 1-d array of shape `[1]` instead of a scalar. As in Numpy, NaN propagates (a lane containing NaN gives NaN); use the `nan*` functions to ignore NaN.
     */
     public static func min(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
         unsupport_complex(mfarray)
         
         switch mfarray.storedType {
         case .Float:
-            return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minv)
+            return _propagate_nan(stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minv), mfarray, axis: axis, keepDims: keepDims)
         case .Double:
-            return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minvD)
+            return _propagate_nan(stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_minvD), mfarray, axis: axis, keepDims: keepDims)
         }
     }
     /**
@@ -126,18 +126,18 @@ extension Matft.stats{
        - Parameters:
             - mfarray: The input array.
             - axis: The axis along which to search. If `nil` (default), the index is into the flattened (row-major) array.
-       - Returns: The indices of the minimum values, with the reduced axis removed.
-       - Precondition: Complex arrays are not supported.
-       - Note: Unlike Numpy, the indices are stored with the same `mftype` as `mfarray` (e.g. a `.Float` input gives `.Float` indices), and `axis == nil` returns shape `[1]`. When the extreme value appears multiple times, the first index is returned.
+       - Returns: The `.Int` indices of the minimum values, with the reduced axis removed. As in Numpy, the first index is returned when the extreme value appears multiple times, and the index of the first NaN when there is NaN.
+       - Precondition: Complex arrays are not supported. The searched axis (all the elements for `axis == nil`) must not be empty.
+       - Note: Unlike Numpy, `axis == nil` (or a 1-d input) returns shape `[1]` instead of a scalar.
     */
     public static func argmin(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
         unsupport_complex(mfarray)
         
         switch mfarray.storedType {
         case .Float:
-            return stats_index_by_vDSP(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_minvi)
+            return stats_index_by_vDSP(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_minvi, vDSP_sum_func: vDSP_sve)
         case .Double:
-            return stats_index_by_vDSP(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_minviD)
+            return stats_index_by_vDSP(mfarray, axis: axis, keepDims: false, vDSP_func: vDSP_minviD, vDSP_sum_func: vDSP_sveD)
         }
     }
     
@@ -374,4 +374,20 @@ fileprivate func _cumsum<T: MfStorable>(_ mfarray: MfArray, axis: Int, _ type: T
     }
     
     return MfArray(mfdata: newdata, mfstructure: MfStructure(shape: src.shape, mforder: .Row)).moveaxis(src: 0, dst: axis)
+}
+
+
+/// numpy propagates NaN through max / min, but vDSP drops it (for strided lanes, at some positions, and on x86_64).
+/// The lanes containing NaN are set to NaN. Without NaN this costs one vectorized sum.
+fileprivate func _propagate_nan(_ ret: MfArray, _ mfarray: MfArray, axis: Int?, keepDims: Bool) -> MfArray{
+    guard mfarray.mftype == .Float || mfarray.mftype == .Double, mfarray.size > 0 else{
+        return ret
+    }
+    // the sum is NaN whenever NaN exists (inf - inf only costs the extra work below)
+    let total = Matft.stats.sum(mfarray).astype(.Double).data[0] as! Double
+    guard total.isNaN else{
+        return ret
+    }
+    let nanCount = Matft.stats.sum(Matft.math.isnan(mfarray).astype(mfarray.mftype), axis: axis, keepDims: keepDims)
+    return Matft.where(nanCount > 0, Double.nan, ret).astype(ret.mftype)
 }
