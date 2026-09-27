@@ -151,11 +151,12 @@ extension Matft{
         }
         else{
             #if canImport(Accelerate)
+            // wrap_vDSP_biopzvv passes (r, l) like vDSP_vsub(B, A) = A - B, but vDSP_zvsub(A, B) computes A - B
             switch MfType.storedType(rettype){
             case .Float:
-                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvsub)
+                return biopzvv_by_vDSP(l_mfarray, r_mfarray){ vDSP_zvsub($2, $3, $0, $1, $4, $5, $6) }
             case .Double:
-                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvsubD)
+                return biopzvv_by_vDSP(l_mfarray, r_mfarray){ vDSP_zvsubD($2, $3, $0, $1, $4, $5, $6) }
             }
             #else
             fatalError("Complex array operations are not supported on this platform")
