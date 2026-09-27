@@ -361,6 +361,8 @@ extension Float: MfStorable{
             return value as! Float
         case is Double:
             return Float(value as! Double)
+        case is Bool:
+            return (value as! Bool) ? 1 : 0
         default:
             fatalError("cannot convert value to Float")
         }
@@ -408,6 +410,8 @@ extension Double: MfStorable{
             return Double(value as! Float)
         case is Double:
             return value as! Double
+        case is Bool:
+            return (value as! Bool) ? 1 : 0
         default:
             fatalError("cannot convert value to Double")
         }

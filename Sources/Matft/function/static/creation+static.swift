@@ -86,7 +86,8 @@ extension Matft{
         let newdata = MfData(uninitializedSize: size, mftype: retmftype)
         switch MfType.storedType(retmftype){
         case .Float:
-            var converted_value = Float.from(value)
+            // like numpy, the value is truncated toward zero and wraps around the integer type
+            var converted_value = cast_to_integer(Float.from(value), mftype: retmftype)
             newdata.withUnsafeMutableStartPointer(datatype: Float.self){
                 #if canImport(Accelerate)
                 vDSP_vfill(&converted_value, $0, 1, vDSP_Length(size))
@@ -106,7 +107,7 @@ extension Matft{
         }
         
         let newstructure = MfStructure(shape: shape, mforder: mforder)
-        
+
         return MfArray(mfdata: newdata, mfstructure: newstructure)
     }
     /**
@@ -184,8 +185,10 @@ extension Matft{
                 d[i-k][i] = v[i]
             }
         }
-        
-        return MfArray(d, mftype: mftype, mforder: mforder)
+
+        // with the explicit shape, an empty v gives shape [0, 0] like numpy
+        let ret = MfArray(d.flatMap{ $0 }, mftype: mftype ?? MfType.mftype(value: T.zero), shape: [dim, dim])
+        return mforder == .Row ? ret : ret.to_contiguous(mforder: mforder)
     }
     /**
        Construct a 2-D array with the elements of a 1-D array on a diagonal.
@@ -204,6 +207,8 @@ extension Matft{
         let dim = v.size + abs(k)
         let size = dim*dim
         let retmftype = mftype ?? v.mftype
+        // a contiguous copy in the stored type of the result: v may be a view or have another stored type
+        let v = v.astype(retmftype)
         let shape = [dim, dim]
         
         let newdata = MfData(uninitializedSize: size, mftype: retmftype)
@@ -235,15 +240,15 @@ extension Matft{
             _create(Double.self)
         }
         
-        let newstructure = MfStructure(shape: shape, mforder: mforder)
-        
-        return MfArray(mfdata: newdata, mfstructure: newstructure)
+        // d is in row major order
+        let ret = MfArray(mfdata: newdata, mfstructure: MfStructure(shape: shape, mforder: .Row))
+        return mforder == .Row ? ret : ret.to_contiguous(mforder: mforder)
         
     }
     /**
        Stack arrays vertically, i.e. concatenate them along the first axis.
 
-       The result type is the highest-priority `mftype` among the inputs. Complex arrays are not supported.
+       The result type is `MfType.result_type` of the inputs (like `numpy.result_type`). Complex arrays are not supported.
        Equivalent to `numpy.vstack`: 1-D inputs of length `N` are treated as rows of shape `[1, N]`.
        - Parameters:
             - mfarrays: The arrays to stack. Their shapes must match except for the first axis.
@@ -269,7 +274,7 @@ extension Matft{
             var shapeExceptAxis = mfarrays[i].shape
             concatDim += shapeExceptAxis.remove(at: 0)
             
-            retMfType = MfType.priority(retMfType, mfarrays[i].mftype)
+            retMfType = MfType.result_type(retMfType, mfarrays[i].mftype)
             
             unsupport_complex(mfarrays[i])
             precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
@@ -288,7 +293,7 @@ extension Matft{
     /**
        Stack arrays horizontally, i.e. concatenate them along the last axis.
 
-       The result type is the highest-priority `mftype` among the inputs. Complex arrays are not supported.
+       The result type is `MfType.result_type` of the inputs (like `numpy.result_type`). Complex arrays are not supported.
        Similar to `numpy.hstack` (which uses the second axis for arrays with 2 or more dimensions).
        - Parameters:
             - mfarrays: The arrays to stack. Their shapes must match except for the last axis.
@@ -308,7 +313,7 @@ extension Matft{
             var shapeExceptAxis = mfarrays[i].shape
             concatDim += shapeExceptAxis.remove(at: shapeExceptAxis.count - 1)
             
-            retMfType = MfType.priority(retMfType, mfarrays[i].mftype)
+            retMfType = MfType.result_type(retMfType, mfarrays[i].mftype)
             
             unsupport_complex(mfarrays[i])
             precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
@@ -327,7 +332,7 @@ extension Matft{
     /**
        Join arrays along an existing axis.
 
-       The result type is the highest-priority `mftype` among the inputs. Complex arrays are not supported.
+       The result type is `MfType.result_type` of the inputs (like `numpy.result_type`). Complex arrays are not supported.
        Equivalent to `numpy.concatenate`.
 
        ```swift
@@ -366,7 +371,7 @@ extension Matft{
             var shapeExceptAxis = mfarrays[i].shape
             concatDim += shapeExceptAxis.remove(at: axis)
             
-            retMfType = MfType.priority(retMfType, mfarrays[i].mftype)
+            retMfType = MfType.result_type(retMfType, mfarrays[i].mftype)
             
             unsupport_complex(mfarrays[i])
             precondition(retShape == shapeExceptAxis, "all the input array dimensions except for the concatenation axis must match exactly")
@@ -439,7 +444,12 @@ extension Matft{
             // like numpy, take from the flattened array
             return mfarray.flatten()[indices]
         }
-        return Matft.swapaxes(mfarray, axis1: axis, axis2: 0)[indices].swapaxes(axis1: 0, axis2: axis)
+        // the result shape is shape[..<axis] + indices.shape + shape[(axis+1)...]
+        let ax = get_positive_axis(axis, ndim: mfarray.ndim)
+        let taken = Matft.moveaxis(mfarray, src: ax, dst: 0)[indices] // indices.shape + the other axes
+        let idim = indices.ndim
+        let order = Array(idim..<(idim + ax)) + Array(0..<idim) + Array((idim + ax)..<taken.ndim)
+        return taken.transpose(axes: order)
     }
     
     /**
@@ -452,7 +462,7 @@ extension Matft{
             - indices: The indices before which `values` are inserted. Negative values count from the end, and duplicated indices insert several times.
             - values: The values to insert, broadcast like `np.array(values, ndmin=mfarray.ndim)`. With several indices the i-th value along `axis` goes to the i-th index. With one index, all the values along `axis` are inserted there (e.g. `insert(a, indices: [1], values: [1, 2, 3], axis: 1)` inserts 3 columns).
             - axis: (Optional) The axis along which to insert. If `nil`, `mfarray` is flattened first.
-       - Returns: A new array with the values inserted.
+       - Returns: A new array with the values inserted. Its type is `mfarray.mftype`: like numpy, the values are cast into it.
     */
     static public func insert(_ mfarray: MfArray, indices: [Int], values: MfArray, axis: Int? = nil) -> MfArray{
         //https://github.com/numpy/numpy/blob/v1.19.0/numpy/lib/function_base.py#L4421-L4609
@@ -496,7 +506,8 @@ extension Matft{
         
         var retShape = mfarr.shape
         retShape[ax] += num
-        let retmftype = MfType.priority(mfarr.mftype, values.mftype)
+        // like numpy, the values are cast into the type of the array
+        let retmftype = mfarr.mftype
         
         var blockShape = mfarr.shape
         blockShape[ax] = num
