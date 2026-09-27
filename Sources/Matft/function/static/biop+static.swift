@@ -1034,11 +1034,11 @@ fileprivate func _inner_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray) ->
     let retShape = Array(l_mfarray.shape.prefix(l_mfarray.ndim - 1) + r_mfarray.shape.prefix(r_mfarray.ndim - 1))
     let rettype = l_mfarray.mftype
     
-    //convert shape to calculate
-    let l_mfarray = l_mfarray.reshape([-1, lastdim])
-    let l_calcsize = l_mfarray.shape[0]
-    let r_mfarray = r_mfarray.reshape([-1, lastdim])
-    let r_calcsize = r_mfarray.shape[0]
+    //convert shape to calculate (the number of rows is given explicitly because -1 can't be inferred when lastdim is 0)
+    let l_calcsize = l_mfarray.shape.dropLast().reduce(1, *)
+    let l_mfarray = l_mfarray.reshape([l_calcsize, lastdim])
+    let r_calcsize = r_mfarray.shape.dropLast().reduce(1, *)
+    let r_mfarray = r_mfarray.reshape([r_calcsize, lastdim])
     
     let ret = Matft.nums(0, shape: [l_calcsize*r_calcsize], mftype: rettype)
     for lind in 0..<l_calcsize{

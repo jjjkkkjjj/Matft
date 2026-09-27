@@ -114,6 +114,8 @@ internal func get_flatten_index(_ index: Int, shape: [Int], strides: [Int]) -> I
 /// - Returns: A positive shape array
 internal func get_positive_shape(_ shape: [Int], _ size: Int) -> [Int]{
     let restsize = shape.filter{ $0 != -1 }.reduce(1, *)
+    // like numpy, -1 can't be inferred when the other dimensions contain 0 (any length would do)
+    precondition(restsize != 0 || !shape.contains(-1), "cannot infer -1 in shape \(shape) because the other dimensions contain 0")
     return shape.map{
         if $0 != -1{
             return $0

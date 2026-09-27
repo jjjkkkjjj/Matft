@@ -118,6 +118,8 @@ extension MfArray{
         let shape = self.shape
         let M = shape[self.ndim - 2]
         let N = shape[self.ndim - 1]
+        // empty matrices (M or N is 0) have nothing to process
+        guard M * N > 0 else { return }
         let matricesNum = self.size / (M * N)
         
         // get stacked row major and copy
