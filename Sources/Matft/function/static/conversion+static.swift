@@ -18,6 +18,7 @@ extension Matft{
 
        The result is always a new array (a copy), even when `mftype` equals the current type.
        Converting to `.Bool` maps non-zero values to `true`. A complex array stays complex.
+       Converting a real array to an integer type truncates toward zero like numpy, and out of range values of the 8/16 bit integer types wrap around (e.g. 300 -> 44 for `.UInt8`).
        Equivalent to `numpy.ndarray.astype`.
 
        ```swift
@@ -44,13 +45,13 @@ extension Matft{
         if mfarray.storedType == newStoredType{
             let ret = mfarray.to_contiguous(mforder: mforder)
             ret.mfdata.mftype = mftype
-            return ret
+            return mfarray.isReal ? _cast_into_integer_if_needed(ret, from: mfarray.mftype) : ret
         }
         
         if mfarray.isReal{
             switch newStoredType{
             case .Float://double to float
-                return contiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vdpsp)
+                return _cast_into_integer_if_needed(contiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vdpsp), from: mfarray.mftype)
                 
             case .Double://float to double
                 return contiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vspdp)
@@ -777,3 +778,24 @@ extension Matft.mfdata{
     }
 }
 */
+
+/// Make the values of a newly converted real mfarray valid for its integer mftype like numpy's `astype`:
+/// floats are truncated toward zero, and out of range values of 8/16 bit integers wrap around (e.g. 300 -> 44 for `.UInt8`)
+/// - Parameters:
+///   - mfarray: The converted mfarray. It must be a new array because it is modified in place
+///   - srctype: The mftype before the conversion
+/// - Returns: The same mfarray
+fileprivate func _cast_into_integer_if_needed(_ mfarray: MfArray, from srctype: MfType) -> MfArray{
+    let integerTypes: [MfType] = [.UInt8, .UInt16, .UInt32, .UInt64, .UInt, .Int8, .Int16, .Int32, .Int64, .Int]
+    guard mfarray.mftype != srctype && integerTypes.contains(mfarray.mftype) else { return mfarray }
+
+    if srctype == .Float || srctype == .Double{
+        // integers are stored as Float
+        mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
+            ptr in
+            var count = Int32(mfarray.storedSize)
+            vvintf(ptr, ptr, &count)
+        }
+    }
+    return wrap_integer_overflow(mfarray)
+}
