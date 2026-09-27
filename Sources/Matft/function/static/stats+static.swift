@@ -157,11 +157,14 @@ extension Matft.stats{
         
         precondition(isReal, "Complex is not supported")
         
+        // NaN propagates like numpy (vDSP drops it)
         switch MfType.storedType(rettype) {
         case .Float:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmax)
+            let ret = biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmax)
+            return fix_nonfinite_elements(l_mfarray, r_mfarray, ret, datatype: Float.self){ $0.isNaN || $1.isNaN ? .nan : Swift.max($0, $1) }
         case .Double:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmaxD)
+            let ret = biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmaxD)
+            return fix_nonfinite_elements(l_mfarray, r_mfarray, ret, datatype: Double.self){ $0.isNaN || $1.isNaN ? .nan : Swift.max($0, $1) }
         }
     }
 
@@ -181,11 +184,14 @@ extension Matft.stats{
         
         precondition(isReal, "Complex is not supported")
         
+        // NaN propagates like numpy (vDSP drops it)
         switch MfType.storedType(rettype) {
         case .Float:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmin)
+            let ret = biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmin)
+            return fix_nonfinite_elements(l_mfarray, r_mfarray, ret, datatype: Float.self){ $0.isNaN || $1.isNaN ? .nan : Swift.min($0, $1) }
         case .Double:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vminD)
+            let ret = biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vminD)
+            return fix_nonfinite_elements(l_mfarray, r_mfarray, ret, datatype: Double.self){ $0.isNaN || $1.isNaN ? .nan : Swift.min($0, $1) }
         }
     }
     
