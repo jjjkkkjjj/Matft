@@ -308,7 +308,14 @@ extension Matft.linalg{
         }
         if ord != 0{
             let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponents: ord)
-            return Matft.math.power(bases: abspow.sum(axis: axis, keepDims: keepDims), exponents: 1/ord)
+            let sum = abspow.sum(axis: axis, keepDims: keepDims)
+            switch sum.storedType{
+            case .Float:
+                return Matft.math.power(bases: sum, exponents: 1/ord)
+            case .Double:
+                // 1/ord in Float (e.g. 1/3) would limit a Double result to Float precision
+                return Matft.math.power(bases: sum, exponents: Matft.nums(1 / Double(ord), shape: [1], mftype: .Double))
+            }
         }
         else{
             // remove mfarray == 0, and count up non-zero
@@ -345,7 +352,9 @@ extension Matft.linalg{
         
         precondition(axes.row != axes.col, "Duplicate axes given.")
         unsupport_complex(mfarray)
-        
+        // `axes` is shifted below for the second reduction, so keep the original ones for keepDims
+        let keptAxes = axes
+
         var ret: MfArray
         if ord == 2{
             ret = _multi_svd_norm(mfarray: mfarray, axes: &axes, op: Matft.stats.max)
@@ -380,11 +389,11 @@ extension Matft.linalg{
         else{
             preconditionFailure("Invalid norm order for matrices.")
         }
-        
+
         if keepDims{
             var retShape = mfarray.shape
-            retShape[axes.row] = 1
-            retShape[axes.col] = 1
+            retShape[keptAxes.row] = 1
+            retShape[keptAxes.col] = 1
             ret = ret.reshape(retShape)
         }
         

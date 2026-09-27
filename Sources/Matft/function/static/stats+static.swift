@@ -149,20 +149,22 @@ extension Matft.stats{
        - Parameters:
             - l_mfarray: The first array.
             - r_mfarray: The second array. It is broadcast against `l_mfarray`.
-       - Returns: A new array with the broadcast shape and the promoted `mftype` of the two inputs.
+       - Returns: A new array with the broadcast shape and the promoted `mftype` of the two inputs. As in Numpy, NaN propagates.
        - Precondition: Complex arrays are not supported.
     */
     public static func maximum(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
+        let (l_broadcast, r_broadcast, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
         
         precondition(isReal, "Complex is not supported")
         
+        let ret: MfArray
         switch MfType.storedType(rettype) {
         case .Float:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmax)
+            ret = biopvv_by_vDSP(l_broadcast, r_broadcast, vDSP_func: vDSP_vmax)
         case .Double:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmaxD)
+            ret = biopvv_by_vDSP(l_broadcast, r_broadcast, vDSP_func: vDSP_vmaxD)
         }
+        return _propagate_nan_elementwise(ret, l_mfarray, r_mfarray)
     }
 
     /**
@@ -173,20 +175,22 @@ extension Matft.stats{
        - Parameters:
             - l_mfarray: The first array.
             - r_mfarray: The second array. It is broadcast against `l_mfarray`.
-       - Returns: A new array with the broadcast shape and the promoted `mftype` of the two inputs.
+       - Returns: A new array with the broadcast shape and the promoted `mftype` of the two inputs. As in Numpy, NaN propagates.
        - Precondition: Complex arrays are not supported.
     */
     public static func minimum(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
-        let (l_mfarray, r_mfarray, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
+        let (l_broadcast, r_broadcast, rettype, isReal) = biop_broadcast_to(l_mfarray, r_mfarray)
         
         precondition(isReal, "Complex is not supported")
         
+        let ret: MfArray
         switch MfType.storedType(rettype) {
         case .Float:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vmin)
+            ret = biopvv_by_vDSP(l_broadcast, r_broadcast, vDSP_func: vDSP_vmin)
         case .Double:
-            return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vminD)
+            ret = biopvv_by_vDSP(l_broadcast, r_broadcast, vDSP_func: vDSP_vminD)
         }
+        return _propagate_nan_elementwise(ret, l_mfarray, r_mfarray)
     }
     
     /**
@@ -198,7 +202,7 @@ extension Matft.stats{
             - mfarray: The input array.
             - axis: The axis along which to sum. Negative values count from the last axis. If `nil` (default), the reduction is over all elements.
             - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
-       - Returns: The sum with the same `mftype` as `mfarray`, except that `.Bool` input gives `.Float` (Numpy gives an integer).
+       - Returns: The sum with the same `mftype` as `mfarray`, except that `.Bool` input gives `.Float` (Numpy gives an integer). 8 and 16 bit integer results wrap around like `numpy.sum(a, dtype=a.dtype)`.
        - Precondition: Complex arrays are not supported.
        - Note: Unlike Numpy, reducing all elements (`axis == nil`, `keepDims == false`) returns a 1-d array of shape `[1]` instead of a scalar. NaN handling follows vDSP and is not guaranteed to propagate like Numpy; use the `nan*` functions to ignore NaN.
     */
@@ -207,7 +211,7 @@ extension Matft.stats{
         
         switch mfarray.storedType {
         case .Float:
-            return boolean2float(stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sve))
+            return wrap_integer_overflow(boolean2float(stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sve)))
         case .Double:
             return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_sveD)
         }
@@ -238,7 +242,7 @@ extension Matft.stats{
             - mfarray: The input array.
             - axis: The axis along which to sum. Negative values count from the last axis. If `nil` (default), the reduction is over all elements.
             - keepDims: If `true`, the reduced axis is kept with size 1 (all axes for `axis == nil`). Default is `false`.
-       - Returns: The sum of squares with the same `mftype` as `mfarray`, except that `.Bool` input gives `.Float`.
+       - Returns: The sum of squares with the same `mftype` as `mfarray`, except that `.Bool` input gives `.Float`. 8 and 16 bit integer results wrap around.
        - Precondition: Complex arrays are not supported.
     */
     public static func squaresum(_ mfarray: MfArray, axis: Int? = nil, keepDims: Bool = false) -> MfArray{
@@ -246,7 +250,7 @@ extension Matft.stats{
         
         switch mfarray.storedType {
         case .Float:
-            return boolean2float(stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesq))
+            return wrap_integer_overflow(boolean2float(stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesq)))
         case .Double:
             return stats_by_vDSP(mfarray, axis: axis, keepDims: keepDims, vDSP_func: vDSP_svesqD)
         }
@@ -260,7 +264,7 @@ extension Matft.stats{
        - Parameters:
             - mfarray: The input array.
             - axis: The axis along which the cumulative sum is computed. If `nil` (default), the array is flattened first and a 1-d result is returned.
-       - Returns: An array with the same shape as `mfarray` (1-d for `axis == nil`) and the same `mftype`, except that `.Bool` is summed as `.Int` like Numpy.
+       - Returns: An array with the same shape as `mfarray` (1-d for `axis == nil`) and the same `mftype`, except that `.Bool` is summed as `.Int` like Numpy. 8 and 16 bit integer results wrap around like `numpy.cumsum(a, dtype=a.dtype)`.
        - Precondition: Complex arrays are not supported.
     */
     public static func cumsum(_ mfarray: MfArray, axis: Int? = nil) -> MfArray{
@@ -269,13 +273,13 @@ extension Matft.stats{
         let (mfarray, axis) = axis == nil ? (mfarray.flatten(), 0) : (mfarray, axis!)
         switch mfarray.storedType{
         case .Float:
-            return _cumsum(mfarray, axis: axis, Float.self){
+            return wrap_integer_overflow(_cumsum(mfarray, axis: axis, Float.self){
                 #if canImport(Accelerate)
                 vDSP_vadd($0, 1, $1, 1, $2, 1, vDSP_Length($3))
                 #else
                 vDSP_vadd($0, 1, $1, 1, $2, 1, $3)
                 #endif
-            }
+            })
         case .Double:
             return _cumsum(mfarray, axis: axis, Double.self){
                 #if canImport(Accelerate)
@@ -390,4 +394,29 @@ fileprivate func _propagate_nan(_ ret: MfArray, _ mfarray: MfArray, axis: Int?, 
     }
     let nanCount = Matft.stats.sum(Matft.math.isnan(mfarray).astype(mfarray.mftype), axis: axis, keepDims: keepDims)
     return Matft.where(nanCount > 0, Double.nan, ret).astype(ret.mftype)
+}
+
+/// numpy's maximum / minimum return NaN when either element is NaN, but vDSP_vmax / vmin (and Swift.max on WASI) return the other one.
+/// The elements where either input is NaN are set to NaN. Without NaN this costs one vectorized sum per input.
+fileprivate func _propagate_nan_elementwise(_ ret: MfArray, _ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
+    guard ret.mftype == .Float || ret.mftype == .Double, ret.size > 0 else{
+        return ret
+    }
+    // the sum is NaN whenever NaN exists (inf - inf only costs the extra work below)
+    func hasNaN(_ x: MfArray) -> Bool{
+        (x.mftype == .Float || x.mftype == .Double) && x.size > 0 && (Matft.stats.sum(x).astype(.Double).data[0] as! Double).isNaN
+    }
+    let lNaN = hasNaN(l_mfarray), rNaN = hasNaN(r_mfarray)
+    guard lNaN || rNaN else{
+        return ret
+    }
+    let rettype = ret.mftype
+    var ret = ret
+    if lNaN{
+        ret = Matft.where(Matft.math.isnan(l_mfarray), Double.nan, ret)
+    }
+    if rNaN{
+        ret = Matft.where(Matft.math.isnan(r_mfarray), Double.nan, ret)
+    }
+    return ret.astype(rettype)
 }

@@ -78,6 +78,7 @@ CASES = [
     Case("StatsPefTests.testPeformanceCumsum3", "Stats", "let _ = Matft.stats.cumsum(v)", "np.cumsum(v)"),
     Case("StatsPefTests.testPeformanceMax1", "Stats", "let _ = a.max(axis: 5)", "np.max(a, axis=5)"),
     Case("StatsPefTests.testPeformanceMax2", "Stats", "let _ = a.max()", "np.max(a)"),
+    Case("StatsPefTests.testPeformanceMaximum1", "Stats", "let _ = Matft.stats.maximum(a, aneg)", "np.maximum(a, aneg)"),
     Case("StatsPefTests.testPeformanceArgmax1", "Stats", "let _ = a.argmax(axis: 5)", "np.argmax(a, axis=5)"),
     Case("StatsPefTests.testPeformanceArgmax2", "Stats", "let _ = a.argmax(axis: 0)", "np.argmax(a, axis=0)"),
     Case("ConversionPefTests.testPeformanceArgsort1", "Conversion", "let _ = aneg.argsort(axis: -1)", "np.argsort(aneg, axis=-1)"),

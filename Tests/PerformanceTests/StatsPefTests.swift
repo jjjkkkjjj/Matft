@@ -39,6 +39,14 @@ final class StatsPefTests: XCTestCase {
         }
     }
     
+    func testPeformanceMaximum1() {
+        let a = PerfFixtures.a
+        let aneg = PerfFixtures.aneg
+        self.measureWithWarmup {
+            let _ = Matft.stats.maximum(a, aneg)
+        }
+    }
+    
     func testPeformanceMax2() {
         let a = PerfFixtures.a
         self.measureWithWarmup {

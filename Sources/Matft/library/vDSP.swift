@@ -35,7 +35,7 @@ internal typealias vDSP_vminmg_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafeP
 
 internal typealias vDSP_viclip_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>,  UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
-internal typealias vDSP_clip_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length, UnsafeMutablePointer<vDSP_Length>, UnsafeMutablePointer<vDSP_Length>) -> Void
+internal typealias vDSP_clip_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
 internal typealias vDSP_vthrsc_func<T> = (UnsafePointer<T>, vDSP_Stride, UnsafePointer<T>, UnsafePointer<T>, UnsafeMutablePointer<T>, vDSP_Stride, vDSP_Length) -> Void
 
@@ -64,6 +64,15 @@ internal func vDSP_zvmul_(_ __A: UnsafePointer<DSPSplitComplex>, _ __IA: vDSP_St
 @inline(__always)
 internal func vDSP_zvmulD_(_ __A: UnsafePointer<DSPDoubleSplitComplex>, _ __IA: vDSP_Stride, _ __B: UnsafePointer<DSPDoubleSplitComplex>, _ __IB: vDSP_Stride, _ __C: UnsafePointer<DSPDoubleSplitComplex>, _ __IC: vDSP_Stride, _ __N: vDSP_Length) -> Void{
     vDSP_zvmulD(__A, __IA, __B, __IB, __C, __IC, __N, Int32(1))
+}
+// `wrap_vDSP_biopzvv` passes the right operand first (vDSP_zvdiv computes B / A), but vDSP_zvsub computes A - B
+@inline(__always)
+internal func vDSP_zvsub_(_ __B: UnsafePointer<DSPSplitComplex>, _ __IB: vDSP_Stride, _ __A: UnsafePointer<DSPSplitComplex>, _ __IA: vDSP_Stride, _ __C: UnsafePointer<DSPSplitComplex>, _ __IC: vDSP_Stride, _ __N: vDSP_Length) -> Void{
+    vDSP_zvsub(__A, __IA, __B, __IB, __C, __IC, __N)
+}
+@inline(__always)
+internal func vDSP_zvsubD_(_ __B: UnsafePointer<DSPDoubleSplitComplex>, _ __IB: vDSP_Stride, _ __A: UnsafePointer<DSPDoubleSplitComplex>, _ __IA: vDSP_Stride, _ __C: UnsafePointer<DSPDoubleSplitComplex>, _ __IC: vDSP_Stride, _ __N: vDSP_Length) -> Void{
+    vDSP_zvsubD(__A, __IA, __B, __IB, __C, __IC, __N)
 }
 
 /// Wrapper of vDSP conversion function
@@ -210,6 +219,9 @@ internal func wrap_vDSP_compare<T: MfStorable>(_ size: Int, _ srcptr: UnsafePoin
     }
     
     switch op {
+    case .greater where scalar == .infinity, .less where scalar == -.infinity:
+        // nothing is greater than inf (nextUp(inf) is inf itself)
+        dstptr.update(repeating: T.from(-1), count: size)
     case .greater: // x >= nextUp(s)
         thrsc(srcptr, scalar.nextUp, T.from(1), dstptr)
     case .greaterEqual: // x >= s
@@ -294,10 +306,7 @@ internal func wrap_vDSP_sign<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer
 ///   - vDSP_clip_func: The vDSP clip function
 @inline(__always)
 internal func wrap_vDSP_clip<T: MfStorable>(_ size: Int, _ srcptr: UnsafePointer<T>, _ minptr: UnsafePointer<T>, _ maxptr: UnsafePointer<T>, _ dstptr: UnsafeMutablePointer<T>, _ vDSP_clip_func: vDSP_clip_func<T>){
-    var mincount = vDSP_Length(0)
-    var maxcount = vDSP_Length(0)
-    
-    vDSP_clip_func(srcptr, vDSP_Stride(1), minptr, maxptr, dstptr, vDSP_Stride(1), vDSP_Length(size), &mincount, &maxcount)
+    vDSP_clip_func(srcptr, vDSP_Stride(1), minptr, maxptr, dstptr, vDSP_Stride(1), vDSP_Length(size))
 }
 
 /// Wrapper of vDSP sort function
@@ -862,6 +871,8 @@ internal func stats_by_vDSP<T: MfStorable>(_ typedMfarray: MfArray, axis: Int?, 
         
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptrT in
+            // FlattenIndSequence yields one index even for a shape containing 0, so an empty result must not be written
+            guard ret_size > 0 else { return }
             mfarray.withUnsafeMutableStartPointer(datatype: T.self){
                 for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
                     wrap_vDSP_stats(count, $0 + flat.flattenIndex, stride, dstptrT + dst_offset, vDSP_func)
@@ -2679,6 +2690,8 @@ internal func stats_by_vDSP<T: MfStorable>(_ typedMfarray: MfArray, axis: Int?, 
 
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptrT in
+            // FlattenIndSequence yields one index even for a shape containing 0, so an empty result must not be written
+            guard ret_size > 0 else { return }
             mfarray.withUnsafeMutableStartPointer(datatype: T.self){
                 for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
                     wrap_vDSP_stats(count, $0 + flat.flattenIndex, stride, dstptrT + dst_offset, vDSP_func)
