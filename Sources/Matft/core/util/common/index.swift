@@ -277,6 +277,10 @@ internal struct FlattenIndSequenceIterator: IteratorProtocol{
     
     mutating func next() -> (flattenIndex: Int, indices: [Int])? {
         if self.upaxis == -1{// flattenIndex = 0, indicesOfAxes = [0,...,0] must be returned
+            // a shape with a zero-length dimension has no element (the index [0,...,0] would be out of bounds)
+            if self.shape.contains(0){
+                return nil
+            }
             self.upaxis = self.shape.count - 1
             return (self.flattenIndex, self.indicesOfAxes)
         }
