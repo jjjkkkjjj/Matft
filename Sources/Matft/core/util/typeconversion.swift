@@ -16,6 +16,10 @@ import Accelerate
 /// - Parameter flattenArray: Flatten array.
 /// - Returns: MfType of flatten array
 internal func get_mftype(_ flattenArray: inout [Any]) -> MfType{
+    // an empty array is an array of every type (`[] is [UInt8]` is true). numpy's default is float64
+    if flattenArray.isEmpty{
+        return .Double
+    }
     if flattenArray is [UInt8]{
         return .UInt8
     }
@@ -310,6 +314,48 @@ internal func wrap_integer_overflow(_ mfarray: MfArray) -> MfArray{
         break
     }
     return mfarray
+}
+
+/// Convert the values of a newly created integer mfarray like numpy's cast into integers: truncate toward zero and wrap around 8/16 bit integers.
+/// Does nothing for the other types
+/// - Parameters:
+///   - mfarray: The result mfarray
+///   - truncate: Whether the values may have a fractional part (false when converted from an integer type)
+/// - Returns: The same mfarray
+@discardableResult
+internal func cast_to_integer(_ mfarray: MfArray, truncate: Bool) -> MfArray{
+    switch mfarray.mftype {
+    case .UInt8, .UInt16, .UInt32, .UInt64, .UInt, .Int8, .Int16, .Int32, .Int64, .Int:
+        break
+    default:
+        return mfarray
+    }
+    guard mfarray.isReal, mfarray.storedType == .Float, mfarray.storedSize > 0 else { return mfarray }
+    if truncate{
+        var count = Int32(mfarray.storedSize)
+        mfarray.withUnsafeMutableStartPointer(datatype: Float.self){
+            vvintf($0, $0, &count)
+        }
+    }
+    return wrap_integer_overflow(mfarray)
+}
+
+/// The scalar version of `cast_to_integer(_:)`: truncate toward zero and wrap around 8/16 bit integers. Returns the value as it is for the other types
+internal func cast_to_integer(_ value: Float, mftype: MfType) -> Float{
+    let bits: Int, signed: Bool
+    switch mftype {
+    case .UInt8: (bits, signed) = (8, false)
+    case .Int8: (bits, signed) = (8, true)
+    case .UInt16: (bits, signed) = (16, false)
+    case .Int16: (bits, signed) = (16, true)
+    case .UInt32, .UInt64, .UInt, .Int32, .Int64, .Int:
+        return value.rounded(.towardZero)
+    default:
+        return value
+    }
+    let x = value.rounded(.towardZero)
+    let modulus = Float(1 << bits)
+    return x - modulus * (x / modulus + (signed ? 0.5 : 0)).rounded(.down)
 }
 
 /// Wrap x into the range of the `bits` width integer by x - 2^bits * floor((x + offset) / 2^bits), where offset is 2^(bits-1) for signed and 0 for unsigned.

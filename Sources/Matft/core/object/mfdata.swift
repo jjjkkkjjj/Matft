@@ -338,7 +338,9 @@ fileprivate func _get_flatten_column_major(queue: inout [Any], shape: inout [Int
     var cnt = 0 // count up the number that value is extracted from queue for while statement, reset 0 when iteration number reaches size
     //var axis = 0//the axis in searching
     let dim = queue.count // given
-    
+    // an empty array has nothing to flatten (and the recursion below would never end)
+    guard dim > 0 else { return [] }
+
     var objectFlag = false
     
     var newqueue: [Any] = []

@@ -74,7 +74,14 @@ open class MfArray: MfArrayProtocol{
         
         self.mfdata = MfData(flattenArray: &flattenArray, mftype: mftype)
         self.mfstructure = MfStructure(shape: shape, mforder: mforder)
-        
+
+    }
+
+    /// Creates an array from a flat Swift array of scalars. Same as `init(_:mftype:shape:mforder:)` with `[Any]`,
+    /// except that the default `mftype` comes from the element type, so that an empty array keeps it too
+    /// (e.g. `MfArray([] as [Int], shape: [3, 0])` is `.Int` like `np.array([], dtype=int)`).
+    public convenience init<T: MfTypable>(_ array: [T], mftype: MfType? = nil, shape: [Int]? = nil, mforder: MfOrder = .Row) {
+        self.init(array as [Any], mftype: mftype ?? MfType.mftype(value: T.zero), shape: shape, mforder: mforder)
     }
     
     /// Creates a complex array from real and imaginary parts. Either `real` or `imag` must be given.

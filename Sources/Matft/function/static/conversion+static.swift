@@ -41,16 +41,19 @@ extension Matft{
         let mfarray = complex && mfarray.isReal ? mfarray.to_complex(false) : mfarray
         
         let newStoredType = MfType.storedType(mftype)
+        // floats may have a fractional part to be truncated when converted into integers
+        let truncate = mfarray.mftype == .Float || mfarray.mftype == .Double
         if mfarray.storedType == newStoredType{
             let ret = mfarray.to_contiguous(mforder: mforder)
             ret.mfdata.mftype = mftype
-            return ret
+            // like numpy, floats are truncated toward zero and out of range integers wrap around
+            return cast_to_integer(ret, truncate: truncate)
         }
-        
+
         if mfarray.isReal{
             switch newStoredType{
             case .Float://double to float
-                return contiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vdpsp)
+                return cast_to_integer(contiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vdpsp), truncate: truncate)
                 
             case .Double://float to double
                 return contiguous_and_astype_by_vDSP(mfarray, mftype: mftype, mforder: mforder, vDSP_func: vDSP_vspdp)
@@ -277,12 +280,11 @@ extension Matft{
        - Returns: The squeezed view.
     */
     public static func squeeze(_ mfarray: MfArray, axes: [Int]) -> MfArray{
-        // reoder descending
-        let axes = axes.sorted{ $0 > $1 }
+        // remove from the last axis. Negative axes must be made positive before sorting
+        let axes = axes.map{ get_positive_axis($0, ndim: mfarray.ndim) }.sorted{ $0 > $1 }
         var newshape = mfarray.shape
         var newstrides = mfarray.strides
         for axis in axes{
-            let axis = get_positive_axis(axis, ndim: mfarray.ndim)
             precondition(newshape.remove(at: axis) == 1, "cannot select an axis to squeeze out which has size not equal to one")
             newstrides.remove(at: axis)
         }
@@ -444,16 +446,18 @@ extension Matft{
     */
     public static func clip<T: MfTypable>(_ mfarray: MfArray, min: T? = nil, max: T? = nil) -> MfArray{
         func _clip<U: MfStorable>(_ vDSP_func: vDSP_clip_func<U>) -> MfArray{
-            let min = min == nil ? -U.infinity : U.from(min!)
             let max = max == nil ? U.infinity : U.from(max!)
+            // like numpy (minimum(maximum(a, min), max)), max wins when min > max
+            let min = min == nil ? -U.infinity : Swift.min(U.from(min!), max)
             return clip_by_vDSP(mfarray, min, max, vDSP_func)
         }
-        
+
+        // vDSP_vclip keeps NaN like numpy (vDSP_vclipcD turns it into min)
         switch mfarray.storedType {
         case .Float:
-           return  _clip(vDSP_vclipc)
+           return  _clip(vDSP_vclip)
         case .Double:
-            return _clip(vDSP_vclipcD)
+            return _clip(vDSP_vclipD)
         }
     }
     
@@ -610,6 +614,9 @@ extension Matft{
     */
     public static func roll(_ mfarray: MfArray, shift: Int, axis: Int? = nil) -> MfArray{
         unsupport_complex(mfarray)
+        if mfarray.size == 0{
+            return mfarray.deepcopy()
+        }
         
         switch mfarray.storedType{
         case .Float:
@@ -648,7 +655,8 @@ extension Matft{
             srcmfarray = srcmfarray.flatten()
         }
         else{
-            srcmfarray = mfarray
+            // storedData is in the memory order of the (possibly non-contiguous) array
+            srcmfarray = mfarray.flatten()
             stride = 1
             restShape = []
         }
