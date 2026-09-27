@@ -16,7 +16,7 @@ python3 -m venv .venv
 
 | Script | Writes | Covers |
 |---|---|---|
-| `gen_numpy_gaps_coverage.py` | `Tests/MatftTests/NumpyGapsCoverageTest.swift` | orderstats, nan-functions, var/std, searching, set operations, pad/diff/meshgrid, fit, interpolation, math, over dtypes and `layoutVariants` |
+| `gen_numpy_gaps_coverage.py` | `Tests/MatftTests/NumpyGapsCoverageTest.swift` | orderstats, nan-functions, argmax/argmin, var/std, searching, set operations, pad/diff/meshgrid, fit, interpolation, math, over dtypes and `layoutVariants` |
 | `gen_fft_audio_coverage.py` | `Tests/MatftTests/FFTAudioCoverageTest.swift` | rfft/irfft (pocketFFT, vDSP), windows, stft, mel, power_to_db, pad_or_trim, whisper_log_mel |
 | `gen_image_coverage.py` | `Tests/MatftTests/ImageCoverageTest.swift` | parameters of `Matft.image` against OpenCV / PIL, and the VLM preprocess |
 | `gen_audio_fixtures.py` | `Tests/MatftTests/files/audio/*.csv` (+ printed literals) | the reference values of `AudioTest.swift` |

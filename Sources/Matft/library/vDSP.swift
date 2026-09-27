@@ -890,68 +890,6 @@ internal func stats_by_vDSP<T: MfStorable>(_ typedMfarray: MfArray, axis: Int?, 
     }
 }
 
-/// Stats operation by vDSP
-/// - Parameters:
-///   - mfarray: An input mfarray
-///   - axis; An axis index
-///   - keepDims: Whether to keep dimension or not
-///   - vDSP_func: The vDSP stats function
-/// - Returns: The sorted mfarray
-internal func stats_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_index_func<T>) -> MfArray{
-    
-    let mfarray = check_contiguous(mfarray, .Row)
-    
-    if let axis = axis, mfarray.ndim > 1{
-        let axis = get_positive_axis(axis, ndim: mfarray.ndim)
-        var ret_shape = mfarray.shape
-        let count = ret_shape.remove(at: axis)
-        var ret_strides = mfarray.strides
-        //remove and get stride at given axis
-        let stride = ret_strides.remove(at: axis)
-        let ui_stride = UInt(stride)
-        
-        let ret_size = shape2size(&ret_shape)
-        
-        let newdata = MfData(uninitializedSize: ret_size, mftype: mfarray.mftype)
-        var dst_offset = 0
-        
-        newdata.withUnsafeMutableStartPointer(datatype: T.self){
-            dstptrT in
-            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-                for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
-                    var uival = UInt.zero
-                    wrap_vDSP_stats_index(count, $0 + flat.flattenIndex, stride, &uival, vDSP_func)
-                    (dstptrT + dst_offset).pointee = T.from(uival / ui_stride)
-                    
-                    dst_offset += 1//koko
-                }
-            }
-        }
-        
-        let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
-        
-        let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
-        return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
-    }
-    else{
-        let newdata = MfData(uninitializedSize: 1, mftype: mfarray.mftype)
-        var uival = UInt.zero
-        
-        newdata.withUnsafeMutableStartPointer(datatype: T.self){
-            dstptrT in
-            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-                wrap_vDSP_stats_index(mfarray.size, $0, 1, &uival, vDSP_func)
-            }
-            dstptrT.pointee = T.from(uival)
-        }
-        
-        let ret_shape = keepDims ? Array(repeating: 1, count: mfarray.ndim) : [1]
-        let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
-        return MfArray(mfdata: newdata, mfstructure: newstructure)
-    }
-}
-
-
 /// Sort operation by vDSP
 /// - Parameters:
 ///   - mfarray: An input mfarray
@@ -2769,59 +2707,6 @@ internal func stats_by_vDSP<T: MfStorable>(_ typedMfarray: MfArray, axis: Int?, 
     }
 }
 
-internal func stats_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_index_func<T>) -> MfArray{
-
-    let mfarray = check_contiguous(mfarray, .Row)
-
-    if let axis = axis, mfarray.ndim > 1{
-        let axis = get_positive_axis(axis, ndim: mfarray.ndim)
-        var ret_shape = mfarray.shape
-        let count = ret_shape.remove(at: axis)
-        var ret_strides = mfarray.strides
-        let stride = ret_strides.remove(at: axis)
-        let ui_stride = UInt(stride)
-
-        let ret_size = shape2size(&ret_shape)
-
-        let newdata = MfData(uninitializedSize: ret_size, mftype: mfarray.mftype)
-        var dst_offset = 0
-
-        newdata.withUnsafeMutableStartPointer(datatype: T.self){
-            dstptrT in
-            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-                for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
-                    var uival = UInt.zero
-                    wrap_vDSP_stats_index(count, $0 + flat.flattenIndex, stride, &uival, vDSP_func)
-                    (dstptrT + dst_offset).pointee = T.from(uival / ui_stride)
-
-                    dst_offset += 1
-                }
-            }
-        }
-
-        let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
-
-        let ret = MfArray(mfdata: newdata, mfstructure: newstructure)
-        return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
-    }
-    else{
-        let newdata = MfData(uninitializedSize: 1, mftype: mfarray.mftype)
-        var uival = UInt.zero
-
-        newdata.withUnsafeMutableStartPointer(datatype: T.self){
-            dstptrT in
-            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
-                wrap_vDSP_stats_index(mfarray.size, $0, 1, &uival, vDSP_func)
-            }
-            dstptrT.pointee = T.from(uival)
-        }
-
-        let ret_shape = keepDims ? Array(repeating: 1, count: mfarray.ndim) : [1]
-        let newstructure = MfStructure(shape: ret_shape, mforder: .Row)
-        return MfArray(mfdata: newdata, mfstructure: newstructure)
-    }
-}
-
 internal func sort_by_vDSP<T: MfStorable>(_ mfarray: MfArray, _ axis: Int, _ order: MfSortOrder, _ vDSP_func: vDSP_sort_func<T>) -> MfArray{
     let retndim = mfarray.ndim
     let count = mfarray.shape[axis]
@@ -3102,3 +2987,90 @@ internal func vDSP_maxmgvD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ dst
 }
 
 #endif // canImport(Accelerate)
+
+
+// MARK: - Shared by the Accelerate and WASI paths
+
+/// argmax / argmin by vDSP (`vDSP_maxvi`, `vDSP_minvi`, ...), following numpy:
+/// the indices are `.Int`, the first index wins for ties, and the first NaN wins when the lane contains NaN
+/// (vDSP ignores NaN, and its behaviour differs between architectures).
+/// - Parameters:
+///   - mfarray: An input mfarray
+///   - axis: An axis index. `nil` searches the flattened (row-major) array
+///   - keepDims: Whether to keep dimension or not
+///   - vDSP_func: The vDSP stats index function
+///   - vDSP_sum_func: The vDSP sum function, used to detect NaN in one vectorized pass
+/// - Returns: The `.Int` indices
+internal func stats_index_by_vDSP<T: MfStorable>(_ mfarray: MfArray, axis: Int?, keepDims: Bool, vDSP_func: vDSP_stats_index_func<T>, vDSP_sum_func: vDSP_stats_func<T>) -> MfArray{
+    let mfarray = check_contiguous(mfarray, .Row)
+
+    // the sum is NaN whenever a NaN exists (also for inf - inf, then the lanes are just scanned in vain)
+    var total = T.zero
+    if mfarray.size > 0{
+        mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+            wrap_vDSP_stats(mfarray.size, $0, 1, &total, vDSP_sum_func)
+        }
+    }
+    let checkNaN = total.isNaN
+
+    let count: Int
+    let stride: Int
+    var ret_shape: [Int]
+    var ret_strides: [Int]
+    let reducedAxis: Int?
+    if let axis = axis, mfarray.ndim > 1{
+        let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+        ret_shape = mfarray.shape
+        count = ret_shape.remove(at: axis)
+        ret_strides = mfarray.strides
+        stride = ret_strides.remove(at: axis)
+        reducedAxis = axis
+    }
+    else{
+        count = mfarray.size
+        stride = 1
+        ret_shape = [1]
+        ret_strides = [0]
+        reducedAxis = nil
+    }
+    let ret_size = shape2size(&ret_shape)
+    // numpy raises "attempt to get argmax of an empty sequence"
+    precondition(count > 0 || ret_size == 0, "attempt to get argmax/argmin of an empty sequence")
+
+    // the indices are stored like any other .Int array
+    let newdata = MfData(uninitializedSize: ret_size, mftype: .Int)
+    if ret_size > 0{
+        newdata.withUnsafeMutableStartPointer(datatype: Float.self){
+            dstptr in
+            mfarray.withUnsafeMutableStartPointer(datatype: T.self){
+                srcptr in
+                var dst_offset = 0
+                for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
+                    dstptr[dst_offset] = Float(_first_arg_index(count, srcptr + flat.flattenIndex, stride, checkNaN: checkNaN, vDSP_func))
+                    dst_offset += 1
+                }
+            }
+        }
+    }
+
+    guard let axis = reducedAxis else{
+        let shape = keepDims ? Array(repeating: 1, count: mfarray.ndim) : [1]
+        return MfArray(mfdata: newdata, mfstructure: MfStructure(shape: shape, mforder: .Row))
+    }
+    let ret = MfArray(mfdata: newdata, mfstructure: MfStructure(shape: ret_shape, mforder: .Row))
+    return keepDims ? Matft.expand_dims(ret, axis: axis) : ret
+}
+
+/// The index of the first NaN (when `checkNaN`), otherwise the index vDSP finds
+@inline(__always)
+private func _first_arg_index<T: MfStorable>(_ count: Int, _ srcptr: UnsafePointer<T>, _ stride: Int, checkNaN: Bool, _ vDSP_func: vDSP_stats_index_func<T>) -> Int{
+    if checkNaN{
+        for i in 0..<count where srcptr[i * stride].isNaN{
+            return i
+        }
+    }
+    var uival = UInt.zero
+    wrap_vDSP_stats_index(count, srcptr, stride, &uival, vDSP_func)
+    // vDSP returns the offset in elements, i.e. index * stride
+    return Int(uival) / stride
+}

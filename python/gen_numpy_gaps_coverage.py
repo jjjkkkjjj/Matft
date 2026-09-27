@@ -127,6 +127,100 @@ with warnings.catch_warnings():
         lines += close(f"Matft.stats.nanquantile(x, q: 0.4{ax}, method: .nearest)", np.nanquantile(AN, 0.4, axis=axis, method="nearest"), layout="AN")
 test("nan_functions_layouts", lines)
 
+# ---------- argmax / argmin ----------
+# numpy returns int64 indices for every input dtype -> Matft must return .Int. Ties and NaN: the first index wins (numpy returns the first NaN).
+# Not covered (precondition / convention): an empty lane (numpy raises ValueError), integers above 2^24 stored as Float.
+
+
+def arg_equal(swift, expected, layout=None):
+    exp = swift_array(expected, "Int")
+    label = swift_escape(swift) + (" \\(name)" if layout else "")
+    # exact values and mftype (MfArray == ignores the mftype and wraps integers, e.g. UInt8 index 299 == 43)
+    body = [f"XCTAssertClose({swift}, {exp}, rtol: 0, atol: 0, checkType: true, \"{label}\")"]
+    if layout:
+        return [f"for (name, x) in layoutVariants({layout}){{"] + ["    " + b for b in body] + ["}"]
+    return body
+
+
+U8 = inp("U8", [[0, 255, 7, 255], [128, 0, 0, 254]], "UInt8")                        # boundaries of UInt8 and ties
+EXT = inp("EXT", [[-inf, 0.0, -0.0, inf], [-0.0, 0.0, -inf, -inf], [inf, inf, 1.0, -1.0]], "Double")  # ±inf, ±0 ties
+long_row = np.full(300, 10)
+long_row[280] = 0
+long_row[299] = 255
+L8 = inp("L8", np.stack([long_row, long_row[::-1]]), "UInt8")                        # indices above 255
+long_ties = ((np.arange(1025) * 37) % 101 - 50).astype(float)                          # the max / min repeat, longer than the SIMD blocks
+LT = inp("LT", np.stack([long_ties, long_ties[::-1]]), "Double")
+long_nan = np.arange(1025, dtype=float)
+long_nan[500] = nan
+long_nan[700] = nan
+LN = inp("LN", np.stack([long_nan, -long_nan]), "Double")                              # NaN far from the start of the lane
+
+lines = []
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    for f in ["argmax", "argmin"]:
+        for src in ["A", "AF", "AI", "U8", "B", "EXT", "AN", "L8", "LT", "LN"]:
+            a, mftype = INPUTS[src]
+            if mftype == "Bool":
+                a = a.astype(bool)
+            axes = [None, 0, 1, -1] if a.ndim == 2 else [None]
+            for axis in axes:
+                ax = "" if axis is None else f", axis: {axis}"
+                lines += arg_equal(f"Matft.stats.{f}(x{ax})", getattr(np, f)(a, axis=axis), layout=src)
+        for src in ["LT", "LN"]:
+            a, _ = INPUTS[src]
+            lines += arg_equal(f"Matft.stats.{f}(x.astype(.Float), axis: 1)", getattr(np, f)(a.astype(np.float32), axis=1), layout=src)
+        # 3-d, every axis
+        for axis in [None, 0, 1, 2, -1, -2, -3]:
+            ax = "" if axis is None else f", axis: {axis}"
+            lines += arg_equal(f"Matft.stats.{f}(x{ax})", getattr(np, f)(C3, axis=axis), layout="C3")
+        # 1-d with an axis: numpy returns a 0-d scalar -> shape [1] in Matft
+        for axis in [None, 0, -1]:
+            ax = "" if axis is None else f", axis: {axis}"
+            lines += arg_equal(f"Matft.stats.{f}(x{ax})", getattr(np, f)(S, axis=axis), layout="S")
+        # method version
+        lines += arg_equal(f"x.{f}(axis: 0)", getattr(np, f)(A, axis=0), layout="A")
+        # size 1
+        lines += arg_equal(f"Matft.stats.{f}(MfArray([[7.5]] as [[Double]]), axis: 1)", getattr(np, f)([[7.5]], axis=1))
+        # zero-length dimension that is not reduced
+        for shp, axis in [((0, 3), 1), ((2, 0, 3), 2), ((2, 0, 3), -1)]:
+            res = getattr(np, f)(np.zeros(shp), axis=axis)
+            swift = f"Matft.stats.{f}(MfArray([] as [Double], shape: {list(shp)}), axis: {axis})"
+            lines += [f"XCTAssertEqual(({swift}).shape, {list(res.shape)}, \"{swift_escape(swift)}\")",
+                      f"XCTAssertEqual(({swift}).mftype, .Int, \"{swift_escape(swift)}\")"]
+test("argmax_argmin", lines)
+
+# ---------- max / min with NaN ----------
+# numpy propagates NaN along every axis (vDSP drops it for strided lanes and on x86_64)
+AN1 = inp("AN1", [[1, 2, 3, 4], [5, nan, 7, 8], [9, 10, 11, 12]], "Double")  # one NaN: only row 1 / column 1 become NaN
+C3N = C3.astype(float)
+C3N[1, 2, 3] = nan
+inp("C3N", C3N, "Double")
+for pos in [0, 1024]:  # NaN at the first / last element of a lane longer than the SIMD blocks
+    v = np.arange(1025, dtype=float).reshape(1025, 1)
+    v[pos, 0] = nan
+    inp(f"LNaN{pos}", v, "Double")
+lines = []
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    for f in ["max", "min"]:
+        for src in ["AN", "AN1"]:
+            a, _ = INPUTS[src]
+            for axis in [None, 0, 1, -1]:
+                ax = "" if axis is None else f", axis: {axis}"
+                lines += close(f"Matft.stats.{f}(x{ax})", getattr(np, f)(a, axis=axis), layout=src)
+                lines += close(f"Matft.stats.{f}(x.astype(.Float){ax}, keepDims: true)", getattr(np, f)(a.astype(np.float32), axis=axis, keepdims=True), "Float", layout=src)
+        for axis in [None, 0, 1, 2]:
+            ax = "" if axis is None else f", axis: {axis}"
+            lines += close(f"Matft.stats.{f}(x{ax})", getattr(np, f)(C3N, axis=axis), layout="C3N")
+        for pos in [0, 1024]:
+            a, _ = INPUTS[f"LNaN{pos}"]
+            for axis in [None, 0]:
+                ax = "" if axis is None else f", axis: {axis}"
+                lines += close(f"Matft.stats.{f}(LNaN{pos}{ax})", getattr(np, f)(a, axis=axis))
+                lines += close(f"Matft.stats.{f}(LNaN{pos}.T{ax.replace('0', '1')})", getattr(np, f)(a.T, axis=None if axis is None else 1))
+test("max_min_nan", lines)
+
 # ---------- var / std ----------
 lines = []
 with warnings.catch_warnings():

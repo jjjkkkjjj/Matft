@@ -41,7 +41,7 @@ extension MfArray{
        Equivalent to `numpy.argmax`.
        - Parameters:
             - axis: (Optional) The axis along which to operate. If `nil` (default), the index into the flattened array is returned.
-       - Returns: The indices of the maximum values.
+       - Returns: The `.Int` indices of the maximum values.
     */
     public func argmax(axis: Int? = nil) -> MfArray{
         return Matft.stats.argmax(self, axis: axis)
@@ -66,7 +66,7 @@ extension MfArray{
        Equivalent to `numpy.argmin`.
        - Parameters:
             - axis: (Optional) The axis along which to operate. If `nil` (default), the index into the flattened array is returned.
-       - Returns: The indices of the minimum values.
+       - Returns: The `.Int` indices of the minimum values.
     */
     public func argmin(axis: Int? = nil) -> MfArray{
         return Matft.stats.argmin(self, axis: axis)
