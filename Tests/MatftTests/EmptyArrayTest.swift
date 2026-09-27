@@ -45,4 +45,71 @@ final class EmptyArrayTests: XCTestCase {
             XCTAssertEqual(Matft.diff(x, n: 3, axis: 0).shape, [0, 4], name)
         }
     }
+
+    /// Printing, `data` and the scalar accessors of empty arrays, including views of a non-empty base
+    /// (numpy: `repr` gives `array([], shape=(3, 0), dtype=float64)` and `.item()` raises; Matft returns nil)
+    func testDescriptionDataScalar(){
+        for shape in [[0]] + shapes{
+            for mftype in [MfType.Double, .Float, .Int, .UInt8, .Bool]{
+                // a zero-length slice of a non-empty array, whose storedSize and offset are not 0
+                let axis = shape.firstIndex(of: 0)!
+                var baseShape = shape
+                baseShape[axis] = 3
+                let view = Matft.nums(Double(1), shape: baseShape, mftype: mftype).swapaxes(axis1: 0, axis2: axis)[2~<2].swapaxes(axis1: 0, axis2: axis)
+                let arrays = [
+                    ("row", MfArray([] as [Double], mftype: mftype, shape: shape)),
+                    ("column", MfArray([] as [Double], mftype: mftype, shape: shape, mforder: .Column)),
+                    ("slice view", view),
+                ]
+                for (layout, x) in arrays{
+                    let name = "\(shape) \(mftype) \(layout)"
+                    XCTAssertEqual(x.shape, shape, name)
+                    XCTAssertEqual(x.size, 0, name)
+                    XCTAssertEqual(x.description, "mfarray = \n\t[], type=\(mftype), shape=\(shape)", name)
+                    // `data` is the whole stored buffer, which is the base's for a view
+                    if layout != "slice view"{
+                        XCTAssertEqual(x.data.count, 0, name)
+                    }
+                    XCTAssertNil(x.scalarFirst, name)
+                    XCTAssertNil(x.scalar, name)
+                    XCTAssertEqual(x.T.description, "mfarray = \n\t[], type=\(mftype), shape=\(Array(shape.reversed()))", name)
+                }
+            }
+        }
+        XCTAssertNil(MfArray([] as [Double], shape: [3, 0]).scalar(Double.self))
+        XCTAssertNil(MfArray([] as [Int], shape: [0]).scalar(Int.self))
+    }
+
+    /// Complex arrays with a zero-length dimension through creation, printing and elementwise operations
+    func testComplex(){
+        for shape in [[0]] + shapes{
+            for mftype in [MfType.Double, .Float]{
+                let e = MfArray([] as [Double], mftype: mftype, shape: shape)
+                let z = MfArray(real: e, imag: e)
+                // the mftype of a complex array is the type of its parts
+                let name = "\(shape) complex \(mftype)"
+                XCTAssertTrue(z.isComplex, name)
+                XCTAssertEqual(z.mftype, mftype, name)
+                XCTAssertEqual(z.shape, shape, name)
+                XCTAssertEqual(z.description, "mfarray = \n\t[], type=\(mftype), shape=\(shape)", name)
+                XCTAssertEqual(z.data.count, 0, name)
+                XCTAssertEqual(z.data_imag?.count, 0, name)
+                XCTAssertNil(z.scalarFirst, name)
+                // numpy: every elementwise result keeps the (broadcast) shape
+                for (op, r) in [("z + z", z + z), ("z - e", z - e), ("z * 2", z * 2), ("z / z", z / z), ("-z", -z),
+                                ("z.T.T", z.T.T), ("deepcopy", Matft.deepcopy(z)), ("column", z.to_contiguous(mforder: .Column))]{
+                    XCTAssertEqual(r.shape, shape, "\(op) \(name)")
+                    XCTAssertTrue(r.isComplex, "\(op) \(name)")
+                    XCTAssertEqual(r.mftype, mftype, "\(op) \(name)")
+                    XCTAssertEqual(r.data.count, 0, "\(op) \(name)")
+                }
+                XCTAssertEqual(Matft.math.abs(z).shape, shape, name)
+                XCTAssertTrue(Matft.math.abs(z).isReal, name)
+                XCTAssertEqual(Matft.complex.conjugate(z).shape, shape, name)
+                XCTAssertEqual(z.real.shape, shape, name)
+                XCTAssertEqual(z.imag!.shape, shape, name)
+                XCTAssertEqual((z === z).shape, shape, name)
+            }
+        }
+    }
 }
