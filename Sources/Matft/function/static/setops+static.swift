@@ -40,7 +40,7 @@ extension Matft{
     /**
        Find the sorted unique elements of an array and the number of times each appears.
 
-       Equivalent to `numpy.unique_counts`. NaNs are treated as equal to each other.
+       Equivalent to `numpy.unique_counts`. Every NaN is a separate value with a count of 1 (unlike `unique(_:)`).
 
        - Parameters:
             - mfarray: The input array. Any shape.
@@ -55,7 +55,7 @@ extension Matft{
     /**
        Find the sorted unique elements of an array and the indices to reconstruct the input.
 
-       Equivalent to `numpy.unique_inverse`. NaNs are treated as equal to each other.
+       Equivalent to `numpy.unique_inverse`. Every NaN is a separate value (unlike `unique(_:)`).
 
        - Parameters:
             - mfarray: The input array. Any shape.
@@ -70,7 +70,7 @@ extension Matft{
     /**
        Find the sorted unique elements of an array together with their first indices, inverse indices and counts.
 
-       Equivalent to `numpy.unique_all`. NaNs are treated as equal to each other and placed at the end.
+       Equivalent to `numpy.unique_all`. Every NaN is a separate value (unlike `unique(_:)`), and the NaNs are placed at the end in the order they appear.
 
        - Parameters:
             - mfarray: The input array. Any shape.
@@ -96,8 +96,8 @@ extension Matft{
         var inverse = [Double](repeating: 0, count: values.count)
         for i in order{
             let v = values[i]
-            // NaNs are equal to each other here (equal_nan=True)
-            if let last = uniques.last, last == v || (last.isNaN && v.isNaN){
+            // like numpy's unique_all (equal_nan=False), every NaN is a separate value
+            if let last = uniques.last, last == v{
                 counts[counts.count - 1] += 1
             }
             else{
