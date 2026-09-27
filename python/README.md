@@ -17,6 +17,11 @@ python3 -m venv .venv
 | Script | Writes | Covers |
 |---|---|---|
 | `gen_numpy_gaps_coverage.py` | `Tests/MatftTests/NumpyGapsCoverageTest.swift` | orderstats, nan-functions, argmax/argmin, var/std, searching, set operations, pad/diff/meshgrid, fit, interpolation, math, over dtypes and `layoutVariants` |
+| `gen_arithmetic_coverage.py` | `Tests/MatftTests/ArithmeticCoverageTest.swift` | + − × ÷ and comparisons: dtype promotion, integer wrap, scalars on both sides, broadcasting, NaN/±inf/−0.0, empty arrays, complex, over `layoutVariants` of both operands |
+| `gen_reduce_coverage.py` | `Tests/MatftTests/ReduceCoverageTest.swift` | sum, squaresum, sumsqrt, mean, cumsum, ufuncReduce/ufuncAccumulate over axes, keepDims, dtypes, NaN/inf, empty axes and `layoutVariants` |
+| `gen_manipulation_coverage.py` | `Tests/MatftTests/ManipulationCoverageTest.swift` | astype, reshape, transpose/swapaxes/moveaxis, expand_dims/squeeze, broadcast_to, flatten, flip, concatenate/stack, insert, take, sort/argsort, clip, roll, creation (arange, eye, diag, nums, ...), empty arrays and complex |
+| `gen_linalg_complex_coverage.py` | `Tests/MatftTests/LinAlgComplexCoverageTest.swift` | inv, solve, det, eigen, svd, pinv, norms, matmul/inner/outer/cross (sign-free checks for decompositions), and complex arithmetic, abs/angle/conjugate and copies over complex views |
+| `gen_indexing_coverage.py` | `Tests/MatftTests/IndexingCoverageTest.swift` | int/slice/step/newaxis/reverse, fancy and boolean indexing, their setters with scalar/broadcast values and dtype casts, view vs copy, self-aliasing, over `layoutVariants` |
 | `gen_fft_audio_coverage.py` | `Tests/MatftTests/FFTAudioCoverageTest.swift` | rfft/irfft (pocketFFT, vDSP), windows, stft, mel, power_to_db, pad_or_trim, whisper_log_mel |
 | `gen_image_coverage.py` | `Tests/MatftTests/ImageCoverageTest.swift` | parameters of `Matft.image` against OpenCV / PIL, and the VLM preprocess |
 | `gen_audio_fixtures.py` | `Tests/MatftTests/files/audio/*.csv` (+ printed literals) | the reference values of `AudioTest.swift` |
