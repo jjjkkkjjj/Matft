@@ -309,13 +309,8 @@ extension Matft.linalg{
         if ord != 0{
             let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponents: ord)
             let sum = abspow.sum(axis: axis, keepDims: keepDims)
-            switch sum.storedType{
-            case .Float:
-                return Matft.math.power(bases: sum, exponents: 1/ord)
-            case .Double:
-                // 1/ord in Float (e.g. 1/3) would limit a Double result to Float precision
-                return Matft.math.power(bases: sum, exponents: Matft.nums(1 / Double(ord), shape: [1], mftype: .Double))
-            }
+            // 1/ord in Float (e.g. 1/3) would limit a Double result to Float precision
+            return Matft.math.power(bases: sum, exponents: 1 / Double(ord))
         }
         else{
             // remove mfarray == 0, and count up non-zero
@@ -420,7 +415,7 @@ extension Matft.linalg{
         
         let abspow = Matft.math.power(bases: Matft.math.abs(mfarray), exponents: 2)
         
-        var ret = Matft.math.power(bases: abspow.sum(axis: max(axes.row, axes.col), keepDims: false).sum(axis: min(axes.row, axes.col), keepDims: false), exponents: 1/2)
+        var ret = Matft.math.power(bases: abspow.sum(axis: max(axes.row, axes.col), keepDims: false).sum(axis: min(axes.row, axes.col), keepDims: false), exponents: 0.5)
         
         if keepDims{
             var retShape = mfarray.shape

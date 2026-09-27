@@ -92,12 +92,12 @@ internal func math_biop_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarr
     let newstructure = MfStructure(shape: l_mfarray.shape, strides: l_mfarray.strides)
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
-/// Power with a scalar exponent: x^exponent. The result is Float or Double according to the stored type
+/// Power with a scalar exponent: x^exponent. The result is Float or Double according to the stored type, and the exponent is used in that precision
 /// - Parameters:
 ///   - mfarray: The bases mfarray (real)
 ///   - exponent: The exponent
 /// - Returns: The powered mfarray
-internal func pows_by_vForce(_ mfarray: MfArray, _ exponent: Float) -> MfArray{
+internal func pows_by_vForce(_ mfarray: MfArray, _ exponent: Double) -> MfArray{
     let mfarray = check_dense(mfarray)
     let size = mfarray.size
     var n = Int32(size)
@@ -113,7 +113,7 @@ internal func pows_by_vForce(_ mfarray: MfArray, _ exponent: Float) -> MfArray{
                     vDSP_vsq(srcptr, 1, dstptr, 1, vDSP_Length(size))
                 }
                 else{
-                    var exponent = exponent
+                    var exponent = Float(exponent)
                     vvpowsf(dstptr, &exponent, srcptr, &n)
                 }
             }
@@ -128,7 +128,7 @@ internal func pows_by_vForce(_ mfarray: MfArray, _ exponent: Float) -> MfArray{
                     vDSP_vsqD(srcptr, 1, dstptr, 1, vDSP_Length(size))
                 }
                 else{
-                    var exponent = Double(exponent)
+                    var exponent = exponent
                     vvpows(dstptr, &exponent, srcptr, &n)
                 }
             }
@@ -661,12 +661,12 @@ internal func math_biop_by_vForce<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarr
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
-/// Power with a scalar exponent: x^exponent. The result is Float or Double according to the stored type
+/// Power with a scalar exponent: x^exponent. The result is Float or Double according to the stored type, and the exponent is used in that precision
 /// - Parameters:
 ///   - mfarray: The bases mfarray (real)
 ///   - exponent: The exponent
 /// - Returns: The powered mfarray
-internal func pows_by_vForce(_ mfarray: MfArray, _ exponent: Float) -> MfArray{
+internal func pows_by_vForce(_ mfarray: MfArray, _ exponent: Double) -> MfArray{
     let mfarray = check_dense(mfarray)
     let size = mfarray.size
     var n = Int32(size)
@@ -682,7 +682,7 @@ internal func pows_by_vForce(_ mfarray: MfArray, _ exponent: Float) -> MfArray{
                     vDSP_vsq(srcptr, 1, dstptr, 1, size)
                 }
                 else{
-                    var exponent = exponent
+                    var exponent = Float(exponent)
                     vvpowsf(dstptr, &exponent, srcptr, &n)
                 }
             }
@@ -697,7 +697,7 @@ internal func pows_by_vForce(_ mfarray: MfArray, _ exponent: Float) -> MfArray{
                     vDSP_vsqD(srcptr, 1, dstptr, 1, size)
                 }
                 else{
-                    var exponent = Double(exponent)
+                    var exponent = exponent
                     vvpows(dstptr, &exponent, srcptr, &n)
                 }
             }

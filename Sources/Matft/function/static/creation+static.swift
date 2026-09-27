@@ -150,7 +150,7 @@ extension Matft{
        Equivalent to `numpy.eye` (square case, `k = 0`).
        - Parameters:
             - dim: The number of rows and columns.
-            - mftype: (Optional) The type of the result. If `nil`, `.Int` is used.
+            - mftype: (Optional) The type of the result. If `nil`, `.Double` is used like `numpy.eye` (float64).
             - mforder: (Optional) The memory layout, by default `.Row`.
        - Returns: The identity matrix.
     */
@@ -159,7 +159,7 @@ extension Matft{
         for i in 0..<dim{
             eye[i][i] = 1
         }
-        return MfArray(eye, mftype: mftype, mforder: mforder)
+        return MfArray(eye, mftype: mftype ?? .Double, mforder: mforder)
     }
     /**
        Construct a 2-D array with the given values on a diagonal.

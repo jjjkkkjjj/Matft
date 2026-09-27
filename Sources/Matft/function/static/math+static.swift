@@ -738,29 +738,45 @@ extension Matft.math{//use math_vv_by_vecLib
        - Parameters:
             - bases: The scalar base.
             - exponents: The array of exponents.
-       - Returns: A new array with the same shape as `exponents`. For real `exponents` the result is `.Double` if `exponents` is `.Double` and `.Float` otherwise. Complex `exponents` are supported and computed as `exp(exponents * log|bases|)`.
+       - Returns: A new array with the same shape as `exponents`. For real `exponents` the result is `.Double` if `exponents` is `.Double` and `.Float` otherwise (the scalar doesn't change the type, like numpy's Python scalars). Complex `exponents` are supported and computed as `exp(exponents * log|bases|)`.
        - Note: For complex `exponents`, the phase of a negative `bases` is ignored (only `|bases|` is used).
     */
-    public static func power(bases: Float, exponents: MfArray) -> MfArray{
+    public static func power(bases: Double, exponents: MfArray) -> MfArray{
         if exponents.isReal{
-            return Matft.math.power(bases: Matft.nums(bases, shape: [1]), exponents: exponents)
+            // the base keeps Double precision for a Double array
+            let base = exponents.storedType == .Double ? Matft.nums(bases, shape: [1], mftype: .Double) : Matft.nums(Float(bases), shape: [1], mftype: .Float)
+            return Matft.math.power(bases: base, exponents: exponents)
         }
         else{
             // a^b = exp(b*log(a)) = exp{blog|a|+j*b*arg(a)}
-            return Matft.math.exp(exponents*logf(fabsf(bases)))
+            return Matft.math.exp(exponents*Foundation.log(Swift.abs(bases)))
         }
+    }
+    /**
+       Raise a scalar base to the powers given by an array, element-wise.
+
+       Same as `power(bases:exponents:)` with a `Double` base.
+       - Parameters:
+            - bases: The scalar base.
+            - exponents: The array of exponents.
+       - Returns: A new array with the same shape as `exponents`.
+    */
+    @_disfavoredOverload // a literal base is a Double
+    public static func power(bases: Float, exponents: MfArray) -> MfArray{
+        return Matft.math.power(bases: Double(bases), exponents: exponents)
     }
     /**
        Raise each element of an array to a scalar power.
 
        Equivalent to `numpy.power(bases, exponents)` with a scalar exponent. An exponent of 2 is computed with a fast squaring kernel.
+       A `.Double` array is raised to the exponent in Double precision (e.g. `1.0/3`).
 
        - Parameters:
             - bases: The array of bases.
             - exponents: The scalar exponent.
-       - Returns: A new array with the same shape as `bases`. For real `bases` the result is `.Double` for `.Double` input and `.Float` otherwise. Complex `bases` are supported and computed in polar form.
+       - Returns: A new array with the same shape as `bases`. For real `bases` the result is `.Double` for `.Double` input and `.Float` otherwise (the scalar doesn't change the type, like numpy's Python scalars; numpy gives an integer array for integer bases and exponents). Complex `bases` are supported and computed in polar form.
     */
-    public static func power(bases: MfArray, exponents: Float) -> MfArray{
+    public static func power(bases: MfArray, exponents: Double) -> MfArray{
         if bases.isReal{
             // not broadcasting the scalar into an array
             return pows_by_vForce(bases, exponents)
@@ -771,6 +787,19 @@ extension Matft.math{//use math_vv_by_vecLib
             let argj = MfArray(real: nil, imag: b.arg)
             return Matft.math.power(bases: b.abs, exponents: exponents)*Matft.math.exp(argj*exponents)
         }
+    }
+    /**
+       Raise each element of an array to a scalar power.
+
+       Same as `power(bases:exponents:)` with a `Double` exponent.
+       - Parameters:
+            - bases: The array of bases.
+            - exponents: The scalar exponent.
+       - Returns: A new array with the same shape as `bases`.
+    */
+    @_disfavoredOverload // a literal exponent is a Double
+    public static func power(bases: MfArray, exponents: Float) -> MfArray{
+        return Matft.math.power(bases: bases, exponents: Double(exponents))
     }
     /**
        Raise the elements of `bases` to the powers in `exponents`, element-wise with broadcasting.
@@ -1251,14 +1280,27 @@ extension Matft.math {
     }
 
     /// Raise a scalar base to the powers in `exponents` (WASI fallback).
+    public static func power(bases: Double, exponents: MfArray) -> MfArray {
+        let base = exponents.storedType == .Double ? Matft.nums(bases, shape: [1], mftype: .Double) : Matft.nums(Float(bases), shape: [1], mftype: .Float)
+        return Matft.math.power(bases: base, exponents: exponents)
+    }
+
+    /// Raise a scalar base to the powers in `exponents` (WASI fallback).
+    @_disfavoredOverload
     public static func power(bases: Float, exponents: MfArray) -> MfArray {
-        return Matft.math.power(bases: Matft.nums(bases, shape: [1]), exponents: exponents)
+        return Matft.math.power(bases: Double(bases), exponents: exponents)
     }
 
     /// Raise each element of `bases` to a scalar power (WASI fallback; complex input is not supported).
-    public static func power(bases: MfArray, exponents: Float) -> MfArray {
+    public static func power(bases: MfArray, exponents: Double) -> MfArray {
         unsupport_complex(bases)
         return pows_by_vForce(bases, exponents)
+    }
+
+    /// Raise each element of `bases` to a scalar power (WASI fallback; complex input is not supported).
+    @_disfavoredOverload
+    public static func power(bases: MfArray, exponents: Float) -> MfArray {
+        return Matft.math.power(bases: bases, exponents: Double(exponents))
     }
 
     /// Raise `bases` to the powers in `exponents` with broadcasting (WASI fallback; complex input is not supported).
