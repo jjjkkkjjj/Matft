@@ -81,11 +81,11 @@ extension Matft.complex{
         case .Float:
             let ret = z2r_by_vDSP(mfarray, vDSP_zvabs)
             ret.mfdata.mftype = .Float
-            return ret
+            return _fix_abs(mfarray, ret, hypotf)
         case .Double:
             let ret = z2r_by_vDSP(mfarray, vDSP_zvabsD)
             ret.mfdata.mftype = .Double
-            return ret
+            return _fix_abs(mfarray, ret, { (x: Double, y: Double) in Foundation.hypot(x, y) })
         }
     }
     
@@ -109,6 +109,45 @@ extension Matft.complex{
         
         return (Matft.complex.abs(mfarray), Matft.complex.angle(mfarray))
     }
+}
+
+/// vDSP_zvabs computes `sqrt(re^2 + im^2)` directly, so the squares overflow or underflow for large or tiny elements, and `|inf + NaN j|` is NaN.
+/// Recompute such elements by `hypot` like numpy. They are the results that are not finite or too small for the squares to be exact,
+/// so the whole array is copied only when there are such elements (including 0).
+/// - Parameters:
+///   - mfarray: The complex source
+///   - ret: The result of vDSP_zvabs
+///   - hypot: `hypot` of T
+/// - Returns: `ret`, or a row contiguous copy of it with the elements recomputed
+fileprivate func _fix_abs<T: MfStorable & BinaryFloatingPoint>(_ mfarray: MfArray, _ ret: MfArray, _ hypot: (T, T) -> T) -> MfArray{
+    // below this, the square of the larger part may lose precision
+    let threshold = T.leastNormalMagnitude.squareRoot() / T.ulpOfOne
+    func needsFix(_ v: T) -> Bool{
+        return !(v.isFinite && v >= threshold)
+    }
+    // ret is dense (z2r_by_vDSP)
+    let hasBad = ret.withUnsafeMutableStartPointer(datatype: T.self){
+        ptr in
+        (0..<ret.storedSize).contains{ needsFix(ptr[$0]) }
+    }
+    guard hasBad else { return ret }
+    
+    let re = mfarray.real.to_contiguous(mforder: .Row)
+    let im = mfarray.imag!.to_contiguous(mforder: .Row)
+    let ret = ret.to_contiguous(mforder: .Row)
+    re.withUnsafeMutableStartPointer(datatype: T.self){
+        reptr in
+        im.withUnsafeMutableStartPointer(datatype: T.self){
+            imptr in
+            ret.withUnsafeMutableStartPointer(datatype: T.self){
+                dstptr in
+                for i in 0..<ret.size where needsFix(dstptr[i]){
+                    dstptr[i] = hypot(reptr[i], imptr[i])
+                }
+            }
+        }
+    }
+    return ret
 }
 #endif
 
