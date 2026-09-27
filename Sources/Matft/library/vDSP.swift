@@ -210,6 +210,9 @@ internal func wrap_vDSP_compare<T: MfStorable>(_ size: Int, _ srcptr: UnsafePoin
     }
     
     switch op {
+    case .greater where scalar == .infinity, .less where scalar == -.infinity:
+        // nothing is greater than inf (nextUp(inf) is inf itself)
+        dstptr.update(repeating: T.from(-1), count: size)
     case .greater: // x >= nextUp(s)
         thrsc(srcptr, scalar.nextUp, T.from(1), dstptr)
     case .greaterEqual: // x >= s

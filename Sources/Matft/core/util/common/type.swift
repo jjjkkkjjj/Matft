@@ -41,6 +41,92 @@ internal func compare_mfarray<U: MfTypable>(_ mfarray: MfArray, _ op: MfCompareO
     }
 }
 
+/// Recompute the elements of `ret` = op(l, r) where l or r is NaN or ±inf.
+/// vDSP_vmax / vDSP_vmin drop NaN and `l - r` of the same infinities is NaN, whereas numpy propagates NaN and treats inf == inf.
+/// The other elements are kept, so the whole array is visited only when an operand has a non-finite value.
+/// - Parameters:
+///   - l_mfarray: The left operand broadcast to the shape of `ret`
+///   - r_mfarray: The right operand broadcast to the shape of `ret`
+///   - ret: The result of the vDSP operation
+///   - op: The correct result of an element
+/// - Returns: `ret`, or a row contiguous copy of it with the non-finite elements recomputed
+internal func fix_nonfinite_elements<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ ret: MfArray, datatype: T.Type, _ op: (T, T) -> T) -> MfArray{
+    guard _has_nonfinite(l_mfarray, T.self) || _has_nonfinite(r_mfarray, T.self) else{
+        return ret
+    }
+    let l = l_mfarray.to_contiguous(mforder: .Row)
+    let r = r_mfarray.to_contiguous(mforder: .Row)
+    let ret = ret.to_contiguous(mforder: .Row)
+    let size = ret.size
+    l.withUnsafeMutableStartPointer(datatype: T.self){
+        lptr in
+        r.withUnsafeMutableStartPointer(datatype: T.self){
+            rptr in
+            ret.withUnsafeMutableStartPointer(datatype: T.self){
+                dstptr in
+                for i in 0..<size where !lptr[i].isFinite || !rptr[i].isFinite{
+                    dstptr[i] = op(lptr[i], rptr[i])
+                }
+            }
+        }
+    }
+    return ret
+}
+
+/// Recompute the NaN elements of `ret` = op(l, r) by vDSP.
+/// On x86_64, vDSP_vdiv / vDSP_svdiv of Float return NaN for x / ±0 and 1 / ±inf instead of ±inf and ±0.
+/// - Parameters:
+///   - l_mfarray: The left operand broadcast to the shape of `ret`
+///   - r_mfarray: The right operand broadcast to the shape of `ret`
+///   - ret: The result of the vDSP operation
+///   - op: The correct result of an element
+/// - Returns: `ret`, or a row contiguous copy of it with the NaN elements recomputed
+internal func fix_nan_elements<T: MfStorable>(_ l_mfarray: MfArray, _ r_mfarray: MfArray, _ ret: MfArray, datatype: T.Type, _ op: (T, T) -> T) -> MfArray{
+    guard _has_nonfinite(ret, T.self) else{
+        return ret
+    }
+    let l = l_mfarray.to_contiguous(mforder: .Row)
+    let r = r_mfarray.to_contiguous(mforder: .Row)
+    let ret = ret.to_contiguous(mforder: .Row)
+    let size = ret.size
+    l.withUnsafeMutableStartPointer(datatype: T.self){
+        lptr in
+        r.withUnsafeMutableStartPointer(datatype: T.self){
+            rptr in
+            ret.withUnsafeMutableStartPointer(datatype: T.self){
+                dstptr in
+                for i in 0..<size where dstptr[i].isNaN{
+                    dstptr[i] = op(lptr[i], rptr[i])
+                }
+            }
+        }
+    }
+    return ret
+}
+
+/// Whether the stored data (including the elements outside of a view) has NaN or ±inf. The sum of them is not finite
+fileprivate func _has_nonfinite<T: MfStorable>(_ mfarray: MfArray, _ type: T.Type) -> Bool{
+    let size = mfarray.mfdata.storedSize
+    guard size > 0 else { return false }
+    #if canImport(Accelerate)
+    let n = vDSP_Length(size)
+    #else
+    let n = size // the fallbacks in vDSP.swift take Int
+    #endif
+    if T.self == Float.self{
+        let ptr = mfarray.mfdata.data_real.bindMemory(to: Float.self, capacity: size)
+        var sum = Float.zero
+        vDSP_sve(ptr, 1, &sum, n)
+        return !sum.isFinite
+    }
+    else{
+        let ptr = mfarray.mfdata.data_real.bindMemory(to: Double.self, capacity: size)
+        var sum = Double.zero
+        vDSP_sveD(ptr, 1, &sum, n)
+        return !sum.isFinite
+    }
+}
+
 internal func to_Bool(_ mfarray: MfArray, thresholdF: Float = 1e-5, thresholdD: Double = 1e-10) -> MfArray{
     return compare_mfarray(mfarray, .notEqual, 0)
 }

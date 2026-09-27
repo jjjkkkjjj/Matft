@@ -1043,11 +1043,14 @@ fileprivate func _compare_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray, 
         return compare_mfarray(l_mfarray - r_mfarray, op, 0)
     }
     // the difference must not wrap around (e.g. UInt8: 0 - 1 is -1, not 255)
+    // and the same infinities must be equal (inf - inf is NaN)
     switch MfType.storedType(rettype){
     case .Float:
-        return compare_mfarray(biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub), op, 0)
+        let diff = biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsub)
+        return compare_mfarray(fix_nonfinite_elements(l_mfarray, r_mfarray, diff, datatype: Float.self){ $0 == $1 ? 0 : $0 - $1 }, op, 0)
     case .Double:
-        return compare_mfarray(biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD), op, 0)
+        let diff = biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vsubD)
+        return compare_mfarray(fix_nonfinite_elements(l_mfarray, r_mfarray, diff, datatype: Double.self){ $0 == $1 ? 0 : $0 - $1 }, op, 0)
     }
 }
 
