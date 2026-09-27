@@ -65,6 +65,15 @@ internal func vDSP_zvmul_(_ __A: UnsafePointer<DSPSplitComplex>, _ __IA: vDSP_St
 internal func vDSP_zvmulD_(_ __A: UnsafePointer<DSPDoubleSplitComplex>, _ __IA: vDSP_Stride, _ __B: UnsafePointer<DSPDoubleSplitComplex>, _ __IB: vDSP_Stride, _ __C: UnsafePointer<DSPDoubleSplitComplex>, _ __IC: vDSP_Stride, _ __N: vDSP_Length) -> Void{
     vDSP_zvmulD(__A, __IA, __B, __IB, __C, __IC, __N, Int32(1))
 }
+// `wrap_vDSP_biopzvv` passes the right operand first (vDSP_zvdiv computes B / A), but vDSP_zvsub computes A - B
+@inline(__always)
+internal func vDSP_zvsub_(_ __B: UnsafePointer<DSPSplitComplex>, _ __IB: vDSP_Stride, _ __A: UnsafePointer<DSPSplitComplex>, _ __IA: vDSP_Stride, _ __C: UnsafePointer<DSPSplitComplex>, _ __IC: vDSP_Stride, _ __N: vDSP_Length) -> Void{
+    vDSP_zvsub(__A, __IA, __B, __IB, __C, __IC, __N)
+}
+@inline(__always)
+internal func vDSP_zvsubD_(_ __B: UnsafePointer<DSPDoubleSplitComplex>, _ __IB: vDSP_Stride, _ __A: UnsafePointer<DSPDoubleSplitComplex>, _ __IA: vDSP_Stride, _ __C: UnsafePointer<DSPDoubleSplitComplex>, _ __IC: vDSP_Stride, _ __N: vDSP_Length) -> Void{
+    vDSP_zvsubD(__A, __IA, __B, __IB, __C, __IC, __N)
+}
 
 /// Wrapper of vDSP conversion function
 /// - Parameters:

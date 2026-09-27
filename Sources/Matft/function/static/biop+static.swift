@@ -153,9 +153,9 @@ extension Matft{
             #if canImport(Accelerate)
             switch MfType.storedType(rettype){
             case .Float:
-                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvsub)
+                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvsub_)
             case .Double:
-                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvsubD)
+                return biopzvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_zvsubD_)
             }
             #else
             fatalError("Complex array operations are not supported on this platform")
@@ -912,8 +912,13 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
     print(rmfarray.data)
     print(lmfarray)
     print(rmfarray)*/
-    
-    
+
+    // an empty operand: BLAS rejects zero leading dimensions. The sum over an empty inner dimension is 0 like Numpy
+    if lmfarray.size == 0 || rmfarray.size == 0{
+        let retshape = Array(lmfarray.shape.dropLast()) + [rmfarray.shape[rmfarray.ndim - 1]]
+        return Matft.nums(0, shape: retshape, mftype: lmfarray.mftype)
+    }
+
     //run
     switch MfType.storedType(lmfarray.mftype) {
     case .Float:
