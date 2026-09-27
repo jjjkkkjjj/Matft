@@ -215,12 +215,12 @@ extension Matft.linalg{
        Equivalent to `numpy.linalg.pinv`. It is computed from the SVD, and singular values not larger than `rcond * max(s)` are treated as zero.
 
        - Parameters:
-            - mfarray: The matrix of shape `(M, N)`.
+            - mfarray: The matrix of shape `(..., M, N)`.
             - rcond: The cutoff ratio for small singular values. Default is `1e-15`.
-       - Returns: The pseudo-inverse of shape `(N, M)`. The result is `.Double` for `.Double` input and `.Float` otherwise.
+       - Returns: The pseudo-inverse of shape `(..., N, M)`. The result is `.Double` for `.Double` input and `.Float` otherwise.
        - Throws: `MfError.LinAlgError.factorizationError` if LAPACK reports an illegal argument, or `MfError.LinAlgError.notConverge` if the decomposition does not converge.
        - Precondition: `mfarray` must be at least 2-d. Complex arrays are not supported.
-       - Note: The cutoff and the reciprocal singular values are computed over all singular values at once, so only a single 2-d matrix is handled correctly; stacked matrices are not supported like in Numpy.
+       - Note: Stacked matrices are inverted separately, and the cutoff uses the largest singular value of each matrix like in Numpy.
     */
     public static func pinv(_ mfarray: MfArray, rcond: Float = 1e-15) throws -> MfArray{
         precondition(mfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
@@ -236,11 +236,19 @@ extension Matft.linalg{
         let (v, s, rt) = try Matft.linalg.svd(mfarray, full_matrices: false)
         
         func _pinv<T: MfStorable>(_ type: T.Type) -> MfArray{
-            let smax = s.max().scalar(T.self)!
-            let condition = T.from(rcond) * smax
-            let spinv_array = s.toFlattenArray(datatype: T.self){ $0 <= condition ? T.zero : 1/$0 }
-            let spinv = MfArray(spinv_array)
-            return rt.swapaxes(axis1: -1, axis2: -2) *& (spinv.expand_dims(axis: 1) * v.swapaxes(axis1: -1, axis2: -2))
+            // like numpy, the cutoff is rcond * the largest singular value of each matrix
+            let s = s.to_contiguous(mforder: .Row)
+            let k = s.shape[s.ndim - 1]
+            var values = s.toFlattenArray(datatype: T.self){ $0 }
+            for start in stride(from: 0, to: values.count, by: Swift.max(k, 1)){
+                let lane = start..<start + k
+                let condition = T.from(rcond) * (values[lane].max() ?? T.zero)
+                for i in lane{
+                    values[i] = values[i] > condition ? 1/values[i] : T.zero
+                }
+            }
+            let spinv = MfArray(values, mftype: s.mftype, shape: s.shape)
+            return rt.swapaxes(axis1: -1, axis2: -2) *& (spinv.expand_dims(axis: spinv.ndim) * v.swapaxes(axis1: -1, axis2: -2))
         }
         switch mfarray.storedType {
         case .Float:

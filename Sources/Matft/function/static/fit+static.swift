@@ -185,7 +185,8 @@ extension Matft.stats{
             if a.ndim == 1{
                 return a.expand_dims(axis: 0)
             }
-            return rowvar ? a : a.T
+            // like numpy, a single row is one variable even when rowvar is false
+            return rowvar || a.shape[0] == 1 ? a : a.T
         }
         var X = variables(m)
         if let y = y{
@@ -193,7 +194,8 @@ extension Matft.stats{
         }
 
         let ddof = ddof ?? (bias ? 0 : 1)
-        let fact = Double(X.shape[1] - ddof)
+        // like numpy, a non-positive normalization becomes 0 (the result is inf / nan)
+        let fact = Double(Swift.max(X.shape[1] - ddof, 0))
         let centered = X - Matft.stats.mean(X, axis: 1, keepDims: true)
         let c = (centered *& centered.T) / fact
         return (c.size == 1 ? c.reshape([1]) : c).astype(rettype)

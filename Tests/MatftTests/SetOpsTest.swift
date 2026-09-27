@@ -28,13 +28,14 @@ final class SetOpsTests: XCTestCase {
         // values[inverse_indices] reconstructs the input
         XCTAssertEqual(inverse.values[inverse.inverse_indices.flatten()].reshape([2, 3]), u)
 
-        // float and NaN (NaNs are collapsed to one at the end)
+        // float and NaN (like numpy's unique_counts, every NaN is a separate value at the end)
         XCTAssertEqual(Matft.unique(MfArray([0.5, -1.25, 0.5, 3.0], mftype: .Double)), MfArray([-1.25, 0.5, 3.0], mftype: .Double))
         let n = Matft.unique_counts(MfArray([2.0, nan, 1.0, nan, 2.0], mftype: .Double))
-        XCTAssertEqual(n.values.shape, [3])
+        XCTAssertEqual(n.values.shape, [4])
         XCTAssertEqual(n.values[0~<2], MfArray([1.0, 2.0], mftype: .Double))
         XCTAssertTrue(n.values.item(index: 2, type: Double.self).isNaN)
-        XCTAssertEqual(n.counts, MfArray([1, 2, 2]))
+        XCTAssertTrue(n.values.item(index: 3, type: Double.self).isNaN)
+        XCTAssertEqual(n.counts, MfArray([1, 2, 1, 1]))
     }
 
     func test_unique_large() {
