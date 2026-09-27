@@ -18,6 +18,7 @@ extension Matft{
 
        The result is always a new array (a copy), even when `mftype` equals the current type.
        Converting to `.Bool` maps non-zero values to `true`. A complex array stays complex.
+       Converting a real array to an integer type truncates toward zero like numpy, and out of range values of the 8/16 bit integer types wrap around (e.g. 300 -> 44 for `.UInt8`).
        Equivalent to `numpy.ndarray.astype`.
 
        ```swift
@@ -785,3 +786,4 @@ extension Matft.mfdata{
     }
 }
 */
+
