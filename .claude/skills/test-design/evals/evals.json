@@ -1,0 +1,60 @@
+{
+  "skill_name": "test-design",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Matft.stats.ptp を追加したい．np.ptp と同じ挙動で TDD で実装して",
+      "expected_output": "Matft.stats.ptp implemented test-first with numpy-generated expected values covering axes, dtypes, NaN, empty, layouts",
+      "files": [],
+      "assertions": [
+        "Expected values come from numpy (a python generator in the patch, or numpy expressions noted next to the literals)",
+        "Tests loop over layoutVariants (non-contiguous / view inputs)",
+        "Output dtype is asserted (checkType: true or an mftype assertion)",
+        "At least three dtypes are tested, including an integer type",
+        "NaN or inf inputs are tested",
+        "Empty (zero-length) or size-1 inputs are tested",
+        "The report contains a viewpoint-by-viewpoint test plan / coverage table",
+        "The report states Red (failing before the change) and Green results",
+        "Axis cases include nil/all-axes and a negative axis",
+        "A performance test is added (reduction = hot path) or its omission is justified"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Matft.stats.argmax / argmin のテストって十分？足りない観点があれば追加して，バグが見つかったら直して",
+      "expected_output": "Coverage review of argmax/argmin with a viewpoint table and added numpy-backed tests",
+      "files": [],
+      "assertions": [
+        "Expected values come from numpy (a python generator in the patch, or numpy expressions noted next to the literals)",
+        "Tests loop over layoutVariants (non-contiguous / view inputs)",
+        "Output dtype is asserted (checkType: true or an mftype assertion)",
+        "At least three dtypes are tested, including an integer type",
+        "NaN or inf inputs are tested",
+        "Empty (zero-length) or size-1 inputs are tested",
+        "The report contains a viewpoint-by-viewpoint test plan / coverage table",
+        "The report states Red (failing before the change) and Green results",
+        "NaN propagation of argmax/argmin (numpy returns the first NaN index) is tested",
+        "Ties (first occurrence) are tested"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "np.hypot 相当の Matft.math.hypot を追加して．テストもちゃんと書いて",
+      "expected_output": "Matft.math.hypot implemented TDD with broadcasting, dtype promotion, special values, layouts",
+      "files": [],
+      "assertions": [
+        "Expected values come from numpy (a python generator in the patch, or numpy expressions noted next to the literals)",
+        "Tests loop over layoutVariants (non-contiguous / view inputs)",
+        "Output dtype is asserted (checkType: true or an mftype assertion)",
+        "At least three dtypes are tested, including an integer type",
+        "NaN or inf inputs are tested",
+        "Empty (zero-length) or size-1 inputs are tested",
+        "The report contains a viewpoint-by-viewpoint test plan / coverage table",
+        "The report states Red (failing before the change) and Green results",
+        "Broadcasting or array-scalar operands are tested",
+        "hypot with inf and NaN (numpy: inf) is tested",
+        "A performance test is added to PerformanceTests and benchmark.py CASES, or its omission is justified"
+      ]
+    }
+  ]
+}
