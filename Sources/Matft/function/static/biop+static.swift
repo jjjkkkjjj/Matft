@@ -373,7 +373,7 @@ extension Matft{
         if isReal{
             switch MfType.storedType(rettype){
             case .Float:
-                let ret = biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv)
+                let ret = biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdiv_exact)
                 ret.mfdata.mftype = .Float
                 #if arch(x86_64)
                 return fix_nan_elements(l_mfarray, r_mfarray, ret, datatype: Float.self){ $0 / $1 }
@@ -381,7 +381,7 @@ extension Matft{
                 return ret
                 #endif
             case .Double:
-                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD)
+                return biopvv_by_vDSP(l_mfarray, r_mfarray, vDSP_func: vDSP_vdivD_exact)
             }
         }
         else{
@@ -420,17 +420,18 @@ extension Matft{
         if l_mfarray.isReal{
             switch MfType.storedType(retmftype) {
             case .Float:
-                let ret = biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsdiv)
+                let ret = biopvs_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsdiv_exact)
                 ret.mfdata.mftype = .Float
                 return ret
             case .Double:
-                return biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsdivD)
+                return biopvs_by_vDSP(l_mfarray, Double.from(r_scalar), vDSP_vsdivD_exact)
             }
         }
         else{
             #if canImport(Accelerate)
             // Divide the real and imaginary parts separately like numpy.
             // vDSP_zrvdiv is not exact on x86_64 (e.g. 1 / 2 -> 0.49999997)
+            // numpy's complex division multiplies by the reciprocal of the divisor (6+0j / 10 -> 0.6000000000000001), and so does vDSP_vsdiv
             switch MfType.storedType(retmftype) {
             case .Float:
                 return biopzvs_separately_by_vDSP(l_mfarray, Float.from(r_scalar), vDSP_vsdiv)
@@ -466,7 +467,7 @@ extension Matft{
             switch MfType.storedType(retmftype) {
             case .Float:
                 let l_scalar = Float.from(l_scalar)
-                let ret = biopsv_by_vDSP(l_scalar, r_mfarray, vDSP_svdiv)
+                let ret = biopsv_by_vDSP(l_scalar, r_mfarray, vDSP_svdiv_exact)
                 ret.mfdata.mftype = .Float
                 #if arch(x86_64)
                 return fix_nan_elements(r_mfarray, r_mfarray, ret, datatype: Float.self){ l_scalar / $1 }
@@ -499,7 +500,7 @@ extension Matft{
        - Parameters:
            - l_mfarray: The left array of shape `(..., n, k)`.
            - r_mfarray: The right array of shape `(..., k, m)`.
-       - Returns: A new array of shape `(..., n, m)`.
+       - Returns: A new array of shape `(..., n, m)` with the promoted type (`MfType.result_type`). Integer results wrap around like numpy (8/16 bit integers), a `.Bool` product is logical, and complex arrays are supported.
     */
     public static func matmul(_ l_mfarray: MfArray, _ r_mfarray: MfArray) -> MfArray{
         return _matmul_operation(l_mfarray, r_mfarray)
@@ -896,12 +897,16 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
     precondition(lmfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
     precondition(rmfarray.ndim > 1, "cannot get an inverse matrix from 1-d mfarray")
     
+    if lmfarray.isComplex || rmfarray.isComplex{
+        return _complex_matmul_operation(lmfarray, rmfarray)
+    }
+    
     //preprocessing
     //type
     var lmfarray = lmfarray
     var rmfarray = rmfarray
     if lmfarray.mftype != rmfarray.mftype{
-        let returnedType = MfType.priority(lmfarray.mftype, rmfarray.mftype)
+        let returnedType = MfType.result_type(lmfarray.mftype, rmfarray.mftype)
         if returnedType != lmfarray.mftype{
             lmfarray = astype_or_view(lmfarray, returnedType)
         }
@@ -935,12 +940,29 @@ fileprivate func _matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> 
     //run
     switch MfType.storedType(lmfarray.mftype) {
     case .Float:
-        return matmul_by_cblas(&lmfarray, &rmfarray, cblas_func: cblas_sgemm)
+        // integers wrap around and Bool is logical (the sum of products is `or` of `and`) like numpy
+        return wrap_integer_overflow(matmul_by_cblas(&lmfarray, &rmfarray, cblas_func: cblas_sgemm))
         
     case .Double:
         return matmul_by_cblas(&lmfarray, &rmfarray, cblas_func: cblas_dgemm)
     }
     
+}
+
+/// The matrix product of complex mfarrays by the real products: (a + bi)(c + di) = (ac - bd) + (ad + bc)i
+fileprivate func _complex_matmul_operation(_ lmfarray: MfArray, _ rmfarray: MfArray) -> MfArray{
+    let (a, b, c, d) = (lmfarray.real, lmfarray.imag, rmfarray.real, rmfarray.imag)
+    let ac = _matmul_operation(a, c)
+    switch (b, d) {
+    case let (b?, d?):
+        return MfArray(real: ac - _matmul_operation(b, d), imag: _matmul_operation(a, d) + _matmul_operation(b, c))
+    case let (b?, nil):
+        return MfArray(real: ac, imag: _matmul_operation(b, c))
+    case let (nil, d?):
+        return MfArray(real: ac, imag: _matmul_operation(a, d))
+    case (nil, nil):
+        return ac
+    }
 }
 
 //Note that this function is slighly different from biobiop_broadcast_to for precondition and checked axis
@@ -1075,13 +1097,22 @@ fileprivate func _equalAll_operation(_ l_mfarray: MfArray, _ r_mfarray: MfArray,
     if l_mfarray.shape != r_mfarray.shape{
         return false
     }
-    let diff = l_mfarray - r_mfarray
-    
-    // floating point: every |l - r| must be within the threshold. NaN is never equal
+    var diff = l_mfarray - r_mfarray
+
+    // floating point: every |l - r| must be within the threshold. NaN is never equal,
+    // but the same infinities are (inf - inf is NaN) like np.array_equal
+    func sameInfinitiesAreZero<T: MfStorable>(_ datatype: T.Type) -> MfArray{
+        guard diff.isReal else { return diff }
+        let l = l_mfarray.mftype == diff.mftype ? l_mfarray : l_mfarray.astype(diff.mftype)
+        let r = r_mfarray.mftype == diff.mftype ? r_mfarray : r_mfarray.astype(diff.mftype)
+        return fix_nonfinite_elements(l, r, diff, datatype: T.self){ $0 == $1 ? 0 : $0 - $1 }
+    }
     switch diff.mftype {
     case .Float, .ComplexFloat:
+        diff = sameInfinitiesAreZero(Float.self)
         return maxmg_by_vDSP(diff) <= Double(thresholdF)
     case .Double, .ComplexDouble:
+        diff = sameInfinitiesAreZero(Double.self)
         return maxmg_by_vDSP(diff) <= thresholdD
     default:
         break

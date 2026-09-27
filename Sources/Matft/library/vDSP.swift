@@ -669,6 +669,57 @@ internal func biopzvs_separately_by_vDSP<T: MfStorable>(_ l_mfarray: MfArray, _ 
     return MfArray(mfdata: newdata, mfstructure: newstructure)
 }
 
+/// `c = a / b` element-wise by IEEE division, which is correctly rounded like numpy.
+/// vDSP's divisions aren't: vDSP_vdiv, vDSP_vsdiv and vDSP_svdiv of Float (e.g. 255 / 255 -> 0.99999994), and vDSP_vdivD and vDSP_vsdivD of Double
+/// (e.g. 6.0 / 10 -> 0.6000000000000001) are off by 1 ulp. A stride of 0 repeats the first element (a scalar).
+/// The loop is vectorized by the compiler, and it is as fast as vDSP in release builds
+@inline(__always)
+fileprivate func _ieee_div<T: FloatingPoint>(_ a: UnsafePointer<T>, _ ia: Int, _ b: UnsafePointer<T>, _ ib: Int, _ c: UnsafeMutablePointer<T>, _ ic: Int, _ n: Int){
+    if ic == 1 && ia == 1 && ib == 1{
+        for i in 0..<n{
+            c[i] = a[i] / b[i]
+        }
+    }
+    else if ic == 1 && ia == 1 && ib == 0{
+        let s = b.pointee
+        for i in 0..<n{
+            c[i] = a[i] / s
+        }
+    }
+    else if ic == 1 && ia == 0 && ib == 1{
+        let s = a.pointee
+        for i in 0..<n{
+            c[i] = s / b[i]
+        }
+    }
+    else{
+        for i in 0..<n{
+            c[i * ic] = a[i * ia] / b[i * ib]
+        }
+    }
+}
+
+/// vDSP_vdiv (C = A / B) with correct rounding. See `_ieee_div`
+internal func vDSP_vdiv_exact(_ B: UnsafePointer<Float>, _ IB: vDSP_Stride, _ A: UnsafePointer<Float>, _ IA: vDSP_Stride, _ C: UnsafeMutablePointer<Float>, _ IC: vDSP_Stride, _ N: vDSP_Length){
+    _ieee_div(A, IA, B, IB, C, IC, Int(N))
+}
+/// vDSP_vdivD (C = A / B) with correct rounding. See `_ieee_div`
+internal func vDSP_vdivD_exact(_ B: UnsafePointer<Double>, _ IB: vDSP_Stride, _ A: UnsafePointer<Double>, _ IA: vDSP_Stride, _ C: UnsafeMutablePointer<Double>, _ IC: vDSP_Stride, _ N: vDSP_Length){
+    _ieee_div(A, IA, B, IB, C, IC, Int(N))
+}
+/// vDSP_vsdiv (C = A / scalar) with correct rounding. See `_ieee_div`
+internal func vDSP_vsdiv_exact(_ A: UnsafePointer<Float>, _ IA: vDSP_Stride, _ B: UnsafePointer<Float>, _ C: UnsafeMutablePointer<Float>, _ IC: vDSP_Stride, _ N: vDSP_Length){
+    _ieee_div(A, IA, B, 0, C, IC, Int(N))
+}
+/// vDSP_vsdivD (C = A / scalar) with correct rounding. See `_ieee_div`
+internal func vDSP_vsdivD_exact(_ A: UnsafePointer<Double>, _ IA: vDSP_Stride, _ B: UnsafePointer<Double>, _ C: UnsafeMutablePointer<Double>, _ IC: vDSP_Stride, _ N: vDSP_Length){
+    _ieee_div(A, IA, B, 0, C, IC, Int(N))
+}
+/// vDSP_svdiv (C = scalar / B) with correct rounding. See `_ieee_div`
+internal func vDSP_svdiv_exact(_ A: UnsafePointer<Float>, _ B: UnsafePointer<Float>, _ IB: vDSP_Stride, _ C: UnsafeMutablePointer<Float>, _ IC: vDSP_Stride, _ N: vDSP_Length){
+    _ieee_div(A, 0, B, IB, C, IC, Int(N))
+}
+
 /// ZBinary operation by vDSP
 /// - Parameters:
 ///   - l_mfarray: The left mfarray
@@ -1790,6 +1841,13 @@ internal func vDSP_vsdivD(_ src: UnsafePointer<Double>, _ srcStride: Int, _ scal
         dst[i * dstStride] = src[i * srcStride] / s
     }
 }
+
+// the fallbacks already divide with correct rounding
+internal let vDSP_vdiv_exact = vDSP_vdiv
+internal let vDSP_vdivD_exact = vDSP_vdivD
+internal let vDSP_vsdiv_exact = vDSP_vsdiv
+internal let vDSP_vsdivD_exact = vDSP_vsdivD
+internal let vDSP_svdiv_exact = vDSP_svdiv
 
 @inline(__always)
 internal func vDSP_svdiv(_ scalar: UnsafePointer<Float>, _ src: UnsafePointer<Float>, _ srcStride: Int, _ dst: UnsafeMutablePointer<Float>, _ dstStride: Int, _ count: Int) {

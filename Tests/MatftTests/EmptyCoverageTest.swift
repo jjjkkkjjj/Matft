@@ -424,10 +424,10 @@ final class EmptyCoverageTests: XCTestCase {
         check([3, 0], .Double, MfArray([] as [Double], mftype: .Double, shape: [3, 0]), rtol: 1e-10, atol: 1e-10, "Matft.math.floor(x)"){ x in Matft.math.floor(x) }
         check([3, 0], .Double, MfArray([] as [Double], mftype: .Double, shape: [3, 0]), rtol: 1e-10, atol: 1e-10, "Matft.math.trunc(x)"){ x in Matft.math.trunc(x) }
         check([3, 0], .Double, MfArray([] as [Double], mftype: .Double, shape: [3, 0]), rtol: 1e-10, atol: 1e-10, "Matft.math.nearest(x)"){ x in Matft.math.nearest(x) }
-        check([3, 0], .Double, MfArray([] as [Double], mftype: .Double, shape: [3, 0]), rtol: 1e-10, atol: 1e-10, "Matft.math.abs(x)"){ x in Matft.math.abs(x) }
         check([3, 0], .Double, MfArray([] as [Double], mftype: .Double, shape: [3, 0]), rtol: 1e-10, atol: 1e-10, "Matft.math.reciprocal(x)"){ x in Matft.math.reciprocal(x) }
         check([3, 0], .Double, MfArray([] as [Double], mftype: .Double, shape: [3, 0]), rtol: 1e-10, atol: 1e-10, "Matft.math.square(x)"){ x in Matft.math.square(x) }
         check([3, 0], .Double, MfArray([] as [Double], mftype: .Double, shape: [3, 0]), rtol: 1e-10, atol: 1e-10, "Matft.math.sign(x)"){ x in Matft.math.sign(x) }
+        check([3, 0], .Double, MfArray([] as [Double], mftype: .Double, shape: [3, 0]), rtol: 1e-10, atol: 1e-10, "Matft.math.abs(x)"){ x in Matft.math.abs(x) }
         check([3, 0], .Double, MfArray([] as [Bool], mftype: .Bool, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.isnan(x)"){ x in Matft.math.isnan(x) }
         check([3, 0], .Double, MfArray([] as [Bool], mftype: .Bool, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.isinf(x)"){ x in Matft.math.isinf(x) }
         check([3, 0], .Double, MfArray([] as [Bool], mftype: .Bool, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.isfinite(x)"){ x in Matft.math.isfinite(x) }
@@ -457,10 +457,10 @@ final class EmptyCoverageTests: XCTestCase {
         check([3, 0], .Float, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.floor(x)"){ x in Matft.math.floor(x) }
         check([3, 0], .Float, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.trunc(x)"){ x in Matft.math.trunc(x) }
         check([3, 0], .Float, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.nearest(x)"){ x in Matft.math.nearest(x) }
-        check([3, 0], .Float, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.abs(x)"){ x in Matft.math.abs(x) }
         check([3, 0], .Float, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.reciprocal(x)"){ x in Matft.math.reciprocal(x) }
         check([3, 0], .Float, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.square(x)"){ x in Matft.math.square(x) }
         check([3, 0], .Float, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.sign(x)"){ x in Matft.math.sign(x) }
+        check([3, 0], .Float, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.abs(x)"){ x in Matft.math.abs(x) }
         check([3, 0], .Float, MfArray([] as [Bool], mftype: .Bool, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.isnan(x)"){ x in Matft.math.isnan(x) }
         check([3, 0], .Float, MfArray([] as [Bool], mftype: .Bool, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.isinf(x)"){ x in Matft.math.isinf(x) }
         check([3, 0], .Float, MfArray([] as [Bool], mftype: .Bool, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.isfinite(x)"){ x in Matft.math.isfinite(x) }
@@ -471,7 +471,7 @@ final class EmptyCoverageTests: XCTestCase {
         check([3, 0], .Int, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.sin(x)"){ x in Matft.math.sin(x) }
         check([3, 0], .Int, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.sqrt(x)"){ x in Matft.math.sqrt(x) }
         check([3, 0], .Int, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.exp(x)"){ x in Matft.math.exp(x) }
-        check([3, 0], .Int, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.abs(x)"){ x in Matft.math.abs(x) }
+        check([3, 0], .Int, MfArray([] as [Int], mftype: .Int, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.abs(x)"){ x in Matft.math.abs(x) }
         check([3, 0], .Int, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.floor(x)"){ x in Matft.math.floor(x) }
         check([3, 0], .Int, MfArray([] as [Int], mftype: .Int, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.square(x)"){ x in Matft.math.square(x) }
         check([3, 0], .Int, MfArray([] as [Int], mftype: .Int, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.sign(x)"){ x in Matft.math.sign(x) }
@@ -480,7 +480,7 @@ final class EmptyCoverageTests: XCTestCase {
         check([3, 0], .UInt8, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.sin(x)"){ x in Matft.math.sin(x) }
         check([3, 0], .UInt8, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.sqrt(x)"){ x in Matft.math.sqrt(x) }
         check([3, 0], .UInt8, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.exp(x)"){ x in Matft.math.exp(x) }
-        check([3, 0], .UInt8, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.abs(x)"){ x in Matft.math.abs(x) }
+        check([3, 0], .UInt8, MfArray([] as [Int], mftype: .UInt8, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.abs(x)"){ x in Matft.math.abs(x) }
         check([3, 0], .UInt8, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.floor(x)"){ x in Matft.math.floor(x) }
         check([3, 0], .UInt8, MfArray([] as [Int], mftype: .UInt8, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.square(x)"){ x in Matft.math.square(x) }
         check([3, 0], .UInt8, MfArray([] as [Int], mftype: .UInt8, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.sign(x)"){ x in Matft.math.sign(x) }
@@ -489,7 +489,7 @@ final class EmptyCoverageTests: XCTestCase {
         check([3, 0], .Bool, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.sin(x)"){ x in Matft.math.sin(x) }
         check([3, 0], .Bool, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.sqrt(x)"){ x in Matft.math.sqrt(x) }
         check([3, 0], .Bool, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.exp(x)"){ x in Matft.math.exp(x) }
-        check([3, 0], .Bool, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.abs(x)"){ x in Matft.math.abs(x) }
+        check([3, 0], .Bool, MfArray([] as [Bool], mftype: .Bool, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.abs(x)"){ x in Matft.math.abs(x) }
         check([3, 0], .Bool, MfArray([] as [Double], mftype: .Float, shape: [3, 0]), rtol: 1e-05, atol: 1e-05, "Matft.math.floor(x)"){ x in Matft.math.floor(x) }
         check([3, 0], .Bool, MfArray([] as [Bool], mftype: .Bool, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.square(x)"){ x in Matft.math.square(x) }
         check([3, 0], .Bool, MfArray([] as [Bool], mftype: .Bool, shape: [3, 0]), rtol: 0, atol: 0, "Matft.math.sign(x)"){ x in Matft.math.sign(x) }

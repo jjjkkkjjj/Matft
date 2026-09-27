@@ -51,12 +51,14 @@ final class RedundantCopyTests: XCTestCase {
         XCTAssertEqual(Matft.math.power(bases: MfArray([0, 4, 9] as [Float]), exponents: 0.5), MfArray([0, 2, 3] as [Float]))
         XCTAssertEqual(Matft.math.power(bases: MfArray([1, 2, 4] as [Float]), exponents: -1), MfArray([1, 0.5, 0.25] as [Float]))
 
+        // an integer array with an Int exponent keeps the integer type like numpy
         let i = MfArray([[1, 2], [3, 4]])
         let p = Matft.math.power(bases: i, exponents: 2)
-        XCTAssertEqual(p.mftype, .Float)
-        XCTAssertEqual(p, MfArray([[1, 4], [9, 16]] as [[Float]]))
-        XCTAssertEqual(Matft.math.power(bases: i.T, exponents: 2), MfArray([[1, 9], [4, 16]] as [[Float]]))
-        XCTAssertEqual(Matft.math.power(bases: i[1~<2], exponents: 2), MfArray([[9, 16]] as [[Float]]))
+        XCTAssertEqual(p.mftype, .Int)
+        XCTAssertEqual(p, MfArray([[1, 4], [9, 16]]))
+        XCTAssertEqual(Matft.math.power(bases: i.T, exponents: 2), MfArray([[1, 9], [4, 16]]))
+        XCTAssertEqual(Matft.math.power(bases: i[1~<2], exponents: 2), MfArray([[9, 16]]))
+        XCTAssertEqual(Matft.math.power(bases: i, exponents: 2.0).mftype, .Float)
 
         let d = MfArray([1.5, -2] as [Double])
         let pd = Matft.math.power(bases: d, exponents: 2)
@@ -111,7 +113,9 @@ final class RedundantCopyTests: XCTestCase {
         // NaN is never equal
         XCTAssertFalse(MfArray([1, Float.nan] as [Float]) == MfArray([1, Float.nan] as [Float]))
         XCTAssertFalse(MfArray([1, Double.nan] as [Double]) == MfArray([1, Double.nan] as [Double]))
-        XCTAssertFalse(MfArray([Float.infinity] as [Float]) == MfArray([Float.infinity] as [Float]))
+        // the same infinities are equal like np.array_equal
+        XCTAssertTrue(MfArray([Float.infinity] as [Float]) == MfArray([Float.infinity] as [Float]))
+        XCTAssertFalse(MfArray([Float.infinity] as [Float]) == MfArray([-Float.infinity] as [Float]))
         #if canImport(Accelerate)
         let z = MfArray(real: f, imag: f)
         XCTAssertTrue(z == MfArray(real: f, imag: f + Float(1e-6)))

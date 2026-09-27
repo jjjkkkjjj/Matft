@@ -1412,9 +1412,9 @@ final class ArithmeticCoverageTests: XCTestCase {
         for (name, x) in layoutVariants(PI){
             XCTAssertClose(Matft.math.power(bases: x, exponents: 1.0/3), MfArray([1.0, 1.2599210739135742, 1.4422495365142822, 1.587401032447815, 2.1544346809387207, 1.912931203842163] as [Double], mftype: .Float, shape: [2, 3]), rtol: 1e-05, atol: 1e-05, checkType: true, "Matft.math.power(bases: x, exponents: 1.0/3) \(name)")
             XCTAssertClose(Matft.math.power(bases: x, exponents: -0.5), MfArray([1.0, 0.7071067690849304, 0.5773502588272095, 0.5, 0.3162277638912201, 0.37796446681022644] as [Double], mftype: .Float, shape: [2, 3]), rtol: 1e-05, atol: 1e-05, checkType: true, "Matft.math.power(bases: x, exponents: -0.5) \(name)")
-            XCTAssertClose(Matft.math.power(bases: x, exponents: 2), MfArray([1.0, 4.0, 9.0, 16.0, 100.0, 49.0] as [Double], mftype: .Float, shape: [2, 3]), rtol: 1e-05, atol: 1e-05, checkType: true, "Matft.math.power(bases: x, exponents: 2) \(name)")
-            XCTAssertClose(Matft.math.power(bases: x, exponents: 3), MfArray([1.0, 8.0, 27.0, 64.0, 1000.0, 343.0] as [Double], mftype: .Float, shape: [2, 3]), rtol: 1e-05, atol: 1e-05, checkType: true, "Matft.math.power(bases: x, exponents: 3) \(name)")
-            XCTAssertClose(Matft.math.power(bases: x, exponents: 0), MfArray([1.0, 1.0, 1.0, 1.0, 1.0, 1.0] as [Double], mftype: .Float, shape: [2, 3]), rtol: 1e-05, atol: 1e-05, checkType: true, "Matft.math.power(bases: x, exponents: 0) \(name)")
+            XCTAssertClose(Matft.math.power(bases: x, exponents: 2), MfArray([1, 4, 9, 16, 100, 49] as [Int], mftype: .Int, shape: [2, 3]), rtol: 1e-05, atol: 1e-10, checkType: true, "Matft.math.power(bases: x, exponents: 2) \(name)")
+            XCTAssertClose(Matft.math.power(bases: x, exponents: 3), MfArray([1, 8, 27, 64, 1000, 343] as [Int], mftype: .Int, shape: [2, 3]), rtol: 1e-05, atol: 1e-10, checkType: true, "Matft.math.power(bases: x, exponents: 3) \(name)")
+            XCTAssertClose(Matft.math.power(bases: x, exponents: 0), MfArray([1, 1, 1, 1, 1, 1] as [Int], mftype: .Int, shape: [2, 3]), rtol: 1e-05, atol: 1e-10, checkType: true, "Matft.math.power(bases: x, exponents: 0) \(name)")
             XCTAssertClose(Matft.math.power(bases: x, exponents: Float(2.5)), MfArray([1.0, 5.656854152679443, 15.588457107543945, 32.0, 316.2277526855469, 129.64181518554688] as [Double], mftype: .Float, shape: [2, 3]), rtol: 1e-05, atol: 1e-05, checkType: true, "Matft.math.power(bases: x, exponents: Float(2.5)) \(name)")
             XCTAssertClose(Matft.math.power(bases: x, exponents: 2.0), MfArray([1.0, 4.0, 9.0, 16.0, 100.0, 49.0] as [Double], mftype: .Float, shape: [2, 3]), rtol: 1e-05, atol: 1e-05, checkType: true, "Matft.math.power(bases: x, exponents: 2.0) \(name)")
         }
@@ -1432,7 +1432,7 @@ final class ArithmeticCoverageTests: XCTestCase {
         }
         for (name, x) in layoutVariants(PI){
             XCTAssertClose(Matft.math.power(bases: 2.0, exponents: x), MfArray([2.0, 4.0, 8.0, 16.0, 1024.0, 128.0] as [Double], mftype: .Float, shape: [2, 3]), rtol: 1e-05, atol: 1e-05, checkType: true, "Matft.math.power(bases: 2.0, exponents: x) \(name)")
-            XCTAssertClose(Matft.math.power(bases: 2, exponents: x), MfArray([2.0, 4.0, 8.0, 16.0, 1024.0, 128.0] as [Double], mftype: .Float, shape: [2, 3]), rtol: 1e-05, atol: 1e-05, checkType: true, "Matft.math.power(bases: 2, exponents: x) \(name)")
+            XCTAssertClose(Matft.math.power(bases: 2, exponents: x), MfArray([2, 4, 8, 16, 1024, 128] as [Int], mftype: .Int, shape: [2, 3]), rtol: 1e-05, atol: 1e-10, checkType: true, "Matft.math.power(bases: 2, exponents: x) \(name)")
             XCTAssertClose(Matft.math.power(bases: Float(1.5), exponents: x), MfArray([1.5, 2.25, 3.375, 5.0625, 57.6650390625, 17.0859375] as [Double], mftype: .Float, shape: [2, 3]), rtol: 1e-05, atol: 1e-05, checkType: true, "Matft.math.power(bases: Float(1.5), exponents: x) \(name)")
             XCTAssertClose(Matft.math.power(bases: 10.0/3, exponents: x), MfArray([3.3333332538604736, 11.11111068725586, 37.03703308105469, 123.45677947998047, 169350.84375, 4572.47314453125] as [Double], mftype: .Float, shape: [2, 3]), rtol: 1e-05, atol: 1e-05, checkType: true, "Matft.math.power(bases: 10.0/3, exponents: x) \(name)")
         }
