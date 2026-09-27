@@ -862,6 +862,8 @@ internal func stats_by_vDSP<T: MfStorable>(_ typedMfarray: MfArray, axis: Int?, 
         
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptrT in
+            // FlattenIndSequence yields one index even for a shape containing 0, so an empty result must not be written
+            guard ret_size > 0 else { return }
             mfarray.withUnsafeMutableStartPointer(datatype: T.self){
                 for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
                     wrap_vDSP_stats(count, $0 + flat.flattenIndex, stride, dstptrT + dst_offset, vDSP_func)
@@ -2679,6 +2681,8 @@ internal func stats_by_vDSP<T: MfStorable>(_ typedMfarray: MfArray, axis: Int?, 
 
         newdata.withUnsafeMutableStartPointer(datatype: T.self){
             dstptrT in
+            // FlattenIndSequence yields one index even for a shape containing 0, so an empty result must not be written
+            guard ret_size > 0 else { return }
             mfarray.withUnsafeMutableStartPointer(datatype: T.self){
                 for flat in FlattenIndSequence(shape: &ret_shape, strides: &ret_strides){
                     wrap_vDSP_stats(count, $0 + flat.flattenIndex, stride, dstptrT + dst_offset, vDSP_func)
