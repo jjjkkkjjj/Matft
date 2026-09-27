@@ -53,7 +53,7 @@ Add Matft with Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/jjjkkkjjj/Matft", from: "0.3.3"),
+    .package(url: "https://github.com/jjjkkkjjj/Matft", from: "1.0.1"),
 ],
 ```
 

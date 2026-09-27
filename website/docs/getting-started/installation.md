@@ -10,7 +10,7 @@ title: Installation
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/jjjkkkjjj/Matft", from: "0.3.3"),
+    .package(url: "https://github.com/jjjkkkjjj/Matft", from: "1.0.1"),
 ],
 targets: [
     .target(name: "YourTarget", dependencies: ["Matft"]),
