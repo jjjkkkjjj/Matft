@@ -330,7 +330,8 @@ internal func _broadcast_shape(_ shapes: [[Int]]) -> [Int]{
             let i = axis - (ndim - shape.count)
             return i >= 0 ? shape[i] : nil
         }
-        let size = sizes.max() ?? 1
+        // the size that is not 1, which may be 0 (numpy: (0,) and (1,) broadcast to (0,))
+        let size = sizes.first{ $0 != 1 } ?? 1
         precondition(sizes.allSatisfy{ $0 == 1 || $0 == size }, "operands could not be broadcast together with shapes \(shapes)")
         return size
     }
