@@ -26,11 +26,15 @@ extension Matft{
             - ufunc: A binary function `(MfArray, MfArray) -> MfArray`, such as `Matft.add`.
             - axis: (Optional) The axis to reduce, by default 0. If `nil`, all axes are reduced.
             - keepDims: (Optional) Whether to keep the reduced axes as dimensions of length 1, by default `false`.
-            - initial: (Optional) The value combined with the first element, as `ufunc(initial, first)`. Note that it is ignored when `axis` is `nil`.
-       - Returns: The reduced array.
+            - initial: (Optional) The value combined with the first element, as `ufunc(initial, first)`. Note that it is ignored when `axis` is `nil`, except for an empty array.
+       - Returns: The reduced array. Like numpy, a zero-length lane gives `initial`, or the identity of `ufunc` (0 for `Matft.add`, 1 for `Matft.mul`).
+       - Precondition: A zero-length lane can't be reduced without `initial` by a function that has no identity (e.g. `Matft.stats.maximum`), as numpy raises for it.
     */
     public static func ufuncReduce(mfarray: MfArray, ufunc: biopufuncNoargs, axis: Int? = 0, keepDims: Bool = false, initial: MfArray? = nil) -> MfArray {
-        
+        if mfarray.size == 0{
+            return _ufuncReduce_empty(mfarray, ufunc: ufunc, axis: axis, keepDims: keepDims, initial: initial)
+        }
+
         if let axis = axis{
             let axis = get_positive_axis(axis, ndim: mfarray.ndim)
             /*
@@ -107,6 +111,10 @@ extension Matft{
     */
     public static func ufuncAccumulate(mfarray: MfArray, ufunc: biopufuncNoargs, axis: Int = 0) -> MfArray {
         let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+        if mfarray.size == 0{
+            // nothing to accumulate: an empty array of the same shape
+            return Matft.deepcopy(mfarray)
+        }
         
         
         // conversion
@@ -136,6 +144,54 @@ extension Matft{
         }
         return accums.transpose(axes: inverse)
     }
+}
+
+/// `Matft.ufuncReduce` of an array with a zero-length dimension, like numpy: a zero-length lane gives `initial`, or the identity of `ufunc`
+/// (0 for add, 1 for mul). A function without an identity (e.g. maximum) can't reduce a zero-length lane (numpy raises ValueError)
+fileprivate func _ufuncReduce_empty(_ mfarray: MfArray, ufunc: biopufuncNoargs, axis: Int?, keepDims: Bool, initial: MfArray?) -> MfArray{
+    var retShape: [Int]
+    let laneSize: Int
+    if let axis = axis{
+        let axis = get_positive_axis(axis, ndim: mfarray.ndim)
+        laneSize = mfarray.shape[axis]
+        retShape = mfarray.shape
+        if keepDims{
+            retShape[axis] = 1
+        }
+        else{
+            retShape.remove(at: axis)
+        }
+    }
+    else{
+        laneSize = 0
+        retShape = keepDims ? Array(repeating: 1, count: mfarray.ndim) : []
+    }
+    // a full reduction returns shape [1] instead of a scalar
+    if retShape.isEmpty{
+        retShape = [1]
+    }
+
+    // the lanes are not zero-length, so there are no lanes at all
+    if laneSize > 0 || retShape.contains(0){
+        return MfArray([] as [Double], mftype: mfarray.mftype, shape: retShape)
+    }
+
+    guard let value = initial ?? _ufunc_identity(ufunc) else{
+        preconditionFailure("zero-size array to reduction operation which has no identity")
+    }
+    return value.astype(mfarray.mftype).broadcast_to(shape: retShape).to_contiguous(mforder: .Row)
+}
+
+/// The identity of `ufunc` (numpy's `ufunc.identity`), found by applying it to probe values: 0 for add, 1 for mul, nil for maximum, sub, etc.
+fileprivate func _ufunc_identity(_ ufunc: biopufuncNoargs) -> MfArray?{
+    let probe = MfArray([-2.5, 3, 0.5] as [Double])
+    for candidate in [0.0, 1.0]{
+        let c = MfArray([candidate] as [Double])
+        if ufunc(c, probe) == probe && ufunc(probe, c) == probe{
+            return c
+        }
+    }
+    return nil
 }
 
 extension Array where Element == MfArray{
