@@ -289,12 +289,15 @@ fileprivate func _array2ptrU<T: MfTypable, U: MfStorable>(_ flattenArray: inout 
 
 
 /// Wrap around the out of range values of 8/16 bit integer mfarray in place like numpy's fixed width integers (e.g. UInt8: -5 -> 251).
-/// Call this only on a newly created result. Wider integers are left as they are because Float can't hold their wrapped values exactly
+/// Call this only on a newly created result. Wider integers are left as they are because Float can't hold their wrapped values exactly.
+/// A Bool result becomes 1 where it is non-zero, so that Bool + Bool is logical or like numpy
 /// - Parameter mfarray: The result mfarray
-/// - Returns: The same mfarray
+/// - Returns: The same mfarray, or a new one for Bool
 @discardableResult
 internal func wrap_integer_overflow(_ mfarray: MfArray) -> MfArray{
     switch mfarray.mftype {
+    case .Bool:
+        return to_Bool(mfarray)
     case .UInt8:
         _wrap_integer_overflow(mfarray, bits: 8, signed: false)
     case .Int8:

@@ -332,6 +332,8 @@ fileprivate func _get_flatten_row_major(queue: inout [Any], shape: inout [Int]) 
 ///   - shape: An input-output shape. Input must be [queue.count], and final output is proper shape
 /// - Returns: flatten array with column major order
 fileprivate func _get_flatten_column_major(queue: inout [Any], shape: inout [Int]) -> [Any]{
+    // an empty array has nothing to flatten (and would recurse forever)
+    guard !queue.isEmpty else { return [] }
     //precondition(shape.count == 1, "shape must have only one element")
     var cnt = 0 // count up the number that value is extracted from queue for while statement, reset 0 when iteration number reaches size
     //var axis = 0//the axis in searching
